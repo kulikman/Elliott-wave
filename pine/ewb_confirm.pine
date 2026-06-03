@@ -1,0 +1,258 @@
+//@version=6
+// =============================================================================
+// Elliott Wave Brain — Level 4: Pattern Confirmation
+// Уровень 4: подтверждение распознанных фигур правилами Нили (Гл.5-6)
+//
+// Входные данные: 5 пивотов, образующих фигуру (p0..p4 для Импульса, p0..p2/p4 для Коррекций)
+// Результат: каждая гипотеза Level 3 получает ✅ (подтверждена) или ❌ (отвергнута) + причина
+//
+// Правила реализованы строго по constraint из spec_v2.0.json.
+// Каждая функция имеет трассировку к AKU.
+// =============================================================================
+indicator("EWB — Pattern Confirmation (Level 4)", "EWB Confirm",
+     overlay = true, max_labels_count = 500, max_lines_count = 300)
+
+// ─────────────────────── ВХОДНЫЕ ДАННЫЕ ─────────────────────────
+grpIn = "Пивоты фигуры (вводить вручную для анализа)"
+p0bar  = input.int(0,  "Пивот 0 — bar offset от текущего", group = grpIn, minval = 0)
+p1bar  = input.int(20, "Пивот 1 — bar offset",             group = grpIn, minval = 0)
+p2bar  = input.int(40, "Пивот 2 — bar offset",             group = grpIn, minval = 0)
+p3bar  = input.int(60, "Пивот 3 — bar offset",             group = grpIn, minval = 0)
+p4bar  = input.int(80, "Пивот 4 — bar offset",             group = grpIn, minval = 0)
+
+grpFig = "Фигура для проверки"
+figType = input.string("impulse", "Тип фигуры",
+     options = ["impulse", "zigzag", "flat", "triangle"],
+     group = grpFig)
+figDir = input.string("up", "Направление",
+     options = ["up", "down"], group = grpFig,
+     tooltip = "up = восходящий Импульс / коррекция вниз; down = наоборот")
+
+grpDisp = "Отображение"
+showLines = input.bool(true, "Рисовать пивоты и волны", group = grpDisp)
+colOK  = input.color(color.lime,  "Цвет: правило выполнено", group = grpDisp)
+colErr = input.color(color.red,   "Цвет: правило нарушено",  group = grpDisp)
+colWrn = input.color(color.orange,"Цвет: предупреждение",    group = grpDisp)
+
+// ─────────────────── ПОЛУЧИТЬ ЦЕНУ ПИВОТА ───────────────────────
+// Возвращает close на bar_index = last_bar_index - offset
+getPivotPrice(int offset) =>
+    request.security(syminfo.tickerid, timeframe.period,
+         close[offset], lookahead = barmerge.lookahead_on)
+
+// ─────────────────── ОСНОВНЫЕ ВЫЧИСЛЕНИЯ ────────────────────────
+// Цены 5 пивотов (p0 = старейший, p4 = новейший)
+float px0 = getPivotPrice(p4bar)   // p0 = самый ранний → наибольший offset
+float px1 = getPivotPrice(p3bar)
+float px2 = getPivotPrice(p2bar)
+float px3 = getPivotPrice(p1bar)
+float px4 = getPivotPrice(p0bar)   // p4 = последний  → наименьший offset
+
+// Длины волн по цене (всегда положительные)
+float w1 = math.abs(px1 - px0)  // волна 1
+float w2 = math.abs(px2 - px1)  // волна 2
+float w3 = math.abs(px3 - px2)  // волна 3
+float w4 = math.abs(px4 - px3)  // волна 4
+// волна 5 требует ещё одного пивота — используем частичное подтверждение
+
+// ─────────────────── ПРАВИЛА ИМПУЛЬСА ───────────────────────────
+// Каждая функция возвращает [bool passed, string reason]
+
+// AKU-0001/0004: Волна 2 не может достигать старта волны 1
+checkImpW2NoOverlap(float p0px, float p1px, float p2px, string dir) =>
+    bool ok = dir == "up" ? p2px > p0px : p2px < p0px
+    string msg = ok ? "W2 не перекрыла старт W1 ✓" :
+         "❌ AKU-0001: W2 пробила старт W1 — импульс невозможен"
+    [ok, msg]
+
+// AKU-0005: Волна 4 не может достигать старта волны 3 (= конца волны 2)
+checkImpW4NoOverlap(float p1px, float p2px, float p3px, float p4px, string dir) =>
+    bool ok = dir == "up" ? p4px > p2px : p4px < p2px
+    string msg = ok ? "W4 не перекрыла старт W3 ✓" :
+         "❌ AKU-0005: W4 пробила старт W3 — импульс невозможен"
+    [ok, msg]
+
+// AKU-0002/0007: Волна 3 не может быть самой короткой из W1/W3 (W5 неизвестна — проверяем W1 vs W3)
+checkImpW3NotShortest(float w1l, float w3l) =>
+    bool ok = w3l >= w1l  // W3 должна быть >= W1 (строгая версия)
+    string msg = ok ? "W3 ≥ W1 по цене ✓" :
+         "⚠️ AKU-0002: W3 < W1 — проверь W5 (W3 не должна быть самой короткой)"
+    [ok, msg]
+
+// AKU-0127: Волна 2 откатывает не более 61.8% от волны 1
+checkImpW2Retrace(float w1l, float w2l) =>
+    float retrace = w1l > 0 ? w2l / w1l : na
+    bool ok = na(retrace) or retrace <= 0.618
+    string msg = ok ? "W2 retrace ≤ 61.8% ✓ (" + str.tostring(math.round(retrace * 100, 1)) + "%)" :
+         "⚠️ AKU-0127: W2 откатила " + str.tostring(math.round(retrace * 100, 1)) + "% > 61.8%"
+    [ok, msg]
+
+// AKU-0126: Чередование W2/W4 — хотя бы по цене (W2 != W4 по размеру > 20%)
+checkImpAlternation(float w2l, float w4l) =>
+    float ratio = w2l > 0 ? w4l / w2l : na
+    bool ok = na(ratio) or (ratio < 0.8 or ratio > 1.2)  // >20% разница
+    string msg = ok ? "W2/W4 чередование ✓ (ratio=" + str.tostring(math.round(ratio, 2)) + ")" :
+         "⚠️ AKU-0126: W2≈W4 по цене — нет чередования"
+    [ok, msg]
+
+// AKU-0128: Если растяжение W3 — она должна быть > 1.618 * W1
+checkImpW3Extension(float w1l, float w3l) =>
+    float ratio = w1l > 0 ? w3l / w1l : na
+    bool isExt = not na(ratio) and ratio > 1.618
+    string msg = isExt ? "W3 расширена: " + str.tostring(math.round(ratio, 2)) + "× W1 ✓" :
+         "W3 не расширена (ratio=" + str.tostring(math.round(ratio, 2)) + "×) — норм для нерастянутой"
+    [isExt, msg]
+
+// ─────────────────── ПРАВИЛА ЗИГЗАГА ────────────────────────────
+// AKU-0014: Волна B не может превышать 100% длины волны A (p0→p1→p2, B=w2)
+checkZZBLength(float wAl, float wBl) =>
+    bool ok = wBl <= wAl
+    string msg = ok ? "B ≤ A ✓" : "❌ AKU-0014: B > A — зигзаг невозможен"
+    [ok, msg]
+
+// AKU-0022/0023: Волна C зигзага должна быть больше 61.8% волны A
+checkZZCLength(float wAl, float wCl) =>
+    float ratio = wAl > 0 ? wCl / wAl : na
+    bool ok = na(ratio) or ratio >= 0.618
+    string msg = ok ? "C ≥ 61.8% A ✓ (" + str.tostring(math.round(ratio * 100, 1)) + "%)" :
+         "⚠️ AKU-0022: C = " + str.tostring(math.round(ratio * 100, 1)) + "% < 61.8% A"
+    [ok, msg]
+
+// ─────────────────── ПРАВИЛА ПЛОСКОЙ ────────────────────────────
+// AKU-0017: Волна B плоской должна достигать как минимум 61.8% от волны A
+checkFlatBRetrace(float wAl, float wBl) =>
+    float ratio = wAl > 0 ? wBl / wAl : na
+    bool ok = na(ratio) or ratio >= 0.618
+    string msg = ok ? "B ≥ 61.8% A ✓" : "❌ AKU-0017: B < 61.8% A — не плоская"
+    [ok, msg]
+
+// AKU-0025: В правильной плоской волна C примерно равна волне A (100% ± 20%)
+checkFlatCEqualA(float wAl, float wCl) =>
+    float ratio = wAl > 0 ? wCl / wAl : na
+    bool ok = na(ratio) or (ratio >= 0.8 and ratio <= 1.2)
+    string msg = ok ? "C ≈ A ✓ (" + str.tostring(math.round(ratio * 100, 0)) + "%)" :
+         "ℹ️ AKU-0025: C/A = " + str.tostring(math.round(ratio * 100, 0)) + "% — Расширенная/Неудавшаяся?"
+    [ok, msg]
+
+// ─────────────────── ПРАВИЛА ТРЕУГОЛЬНИКА ───────────────────────
+// AKU-0018: Каждая последующая волна треугольника (a-e) должна быть короче предыдущей
+// (для сужающегося) — проверяем W3 < W1 и W4 < W2
+checkTriangleConverge(float w1l, float w2l, float w3l, float w4l) =>
+    bool ok = w3l < w1l and w4l < w2l
+    string msg = ok ? "W3<W1, W4<W2 — сужается ✓" :
+         "⚠️ AKU-0018: треугольник не сужается (W3/W1=" +
+         str.tostring(math.round(w3l/w1l,2)) + " W4/W2=" + str.tostring(math.round(w4l/w2l,2)) + ")"
+    [ok, msg]
+
+// AKU-0019: Все волны треугольника должны быть корректирующими (:3)
+// (в Pine v1 не можем проверить структуру — помечаем как предупреждение)
+checkTriangleAllThrees() =>
+    [false, "⚠️ AKU-0019: структуру волн треугольника (:3) проверь вручную"]
+
+// ─────────────────── СВОДНАЯ ПРОВЕРКА ───────────────────────────
+var string[] results   = array.new<string>()
+var bool[]   passed    = array.new<bool>()
+var int      failCount = 0
+var int      warnCount = 0
+var int      passCount = 0
+
+if barstate.islast
+    array.clear(results)
+    array.clear(passed)
+    failCount := 0
+    warnCount := 0
+    passCount := 0
+
+    if figType == "impulse"
+        [r1ok, r1msg] = checkImpW2NoOverlap(px0, px1, px2, figDir)
+        [r2ok, r2msg] = checkImpW4NoOverlap(px1, px2, px3, px4, figDir)
+        [r3ok, r3msg] = checkImpW3NotShortest(w1, w3)
+        [r4ok, r4msg] = checkImpW2Retrace(w1, w2)
+        [r5ok, r5msg] = checkImpAlternation(w2, w4)
+        [r6ok, r6msg] = checkImpW3Extension(w1, w3)
+
+        for [ok, msg] in array.from([r1ok,r2ok,r3ok,r4ok,r5ok,r6ok])
+            array.push(passed, ok)
+        for msg in array.from([r1msg,r2msg,r3msg,r4msg,r5msg,r6msg])
+            array.push(results, msg)
+
+    else if figType == "zigzag"
+        [r1ok, r1msg] = checkZZBLength(w1, w2)
+        [r2ok, r2msg] = checkZZCLength(w1, w3)
+        for [ok, msg] in array.from([r1ok, r2ok])
+            array.push(passed, ok)
+        for msg in array.from([r1msg, r2msg])
+            array.push(results, msg)
+
+    else if figType == "flat"
+        [r1ok, r1msg] = checkFlatBRetrace(w1, w2)
+        [r2ok, r2msg] = checkFlatCEqualA(w1, w3)
+        for [ok, msg] in array.from([r1ok, r2ok])
+            array.push(passed, ok)
+        for msg in array.from([r1msg, r2msg])
+            array.push(results, msg)
+
+    else if figType == "triangle"
+        [r1ok, r1msg] = checkTriangleConverge(w1, w2, w3, w4)
+        [r2ok, r2msg] = checkTriangleAllThrees()
+        for [ok, msg] in array.from([r1ok, r2ok])
+            array.push(passed, ok)
+        for msg in array.from([r1msg, r2msg])
+            array.push(results, msg)
+
+    // Подсчёт
+    for ok in passed
+        if ok
+            passCount += 1
+        else
+            failCount += 1
+
+// ─────────────────── ВИЗУАЛИЗАЦИЯ ПИВОТОВ ───────────────────────
+if showLines and barstate.islast
+    int lastBar = bar_index
+    // Линии волн
+    line.new(lastBar - p4bar, px0, lastBar - p3bar, px1, xloc = xloc.bar_index,
+         color = color.new(color.gray, 30), width = 1, style = line.style_dotted)
+    line.new(lastBar - p3bar, px1, lastBar - p2bar, px2, xloc = xloc.bar_index,
+         color = color.new(color.gray, 30), width = 1, style = line.style_dotted)
+    line.new(lastBar - p2bar, px2, lastBar - p1bar, px3, xloc = xloc.bar_index,
+         color = color.new(color.gray, 30), width = 1, style = line.style_dotted)
+    line.new(lastBar - p1bar, px3, lastBar - p0bar, px4, xloc = xloc.bar_index,
+         color = color.new(color.gray, 30), width = 1, style = line.style_dotted)
+    // Точки пивотов
+    for [i, off] in array.from([p4bar, p3bar, p2bar, p1bar, p0bar])
+        float px = array.get(array.from(px0, px1, px2, px3, px4), i)
+        label.new(lastBar - off, px, str.tostring(i),
+             xloc = xloc.bar_index, yloc = yloc.price,
+             style = label.style_circle,
+             color = color.new(color.aqua, 20), textcolor = color.white, size = size.tiny)
+
+// ─────────────────── ИТОГОВАЯ ТАБЛИЦА ───────────────────────────
+var table tbl = table.new(position.middle_right, 2, 15, border_width = 1)
+if barstate.islast
+    bool allOK = failCount == 0
+    color hdrColor = allOK ? color.new(colOK, 20) : color.new(colErr, 20)
+    string verdict = allOK ? "✅ ПОДТВЕРЖДЁН" : "❌ НЕ ПОДТВЕРЖДЁН (" + str.tostring(failCount) + " нарушений)"
+
+    table.cell(tbl, 0, 0, figType + " " + figDir, text_color = color.white,
+         bgcolor = hdrColor, text_halign = text.align_left)
+    table.cell(tbl, 1, 0, verdict, text_color = color.white,
+         bgcolor = hdrColor, text_halign = text.align_left)
+
+    int nRows = math.min(array.size(results), 13)
+    for i = 0 to nRows - 1
+        string msg = array.get(results, i)
+        bool ok    = array.get(passed, i)
+        color rowCol = ok ? color.new(colOK, 70) : (str.startswith(msg, "⚠") ?
+             color.new(colWrn, 70) : color.new(colErr, 70))
+        table.cell(tbl, 0, i + 1, "•", bgcolor = rowCol, text_color = color.white, text_halign = text.align_center)
+        table.cell(tbl, 1, i + 1, msg, bgcolor = rowCol, text_color = color.white,
+             text_halign = text.align_left, text_size = size.small)
+
+    // Длины волн справка
+    int lastRow = nRows + 1
+    table.cell(tbl, 0, lastRow, "W1=" + str.tostring(math.round(w1, 2)),
+         text_color = color.silver, bgcolor = color.new(color.navy, 60), text_halign = text.align_left)
+    table.cell(tbl, 1, lastRow, "W2=" + str.tostring(math.round(w2, 2)) +
+         " W3=" + str.tostring(math.round(w3, 2)) + " W4=" + str.tostring(math.round(w4, 2)),
+         text_color = color.silver, bgcolor = color.new(color.navy, 60), text_halign = text.align_left)
