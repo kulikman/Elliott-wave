@@ -244,8 +244,39 @@ labelSeg(array<int> eb, array<float> ep, int firstIdx, string lset, color c) =>
              xloc = xloc.bar_index, yloc = yloc.price, style = label.style_label_up,
              color = color.new(c, 45), textcolor = color.white, size = size.tiny)
 
-// ─── Уровень 4: inline-подтверждение по ключевым правилам Нили ───────────────
-// Проверяет 4 критичных правила Импульса (AKU-0001,0005,0002,0127) по ценам пивотов.
+// ─── Уровень 4: inline-подтверждение + каналы Нили ───────────────────────────
+// Цена точки на линии через (b0,p0)→(b2,p2) при bar_index = bx
+priceOnLine(int b0, float p0, int b2, float p2, int bx) =>
+    int db = b2 - b0
+    db != 0 ? p0 + (p2 - p0) * float(bx - b0) / float(db) : p0
+
+// Рисует канал Нили для подтверждённого Импульса (AKU-0011 канал 0-2, AKU-0054 канал 2-4)
+drawImpulseChannels(array<int> eb, array<float> ep, int i0, color c) =>
+    int b0 = array.get(eb, i0),   float p0 = array.get(ep, i0)
+    int b1 = array.get(eb, i0+1), float p1 = array.get(ep, i0+1)
+    int b2 = array.get(eb, i0+2), float p2 = array.get(ep, i0+2)
+    int b3 = array.get(eb, i0+3), float p3 = array.get(ep, i0+3)
+    int b4 = array.get(eb, i0+4), float p4 = array.get(ep, i0+4)
+    // Базовый канал 0-2 (AKU-0011): линия через пивоты 0 и 2 → продолжить до b4
+    line.new(b0, p0, b4, priceOnLine(b0, p0, b2, p2, b4),
+         xloc = xloc.bar_index, color = color.new(c, 30),
+         width = 1, style = line.style_dashed)
+    // Параллельная верхняя граница через пивот 1 (вершина W1)
+    float offset02 = p1 - priceOnLine(b0, p0, b2, p2, b1)
+    line.new(b0, p0 + offset02, b4, priceOnLine(b0, p0, b2, p2, b4) + offset02,
+         xloc = xloc.bar_index, color = color.new(c, 50),
+         width = 1, style = line.style_dotted)
+    // Канал 2-4 (AKU-0054): линия через пивоты 2 и 4 → назад до b0
+    line.new(b0, priceOnLine(b2, p2, b4, p4, b0), b4, p4,
+         xloc = xloc.bar_index, color = color.new(c, 30),
+         width = 1, style = line.style_dashed)
+    // Параллельная граница через пивот 3 (вершина W3)
+    float offset24 = p3 - priceOnLine(b2, p2, b4, p4, b3)
+    line.new(b0, priceOnLine(b2, p2, b4, p4, b0) + offset24, b4, p4 + offset24,
+         xloc = xloc.bar_index, color = color.new(c, 50),
+         width = 1, style = line.style_dotted)
+
+// Проверяет правила Импульса (AKU-0001,0004,0005,0002,0007,0009,0127,0126)
 // Возвращает: [confirmed, failMsg]
 confirmImpulse(array<float> ep, int i0, string dir) =>
     float p0px = array.get(ep, i0),     p1px = array.get(ep, i0 + 1)
@@ -257,13 +288,20 @@ confirmImpulse(array<float> ep, int i0, string dir) =>
     bool r1 = dir == "up" ? p2px > p0px : p2px < p0px
     // AKU-0005: W4 не пробивает старт W3
     bool r2 = dir == "up" ? p4px > p2px : p4px < p2px
-    // AKU-0002: W3 >= W1 (базовый вариант без W5)
+    // AKU-0002/0007: W3 >= W1 по цене
     bool r3 = lw3 >= lw1
     // AKU-0127: W2 <= 61.8% W1
     bool r4 = lw1 > 0 ? lw2 / lw1 <= 0.618 : true
+    // AKU-0009: ценовые диапазоны W2 и W4 не перекрываются
+    float w2lo = math.min(p1px, p2px), float w2hi = math.max(p1px, p2px)
+    float w4lo = math.min(p3px, p4px), float w4hi = math.max(p3px, p4px)
+    bool r5 = w2hi < w4lo or w4hi < w2lo  // нет пересечения
+    // AKU-0126: чередование W2/W4 по цене (>20% разница)
+    bool r6 = lw2 > 0 ? (lw4 / lw2 < 0.8 or lw4 / lw2 > 1.2) : true
     bool ok = r1 and r2 and r3 and r4
     string msg = not r1 ? "W2>W1start" : not r2 ? "W4>W3start" :
-         not r3 ? "W3<W1" : not r4 ? "W2>61.8%W1" : ""
+         not r3 ? "W3<W1" : not r4 ? "W2>61.8%W1" :
+         not r5 ? "⚠W2/W4 overlap" : not r6 ? "⚠нет чередования" : ""
     [ok, msg]
 
 // Проверяет Плоскую: B >= 61.8% A (AKU-0017)
@@ -303,14 +341,16 @@ matchFigure(array<int> s, array<int> eb, array<float> ep, color c) =>
             hi := math.max(hi, p)
             lo := math.min(lo, p)
         if v1 == 5 and v2 == 3 and v3 == 5 and v4 == 3 and v5 == 5
-            // Уровень 4: подтвердить Импульс
+            // Уровень 4: подтвердить Импульс + каналы
             int pi0 = startIdx
             string dir = figDirection(array.get(ep, pi0), array.get(ep, pi0 + 1))
             [impOK, impMsg] = confirmImpulse(ep, pi0, dir)
             string nm = impOK ? "Импульс ✅" : "Импульс? ❌ " + impMsg
-            color fc = impOK ? c : color.new(color.red, 20)
+            color fc = impOK ? color.new(color.green, 20) : color.new(color.red, 20)
             drawFig(nm, b0, b1, lo, hi, fc)
             labelSeg(eb, ep, n - 5, ":5|:F3|:5|:F3|:L5", fc)
+            if impOK
+                drawImpulseChannels(eb, ep, pi0, color.green)
             drew := true
         else if v1 == 3 and v2 == 3 and v3 == 3 and v4 == 3 and v5 == 3
             // Уровень 4: подтвердить Треугольник

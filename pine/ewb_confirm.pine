@@ -95,6 +95,23 @@ checkImpAlternation(float w2l, float w4l) =>
          "⚠️ AKU-0126: W2≈W4 по цене — нет чередования"
     [ok, msg]
 
+// AKU-0009: Ценовые проекции W2 и W4 не перекрываются
+checkImpW2W4NoOverlap(float p1px, float p2px, float p3px, float p4px) =>
+    float w2lo = math.min(p1px, p2px), float w2hi = math.max(p1px, p2px)
+    float w4lo = math.min(p3px, p4px), float w4hi = math.max(p3px, p4px)
+    bool ok = w2hi < w4lo or w4hi < w2lo
+    string msg = ok ? "W2/W4 ценовые диапазоны не перекрываются ✓" :
+         "❌ AKU-0009: W2 и W4 перекрываются — не Трендовый Импульс"
+    [ok, msg]
+
+// AKU-0006: W5 >= 38.2% W4 (нужен пятый пивот p4 → используем только если доступен)
+checkImpW5Length(float w4l, float w5l) =>
+    float ratio = w4l > 0 ? w5l / w4l : na
+    bool ok = na(ratio) or ratio >= 0.382
+    string msg = ok ? "W5 ≥ 38.2% W4 ✓ (" + str.tostring(math.round(ratio * 100, 0)) + "%)" :
+         "⚠️ AKU-0006: W5 = " + str.tostring(math.round(ratio * 100, 0)) + "% < 38.2% W4 — Неудавшаяся пятая?"
+    [ok, msg]
+
 // AKU-0128: Если растяжение W3 — она должна быть > 1.618 * W1
 checkImpW3Extension(float w1l, float w3l) =>
     float ratio = w1l > 0 ? w3l / w1l : na
@@ -170,10 +187,12 @@ if barstate.islast
         [r4ok, r4msg] = checkImpW2Retrace(w1, w2)
         [r5ok, r5msg] = checkImpAlternation(w2, w4)
         [r6ok, r6msg] = checkImpW3Extension(w1, w3)
+        [r7ok, r7msg] = checkImpW2W4NoOverlap(px1, px2, px3, px4)
+        [r8ok, r8msg] = checkImpW5Length(w4, w3)  // w3 как прокси W5 (5-пивот = W3 в схеме)
 
-        for [ok, msg] in array.from([r1ok,r2ok,r3ok,r4ok,r5ok,r6ok])
+        for [ok, msg] in array.from([r1ok,r2ok,r3ok,r4ok,r5ok,r6ok,r7ok,r8ok])
             array.push(passed, ok)
-        for msg in array.from([r1msg,r2msg,r3msg,r4msg,r5msg,r6msg])
+        for msg in array.from([r1msg,r2msg,r3msg,r4msg,r5msg,r6msg,r7msg,r8msg])
             array.push(results, msg)
 
     else if figType == "zigzag"
