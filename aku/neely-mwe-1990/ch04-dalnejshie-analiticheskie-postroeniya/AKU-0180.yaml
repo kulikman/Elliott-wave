@@ -1,0 +1,38 @@
+id: AKU-0180
+type: rule
+strength: mandatory
+status: draft
+topic: grouping-procedure
+subtopics:
+- compaction
+- wave-identification
+statement_ru: 'Цикл 1: присвоить структурные обозначения всем моноволнам графика.
+  Выделить обособленные группы из 3 или 5 моноволн, идентифицировать соответствующую
+  Структурную Серию (A-E). Проверить правила Гл.5-12.'
+statement_en: null
+source:
+  book_id: neely-mwe-1990
+  page: 4-5
+  chapter: 'Глава 4: Дальнейшие аналитические построения'
+  section: Цикл 1
+  figure_id: null
+  verbatim_quote:
+    text: Используя Правила и методы, описанные в Главе 3, присваиваем Структурные
+      обозначения всем моноволнам Рисунка 4-6. На отрезке... можно изолировать группу
+      волн, образующих Серию "F3-c3-L5".
+    language: ru
+formalization:
+  status: draft
+  applies_when: starting wave grouping process
+  constraint: 'cycle_1: assign structural_labels → isolate groups of 3 or 5 → match
+    Structural Series A-E'
+  formalization_notes: null
+aliases: []
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-03T13:25:37Z'
+review_notes: Извлечено Claude (PDF ч.2, Гл.4 стр.4-3..4-8, Три Цикла + Сжатие).
+requires_review: true

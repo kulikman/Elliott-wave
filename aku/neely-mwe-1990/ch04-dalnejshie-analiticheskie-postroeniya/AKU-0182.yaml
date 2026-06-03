@@ -1,0 +1,38 @@
+id: AKU-0182
+type: rule
+strength: mandatory
+status: draft
+topic: grouping-procedure
+subtopics:
+- compaction
+- position-indicators
+statement_ru: 'Цикл 3: если в результате Циклов 1-2 не появилось структурное обозначение
+  с Индикатором положения '':L'' (:L3 или :L5), дальнейший прогресс в волновой конструкции
+  невозможен до поступления новых данных. Текущий граф остаётся незавершённым.'
+statement_en: null
+source:
+  book_id: neely-mwe-1990
+  page: 4-7
+  chapter: 'Глава 4: Дальнейшие аналитические построения'
+  section: Цикл 3
+  figure_id: null
+  verbatim_quote:
+    text: В течение Цикла 3 структурных обозначений с Индикатором Положения ":L" не
+      обнаружено, следовательно, дальнейшего прогресса в волновой конструкции не предвидится,
+      пока не поступят новые данные, ведущие к появлению на графике ":L3" или ":L5".
+    language: ru
+formalization:
+  status: draft
+  applies_when: after compaction, checking for :L completion marker
+  constraint: 'if not found('':L3'' OR '':L5'') in current_group: halt_grouping ;
+    wait for new price data'
+  formalization_notes: Ключевое условие завершённости поливолны — наличие :L меткий.
+aliases: []
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-03T13:25:37Z'
+review_notes: Извлечено Claude (PDF ч.2, Гл.4 стр.4-3..4-8, Три Цикла + Сжатие).
+requires_review: true

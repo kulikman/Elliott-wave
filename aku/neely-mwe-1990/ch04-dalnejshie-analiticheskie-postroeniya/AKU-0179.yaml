@@ -1,0 +1,39 @@
+id: AKU-0179
+type: rule
+strength: mandatory
+status: draft
+topic: rule-of-similarity
+subtopics:
+- impulse
+- flat
+- grouping-procedure
+statement_ru: 'В Импульсных фигурах подобие длительностей (временное) встречается
+  чаще, чем подобие длин (ценовое). В Корректирующих фигурах — обратная картина: ценовое
+  подобие преобладает над временным.'
+statement_en: null
+source:
+  book_id: neely-mwe-1990
+  page: 4-4
+  chapter: 'Глава 4: Дальнейшие аналитические построения'
+  section: Правило подобия и баланса / Цена и Время
+  figure_id: null
+  verbatim_quote:
+    text: В Импульсных ценовых фигурах подобие длительностей двух соседних волн встречается
+      чаще, чем подобие длин; в Коррективных ценовых фигурах наблюдается обратная
+      картина.
+    language: ru
+formalization:
+  status: draft
+  applies_when: checking similarity for impulse vs correction hypothesis
+  constraint: 'if impulse_hypothesis: prefer time_similarity ; if correction_hypothesis:
+    prefer price_similarity'
+  formalization_notes: null
+aliases: []
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-03T13:25:37Z'
+review_notes: Извлечено Claude (PDF ч.2, Гл.4 стр.4-3..4-8, Три Цикла + Сжатие).
+requires_review: true

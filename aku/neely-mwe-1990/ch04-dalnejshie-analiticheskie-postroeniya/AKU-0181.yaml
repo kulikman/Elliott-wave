@@ -1,0 +1,40 @@
+id: AKU-0181
+type: rule
+strength: mandatory
+status: draft
+topic: grouping-procedure
+subtopics:
+- compaction
+- wave-identification
+statement_ru: 'Цикл 2: подтверждённые фигуры Цикла 1 сжимаются (compaction) до базовой
+  структуры :3 или :5. Все внутренние метки между границами сжатой фигуры удаляются.
+  Проводится переоценка (reassessment) — проверяется, не изменилась ли структура соседних
+  волн после сжатия.'
+statement_en: null
+source:
+  book_id: neely-mwe-1990
+  page: 4-6
+  chapter: 'Глава 4: Дальнейшие аналитические построения'
+  section: Цикл 2
+  figure_id: null
+  verbatim_quote:
+    text: Все группы волн (Плоская, Зигзаг и Импульс), идентифицированные в Цикле
+      1, тщательно проверены... Затем они были "сжаты"... и сведены к своей базовой
+      Структуре — ":3" или ":5"... все обозначения и пометки между границами Компактных
+      ценовых фигур удалены.
+    language: ru
+formalization:
+  status: draft
+  applies_when: after figure confirmation at Level 4
+  constraint: compact(figure) → base_label in {':3', ':5'} ; remove internal labels
+    ; reassess adjacent waves
+  formalization_notes: Сжатие открывает следующий уровень иерархии.
+aliases: []
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-03T13:25:37Z'
+review_notes: Извлечено Claude (PDF ч.2, Гл.4 стр.4-3..4-8, Три Цикла + Сжатие).
+requires_review: true

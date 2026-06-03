@@ -1,0 +1,43 @@
+id: AKU-0183
+type: rule
+strength: mandatory
+status: draft
+topic: wave-identification
+subtopics:
+- zigzag
+- impulse
+- grouping-procedure
+statement_ru: 'Зигзаг или Импульс? Каждый раз, обнаружив волну '':L5'', завершающую
+  предполагаемый Зигзаг, проверяй: три последних сегмента (:5-:F3-:L5) могут быть
+  хвостом Импульса. ВСЕГДА проверяй импульсную гипотезу (правила Гл.5-12) ПРЕЖДЕ чем
+  идентифицировать как Зигзаг. Если Импульс подтверждён — остановиться; если нет —
+  вернуться к Зигзагу.'
+statement_en: null
+source:
+  book_id: neely-mwe-1990
+  page: 4-8
+  chapter: 'Глава 4: Дальнейшие аналитические построения'
+  section: Зигзаг или Импульс?
+  figure_id: null
+  verbatim_quote:
+    text: Каждый раз, когда вы обнаруживаете волну с обозначением ":L5", завершающую
+      предполагаемый Зигзаг, вспоминайте, что Зигзаг может представлять собой три
+      последних сегмента Импульса... всегда проверяйте импульсную гипотезу (применяя
+      для этого правила, перечисленные в Главах 5-12), прежде чем идентифицировать
+      группу волн в качестве Зигзага.
+    language: ru
+formalization:
+  status: draft
+  applies_when: detecting :5-:F3-:L5 sequence
+  constraint: 'on detect(:5-:F3-:L5): test_impulse_first() ; if impulse_confirmed:
+    label=''impulse'' ; else: label=''zigzag'''
+  formalization_notes: Это AKU-0166 (уже есть). Здесь детализирован алгоритм проверки.
+aliases: []
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-03T13:25:37Z'
+review_notes: Извлечено Claude (PDF ч.2, Гл.4 стр.4-3..4-8, Три Цикла + Сжатие).
+requires_review: true

@@ -324,6 +324,24 @@ confirmTriangle(array<float> ep, int i0) =>
 figDirection(float p0px, float p1px) =>
     p1px > p0px ? "up" : "down"
 
+// ─── Сжатие (Compaction) — Цикл 2 Нили (AKU-0180) ────────────────────────────
+// После подтверждения фигуры удаляем N элементов из хвоста массивов и заменяем
+// их ОДНИМ сжатым элементом с базовой структурой (:5 для импульса, :3 для коррекции).
+// Пивот сжатой волны = начальный бар фигуры + конечная цена.
+// AKU-0180: подтверждённая группа сжимается до базовой :3/:5; соседние волны переоцениваются.
+compactFigure(array<int> s, array<int> eb, array<float> ep,
+              int n, int count, int baseStruct) =>
+    // Удаляем count+1 пивотов из хвоста (count волн = count+1 пивот, но первый = граница)
+    // Оставляем стартовый пивот фигуры, убираем промежуточные, финальный остаётся
+    for i = 0 to count - 1
+        if array.size(s) > 1
+            array.remove(s,  array.size(s) - 2)   // убираем предпоследний (сохраняем финальный)
+            array.remove(eb, array.size(eb) - 2)
+            array.remove(ep, array.size(ep) - 2)
+    // Меняем последнюю структуру на сжатую
+    if array.size(s) > 0
+        array.set(s, array.size(s) - 1, baseStruct)
+
 // Сопоставляет хвост последовательности базовых структур (5/3) со Структурными Сериями.
 // Приоритет 5-элементных шаблонов (Импульс/Треугольник) — правило 'Зигзаг или Импульс?'.
 matchFigure(array<int> s, array<int> eb, array<float> ep, color c) =>
@@ -341,7 +359,7 @@ matchFigure(array<int> s, array<int> eb, array<float> ep, color c) =>
             hi := math.max(hi, p)
             lo := math.min(lo, p)
         if v1 == 5 and v2 == 3 and v3 == 5 and v4 == 3 and v5 == 5
-            // Уровень 4: подтвердить Импульс + каналы
+            // Уровень 4: подтвердить Импульс + каналы + Сжатие (AKU-0180)
             int pi0 = startIdx
             string dir = figDirection(array.get(ep, pi0), array.get(ep, pi0 + 1))
             [impOK, impMsg] = confirmImpulse(ep, pi0, dir)
@@ -351,15 +369,18 @@ matchFigure(array<int> s, array<int> eb, array<float> ep, color c) =>
             labelSeg(eb, ep, n - 5, ":5|:F3|:5|:F3|:L5", fc)
             if impOK
                 drawImpulseChannels(eb, ep, pi0, color.green)
+                compactFigure(figStruct, figEndBar, figEndPx, n, 4, 5)  // 5 волн → :5
             drew := true
         else if v1 == 3 and v2 == 3 and v3 == 3 and v4 == 3 and v5 == 3
-            // Уровень 4: подтвердить Треугольник
+            // Уровень 4: подтвердить Треугольник + Сжатие
             int pi0 = startIdx
             [triOK, triMsg] = confirmTriangle(ep, pi0)
             string nm = triOK ? "Треуг. ✅" : "Треуг.? ❌ " + triMsg
             color fc = triOK ? color.new(color.purple, 20) : color.new(color.red, 20)
             drawFig(nm, b0, b1, lo, hi, fc)
             labelSeg(eb, ep, n - 5, ":F3|:c3|:c3|:?3|:L3?", fc)
+            if triOK
+                compactFigure(figStruct, figEndBar, figEndPx, n, 4, 3)  // 5 волн → :3
             drew := true
     if not drew and n >= 3
         int w1 = array.get(s, n - 3), w2 = array.get(s, n - 2), w3 = array.get(s, n - 1)
@@ -379,6 +400,8 @@ matchFigure(array<int> s, array<int> eb, array<float> ep, color c) =>
             color fc = flatOK ? color.new(color.teal, 20) : color.new(color.red, 20)
             drawFig(nm, b0, b1, lo, hi, fc)
             labelSeg(eb, ep, n - 3, ":F3|:c3|:?5", fc)
+            if flatOK
+                compactFigure(figStruct, figEndBar, figEndPx, n, 2, 3)  // 3 волны → :3
         // Зигзаг (5-3-5) подавлен: неотличим от хвоста Импульса без Индикаторов положения.
         // Активировать после реализации полной логики F/c/L (Гл.3 стр.3-60+).
 
