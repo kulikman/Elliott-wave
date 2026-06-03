@@ -1,0 +1,37 @@
+id: AKU-0215
+type: rule
+strength: mandatory
+status: draft
+topic: post-pattern-logic
+subtopics:
+- energy-rating
+- zigzag
+- combination
+statement_ru: 'Постэффект Двойного Зигзага (+2 ↑): следующая волна того же Порядка
+  не должна достичь начального уровня фигуры (кроме: является волной-5 Терминального
+  Импульса с Растянутой пятой).'
+statement_en: null
+source:
+  book_id: neely-mwe-1990
+  page: 10-3
+  chapter: 'Глава 10: Продвинутые Правила логики'
+  section: Двойной Зигзаг
+  figure_id: null
+  verbatim_quote:
+    text: Если только эта фигура не является пятой волной Терминального Импульса с
+      Растянутой пятой, следующая за ней волна не должна достичь ее начального уровня.
+    language: ru
+formalization:
+  status: draft
+  applies_when: after double zigzag (+2 up direction)
+  constraint: 'if not (terminal_impulse AND extended_5): next_wave NOT reach start(double_zigzag)'
+  formalization_notes: null
+aliases: []
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-03T13:55:44Z'
+review_notes: Извлечено Claude (PDF ч.3 Гл.10 стр.10-2..10-10, Гл.11 стр.11-4).
+requires_review: true

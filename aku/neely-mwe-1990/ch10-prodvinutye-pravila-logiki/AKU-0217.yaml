@@ -1,0 +1,41 @@
+id: AKU-0217
+type: rule
+strength: mandatory
+status: draft
+topic: post-pattern-logic
+subtopics:
+- energy-rating
+- combination
+- x-wave
+statement_ru: 'Постэффект Подвижной Коррекции (-3 ↑): ДОЛЖНА следовать Растянутая
+  волна Импульса (или Растянутая с-волна Зигзага/Плоской). Следующая импульсная волна
+  должна быть БОЛЬШЕ 161.8% предыдущей импульсной (зачастую 261.8% и более). В Двойную
+  или Тройную Тройку не должна развиваться.'
+statement_en: null
+source:
+  book_id: neely-mwe-1990
+  page: 10-6
+  chapter: 'Глава 10: Продвинутые Правила логики'
+  section: Подвижная Коррекция
+  figure_id: null
+  verbatim_quote:
+    text: За Подвижной Коррекцией должна следовать Растянутая волна Импульса или Растянутая
+      с-волна Плоской или Зигзага... длина ее должна составлять больше 161,8% длины
+      предыдущего Импульса (зачастую 261,8% и более).
+    language: ru
+formalization:
+  status: draft
+  applies_when: after moving correction (energy -3, upward wave)
+  constraint: next_wave IS extended_impulse ; length(next_impulse) > 1.618 * prev_impulse
+    ; NOT develops_into double_or_triple_three
+  formalization_notes: 'Важнейшее правило для торговли: Подвижная Коррекция предшествует
+    самым мощным импульсам.'
+aliases: []
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-03T13:55:44Z'
+review_notes: Извлечено Claude (PDF ч.3 Гл.10 стр.10-2..10-10, Гл.11 стр.11-4).
+requires_review: true

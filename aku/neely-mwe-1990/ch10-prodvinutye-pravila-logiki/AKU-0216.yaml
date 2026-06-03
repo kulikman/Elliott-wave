@@ -1,0 +1,38 @@
+id: AKU-0216
+type: rule
+strength: mandatory
+status: draft
+topic: post-pattern-logic
+subtopics:
+- energy-rating
+- flat
+statement_ru: 'Постэффект Неудавшейся-с (-1 ↑): следующая волна того же Порядка ДОЛЖНА
+  достичь начального уровня. Если Неудавшаяся-с завершает коррективную фазу, следующая
+  Импульсная волна должна быть больше предыдущей однонаправленной Импульсной.'
+statement_en: null
+source:
+  book_id: neely-mwe-1990
+  page: 10-5
+  chapter: 'Глава 10: Продвинутые Правила логики'
+  section: Неудавшаяся-с
+  figure_id: null
+  verbatim_quote:
+    text: Следующая за Неудавшейся-с волна того же Порядка должна достигать ее начального
+      уровня. Если Неудавшаяся-с завершает коррективную фазу, следующая за ней Импульсная
+      волна должна быть больше предыдущей однонаправленной Импульсной волны.
+    language: ru
+formalization:
+  status: draft
+  applies_when: after failed_c correction
+  constraint: 'next_wave(same_order) MUST reach start(failed_c) ; if ends_corrective_phase:
+    next_impulse > prev_impulse'
+  formalization_notes: null
+aliases: []
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-03T13:55:44Z'
+review_notes: Извлечено Claude (PDF ч.3 Гл.10 стр.10-2..10-10, Гл.11 стр.11-4).
+requires_review: true

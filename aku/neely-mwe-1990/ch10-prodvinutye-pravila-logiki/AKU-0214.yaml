@@ -1,0 +1,40 @@
+id: AKU-0214
+type: rule
+strength: mandatory
+status: draft
+topic: energy-rating
+subtopics:
+- post-pattern-logic
+- trading-application
+statement_ru: 'Интерпретация рейтинга Энергии: 0 → следующая волна от 0 до 100% длины
+  предыдущей; ±1 → следующая ≤ 90% длины оцениваемой волны; ±2 → следующая ≤ 80%;
+  ±3 → следующая ≤ 60-70%.'
+statement_en: null
+source:
+  book_id: neely-mwe-1990
+  page: 10-2
+  chapter: 'Глава 10: Продвинутые Правила логики'
+  section: Рейтинг Энергии / интерпретация
+  figure_id: null
+  verbatim_quote:
+    text: 1. Нулевой рейтинг Энергии ("0") не накладывает каких-либо специальных ограничений...
+      2. (+1 -1) – длина следующей завершённой волны того же Порядка должна быть не
+      более 90% длины волны оцениваемой; 3. (+2, -2) – ... не более 80%...; 4. (+3,
+      -3) – ... не более 60–70%.
+    language: ru
+formalization:
+  status: draft
+  applies_when: predicting next wave retracement based on energy rating
+  constraint: 'if |energy| == 0: next_wave_max = 1.0 * current ; if |energy| == 1:
+    next_wave_max = 0.9 * current ; if |energy| == 2: next_wave_max = 0.8 * current
+    ; if |energy| == 3: next_wave_max = 0.65 * current'
+  formalization_notes: null
+aliases: []
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-03T13:55:44Z'
+review_notes: Извлечено Claude (PDF ч.3 Гл.10 стр.10-2..10-10, Гл.11 стр.11-4).
+requires_review: true

@@ -355,6 +355,48 @@ confirmTriangle(array<float> ep, int i0) =>
 figDirection(float p0px, float p1px) =>
     p1px > p0px ? "up" : "down"
 
+// ─── Рейтинг Энергии (AKU-0213, Гл.10 стр.10-2) ─────────────────────────────
+// Возвращает рейтинг энергии и макс. откат следующей волны для подтверждённой фигуры.
+// figType: "impulse"|"terminal"|"flat"|"zigzag"|"triangle"|"double_corr"
+// dir: 1=восходящая -1=нисходящая
+energyRating(string figType, int dir) =>
+    int e = 0
+    float retracePct = 1.0  // макс. % следующей волны от текущей
+    if figType == "impulse"
+        e := dir > 0 ? 0 : 0   // Трендовый Импульс: нейтральный (0)
+        retracePct := 1.0       // следующая < 100% (не достигает старта)
+    else if figType == "terminal"
+        e := dir > 0 ? -2 : 2  // Терминал: сильный контртренд
+        retracePct := 1.0       // следующая ДОЛЖНА достичь старта (быстро)
+    else if figType == "zigzag"
+        e := dir > 0 ? 0 : 0
+        retracePct := 1.0
+    else if figType == "flat"
+        e := dir > 0 ? -1 : 1
+        retracePct := 0.9
+    else if figType == "triangle"
+        e := 0                  // Треугольник нейтрален для последующих волн
+        retracePct := 1.0
+    else if figType == "double_corr"
+        e := dir > 0 ? 2 : -2  // Двойная Коррекция: сильная (+2/-2)
+        retracePct := 0.8
+    [e, retracePct]
+
+// Рисует метку Рейтинга Энергии и линию максимального отката после фигуры.
+drawEnergy(int b1, float p1, string figType, int dir, float figLen) =>
+    [e, retPct] = energyRating(figType, dir)
+    string eStr = e > 0 ? "+" + str.tostring(e) : str.tostring(e)
+    string eTip  = "Рейтинг Энергии: " + eStr + " | Макс.откат: " + str.tostring(math.round(retPct*100)) + "% (AKU-0213)"
+    color eCol = e > 1 ? color.lime : e < -1 ? color.red : e != 0 ? color.orange : color.gray
+    label.new(b1, p1, "E" + eStr, xloc = xloc.bar_index, yloc = yloc.price,
+         style = label.style_label_right, color = color.new(eCol, 20),
+         textcolor = color.white, size = size.small, tooltip = eTip)
+    // Линия максимального отката следующей волны
+    if retPct < 1.0 and figLen > 0
+        float retLevel = dir > 0 ? p1 - figLen * retPct : p1 + figLen * retPct
+        line.new(b1, retLevel, b1 + 30, retLevel, xloc = xloc.bar_index,
+             color = color.new(eCol, 40), width = 1, style = line.style_dotted)
+
 // ─── Правило соотношения длительностей (AKU-0205, Гл.9 стр.9-4) ─────────────
 // 3 смежных волны одного Порядка не могут иметь одинаковую временную длину.
 // Возвращает true если нарушение (все три равны ±10%).
@@ -433,6 +475,8 @@ matchFigure(array<int> s, array<int> eb, array<float> ep, color c) =>
                          color = color.new(color.orange, 20), textcolor = color.white, size = size.tiny)
                 drawImpulseChannels(eb, ep, pi0, color.green)
                 drawMotionLabels(eb, ep, pi0, 6, "0|1|2|3|4|5", color.green)
+                float impLen = math.abs(array.get(ep, n-1) - array.get(ep, pi0))
+                drawEnergy(b1, hi, "impulse", dir == "up" ? 1 : -1, impLen)
                 compactFigure(figStruct, figEndBar, figEndPx, n, 4, 5)  // 5 волн → :5
             drew := true
         else if v1 == 3 and v2 == 3 and v3 == 3 and v4 == 3 and v5 == 3
@@ -509,6 +553,9 @@ matchFigure(array<int> s, array<int> eb, array<float> ep, color c) =>
             labelSeg(eb, ep, n - 3, ":F3|:c3|:?5", fc)
             if flatOK
                 drawMotionLabels(eb, ep, n - 4, 4, "0|A|B|C", color.teal)
+                float flatDir = array.get(ep, n-3) > array.get(ep, n-4) ? 1.0 : -1.0
+                float flatLen = math.abs(array.get(ep, n-1) - array.get(ep, n-4))
+                drawEnergy(b1, hi, "flat", int(flatDir), flatLen)
                 compactFigure(figStruct, figEndBar, figEndPx, n, 2, 3)  // 3 волны → :3
         // Зигзаг (5-3-5) подавлен: неотличим от хвоста Импульса без Индикаторов положения.
         // Активировать после реализации полной логики F/c/L (Гл.3 стр.3-60+).

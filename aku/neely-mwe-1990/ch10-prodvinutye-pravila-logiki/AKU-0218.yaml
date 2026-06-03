@@ -1,0 +1,44 @@
+id: AKU-0218
+type: rule
+strength: mandatory
+status: draft
+topic: post-pattern-logic
+subtopics:
+- energy-rating
+- triangle
+- channeling
+statement_ru: 'Постэффект Ограничивающего Сужающегося Треугольника: за ним всегда
+  следует ''выброс'' (сильная резкая волна), который должен превысить уровень волны-b.
+  Длина выброса зависит от типа: Горизонтальный ≈ ширина самой широкой волны (±25%);
+  Неправильный — до 161.8% ширины; Подвижный — до 261.8%. Временная длина выброса
+  ≈ времени от конца волны-e до пересечения линий тренда.'
+statement_en: null
+source:
+  book_id: neely-mwe-1990
+  page: 10-7
+  chapter: 'Глава 10: Продвинутые Правила логики'
+  section: Сужающиеся Треугольники
+  figure_id: null
+  verbatim_quote:
+    text: За Сужающимся Треугольником всегда следует "выброс" (сильная, резкая волна)...
+      Этот "выброс" должен заходить "за" (превышать) максимальный или минимальный
+      уровень котировок, достигнутый в процессе формирования Треугольника, если только
+      его направленность не противоположна направлению волны-b.
+    language: ru
+formalization:
+  status: draft
+  applies_when: after contracting triangle completion
+  constraint: 'thrust_length: horizontal => ~1.0 * widest_wave ; irregular => up_to
+    1.618 * widest ; moving => up_to 2.618 * widest ; thrust_time ~= time(wave_e to
+    trendline_convergence)'
+  formalization_notes: Рис. из Гл.10. Горизонтальное влияние вершины Треугольника
+    длится 2-3 пробития.
+aliases: []
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-03T13:55:44Z'
+review_notes: Извлечено Claude (PDF ч.3 Гл.10 стр.10-2..10-10, Гл.11 стр.11-4).
+requires_review: true

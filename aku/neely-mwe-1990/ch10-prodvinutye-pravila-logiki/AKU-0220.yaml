@@ -1,0 +1,40 @@
+id: AKU-0220
+type: rule
+strength: mandatory
+status: draft
+topic: post-pattern-logic
+subtopics:
+- energy-rating
+- ending-diagonal
+statement_ru: 'Постэффект Терминального Импульса: следующая волна ДОЛЖНА достичь начального
+  уровня Терминала не более чем за 50% времени его формирования (обычно около 25%).
+  Терминал всегда завершает более крупную фигуру. Создаваемая им точка минимума/максимума
+  удерживается примерно в течение минимум двух периодов формирования.'
+statement_en: null
+source:
+  book_id: neely-mwe-1990
+  page: 10-10
+  chapter: 'Глава 10: Продвинутые Правила логики'
+  section: Терминальные Импульсы
+  figure_id: null
+  verbatim_quote:
+    text: Следующая за Терминальным Импульсом волна должна достичь его начального
+      уровня не более чем за 50% времени его формирования; обычно это занимает примерно
+      25% этого времени.
+    language: ru
+formalization:
+  status: draft
+  applies_when: after terminal impulse (ending diagonal) completion
+  constraint: next_wave MUST reach start(terminal) ; time(reach_start) <= 0.5 * time(terminal_formation)
+    ; level_held >= 2 * terminal_duration
+  formalization_notes: 'Самый надёжный постэффект для торговли: быстрый разворот после
+    Терминала.'
+aliases: []
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-03T13:55:44Z'
+review_notes: Извлечено Claude (PDF ч.3 Гл.10 стр.10-2..10-10, Гл.11 стр.11-4).
+requires_review: true

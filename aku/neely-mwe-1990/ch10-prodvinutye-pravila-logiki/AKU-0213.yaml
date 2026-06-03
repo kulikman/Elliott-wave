@@ -1,0 +1,47 @@
+id: AKU-0213
+type: definition
+strength: mandatory
+status: draft
+topic: energy-rating
+subtopics:
+- post-pattern-logic
+- trading-application
+statement_ru: 'Рейтинг Энергии коррекции (от -3 до +3) указывает, будет ли достигнут
+  начальный уровень следующей за ней волной. Чем выше абсолютное значение — тем ниже
+  вероятность полного отката. Применяется только к компактным (сжатым) фигурам. Таблица
+  (волна завершается в восходящем / нисходящем направлении): Тройной Зигзаг +3/-3;
+  Тройная Комбинация +3/-3; Тройная Плоская +3/-3; Двойной Зигзаг +2/-2; Двойная Комбинация
+  +2/-2; Двойная Плоская +2/-2; Удлинённый Зигзаг +1/-2; Удлинённая Плоская +1/-1;
+  Зигзаг/Неудавшаяся-b/Обыкновенная 0/0; Неудавшаяся-с -1/+1; Неправильная -1/+1;
+  Неправильная (сильная) -2/+2; Двойная Тройка -2/+2; Тройная Тройка -2/+2; Подвижная
+  Коррекция -3/+3.'
+statement_en: null
+source:
+  book_id: neely-mwe-1990
+  page: 10-2
+  chapter: 'Глава 10: Продвинутые Правила логики'
+  section: Рейтинг Энергии
+  figure_id: null
+  verbatim_quote:
+    text: 'Рейтинг Энергии... указывает, будет, должен, может, не должен или не будет
+      ее начальный уровень достигнут волной последующей... Рейтинги: Тройной Зигзаг
+      +3/-3, Тройная Комбинация +3/-3, Тройная Плоская +3/-3, Двойной Зигзаг +2/-2,
+      Двойная Комбинация +2/-2, Двойная Плоская +2/-2... Подвижная Коррекция -3/+3.'
+    language: ru
+formalization:
+  status: draft
+  applies_when: after compaction of corrective figure
+  constraint: energy(triple_zigzag) = +3/-3 ; energy(triple_combo) = +3/-3 ; energy(double_zigzag)
+    = +2/-2 ; energy(zigzag) = 0 ; energy(failed_c) = -1/+1 ; energy(moving_correction)
+    = -3/+3
+  formalization_notes: В Треугольнике рейтинг Удлинённого Зигзага и Удлинённой Плоской
+    = 0.
+aliases: []
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-03T13:55:44Z'
+review_notes: Извлечено Claude (PDF ч.3 Гл.10 стр.10-2..10-10, Гл.11 стр.11-4).
+requires_review: true

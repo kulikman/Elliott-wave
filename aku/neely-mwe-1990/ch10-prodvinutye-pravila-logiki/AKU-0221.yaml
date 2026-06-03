@@ -1,0 +1,43 @@
+id: AKU-0221
+type: rule
+strength: mandatory
+status: draft
+topic: post-pattern-logic
+subtopics:
+- impulse
+- wave-identification
+- complexity-rule
+statement_ru: 'Неудавшаяся пятая волна возможна только при 3 условиях: A) данный Импульс
+  является волной-5 более крупного Импульса; B) данный Импульс является с-волной на
+  один Порядок выше; C) при крайне редких обстоятельствах — более крупная W3 испытывает
+  Неудачу меньшей W5. Почти всегда W1 и W5 будут практически идентичны по цене и/или
+  времени, или их соотношение = 61.8%.'
+statement_en: null
+source:
+  book_id: neely-mwe-1990
+  page: 11-4
+  chapter: 'Глава 10: Продвинутые Правила логики'
+  section: Неудавшаяся пятая волна
+  figure_id: null
+  verbatim_quote:
+    text: '5-я волна может оказаться Неудавшейся только при одном из следующих обстоятельств:
+      А. Если данная Импульсная фигура... сама является 5-й волной более крупной Импульсной
+      фигуры... B. Если данная Импульсная фигура... является с-волной на один (и только
+      один) Порядок выше.'
+    language: ru
+formalization:
+  status: draft
+  applies_when: failed fifth wave detected
+  constraint: context IN {wave_5_of_larger_impulse, c_wave_one_degree_higher, rare_large_3_fails}
+    ; length(w1) APPROX length(w5) OR ratio = 0.618
+  formalization_notes: 'Рис.11-1: Неудавшаяся 5-я в конце 5-й волны. Рис.11-2: Неудавшаяся
+    5-я в с-волне.'
+aliases: []
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-03T13:55:44Z'
+review_notes: Извлечено Claude (PDF ч.3 Гл.10 стр.10-2..10-10, Гл.11 стр.11-4).
+requires_review: true

@@ -1,0 +1,42 @@
+id: AKU-0219
+type: rule
+strength: mandatory
+status: draft
+topic: post-pattern-logic
+subtopics:
+- energy-rating
+- impulse
+statement_ru: 'Постэффект Трендового Импульса: следующая волна того же Порядка не
+  должна достичь начального уровня, если Импульс не является волной-5 или с-волной
+  более крупной фигуры. С Растянутой 3-й: откат до ценовой зоны W4. С Растянутой 5-й:
+  следующая ДОЛЖНА быть > 61.8% W5 — единственный случай, когда откат после Импульса
+  обязателен более 61.8%.'
+statement_en: null
+source:
+  book_id: neely-mwe-1990
+  page: 10-10
+  chapter: 'Глава 10: Продвинутые Правила логики'
+  section: Трендовые Импульсы / Импульс с Растянутой пятой
+  figure_id: null
+  verbatim_quote:
+    text: Следующая за Трендовым Импульсом волна не должна достичь его начального
+      уровня, если только он сам не является волной-5 или волной-с более крупной фигуры...
+      Импульс с Растянутой пятой – единственная из растянутых волн, после которой
+      следующая волна того же Порядка должна быть больше 61,8% ее длины.
+    language: ru
+formalization:
+  status: draft
+  applies_when: after trending impulse (any extension type)
+  constraint: 'next_wave NOT reach start(impulse) unless wave_5_or_c ; if extended_3:
+    retracement INTO wave_4_zone ; if extended_5: next_wave > 0.618 * length(wave_5)'
+  formalization_notes: 'Критично для торговли: после Растянутой 5-й всегда сильный
+    откат > 61.8% W5.'
+aliases: []
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-03T13:55:44Z'
+review_notes: Извлечено Claude (PDF ч.3 Гл.10 стр.10-2..10-10, Гл.11 стр.11-4).
+requires_review: true
