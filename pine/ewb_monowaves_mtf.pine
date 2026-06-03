@@ -313,6 +313,8 @@ if showC and showClass and rc.ruleNo > 0
          ruleToStructure(rc.ruleNo) + " (Нили, Гл.3)")
 
 // ── Накопление базовых структур и распознавание фигур (Уровень 3) ──
+// Окно ограничено 10 элементами — достаточно для 5-эл. шаблона + контекст.
+// Без ограничения массивы растут до тысяч баров → ложные рамки на всей истории.
 var array<int>   figStruct  = array.new<int>()
 var array<int>   figEndBar  = array.new<int>()
 var array<float> figEndPx   = array.new<float>()
@@ -322,6 +324,10 @@ if showFig and rc.ruleNo > 0
     array.push(figStruct, base)
     array.push(figEndBar, rc.prevBar)
     array.push(figEndPx, rc.prevPrice)
+    while array.size(figStruct) > 10
+        array.shift(figStruct)
+        array.shift(figEndBar)
+        array.shift(figEndPx)
     if base > 0
         matchFigure(figStruct, figEndBar, figEndPx, colFig)
 
