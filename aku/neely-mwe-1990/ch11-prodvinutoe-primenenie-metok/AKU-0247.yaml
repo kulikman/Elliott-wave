@@ -1,0 +1,55 @@
+id: AKU-0247
+type: rule
+strength: mandatory
+status: draft
+topic: triangle
+subtopics:
+- wave-identification
+- fibonacci-ratios
+statement_ru: >
+  Расширяющиеся Треугольники: 8 ключевых параметров. (1) Либо a, либо b — наименьший
+  сегмент. (2) e-волна «разряжается» — намного длиннее других. (3) Как Сужающийся
+  может быть e-волной более крупного Сужающегося, так и Расширяющийся может быть
+  e-волной более крупного Расширяющегося. (4) Каждая волна от простого к сложному.
+  (5) Фигура после Треугольника (c или W5) ≤ начального уровня e. (6) ОТСУТСТВИЕ
+  Фибоначчи-соотношений = тест на подлинность. (7) НЕ МОГУТ предшествовать мощным
+  фигурам (Растянутая 1/2/3, Удлинённая c). (8) Линии тренда: b-d и a-c.
+statement_en: null
+source:
+  book_id: neely-mwe-1990
+  page: 11-29
+  chapter: 'Глава 11: Продвинутое применение Меток Движения'
+  section: Расширяющиеся Треугольники
+  figure_id: null
+  verbatim_quote:
+    text: >
+      Одним из самых странных аспектов Расширяющихся Треугольников выглядит
+      отсутствие у них многочисленных соотношений Фибоначчи, типичных для
+      Сужающихся Треугольников. Хотите верьте, хотите нет, отсутствие соотношений
+      Фибоначчи может быть ценным тестом на аутентичность Расширяющегося
+      Треугольника... Расширяющиеся Треугольники не могут иметь место непосредственно
+      перед любой мощной фигурой, такой как Растянутая 1-я, 2-я и 3-я волна либо
+      Удлиненная с-волна.
+    language: ru
+formalization:
+  status: draft
+  applies_when: expanding triangle identification and validation
+  constraint: >
+    min(Wa, Wb) = smallest_segment ;
+    We = longest_and_most_complex ("blow off") ;
+    fibonacci_absence = authenticity_test ;
+    cannot_precede = {ext_1, ext_2, ext_3, elongated_c} ;
+    post_triangle_retracement <= start_level_of_We ;
+    trendlines: b_d (base) and a_c (opposite)
+  formalization_notes: 'стр.11-29..11-31. 8 общих параметров формирования.'
+aliases: []
+related_aku:
+- AKU-0245
+- AKU-0246
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-03T17:00:00Z'
+review_notes: Извлечено Claude (PDF ч.3 Гл.11 стр.11-29..11-31).
+requires_review: true

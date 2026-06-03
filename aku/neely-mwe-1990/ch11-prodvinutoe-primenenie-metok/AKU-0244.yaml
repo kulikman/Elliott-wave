@@ -1,0 +1,49 @@
+id: AKU-0244
+type: rule
+strength: mandatory
+status: draft
+topic: flat
+subtopics:
+- retracement
+- wave-identification
+statement_ru: >
+  Неправильная Плоская: минимальные требования — b ≥ 101% a и c ≥ 101% b.
+  Максимальный предел b: ≤ 138.2% a. Если b > 138.2% a → это Неправильная
+  Неудавшаяся (c скорее всего не откатится до начального уровня b; c будет
+  Корректирующой :3, а не Импульсной :5). b в Неправильной Коррекции ДОЛЖНА
+  сегментировать сильнее, чем a. Пока b ≤ 123.6% a → сохраняется возможность
+  выхода c за конечный уровень a.
+statement_en: null
+source:
+  book_id: neely-mwe-1990
+  page: 11-15
+  chapter: 'Глава 11: Продвинутое применение Меток Движения'
+  section: Коррекции / Плоские / Неправильная / Неправильная Неудавшаяся
+  figure_id: '11-17,11-18,11-19,11-20,11-21'
+  verbatim_quote:
+    text: >
+      Минимальные Требования: 1. Волна-b должна быть не меньше 101% волны-а.
+      2. Волна-с должна быть не меньше 101% волны-b... Волна-b не должна превышать
+      138.2% длины волны-а. Если она превышает эту величину, данная волна, вероятно,
+      не будет Неправильной, а будет Неправильной Неудавшейся... Если b-волна
+      превышает 138.2% волны-а, волна-с скорее всего не откатится до начального
+      уровня волны-b.
+    language: ru
+formalization:
+  status: draft
+  applies_when: irregular flat identification and threshold
+  constraint: >
+    irregular_flat: Wb >= 1.01*Wa AND Wc >= 1.01*Wb AND Wb <= 1.382*Wa ;
+    Wb must segment more than Wa ;
+    IF Wb > 1.382*Wa THEN irregular_failure (Wc = corrective :3, not impulsive :5) ;
+    IF Wb <= 1.236*Wa THEN Wc may still exceed end_of_Wa
+  formalization_notes: 'Рис.11-17..11-21. Ключевой порог 138.2% для b-волны.'
+aliases: []
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-03T17:00:00Z'
+review_notes: Извлечено Claude (PDF ч.3 Гл.11 стр.11-15..11-16).
+requires_review: true

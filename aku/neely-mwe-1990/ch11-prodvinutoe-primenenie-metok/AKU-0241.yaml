@@ -1,0 +1,47 @@
+id: AKU-0241
+type: rule
+strength: mandatory
+status: draft
+topic: ending-diagonal
+subtopics:
+- impulse-extension
+- motion-labels
+statement_ru: >
+  Терминальный Импульс с Растянутой 1-й (самый распространённый): W2 ≤ 61.8% W1;
+  W3 между 38.2% и 61.8% W1; W5 между 38.2% и 61.8% W1. W4 ≈ 61.8% W2 по цене
+  и времени. Линия тренда 2-4 должна быть чёткой. Единственное исключение для
+  «фальшивого прорыва» 2-4: W5 = Удлинённая Плоская (Неудавшейся-С или
+  Горизонтальный Треугольник) или c-волна Терминала в составе W5.
+statement_en: null
+source:
+  book_id: neely-mwe-1990
+  page: 11-6
+  chapter: 'Глава 11: Продвинутое применение Меток Движения'
+  section: Терминальные Импульсы / Растянутая первая
+  figure_id: null
+  verbatim_quote:
+    text: >
+      Растянутая 1-я волна в Терминальной фигуре вне всякой конкуренции — самый
+      распространённый сценарий. Измеряемая от точки её завершения волна-2 не должна
+      откатываться более чем на 61.8% волны-1. Волна-3 не должна быть намного больше
+      61.8%, но и не менее 38.2% волны-1. Волна-5 не может быть более 99% волны-3,
+      но с большой вероятностью будет между 61.8% и 38.2%.
+    language: ru
+formalization:
+  status: draft
+  applies_when: terminal impulse with extended wave-1
+  constraint: >
+    W2 <= 0.618*W1 ; W3 >= 0.382*W1 AND W3 <= 0.618*W1 ;
+    W5 >= 0.382*W1 AND W5 <= 0.618*W1 ;
+    W4 ≈ 0.618*W2 (price and time) ;
+    trendline_2_4 must be clear and identifiable
+  formalization_notes: 'стр.11-6. Самый распространённый тип Терминала.'
+aliases: []
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-03T17:00:00Z'
+review_notes: Извлечено Claude (PDF ч.3 Гл.11 стр.11-5..11-6).
+requires_review: true

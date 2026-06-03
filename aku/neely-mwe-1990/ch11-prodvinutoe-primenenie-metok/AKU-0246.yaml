@@ -1,0 +1,57 @@
+id: AKU-0246
+type: rule
+strength: mandatory
+status: draft
+topic: triangle
+subtopics:
+- wave-identification
+- combination
+statement_ru: >
+  Неограничивающие Треугольники — 6 мест возникновения: (1) e-волна Горизонтального
+  Треугольника; (2) последняя корр. фаза Двойной/Тройной Тройки; (3) последняя корр.
+  фаза Подвижной Двойной Плоской; (4) последняя корр. фаза Двойной/Тройной
+  Комбинации; (5) W5 Терминального Импульса; (6) x-волна сложной Коррекции
+  (единственный случай, когда НЕ завершает фигуру, а возникает в середине).
+  Любой Неограничивающий Треугольник (кроме x-волны) ДОЛЖЕН завершать фазу
+  более крупной Коррекции.
+statement_en: null
+source:
+  book_id: neely-mwe-1990
+  page: 11-26
+  chapter: 'Глава 11: Продвинутое применение Меток Движения'
+  section: Треугольники / Неограничивающие
+  figure_id: '11-27,11-28,11-29,11-30,11-31,11-32'
+  verbatim_quote:
+    text: >
+      ЗАМЕЧАНИЕ: любой Неограничивающий Треугольник (за исключением случая, когда
+      он х-волна) должен завершать фазу более крупной Коррекции. Если вы обнаружили
+      один из них в какой-либо позиции (кроме позиции х-волны), то вы можете сжать
+      все крупное движение до простой тройки... Вот некоторые обычные и необычные
+      места возникновения Неограничивающих Треугольников: 1. Волна-е Горизонтального
+      Треугольника 2. Последняя корректирующая фаза Двойной или Тройной Тройки...
+    language: ru
+formalization:
+  status: draft
+  applies_when: identifying Non-Limiting Triangle positions
+  constraint: >
+    non_limiting_positions = {
+      We_horizontal_triangle,
+      last_corrective_phase_double_triple_three,
+      last_corrective_phase_running_double_flat,
+      last_corrective_phase_double_triple_combination,
+      W5_terminal_impulse,
+      x_wave_complex_correction
+    } ;
+    IF position != x_wave THEN must_complete_larger_corrective_phase ;
+    x_wave = only_case_non_limiting_triangle_in_middle_of_figure
+  formalization_notes: 'Рис.11-27..11-32. Пункты 1-5 = завершает фигуру; пункт 6 = середина.'
+aliases: []
+related_aku:
+- AKU-0245
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-03T17:00:00Z'
+review_notes: Извлечено Claude (PDF ч.3 Гл.11 стр.11-25..11-26).
+requires_review: true
