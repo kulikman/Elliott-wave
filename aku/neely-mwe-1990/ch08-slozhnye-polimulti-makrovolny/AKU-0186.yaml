@@ -1,0 +1,40 @@
+id: AKU-0186
+type: rule
+strength: mandatory
+status: draft
+topic: x-wave
+subtopics:
+- combination
+- complexity-rule
+statement_ru: 'Условие 2 (большая x-волна): если длина второй из трёх идущих подряд
+  компактных поливолновых Коррекций не меньше 161.8% длины первой — эта вторая Коррекция
+  является x-волной. Уровни сложности всех трёх обычно одинаковы; самая длинная —
+  последняя.'
+statement_en: null
+source:
+  book_id: neely-mwe-1990
+  page: 8-3
+  chapter: 'Глава 8: Формирование сложных поли-, мульти- и макроволн'
+  section: Условие 2
+  figure_id: null
+  verbatim_quote:
+    text: Если длина второй из трёх идущих подряд компактных поливолновых Коррекций
+      не меньше 161,8% длины первой, очень высока вероятность, что эта вторая Коррекция
+      — х-волна.
+    language: ru
+formalization:
+  status: draft
+  applies_when: x_wave candidate is 2nd of 3 consecutive corrections
+  constraint: length(correction_2) >= 1.618 * length(correction_1) => correction_2
+    is x_wave
+  formalization_notes: Большая x-волна → Серия b (Таблица B стр.8-11).
+aliases: []
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-03T13:31:38Z'
+review_notes: Извлечено Claude (PDF ч.2 Гл.8 стр.8-1..8-11, нестандартные серии с
+  x-волнами).
+requires_review: true

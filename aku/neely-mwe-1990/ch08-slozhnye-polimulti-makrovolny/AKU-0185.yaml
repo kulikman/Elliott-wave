@@ -1,0 +1,40 @@
+id: AKU-0185
+type: rule
+strength: mandatory
+status: draft
+topic: x-wave
+subtopics:
+- combination
+- complexity-rule
+statement_ru: 'Условие 1 (малая x-волна): x-волна развивается когда две компактные
+  Коррекции разделяются промежуточной волной МЕНЬШЕ 61.8% длины первой Коррекции.
+  Уровень сложности x-волны обычно на один ниже окружающих Коррекций.'
+statement_en: null
+source:
+  book_id: neely-mwe-1990
+  page: 8-2
+  chapter: 'Глава 8: Формирование сложных поли-, мульти- и макроволн'
+  section: Условие 1
+  figure_id: null
+  verbatim_quote:
+    text: Развитие самого сильного сигнала х-волны на рынке имеет место, когда две
+      компактные Коррекции (поливолна или выше) разделяются промежуточной Коррективной
+      волной (моноволной или волной более высокого Порядка Стандартного или Нестандартного
+      типа), которая меньше 61,8% длины первой Коррективной фазы.
+    language: ru
+formalization:
+  status: draft
+  applies_when: x_wave candidate between two corrections
+  constraint: length(x_wave) < 0.618 * length(correction_1) AND complexity(x_wave)
+    == complexity(correction_1) - 1
+  formalization_notes: Малая x-волна → Серия a (Таблица А).
+aliases: []
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-03T13:31:38Z'
+review_notes: Извлечено Claude (PDF ч.2 Гл.8 стр.8-1..8-11, нестандартные серии с
+  x-волнами).
+requires_review: true

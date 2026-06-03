@@ -1,0 +1,96 @@
+#!/usr/bin/env python3
+"""Гл.8 PDF ч.2: нестандартные серии с x-волнами (8-1..8-11). status=draft."""
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).parent.parent))
+from tools._lib.aku_io import save_aku, next_aku_id, now_iso, aku_path
+
+AKUS = [
+    dict(type="definition", strength="mandatory", topic="x-wave",
+        subtopics=["combination","double-zigzag","structural-series"],
+        statement_ru="X-волна — Коррективная фигура, разделяющая две Стандартные Коррекции Эллиота. Все нестандартные события на рынке включают x-волны. Поведение x-волны — ключ к обнаружению нестандартных волновых фигур.",
+        quote="Все нестандартные события на рынке включают x-волны. Х-волна – Коррективная фигура, разделяющая две Стандартные Коррекции Эллиота. Как распознать поведение х-волны? Должны выполняться два важных условия.",
+        page="8-2", section="Нестандартный тип / Спецификации",
+        aw="detecting non-standard complex correction",
+        cons="x_wave IS correction_figure AND separates(correction_1, correction_2)",
+        notes=None),
+    dict(type="rule", strength="mandatory", topic="x-wave",
+        subtopics=["combination","complexity-rule"],
+        statement_ru="Условие 1 (малая x-волна): x-волна развивается когда две компактные Коррекции разделяются промежуточной волной МЕНЬШЕ 61.8% длины первой Коррекции. Уровень сложности x-волны обычно на один ниже окружающих Коррекций.",
+        quote="Развитие самого сильного сигнала х-волны на рынке имеет место, когда две компактные Коррекции (поливолна или выше) разделяются промежуточной Коррективной волной (моноволной или волной более высокого Порядка Стандартного или Нестандартного типа), которая меньше 61,8% длины первой Коррективной фазы.",
+        page="8-2", section="Условие 1",
+        aw="x_wave candidate between two corrections",
+        cons="length(x_wave) < 0.618 * length(correction_1) AND complexity(x_wave) == complexity(correction_1) - 1",
+        notes="Малая x-волна → Серия a (Таблица А)."),
+    dict(type="rule", strength="mandatory", topic="x-wave",
+        subtopics=["combination","complexity-rule"],
+        statement_ru="Условие 2 (большая x-волна): если длина второй из трёх идущих подряд компактных поливолновых Коррекций не меньше 161.8% длины первой — эта вторая Коррекция является x-волной. Уровни сложности всех трёх обычно одинаковы; самая длинная — последняя.",
+        quote="Если длина второй из трёх идущих подряд компактных поливолновых Коррекций не меньше 161,8% длины первой, очень высока вероятность, что эта вторая Коррекция — х-волна.",
+        page="8-3", section="Условие 2",
+        aw="x_wave candidate is 2nd of 3 consecutive corrections",
+        cons="length(correction_2) >= 1.618 * length(correction_1) => correction_2 is x_wave",
+        notes="Большая x-волна → Серия b (Таблица B стр.8-11)."),
+    dict(type="pattern", strength="mandatory", topic="double-zigzag",
+        subtopics=["x-wave","structural-series","combination"],
+        statement_ru="Двойной Зигзаг: (5-3-5) ++ x:3 ++ (5-3-5). Сжимается в базовую структуру ':3'. После уплотнения следует провести переоценку. Рис.8-2а.",
+        quote="(5-3-5) + (x-волна) + (5-3-5) = Двойной Зигзаг = \":3\"",
+        page="8-3", section="Таблица А / Двойной Зигзаг",
+        aw="structural_series matches [zigzag, x_wave, zigzag]",
+        cons="series = [':3'(ZZ), x_wave(':3'), ':3'(ZZ)] ; compact → ':3'",
+        notes="Рис.8-2а: X-волна меньше/больше любой b-волны (обычно меньше)."),
+    dict(type="pattern", strength="mandatory", topic="combination",
+        subtopics=["x-wave","structural-series","flat","double-zigzag"],
+        statement_ru="Двойная Плоская: (3-3-5) ++ x:3 ++ (3-3-5). Сжимается в ':3'. Рис.8-4. Треугольник или моноволна — наиболее вероятная x-волна когда последующая фигура — Плоская с Неудавшейся с-волной.",
+        quote="(3-3-5) + (x-волна) + (3-3-5) = Двойная Плоская = \":3\"",
+        page="8-3", section="Таблица А / Двойная Плоская",
+        aw="structural_series matches [flat, x_wave, flat]",
+        cons="series = [':3'(Flat), x_wave(':3'), ':3'(Flat)] ; compact → ':3'",
+        notes="Рис.8-4. Треугольник/моноволна — вероятная x-волна при Плоской с Неудавшейся с-волной."),
+    dict(type="pattern", strength="mandatory", topic="combination",
+        subtopics=["x-wave","structural-series","zigzag","flat","triangle"],
+        statement_ru="Двойная Комбинация: любые две Стандартные Коррекции (Зигзаг/Плоская/Треугольник), разделённые x-волной. Возможные варианты: Зигзаг+x+Плоская, Зигзаг+x+Треугольник, Плоская+x+Треугольник. Все сжимаются в ':3'.",
+        quote="(5-3-5) + (x-волна) + (3-3-3-3-3, с.т.) = Двойная Комбинация = \":3\"\n(5-3-5) + (x-волна) + (3-3-5) = Двойная Комбинация = \":3\"",
+        page="8-3", section="Таблица А / Двойная Комбинация",
+        aw="structural_series matches [correction_A, x_wave, correction_B] where A != B",
+        cons="series = [':3'(any_correction), x_wave(':3'), ':3'(different_correction)] ; compact → ':3'",
+        notes="Рис.8-2b, 8-3, 8-5."),
+    dict(type="pattern", strength="mandatory", topic="triple-zigzag",
+        subtopics=["x-wave","structural-series","combination"],
+        statement_ru="Тройной Зигзаг: (5-3-5) ++ x:3 ++ (5-3-5) ++ x:3 ++ (5-3-5). Сжимается в ':3'. Ключевое отличие от Импульса: Тройной Зигзаг вписывается в ПАРАЛЛЕЛЬНЫЕ каналы; Импульс — нет (каналы расходятся). Рис.8-6.",
+        quote="(5-3-5) + (x-волна) + (5-3-5) + (x-волна) + (5-3-5) = Тройной Зигзаг",
+        page="8-3", section="Таблица А / Тройной Зигзаг",
+        aw="structural_series matches [zigzag, x, zigzag, x, zigzag]",
+        cons="series = [:3, x:3, :3, x:3, :3] ; compact → ':3' ; channel_lines MUST be parallel (not diverging)",
+        notes="Рис.8-6: параллельные каналы — главный признак; Импульс имеет расходящиеся/сходящиеся каналы."),
+    dict(type="rule", strength="mandatory", topic="x-wave",
+        subtopics=["compaction","structural-series"],
+        statement_ru="Все нестандартные фигуры с x-волнами после уплотнения (сжатия) сводятся к базовой структуре ':3'. Уровень сложности x-волны обычно на один уровень ниже самой сложной Стандартной фигуры в завершённой конфигурации.",
+        quote="F. Все фигуры с х-волнами (немедленно после проведения процедуры их уплотнения) могут быть сведены к тройке (\":3\").",
+        page="7-1", section="Процедура сжатия (уплотнения) волн",
+        aw="after confirming non-standard figure with x-wave",
+        cons="compact(non_standard_figure_with_x_wave) → ':3'",
+        notes="Из Гл.7 стр.7-1 — все нестандартные → :3."),
+]
+
+n = int(next_aku_id().split("-")[1]); saved = 0
+for d in AKUS:
+    aku_id = f"AKU-{n:04d}"
+    aku = {
+        "id": aku_id, "type": d["type"], "strength": d["strength"], "status": "draft",
+        "topic": d["topic"], "subtopics": d["subtopics"],
+        "statement_ru": d["statement_ru"], "statement_en": None,
+        "source": {"book_id": "neely-mwe-1990", "page": d["page"],
+                   "chapter": "Глава 8: Формирование сложных поли-, мульти- и макроволн",
+                   "section": d["section"],
+                   "figure_id": None, "verbatim_quote": {"text": d["quote"], "language": "ru"}},
+        "formalization": {"status": "draft", "applies_when": d["aw"],
+                          "constraint": d["cons"], "formalization_notes": d["notes"]},
+        "aliases": [], "related_aku": [], "contradicts_aku": [],
+        "extends_aku": None, "supersedes_aku": None,
+        "created_by": "claude", "created_at": now_iso(),
+        "review_notes": "Извлечено Claude (PDF ч.2 Гл.8 стр.8-1..8-11, нестандартные серии с x-волнами).",
+        "requires_review": True,
+    }
+    save_aku(aku, aku_path("neely-mwe-1990", 8, "slozhnye-polimulti-makrovolny", aku_id))
+    saved += 1; n += 1
+print(f"Создано AKU (Гл.8 нестандартные серии): {saved}")

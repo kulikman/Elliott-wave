@@ -1,0 +1,36 @@
+id: AKU-0187
+type: pattern
+strength: mandatory
+status: draft
+topic: double-zigzag
+subtopics:
+- x-wave
+- structural-series
+- combination
+statement_ru: 'Двойной Зигзаг: (5-3-5) ++ x:3 ++ (5-3-5). Сжимается в базовую структуру
+  '':3''. После уплотнения следует провести переоценку. Рис.8-2а.'
+statement_en: null
+source:
+  book_id: neely-mwe-1990
+  page: 8-3
+  chapter: 'Глава 8: Формирование сложных поли-, мульти- и макроволн'
+  section: Таблица А / Двойной Зигзаг
+  figure_id: null
+  verbatim_quote:
+    text: (5-3-5) + (x-волна) + (5-3-5) = Двойной Зигзаг = ":3"
+    language: ru
+formalization:
+  status: draft
+  applies_when: structural_series matches [zigzag, x_wave, zigzag]
+  constraint: series = [':3'(ZZ), x_wave(':3'), ':3'(ZZ)] ; compact → ':3'
+  formalization_notes: 'Рис.8-2а: X-волна меньше/больше любой b-волны (обычно меньше).'
+aliases: []
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-03T13:31:38Z'
+review_notes: Извлечено Claude (PDF ч.2 Гл.8 стр.8-1..8-11, нестандартные серии с
+  x-волнами).
+requires_review: true

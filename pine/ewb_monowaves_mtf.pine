@@ -372,18 +372,60 @@ matchFigure(array<int> s, array<int> eb, array<float> ep, color c) =>
                 compactFigure(figStruct, figEndBar, figEndPx, n, 4, 5)  // 5 волн → :5
             drew := true
         else if v1 == 3 and v2 == 3 and v3 == 3 and v4 == 3 and v5 == 3
-            // Уровень 4: подтвердить Треугольник + Сжатие
+            // Уровень 4: Треугольник (→:3) ИЛИ Терминал (→:5)
+            // AKU Гл.7 стр.7-1: Треугольник сжимается в :3, Терминальный Импульс — в :5
             int pi0 = startIdx
             [triOK, triMsg] = confirmTriangle(ep, pi0)
-            string nm = triOK ? "Треуг. ✅" : "Треуг.? ❌ " + triMsg
+            // Терминал: те же 3-3-3-3-3 НО волны перекрываются и сужаются как клин
+            // Точное различение требует правил Гл.5 стр.5-2 (AKU-0177)
+            // В Pine v1: если подтверждён по сужению → помечаем как Треуг. (безопасная версия)
+            string nm = triOK ? "Треуг./Терминал ✅" : "Треуг.? ❌ " + triMsg
             color fc = triOK ? color.new(color.purple, 20) : color.new(color.red, 20)
             drawFig(nm, b0, b1, lo, hi, fc)
-            labelSeg(eb, ep, n - 5, ":F3|:c3|:c3|:?3|:L3?", fc)
+            labelSeg(eb, ep, n - 5, ":F3|:c3|:c3|:sL3|:L3", fc)
             if triOK
-                compactFigure(figStruct, figEndBar, figEndPx, n, 4, 3)  // 5 волн → :3
+                // Сжатие: :3 для Треугольника, :5 для Терминала — пока :3 (безопасно)
+                compactFigure(figStruct, figEndBar, figEndPx, n, 4, 3)
             drew := true
+    if not drew and n >= 5
+        // Нестандартные серии с x-волнами: Двойной Зигзаг / Двойная Коррекция (AKU-0187..0191)
+        // Паттерн: :3 ++ :3(x) ++ :3 — три тройки подряд, средняя = x-волна
+        // Проверяем относительный размер x-волны: если средний элемент < 61.8% первого → x-волна
+        int dx1 = array.get(s, n - 5), dx2 = array.get(s, n - 4), dx3 = array.get(s, n - 3)
+        int dx4 = array.get(s, n - 2), dx5 = array.get(s, n - 1)
+        if dx1 == 3 and dx2 == 3 and dx3 == 3 and dx4 == 3 and dx5 == 3
+            // 5 троек = потенциальная Двойная Коррекция с большой x + Тройная?
+            // Пропускаем — уже детектируется как Треугольник выше
+            drew := false
+        if not drew and n >= 3
+            int cx1 = array.get(s, n - 3), cx2 = array.get(s, n - 2), cx3 = array.get(s, n - 1)
+            if cx1 == 3 and cx2 == 3 and cx3 == 3
+                // Три тройки — кандидат на Двойную Коррекцию (:3 ++ x:3 ++ :3)
+                int dstartIdx = n >= 4 ? n - 4 : n - 3
+                int db0 = array.get(eb, dstartIdx)
+                int db1 = array.get(eb, n - 1)
+                float dhi = array.get(ep, dstartIdx), dlo = array.get(ep, dstartIdx)
+                for i = dstartIdx to n - 1
+                    float p = array.get(ep, i)
+                    dhi := math.max(dhi, p)
+                    dlo := math.min(dlo, p)
+                // Проверяем размер x-волны (средний элемент)
+                float p0x = array.get(ep, n - 4), float p1x = array.get(ep, n - 3)
+                float p2x = array.get(ep, n - 2), float p3x = array.get(ep, n - 1)
+                float len1 = math.abs(p1x - p0x), float lenX = math.abs(p2x - p1x)
+                float xRatio = len1 > 0 ? lenX / len1 : na
+                bool isSmallX = not na(xRatio) and xRatio < 0.618   // Условие 1 (AKU-0185)
+                bool isBigX   = not na(xRatio) and xRatio >= 1.618  // Условие 2 (AKU-0186)
+                if isSmallX
+                    drawFig("Двойн.Корр. ✅", db0, db1, dlo, dhi, color.new(color.orange, 20))
+                    compactFigure(figStruct, figEndBar, figEndPx, n, 2, 3)  // → :3 (AKU-0191)
+                    drew := true
+                else if isBigX
+                    drawFig("Двойн.Корр.? (большая x)", db0, db1, dlo, dhi, color.new(color.orange, 40))
+                    drew := true
+
     if not drew and n >= 3
-        int w1 = array.get(s, n - 3), w2 = array.get(s, n - 2), w3 = array.get(s, n - 1)
+        int w1 = array.get(s, n - 3), int w2 = array.get(s, n - 2), int w3 = array.get(s, n - 1)
         int startIdx = n >= 4 ? n - 4 : n - 3
         int b0 = array.get(eb, startIdx)
         int b1 = array.get(eb, n - 1)
@@ -393,7 +435,7 @@ matchFigure(array<int> s, array<int> eb, array<float> ep, color c) =>
             hi := math.max(hi, p)
             lo := math.min(lo, p)
         if w1 == 3 and w2 == 3 and w3 == 5
-            // Уровень 4: подтвердить Плоскую
+            // Уровень 4: подтвердить Плоскую (AKU-0017)
             int pi0 = startIdx
             [flatOK, flatMsg] = confirmFlat(ep, pi0)
             string nm = flatOK ? "Плоская ✅" : "Плоская? ❌ " + flatMsg

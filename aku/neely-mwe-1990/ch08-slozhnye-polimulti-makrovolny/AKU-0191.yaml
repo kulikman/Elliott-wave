@@ -1,0 +1,37 @@
+id: AKU-0191
+type: rule
+strength: mandatory
+status: draft
+topic: x-wave
+subtopics:
+- compaction
+- structural-series
+statement_ru: Все нестандартные фигуры с x-волнами после уплотнения (сжатия) сводятся
+  к базовой структуре ':3'. Уровень сложности x-волны обычно на один уровень ниже
+  самой сложной Стандартной фигуры в завершённой конфигурации.
+statement_en: null
+source:
+  book_id: neely-mwe-1990
+  page: 7-1
+  chapter: 'Глава 8: Формирование сложных поли-, мульти- и макроволн'
+  section: Процедура сжатия (уплотнения) волн
+  figure_id: null
+  verbatim_quote:
+    text: F. Все фигуры с х-волнами (немедленно после проведения процедуры их уплотнения)
+      могут быть сведены к тройке (":3").
+    language: ru
+formalization:
+  status: draft
+  applies_when: after confirming non-standard figure with x-wave
+  constraint: compact(non_standard_figure_with_x_wave) → ':3'
+  formalization_notes: Из Гл.7 стр.7-1 — все нестандартные → :3.
+aliases: []
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-03T13:31:38Z'
+review_notes: Извлечено Claude (PDF ч.2 Гл.8 стр.8-1..8-11, нестандартные серии с
+  x-волнами).
+requires_review: true

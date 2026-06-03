@@ -1,0 +1,39 @@
+id: AKU-0190
+type: pattern
+strength: mandatory
+status: draft
+topic: triple-zigzag
+subtopics:
+- x-wave
+- structural-series
+- combination
+statement_ru: 'Тройной Зигзаг: (5-3-5) ++ x:3 ++ (5-3-5) ++ x:3 ++ (5-3-5). Сжимается
+  в '':3''. Ключевое отличие от Импульса: Тройной Зигзаг вписывается в ПАРАЛЛЕЛЬНЫЕ
+  каналы; Импульс — нет (каналы расходятся). Рис.8-6.'
+statement_en: null
+source:
+  book_id: neely-mwe-1990
+  page: 8-3
+  chapter: 'Глава 8: Формирование сложных поли-, мульти- и макроволн'
+  section: Таблица А / Тройной Зигзаг
+  figure_id: null
+  verbatim_quote:
+    text: (5-3-5) + (x-волна) + (5-3-5) + (x-волна) + (5-3-5) = Тройной Зигзаг
+    language: ru
+formalization:
+  status: draft
+  applies_when: structural_series matches [zigzag, x, zigzag, x, zigzag]
+  constraint: series = [:3, x:3, :3, x:3, :3] ; compact → ':3' ; channel_lines MUST
+    be parallel (not diverging)
+  formalization_notes: 'Рис.8-6: параллельные каналы — главный признак; Импульс имеет
+    расходящиеся/сходящиеся каналы.'
+aliases: []
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-03T13:31:38Z'
+review_notes: Извлечено Claude (PDF ч.2 Гл.8 стр.8-1..8-11, нестандартные серии с
+  x-волнами).
+requires_review: true
