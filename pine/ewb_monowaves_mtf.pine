@@ -619,9 +619,12 @@ if showFig and rc.ruleNo > 0
 
 // ──────────────────── СТАРШИЙ ТАЙМФРЕЙМ (MTF) ────────────────────
 // Запрашиваем OHLC старшего ТФ; детектор шагает только при закрытии HTF-бара.
-[hHigh, hLow, hClose, hTime, hAtr] = request.security(syminfo.tickerid, htf,
-     [high, low, close, time, ta.atr(atrLen)],
-     lookahead = barmerge.lookahead_off)
+// Pine v6: tuple в request.security не поддерживается — отдельный запрос на каждое значение.
+float hHigh  = request.security(syminfo.tickerid, htf, high,          lookahead = barmerge.lookahead_off)
+float hLow   = request.security(syminfo.tickerid, htf, low,           lookahead = barmerge.lookahead_off)
+float hClose = request.security(syminfo.tickerid, htf, close,         lookahead = barmerge.lookahead_off)
+int   hTime  = request.security(syminfo.tickerid, htf, time,          lookahead = barmerge.lookahead_off)
+float hAtr   = request.security(syminfo.tickerid, htf, ta.atr(atrLen), lookahead = barmerge.lookahead_off)
 
 revH = useATR ? hAtr * atrMult : hClose * pctRev / 100.0
 
