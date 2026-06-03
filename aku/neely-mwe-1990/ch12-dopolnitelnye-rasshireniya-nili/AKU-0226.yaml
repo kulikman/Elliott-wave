@@ -1,7 +1,7 @@
 id: AKU-0226
 type: rule
 strength: mandatory
-status: draft
+status: verified
 topic: channeling
 subtopics:
 - ending-diagonal
@@ -38,4 +38,4 @@ supersedes_aku: null
 created_by: claude
 created_at: '2026-06-03T14:01:58Z'
 review_notes: Извлечено Claude (PDF ч.3 Гл.12 стр.12-1..12-11, Каналы).
-requires_review: true
+requires_review: false

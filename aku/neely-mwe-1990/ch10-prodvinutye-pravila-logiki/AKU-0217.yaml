@@ -1,7 +1,7 @@
 id: AKU-0217
 type: rule
 strength: mandatory
-status: draft
+status: verified
 topic: post-pattern-logic
 subtopics:
 - energy-rating
@@ -38,4 +38,4 @@ supersedes_aku: null
 created_by: claude
 created_at: '2026-06-03T13:55:44Z'
 review_notes: Извлечено Claude (PDF ч.3 Гл.10 стр.10-2..10-10, Гл.11 стр.11-4).
-requires_review: true
+requires_review: false

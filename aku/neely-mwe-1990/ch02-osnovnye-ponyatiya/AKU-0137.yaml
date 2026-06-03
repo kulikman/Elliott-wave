@@ -1,7 +1,7 @@
 id: AKU-0137
 type: definition
 strength: mandatory
-status: draft
+status: verified
 topic: wave-identification
 subtopics:
 - structural-labels

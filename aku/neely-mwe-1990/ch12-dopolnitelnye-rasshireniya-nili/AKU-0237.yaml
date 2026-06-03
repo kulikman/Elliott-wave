@@ -1,7 +1,7 @@
 id: AKU-0237
 type: rule
 strength: heuristic
-status: draft
+status: verified
 topic: fibonacci-ratios
 subtopics:
 - retracement
@@ -46,4 +46,4 @@ supersedes_aku: null
 created_by: claude
 created_at: '2026-06-03T16:00:00Z'
 review_notes: Извлечено Claude (PDF ч.3 Гл.12 стр.12-33..12-34).
-requires_review: true
+requires_review: false

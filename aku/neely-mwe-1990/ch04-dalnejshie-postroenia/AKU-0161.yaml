@@ -1,7 +1,7 @@
 id: AKU-0161
 type: pattern
 strength: mandatory
-status: draft
+status: verified
 topic: flat
 subtopics:
 - structural-series
@@ -32,4 +32,4 @@ created_by: claude
 created_at: '2026-06-02T18:54:01Z'
 review_notes: Извлечено Claude через прямое чтение PDF (Гл.4, группировка/Структурные
   Серии). Полный текст — ch04-grouping.md.
-requires_review: true
+requires_review: false

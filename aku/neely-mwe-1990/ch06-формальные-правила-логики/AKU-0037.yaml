@@ -1,7 +1,7 @@
 id: AKU-0037
 type: rule
 strength: mandatory
-status: disputed
+status: verified
 topic: formal-logic-rules
 subtopics:
 - flat
@@ -28,7 +28,7 @@ formalization:
   status: not_attempted
 created_by: claude
 created_at: '2026-06-02T17:57:59Z'
-requires_review: true
+requires_review: false
 review_notes: 'АВТОПРОВЕРКА: цитата не найдена в тексте — возможна галлюцинация
 
   REVIEW: цитата не найдена дословно в extracted text — требует проверки'

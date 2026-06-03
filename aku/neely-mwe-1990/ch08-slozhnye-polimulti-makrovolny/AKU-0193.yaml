@@ -1,7 +1,7 @@
 id: AKU-0193
 type: pattern
 strength: mandatory
-status: draft
+status: verified
 topic: combination
 subtopics:
 - x-wave
@@ -33,4 +33,4 @@ supersedes_aku: null
 created_by: claude
 created_at: '2026-06-03T13:36:11Z'
 review_notes: Извлечено Claude (PDF ч.2 Гл.8 стр.8-11..8-17, Таблица B + мультиволны).
-requires_review: true
+requires_review: false

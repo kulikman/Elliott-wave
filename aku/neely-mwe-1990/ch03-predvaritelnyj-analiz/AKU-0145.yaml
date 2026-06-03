@@ -1,7 +1,7 @@
 id: AKU-0145
 type: rule
 strength: mandatory
-status: draft
+status: verified
 topic: length-ratio-rules
 subtopics:
 - fibonacci-ratios
@@ -36,4 +36,4 @@ created_by: claude
 created_at: '2026-06-02T18:48:06Z'
 review_notes: Извлечено Claude через прямое чтение PDF (Гл.3, Неформальные правила
   логики). Полный текст — ch03-informal-logic.md.
-requires_review: true
+requires_review: false

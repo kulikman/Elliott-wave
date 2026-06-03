@@ -1,7 +1,7 @@
 id: AKU-0244
 type: rule
 strength: mandatory
-status: draft
+status: verified
 topic: flat
 subtopics:
 - retracement
@@ -46,4 +46,4 @@ supersedes_aku: null
 created_by: claude
 created_at: '2026-06-03T17:00:00Z'
 review_notes: Извлечено Claude (PDF ч.3 Гл.11 стр.11-15..11-16).
-requires_review: true
+requires_review: false

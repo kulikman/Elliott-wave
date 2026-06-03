@@ -1,7 +1,7 @@
 id: AKU-0176
 type: rule
 strength: mandatory
-status: draft
+status: verified
 topic: position-indicators
 subtopics:
 - structural-labels
@@ -39,4 +39,4 @@ created_by: claude
 created_at: '2026-06-03T12:15:47Z'
 review_notes: Извлечено Claude через прямое чтение PDF (Гл.3, Индикаторы положения).
   Полный текст — ch03-position-indicators.md.
-requires_review: true
+requires_review: false

@@ -1,7 +1,7 @@
 id: AKU-0141
 type: rule
 strength: mandatory
-status: draft
+status: verified
 topic: length-ratio-rules
 subtopics:
 - monowave
@@ -40,4 +40,4 @@ created_by: claude
 created_at: '2026-06-02T18:42:47Z'
 review_notes: Извлечено Claude через прямое чтение PDF (Гл.3, Правила соотношений
   длин). Полная таблица условий — в ch03-length-ratio-rules.md.
-requires_review: true
+requires_review: false

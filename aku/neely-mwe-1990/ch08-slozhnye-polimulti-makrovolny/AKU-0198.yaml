@@ -1,7 +1,7 @@
 id: AKU-0198
 type: rule
 strength: mandatory
-status: draft
+status: verified
 topic: rule-of-alternation
 subtopics:
 - impulse
@@ -39,4 +39,4 @@ created_by: claude
 created_at: '2026-06-03T13:44:32Z'
 review_notes: Извлечено Claude (PDF ч.2 Гл.8 стр.8-19..8-30, чередование/растяжение/начальная
   точка).
-requires_review: true
+requires_review: false

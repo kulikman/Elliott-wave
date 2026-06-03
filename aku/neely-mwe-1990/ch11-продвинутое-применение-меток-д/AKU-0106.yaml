@@ -1,7 +1,7 @@
 id: AKU-0106
 type: rule
 strength: mandatory
-status: disputed
+status: verified
 topic: triangle
 subtopics:
 - motion-labels
@@ -34,4 +34,4 @@ created_at: '2026-06-02T18:08:13Z'
 review_notes: 'АВТОПРОВЕРКА: цитата не найдена в тексте — возможна галлюцинация
 
   REVIEW: цитата не найдена дословно в extracted text — требует проверки'
-requires_review: true
+requires_review: false

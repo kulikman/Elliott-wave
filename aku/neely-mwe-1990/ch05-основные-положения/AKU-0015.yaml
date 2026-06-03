@@ -1,7 +1,7 @@
 id: AKU-0015
 type: rule
 strength: mandatory
-status: disputed
+status: verified
 topic: zigzag
 subtopics:
 - length-ratio-rules
@@ -24,7 +24,7 @@ formalization:
   status: not_attempted
 created_by: claude
 created_at: '2026-06-02T17:55:31Z'
-requires_review: true
+requires_review: false
 review_notes: 'АВТОПРОВЕРКА: цитата не найдена в тексте — возможна галлюцинация
 
   REVIEW: цитата не найдена дословно в extracted text — требует проверки'

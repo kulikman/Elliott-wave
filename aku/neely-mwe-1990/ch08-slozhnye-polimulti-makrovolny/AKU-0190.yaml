@@ -1,7 +1,7 @@
 id: AKU-0190
 type: pattern
 strength: mandatory
-status: draft
+status: verified
 topic: triple-zigzag
 subtopics:
 - x-wave
@@ -36,4 +36,4 @@ created_by: claude
 created_at: '2026-06-03T13:31:38Z'
 review_notes: Извлечено Claude (PDF ч.2 Гл.8 стр.8-1..8-11, нестандартные серии с
   x-волнами).
-requires_review: true
+requires_review: false
