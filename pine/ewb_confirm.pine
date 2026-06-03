@@ -9,7 +9,7 @@
 // Правила реализованы строго по constraint из spec_v2.0.json.
 // Каждая функция имеет трассировку к AKU.
 // =============================================================================
-indicator("EWB — Pattern Confirmation (Level 4)", "EWB Confirm",
+indicator("EWB — Pattern Confirmation (Level 4)", "EWB Conf",
      overlay = true, max_labels_count = 500, max_lines_count = 300)
 
 // ─────────────────────── ВХОДНЫЕ ДАННЫЕ ─────────────────────────
@@ -188,36 +188,31 @@ if barstate.islast
         [r5ok, r5msg] = checkImpAlternation(w2, w4)
         [r6ok, r6msg] = checkImpW3Extension(w1, w3)
         [r7ok, r7msg] = checkImpW2W4NoOverlap(px1, px2, px3, px4)
-        [r8ok, r8msg] = checkImpW5Length(w4, w3)  // w3 как прокси W5 (5-пивот = W3 в схеме)
-
-        for [ok, msg] in array.from([r1ok,r2ok,r3ok,r4ok,r5ok,r6ok,r7ok,r8ok])
-            array.push(passed, ok)
-        for msg in array.from([r1msg,r2msg,r3msg,r4msg,r5msg,r6msg,r7msg,r8msg])
-            array.push(results, msg)
+        [r8ok, r8msg] = checkImpW5Length(w4, w3)
+        array.push(passed, r1ok), array.push(passed, r2ok), array.push(passed, r3ok)
+        array.push(passed, r4ok), array.push(passed, r5ok), array.push(passed, r6ok)
+        array.push(passed, r7ok), array.push(passed, r8ok)
+        array.push(results, r1msg), array.push(results, r2msg), array.push(results, r3msg)
+        array.push(results, r4msg), array.push(results, r5msg), array.push(results, r6msg)
+        array.push(results, r7msg), array.push(results, r8msg)
 
     else if figType == "zigzag"
         [r1ok, r1msg] = checkZZBLength(w1, w2)
         [r2ok, r2msg] = checkZZCLength(w1, w3)
-        for [ok, msg] in array.from([r1ok, r2ok])
-            array.push(passed, ok)
-        for msg in array.from([r1msg, r2msg])
-            array.push(results, msg)
+        array.push(passed, r1ok), array.push(passed, r2ok)
+        array.push(results, r1msg), array.push(results, r2msg)
 
     else if figType == "flat"
         [r1ok, r1msg] = checkFlatBRetrace(w1, w2)
         [r2ok, r2msg] = checkFlatCEqualA(w1, w3)
-        for [ok, msg] in array.from([r1ok, r2ok])
-            array.push(passed, ok)
-        for msg in array.from([r1msg, r2msg])
-            array.push(results, msg)
+        array.push(passed, r1ok), array.push(passed, r2ok)
+        array.push(results, r1msg), array.push(results, r2msg)
 
     else if figType == "triangle"
         [r1ok, r1msg] = checkTriangleConverge(w1, w2, w3, w4)
         [r2ok, r2msg] = checkTriangleAllThrees()
-        for [ok, msg] in array.from([r1ok, r2ok])
-            array.push(passed, ok)
-        for msg in array.from([r1msg, r2msg])
-            array.push(results, msg)
+        array.push(passed, r1ok), array.push(passed, r2ok)
+        array.push(results, r1msg), array.push(results, r2msg)
 
     // Подсчёт
     for ok in passed
@@ -239,8 +234,11 @@ if showLines and barstate.islast
     line.new(lastBar - p1bar, px3, lastBar - p0bar, px4, xloc = xloc.bar_index,
          color = color.new(color.gray, 30), width = 1, style = line.style_dotted)
     // Точки пивотов
-    for [i, off] in array.from([p4bar, p3bar, p2bar, p1bar, p0bar])
-        float px = array.get(array.from(px0, px1, px2, px3, px4), i)
+    int[]   offsets = array.from(p4bar, p3bar, p2bar, p1bar, p0bar)
+    float[] prices  = array.from(px0,   px1,   px2,   px3,   px4)
+    for i = 0 to 4
+        int   off = array.get(offsets, i)
+        float px  = array.get(prices,  i)
         label.new(lastBar - off, px, str.tostring(i),
              xloc = xloc.bar_index, yloc = yloc.price,
              style = label.style_circle,
