@@ -1,0 +1,39 @@
+id: AKU-0130
+type: rule
+strength: mandatory
+status: verified
+topic: impulse
+subtopics:
+- impulse-extension
+statement_ru: 'Импульсная фигура обязательно должна содержать Растянутую волну. Если
+  снижающиеся (коррективные) волны слишком схожи по цене и времени, что оставляет
+  рынок без Растянутой волны, фигура не может быть Импульсной.
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: 12-52
+  chapter: Глава 12
+  section: Дополнительные расширения Нили — Двойной и Тройной Зигзаги
+  figure_id: 12-52А
+  verbatim_quote:
+    text: 'Снижающиеся волны слишком схожи по цене и времени, что оставляет рынок
+      без Растянутой волны, которая необходима для Импульсной активности.
+
+      '
+    language: ru
+formalization:
+  status: draft
+  applies_when: pattern == 'impulse'
+  constraint: has_extended_wave(impulse) == true
+  formalization_notes: Импульс обязан содержать Растянутую волну.
+aliases:
+- обязательность растяжения в импульсе
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-02T18:10:31Z'
+review_notes: Слово 'необходима' указывает на mandatory характер.
+requires_review: false

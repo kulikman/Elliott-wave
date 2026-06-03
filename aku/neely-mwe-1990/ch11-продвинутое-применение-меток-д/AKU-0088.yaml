@@ -1,0 +1,38 @@
+id: AKU-0088
+type: rule
+strength: mandatory
+status: verified
+topic: motion-labels
+subtopics:
+- flat
+statement_ru: 'В Обыкновенной Плоской фигуре волна-b не должна быть более 100% волны-а,
+  но должна откатываться как минимум на 81% волны-а, и волна-с должна откатываться
+  на всю величину волны-b. Волна-с должна быть Импульсной.
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: doc-ch11
+  chapter: 'Глава 11: Продвинутое применение Меток движения'
+  section: Обыкновенная Плоская
+  figure_id: null
+  verbatim_quote:
+    text: Волна-Ь не должна быть более 100% волны-а, но должна откатываться как минимум
+      на 81% волны-а, и волна-с должна откатываться на всю величину волны-Ь.
+    language: ru
+formalization:
+  status: draft
+  applies_when: pattern == 'flat' AND subtype == 'common'
+  constraint: 0.81 * length(wave_a) <= length(wave_b) <= 1.00 * length(wave_a) AND
+    length(wave_c) >= length(wave_b) AND structure(wave_c) == ':5'
+  formalization_notes: null
+aliases:
+- правила обыкновенной плоской
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-02T18:06:56Z'
+review_notes: null
+requires_review: false

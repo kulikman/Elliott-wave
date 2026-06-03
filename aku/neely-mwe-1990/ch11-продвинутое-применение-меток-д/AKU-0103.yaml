@@ -1,0 +1,38 @@
+id: AKU-0103
+type: rule
+strength: mandatory
+status: disputed
+topic: triangle
+subtopics:
+- motion-labels
+statement_ru: 'В Расширяющемся Ограничивающем Треугольнике только волне-b или волне-d
+  может «не удаться» превысить конец предыдущей волны. Другие волны не могут быть
+  «неудавшимися».
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: 11-31
+  chapter: Глава 11
+  section: Продвинутое применение Меток движения — Расширяющиеся Треугольники — Ограничивающие
+  figure_id: null
+  verbatim_quote:
+    text: 'Только волне-Ь или волне-d может «Не удаться» превысить конец предыдущей
+      волны.
+
+      '
+    language: ru
+formalization:
+  status: not_attempted
+aliases:
+- правило неудавшихся волн расширяющегося треугольника
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-02T18:08:13Z'
+review_notes: 'АВТОПРОВЕРКА: цитата не найдена в тексте — возможна галлюцинация
+
+  REVIEW: цитата не найдена дословно в extracted text — требует проверки'
+requires_review: true

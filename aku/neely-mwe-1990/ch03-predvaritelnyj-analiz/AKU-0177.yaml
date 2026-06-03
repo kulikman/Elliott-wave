@@ -1,0 +1,42 @@
+id: AKU-0177
+type: rule
+strength: mandatory
+status: draft
+topic: position-indicators
+subtopics:
+- structural-labels
+- ending-diagonal
+- triangle
+statement_ru: ':L3 (последняя тройка, Last 3) — последняя из пяти последовательных
+  троек, образующих Терминал или Треугольник. Различение: применить Основные Правила
+  построения Импульса (Гл.5, стр.5-2) — если выполняются, это Терминальный Импульс;
+  если нет — Треугольник.'
+statement_en: null
+source:
+  book_id: neely-mwe-1990
+  page: 3-63
+  chapter: 'Глава 3: Предварительный анализ'
+  section: Определения Индикаторов положения / :L3
+  figure_id: null
+  verbatim_quote:
+    text: Равно как и ":sL3", ":L3" должна быть последней из пяти последовательных
+      "троек". Определить тип формирующейся волны (Терминал или Треугольник) вам помогут
+      Правила графических построений основных импульсов ... если ... правила ... выполняются,
+      образуется Терминальный Импульс, если нет – формируется Треугольник.
+    language: ru
+formalization:
+  status: draft
+  applies_when: assigning :L3 as last of five :3
+  constraint: 'position(:L3) == last_of_5_threes ; figure = essential_impulse_rules_hold
+    ? ''terminal'' : ''triangle'''
+  formalization_notes: null
+aliases: []
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-03T12:15:47Z'
+review_notes: Извлечено Claude через прямое чтение PDF (Гл.3, Индикаторы положения).
+  Полный текст — ch03-position-indicators.md.
+requires_review: true

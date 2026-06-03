@@ -1,0 +1,40 @@
+id: AKU-0156
+type: rule
+strength: mandatory
+status: draft
+topic: structural-labels
+subtopics:
+- wave-identification
+- compaction
+statement_ru: Если компактная ценовая фигура пересекает свой собственный начальный
+  уровень до завершения, её базовая Структура коррективна (:3) — вне зависимости от
+  рекомендаций Неформальных правил логики.
+statement_en: null
+source:
+  book_id: neely-mwe-1990
+  page: 3-68
+  chapter: 'Глава 3: Предварительный анализ'
+  section: Особые условия
+  figure_id: null
+  verbatim_quote:
+    text: Если в процессе сведения ряда Структурных обозначений к одному символу обнаружена
+      активность компактной ценовой фигуры, начальный уровень которой пересекается
+      до ее завершения ... то базовая Структура такой компактной ценовой фигуры является
+      коррективной по своему характеру («:3»), вне зависимости от рекомендаций Неформальных
+      правил логики.
+    language: ru
+formalization:
+  status: draft
+  applies_when: compact figure crosses its own start_level before completion
+  constraint: base_structure(figure) == ':3'
+  formalization_notes: Жёсткое правило, переопределяет Неформальные правила логики.
+aliases: []
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-02T18:50:02Z'
+review_notes: 'Извлечено Claude через прямое чтение PDF (Гл.3, 3-60..3-69: выделение
+  фигур, особые условия).'
+requires_review: true

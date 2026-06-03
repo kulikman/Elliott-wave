@@ -1,0 +1,42 @@
+id: AKU-0072
+type: rule
+strength: mandatory
+status: verified
+topic: post-pattern-logic
+subtopics:
+- triangle
+- combination
+statement_ru: 'Если Неограничивающий Расширяющийся Треугольник является последней
+  фазой Сложной Коррекции, следующая за ним волна должна откатиться полностью до его
+  исходного уровня.
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: doc-ch10
+  chapter: Глава 10
+  section: Продвинутые Правила логики
+  figure_id: null
+  verbatim_quote:
+    text: 'Если же Неограничивающий Расширяющийся Треугольник - последняя фаза Сложной
+      Коррекции, что маловероятно, то следующая за ним волна должна откатиться полностью
+      до его исходного уровня.
+
+      '
+    language: ru
+formalization:
+  status: draft
+  applies_when: pattern == 'nonlimiting_expanding_triangle' AND is_last_phase(complex_correction)
+    AND position == 'post_pattern'
+  constraint: reaches(next_wave, start_level(triangle))
+  formalization_notes: null
+aliases:
+- полный откат после неограничивающего расширяющегося треугольника
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-02T18:05:11Z'
+review_notes: null
+requires_review: false

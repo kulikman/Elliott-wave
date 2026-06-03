@@ -1,0 +1,42 @@
+id: AKU-0111
+type: rule
+strength: mandatory
+status: verified
+topic: channeling
+subtopics:
+- flat
+- wave-identification
+statement_ru: 'Построение линии тренда 0-B через волну-е Треугольника (когда волна-b
+  является Треугольником) недопустимо, если это приведёт к её пробитию волной-с. Линию
+  тренда следует проводить через волну-с Треугольника, а не волну-е.
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: 12-5
+  chapter: 'Глава 12: Дополнительные расширения Нили'
+  section: Каналы - Волна-b
+  figure_id: null
+  verbatim_quote:
+    text: 'линия тренда "О-В" фактически проведена через волну-с Треугольника, а не
+      волну-е. Построение линии тренда по волне-е привело бы к ее пробитию волной-с,
+      что недопустимо.
+
+      '
+    language: ru
+formalization:
+  status: draft
+  applies_when: position == 'wave_b' AND type(wave_b) == 'triangle'
+  constraint: trendline(0, B) drawn_through end(wave_c) NOT end(wave_e)
+  formalization_notes: Линию 0-B вести через волну-c Треугольника, если через волну-e
+    её пробьёт волна-c.
+aliases:
+- правило линии тренда 0-B при треугольной волне-b
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-02T18:09:09Z'
+review_notes: null
+requires_review: false

@@ -1,0 +1,40 @@
+id: AKU-0112
+type: rule
+strength: mandatory
+status: verified
+topic: channeling
+subtopics:
+- flat
+- triangle
+statement_ru: 'Волна-е при Треугольной волне-b не должна превышать концевую волну-с
+  Треугольника, даже при «ложном» пробитии линии тренда 0-B. «Ложное» пробитие должно
+  быть очень краткосрочным (относительно).
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: 12-6
+  chapter: 'Глава 12: Дополнительные расширения Нили'
+  section: Каналы - Волна-b
+  figure_id: null
+  verbatim_quote:
+    text: 'Это "ложное" пробитые должно быть очень краткосрочным (относительно), и
+      волна-е не должна превышать концевую волну-с Треугольника.
+
+      '
+    language: ru
+formalization:
+  status: draft
+  applies_when: position == 'wave_b' AND type(wave_b) == 'triangle'
+  constraint: not exceeds(end(wave_e), end(wave_c))
+  formalization_notes: '''Ложное'' пробитие линии 0-B допустимо только очень кратко.'
+aliases:
+- правило ложного пробития при треугольной b-волне
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-02T18:09:09Z'
+review_notes: null
+requires_review: false

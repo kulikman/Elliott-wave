@@ -1,0 +1,46 @@
+id: AKU-0050
+type: rule
+strength: mandatory
+status: verified
+topic: compaction
+subtopics:
+- polywave
+- retracement
+statement_ru: 'Если длина волны-2 слишком велика по сравнению с длиной волны-1, то
+  волна-2 должна сегментировать, чтобы её волна-с не выходила за конечный уровень
+  её волны-а; в противном случае большая волна начаться не сможет.
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: 8-24
+  chapter: Глава 8
+  section: Формирование сложных поли-, мульти- и макроволн
+  figure_id: 8-24a
+  verbatim_quote:
+    text: 'Это указывает, что волна-2 должна сегментировать, чтобы ее волна-с не выходила
+      за конечный уровень ее волны-а; в противном случае большая волна начаться не
+      сможет.
+
+      '
+    language: ru
+formalization:
+  status: draft
+  applies_when: pattern == 'impulse' AND length(wave_2) large_relative_to length(wave_1)
+  constraint: is_subdivided(wave_2) AND not exceeds(end(wave_2.c), end(wave_2.a))
+  formalization_notes: '''Слишком велика'' связано с правилом волны-2 < 100% (AKU-0001);
+    порог уточняется.'
+aliases:
+- правило сегментации волны-2
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-02T18:02:56Z'
+review_notes: 'Правило содержит маркер "должна" и "не сможет", но контекст описывает
+  конкретную ситуацию (когда волна-2 слишком велика относительно волны-1), что делает
+  его условным обязательным правилом.
+
+  '
+requires_review: false

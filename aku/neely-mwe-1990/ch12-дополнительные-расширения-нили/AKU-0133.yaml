@@ -1,0 +1,42 @@
+id: AKU-0133
+type: rule
+strength: mandatory
+status: verified
+topic: double-zigzag
+subtopics:
+- retracement
+- flat
+statement_ru: 'Основная разница между двойной Плоской и двойным Зигзагом в том, что
+  волна-b в первом Зигзаге не будет откатываться от волны-а более 61.8%. Настоящие
+  2-е волны не должны завершаться в точке, представляющей откат волны-1 более чем
+  на 61.8%.
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: 12-51
+  chapter: Глава 12
+  section: Дополнительные расширения Нили — Двойной и Тройной Зигзаги
+  figure_id: null
+  verbatim_quote:
+    text: 'настоящие 2-e волны не должны завершаться в точке, представляющей откат
+      волны-1 более чем на 61.8%.
+
+      '
+    language: ru
+formalization:
+  status: draft
+  applies_when: pattern == 'double_zigzag'
+  constraint: retrace(wave_b of first_zigzag) <= 0.618 * length(wave_a)
+  formalization_notes: Отличие двойного Зигзага от двойной Плоской (цитата усечена).
+aliases:
+- предел отката волны-2 в импульсе
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-02T18:10:31Z'
+review_notes: Дублирует AKU-0127 по смыслу, но в другом контексте (двойной Зигзаг
+  vs двойная Плоская). Формулировка 'не должны' — mandatory.
+requires_review: false

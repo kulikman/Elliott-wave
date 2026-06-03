@@ -1,0 +1,38 @@
+id: AKU-0104
+type: rule
+strength: mandatory
+status: disputed
+topic: triangle
+subtopics:
+- motion-labels
+statement_ru: 'В Расширяющемся Ограничивающем Горизонтальном Треугольнике волна-а
+  является наименьшим сегментом Треугольника, каждая последующая волна немного крупнее
+  предыдущей, поэтому «неудавшихся» волн нет.
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: 11-31
+  chapter: Глава 11
+  section: Продвинутое применение Меток движения — Расширяющиеся Треугольники — Горизонтальные
+  figure_id: null
+  verbatim_quote:
+    text: 'Волна-а - наименьший сегмент Треугольника. Каждая волна после волны-а немного
+      крупнее предыдущей, поэтому «неудавшихся» нет.
+
+      '
+    language: ru
+formalization:
+  status: not_attempted
+aliases:
+- правило горизонтального расширяющегося треугольника
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-02T18:08:13Z'
+review_notes: 'АВТОПРОВЕРКА: цитата не найдена в тексте — возможна галлюцинация
+
+  REVIEW: цитата не найдена дословно в extracted text — требует проверки'
+requires_review: true

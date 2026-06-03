@@ -1,0 +1,43 @@
+id: AKU-0054
+type: rule
+strength: mandatory
+status: verified
+topic: impulse
+subtopics:
+- channeling
+- ending-diagonal
+statement_ru: 'Никакая часть третьей волны Импульса никогда не должна пробивать линию
+  тренда 2-4. Если пятая волна пересекает линию тренда 2-4, значит, формируется Терминальная
+  Импульсная фигура.
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: 9-5
+  chapter: 'Глава 9: Основные Расширения Нили'
+  section: Перечень исключений, Пункт 2
+  figure_id: null
+  verbatim_quote:
+    text: 'Никакая часть третьей волны Импульса никогда не должна пробивать линию
+      тренда 2-4, а какая-либо часть его пятой волны пересекает эту линию крайне редко.
+      Если пятая волна пересекает линию тренда 2-4, значит, формируется Терминальная
+      Импульсная фигура
+
+      '
+    language: ru
+formalization:
+  status: draft
+  applies_when: pattern == 'impulse'
+  constraint: not breaks(wave_3, trendline(end(2), end(4)))
+  formalization_notes: Если breaks(wave_5, trendline(2,4)) → фигура Терминальная.
+aliases:
+- правило линии тренда 2-4
+- 2-4 trendline rule
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-02T18:03:43Z'
+review_notes: null
+requires_review: false

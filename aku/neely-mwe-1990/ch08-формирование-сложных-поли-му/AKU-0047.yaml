@@ -1,0 +1,41 @@
+id: AKU-0047
+type: rule
+strength: mandatory
+status: verified
+topic: x-wave
+subtopics:
+- complexity-rule
+statement_ru: 'Уровень сложности x-волны должен как минимум совпадать с уровнем непосредственно
+  ей предшествующей c-волны и не должен превышать уровень самой сложной Стандартной
+  фигуры в завершенной конфигурации.
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: doc-ch8
+  chapter: 'Глава 8: Формирование сложных поли-, мульти- и макроволн'
+  section: Сложная Коррекция c малой x-волной
+  figure_id: Рис. 8-3
+  verbatim_quote:
+    text: 'Уровень сложности x-волны должен кaк минимум совпадать c уровнем непосредственно
+      ей предшествующей c-волны и не должен пpeвышать уровень самой сложной Стандартной
+      фигyры в завершенной конфигурации.
+
+      '
+    language: ru
+formalization:
+  status: draft
+  applies_when: pattern == 'x-wave'
+  constraint: complexity(x_wave) >= complexity(preceding_c_wave) AND complexity(x_wave)
+    <= max_complexity(standard_patterns_in_config)
+  formalization_notes: null
+aliases:
+- правило сложности x-волны
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-02T18:02:39Z'
+review_notes: null
+requires_review: false

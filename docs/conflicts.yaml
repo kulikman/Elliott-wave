@@ -1,0 +1,28 @@
+# ============================================================
+# CONFLICTS REGISTRY v1.0
+# Elliott Wave Brain
+# ============================================================
+# Реестр всех конфликтов между источниками.
+# Заполняется по мере обнаружения конфликтов.
+# Шаблон типов: A|B|C|D|E — см. schemas/conflict-policy.md
+# ============================================================
+
+registry_version: "1.0"
+last_updated: "2026-06-02"
+
+conflicts: []
+
+# Шаблон для добавления нового конфликта:
+#
+# - conflict_id: CONF-001
+#   type: C
+#   topic: wave-degree
+#   description: "Краткое описание конфликта"
+#   sources_involved: [neely-mwe-1990, williams-tc-1995]
+#   aku_involved: [AKU-XXXX, AKU-YYYY]
+#   resolution:
+#     status: resolved       # resolved | unresolved | deferred
+#     decision: neely-mwe-1990
+#     rationale: "Причина выбора"
+#     affects_indicator: true
+#   logged_at: 2026-06-02

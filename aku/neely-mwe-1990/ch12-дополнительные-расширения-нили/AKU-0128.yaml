@@ -1,0 +1,40 @@
+id: AKU-0128
+type: rule
+strength: mandatory
+status: verified
+topic: impulse
+subtopics:
+- impulse-extension
+statement_ru: 'В настоящей Импульсной фигуре предполагаемая «Растянутая третья» не
+  должна составлять лишь 161.8% или меньше от предполагаемой волны-1, за исключением
+  случая, когда растягивается волна-5.
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: 12-51
+  chapter: Глава 12
+  section: Дополнительные расширения Нили — Двойной и Тройной Зигзаги
+  figure_id: null
+  verbatim_quote:
+    text: 'B настоящей Импульсной фигуре такого происходить не должно, за исключением
+      случая, когда растягивается волна-5
+
+      '
+    language: ru
+formalization:
+  status: draft
+  applies_when: pattern == 'impulse' AND extended_wave == 3
+  constraint: length(wave_3) > 1.618 * length(wave_1)
+  formalization_notes: 'Исключение: когда растягивается волна-5.'
+aliases:
+- минимальная длина растянутой третьей
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-02T18:10:31Z'
+review_notes: Правило сформулировано как 'не должно происходить', что указывает на
+  mandatory. Однако точный порог (161.8%) может быть heuristic-ориентированным.
+requires_review: false

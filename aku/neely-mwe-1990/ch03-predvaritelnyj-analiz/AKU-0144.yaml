@@ -1,0 +1,38 @@
+id: AKU-0144
+type: rule
+strength: mandatory
+status: draft
+topic: length-ratio-rules
+subtopics:
+- monowave
+statement_ru: Соотношение m2/m1 = 61.8% (Правило 3) указывает непосредственно на границу
+  между Импульсами и Коррекциями — это наиболее трудный для определения структуры
+  m1 случай, требующий измерения m0/m1 для уточнения.
+statement_en: null
+source:
+  book_id: neely-mwe-1990
+  page: 3-25
+  chapter: 'Глава 3: Предварительный анализ'
+  section: Правила соотношений длин волн / Правило 3
+  figure_id: null
+  verbatim_quote:
+    text: При точном равенстве длины m2 61,8% длины m1 применяется Правило 3. В этом
+      случае структуру m1 труднее всего определить, так как соотношение 61,8% указывает
+      непосредственно на границу между Импульсами и Коррекциями.
+    language: ru
+formalization:
+  status: draft
+  applies_when: ratio(m2, m1) == 0.618
+  constraint: structure(m1) is ambiguous (boundary :3/:5) -> resolve via ratio(m0,
+    m1) condition
+  formalization_notes: null
+aliases: []
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-02T18:42:47Z'
+review_notes: Извлечено Claude через прямое чтение PDF (Гл.3, Правила соотношений
+  длин). Полная таблица условий — в ch03-length-ratio-rules.md.
+requires_review: true

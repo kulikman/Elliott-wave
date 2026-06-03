@@ -1,0 +1,34 @@
+id: AKU-0115
+type: rule
+strength: mandatory
+status: verified
+topic: channeling
+subtopics:
+- zigzag
+- x-wave
+statement_ru: 'Если канал Зигзага развивается с расширением (волна-с выходит за параллельную
+  линию), то волна, последующая сразу за этим Зигзагом, не должна откатиться до начального
+  уровня Зигзага. Если эта волна откатывается менее чем на 61.8%, её следует обозначить
+  x-волной, разделяющей две Стандартные Коррекции.
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: 12-14
+  chapter: 'Глава 12: Дополнительные расширения Нили'
+  section: Распознавание Коррекций с помощью каналов - Зигзаги
+  figure_id: null
+  verbatim_quote:
+    text: Если канал Зигзага развивается так, как на Диаграмме C, то волна, последующая
+      сразу за ним, не должна откатиться до начального уровня Зигзага. Если эта волна
+      откатывается от Зигзага менее чем на 61.8%, ее следует обозначить x-волной.
+      X-волна будет разделять две Стандартные Коррекции Элли
+created_at: '2026-06-02T18:09:09Z'
+created_by: claude
+requires_review: false
+formalization:
+  status: draft
+  applies_when: pattern == 'zigzag' AND wave_c beyond parallel_line AND position ==
+    'post_pattern'
+  constraint: not reaches(next_wave, start_level(zigzag))
+  formalization_notes: Если откат < 61.8% — доп. следствия (цитата усечена).

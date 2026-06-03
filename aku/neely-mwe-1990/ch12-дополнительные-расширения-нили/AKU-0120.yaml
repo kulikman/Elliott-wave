@@ -1,0 +1,31 @@
+id: AKU-0120
+type: rule
+strength: mandatory
+status: verified
+topic: zigzag
+subtopics:
+- fibonacci-ratios
+- length-ratio-rules
+statement_ru: 'Волна-с Зигзага Внутренне не должна быть меньше 61.8% волны-а. Если
+  она меньше, это вероятно связано с Треугольной b-волной, и данный Зигзаг вероятно
+  является стороной Треугольника или частью сложной коррекции, являющейся стороной
+  Треугольника.
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: 12-30
+  chapter: Глава 12
+  section: Дополнительные расширения Нили
+  figure_id: 12-30-B
+  verbatim_quote:
+    text: Волна-с Внутренне не должна быть меньше 61.8% волны-а.
+    language: ru
+formalization:
+  status: draft
+  applies_when: pattern == 'zigzag'
+  constraint: length(wave_c) >= 0.618 * length(wave_a)
+  formalization_notes: Если меньше — вероятно Треугольная b-волна / сторона Треугольника.
+created_by: claude
+created_at: '2026-06-02T18:09:46Z'
+requires_review: false

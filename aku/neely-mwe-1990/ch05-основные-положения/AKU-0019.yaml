@@ -1,0 +1,30 @@
+id: AKU-0019
+type: rule
+strength: mandatory
+status: verified
+topic: triangle
+subtopics:
+- structural-labels
+statement_ru: 'Каждый сегмент Треугольника является Полной Коррективной фазой (тройкой,
+  ":3").
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: 5-29
+  chapter: Chapter 5
+  section: Треугольники (3-3-3-3-3)
+  figure_id: null
+  verbatim_quote:
+    text: 'Каждый сегмент Треугольника - Полная Коррективная фаза (тройка, ":3")
+
+      '
+    language: ru
+formalization:
+  status: draft
+  applies_when: pattern == 'triangle'
+  constraint: 'for seg in [a,b,c,d,e]: structure(seg) == '':3'''
+  formalization_notes: null
+created_by: claude
+created_at: '2026-06-02T17:55:31Z'
+requires_review: false

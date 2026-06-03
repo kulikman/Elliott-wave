@@ -1,0 +1,41 @@
+id: AKU-0041
+type: rule
+strength: mandatory
+status: verified
+topic: impulse
+subtopics:
+- complexity-rule
+- rule-of-alternation
+statement_ru: 'Импульсные фигуры должны иметь четко регистрируемые расширения (растяжения),
+  и чередования должны происходить между второй и четвертой волной. Если два этих
+  правила не выполняются, значит, формируется не Импульсная волна.
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: doc-ch8
+  chapter: 'Глава 8: Формирование сложных поли-, мульти- и макроволн'
+  section: Сложная Коррекция c малой x-волной
+  figure_id: null
+  verbatim_quote:
+    text: 'Импульсные фигуры должны иметь четко регистрируемые расширения, и чередования
+      должны происходить между второй и четвертой волной. Если два этих правила не
+      выполняются, значит, формируется не Импульсная волна
+
+      '
+    language: ru
+formalization:
+  status: draft
+  applies_when: pattern == 'impulse'
+  constraint: has_extension(impulse) == true AND alternation(wave_2, wave_4) == true
+  formalization_notes: null
+aliases:
+- правило растяжения и чередования в импульсе
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-02T18:02:39Z'
+review_notes: null
+requires_review: false

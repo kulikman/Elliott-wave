@@ -1,0 +1,42 @@
+id: AKU-0176
+type: rule
+strength: mandatory
+status: draft
+topic: position-indicators
+subtopics:
+- structural-labels
+- ending-diagonal
+- triangle
+statement_ru: ':sL3 (предпоследняя тройка, second-to-Last 3) — обусловленное обозначение,
+  никогда не первый/последний сегмент, не существует без пары: за :sL3 ВСЕГДА следует
+  :L3. Указывает на формирование Терминала или Треугольника. Единственная допустимая
+  серия: c3-sL3-3-?.'
+statement_en: null
+source:
+  book_id: neely-mwe-1990
+  page: 3-63
+  chapter: 'Глава 3: Предварительный анализ'
+  section: Определения Индикаторов положения / :sL3
+  figure_id: null
+  verbatim_quote:
+    text: Это Структурное обозначение – аббревиатура выражения "предпоследняя тройка"
+      (second to Last three (3)). Волна с таким обозначением никогда не может быть
+      ни первым, ни последним сегментом ... За волной с обозначением ":sL3" всегда
+      следует волна с обозначением ":L3".
+    language: ru
+formalization:
+  status: draft
+  applies_when: assigning :sL3
+  constraint: 'position(:sL3) NOT IN {first, last} AND next(:sL3) == '':L3'' ; valid
+    series: c3-sL3-3-?'
+  formalization_notes: Указывает на Терминал/Треугольник.
+aliases: []
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-03T12:15:47Z'
+review_notes: Извлечено Claude через прямое чтение PDF (Гл.3, Индикаторы положения).
+  Полный текст — ch03-position-indicators.md.
+requires_review: true

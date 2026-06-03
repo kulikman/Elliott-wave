@@ -1,0 +1,38 @@
+id: AKU-0071
+type: rule
+strength: mandatory
+status: verified
+topic: post-pattern-logic
+subtopics:
+- triangle
+statement_ru: 'Единственный надежный постэффект Ограничивающего Расширяющегося Треугольника:
+  следующая за ним волна того же Порядка не должна достичь его начального уровня.
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: doc-ch10
+  chapter: Глава 10
+  section: Продвинутые Правила логики
+  figure_id: null
+  verbatim_quote:
+    text: 'Единственный надежный постэффект этой фигуры в том, что следующая за ней
+      волна (такого же Порядка) не должна достичь ее начального уровня.
+
+      '
+    language: ru
+formalization:
+  status: draft
+  applies_when: pattern == 'limiting_expanding_triangle' AND position == 'post_pattern'
+  constraint: not reaches(next_wave_same_degree, start_level(triangle))
+  formalization_notes: null
+aliases:
+- постэффект ограничивающего расширяющегося треугольника
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-02T18:05:11Z'
+review_notes: null
+requires_review: false

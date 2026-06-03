@@ -1,0 +1,77 @@
+id: AKU-0010
+type: rule
+strength: mandatory
+status: verified
+topic: ending-diagonal
+subtopics:
+- rule-of-overlap
+statement_ru: 'Ценовые проекции длин волн 2 и 4 Терминальных Импульсов должны частично
+  перекрываться. Это обязательное условие для Терминального Импульса.
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: 5-5
+  chapter: 'Глава 5: Основные положения'
+  section: Правило Перекрытия
+  figure_id: 5-5b
+  verbatim_quote:
+    text: ценовые проекции длин волн 2 и 4 Терминальных Импульсов должны частично
+      перекрываться
+    language: ru
+formalization:
+  status: draft
+  applies_when: '# Правило применяется к Терминальным Импульсам (Ending Diagonals)
+
+    pattern == ''terminal_impulse''  # aka ending_diagonal, structure 3-3-3-3-3
+
+    '
+  constraint: '# "Ценовые проекции длин волн 2 и 4" означают вертикальные (ценовые)
+    диапазоны,
+
+    # покрываемые волнами 2 и 4. Эти диапазоны должны частично перекрываться.
+
+
+    # Определяем ценовой диапазон волны 2
+
+    wave2_high = max(price_at_start(wave_2), price_at_end(wave_2))
+
+    wave2_low  = min(price_at_start(wave_2), price_at_end(wave_2))
+
+
+    # Определяем ценовой диапазон волны 4
+
+    wave4_high = max(price_at_start(wave_4), price_at_end(wave_4))
+
+    wave4_low  = min(price_at_start(wave_4), price_at_end(wave_4))
+
+
+    # Диапазоны должны частично перекрываться (overlap > 0)
+
+    overlap = min(wave2_high, wave4_high) - max(wave2_low, wave4_low)
+
+
+    overlap > 0  # MANDATORY: перекрытие должно существовать
+
+    '
+  formalization_notes: 'Это правило является зеркальным к AKU-0009 (запрет перекрытия
+    в трендовых импульсах).
+
+    Для терминальных импульсов перекрытие волн 2 и 4 — обязательное условие.
+
+    "Ценовые проекции длин" интерпретируются как вертикальные ценовые диапазоны
+
+    (от начала до конца волны по оси цены). "Частично перекрываться" означает,
+
+    что пересечение диапазонов должно быть ненулевым, но не обязательно полным.'
+aliases:
+- перекрытие в терминальном импульсе
+related_aku:
+- AKU-0009
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-02T17:54:51Z'
+review_notes: null
+requires_review: false

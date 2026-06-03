@@ -1,0 +1,40 @@
+id: AKU-0114
+type: rule
+strength: mandatory
+status: verified
+topic: channeling
+subtopics:
+- impulse-extension
+statement_ru: 'При Растянутой 3-й волне в Импульсной фигуре, независимо от того, какие
+  точки касания использованы для построения трендовых линий, эти линии всегда должны
+  быть параллельны или почти параллельны.
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: 12-10
+  chapter: 'Глава 12: Дополнительные расширения Нили'
+  section: Распознавание Импульсов с помощью каналов - Растяжение третьей волны
+  figure_id: null
+  verbatim_quote:
+    text: 'Независимо от того, какие точки касания использованы для построения трендовых
+      линий, эти линии всегда должны быть параллельны или почти параллельны
+
+      '
+    language: ru
+formalization:
+  status: draft
+  applies_when: pattern == 'impulse' AND extended_wave == 3
+  constraint: parallel(channel_lines) == true OR nearly_parallel(channel_lines) ==
+    true
+  formalization_notes: null
+aliases:
+- правило параллельности канала при растяжении 3-й волны
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-02T18:09:09Z'
+review_notes: null
+requires_review: false

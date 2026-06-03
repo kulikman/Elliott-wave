@@ -1,0 +1,42 @@
+id: AKU-0129
+type: rule
+strength: mandatory
+status: verified
+topic: impulse
+subtopics:
+- impulse-extension
+- wave-identification
+statement_ru: 'Нечётные сегменты (волны 3 и 5) Импульсной волны не могут представлять
+  собой Зигзаги вместо Импульсов. Такой тип развития нечётных сегментов Импульсной
+  волны невозможен, если только рынок не формирует Терминальную (конечный диагональный
+  треугольник) фигуру.
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: 12-53
+  chapter: Глава 12
+  section: Дополнительные расширения Нили — Двойной и Тройной Зигзаги
+  figure_id: 12-53
+  verbatim_quote:
+    text: 'волны 3 и 5 явным образом представляют собой Зигзаги, а не Импульсы. Такой
+      тип развития нечетных сегментов Импульсной волны невозможен, если только рынок
+      не формирует Терминальную фигуру.
+
+      '
+    language: ru
+formalization:
+  status: draft
+  applies_when: pattern == 'impulse' AND subtype != 'terminal'
+  constraint: structure(wave_3) != 'zigzag' AND structure(wave_5) != 'zigzag'
+  formalization_notes: null
+aliases:
+- нечётные волны импульса должны быть импульсами
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-02T18:10:31Z'
+review_notes: null
+requires_review: false

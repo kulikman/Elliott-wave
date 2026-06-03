@@ -1,0 +1,39 @@
+id: AKU-0145
+type: rule
+strength: mandatory
+status: draft
+topic: length-ratio-rules
+subtopics:
+- fibonacci-ratios
+statement_ru: 'Для всех соотношений Фибоначчи (61.8%, 161.8% и т.д.) допускается отклонение
+  ±4%: соотношение «61.8% длины другой волны» означает фактический диапазон 58–66%.
+  Выражения «почти»/«близко к» означают в пределах 10%.'
+statement_en: null
+source:
+  book_id: neely-mwe-1990
+  page: 3-34
+  chapter: 'Глава 3: Предварительный анализ'
+  section: Неформальные Правила логики / Конвенции измерений
+  figure_id: null
+  verbatim_quote:
+    text: Для всех упомянутых в тексте процентных соотношений Фибоначчи (61,8% 161,8,%
+      и т. д.) допускаются четырехпроцентные отклонения в обе стороны. Если говорится,
+      что длина одной волны составляет 61,8% длины другой, имеется в виду, что фактически
+      она должна находиться в диапазоне 58—66%. ... выражения «почти» и «близко к...»
+      ... должны пониматься как «в пределах 10% от упомянутого значения».
+    language: ru
+formalization:
+  status: draft
+  applies_when: comparing wave ratio to a Fibonacci value F
+  constraint: match(ratio, F) := abs(ratio - F) <= 0.04 * F ; 'almost' := within 10%
+  formalization_notes: ±4% на Фибоначчи; ±10% для «почти/близко».
+aliases: []
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-02T18:48:06Z'
+review_notes: Извлечено Claude через прямое чтение PDF (Гл.3, Неформальные правила
+  логики). Полный текст — ch03-informal-logic.md.
+requires_review: true

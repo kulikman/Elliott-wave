@@ -1,0 +1,39 @@
+id: AKU-0147
+type: definition
+strength: mandatory
+status: draft
+topic: structural-labels
+subtopics:
+- informal-logic-rules
+statement_ru: 'В Структурных списках семантика скобок: обозначение без скобок — обычная
+  вероятность; в круглых скобках ( ) — вероятность невысока; в квадратных скобках
+  [ ] — крайне низкая вероятность реализации этого структурного обозначения.'
+statement_en: null
+source:
+  book_id: neely-mwe-1990
+  page: 3-32
+  chapter: 'Глава 3: Предварительный анализ'
+  section: Неформальные Правила логики
+  figure_id: null
+  verbatim_quote:
+    text: Квадратные скобки указывают на крайне низкую вероятность возможности реализации
+      предположения о заключенном в них Структурном обозначении, а круглые скобки
+      означают, что вероятность эта невысока – ниже вероятности того, что верными
+      окажутся гипотезы для свободных от скобок Структурных обозначений.
+    language: ru
+formalization:
+  status: not_formalizable
+  applies_when: null
+  constraint: null
+  formalization_notes: 'Семантика приоритета структурных гипотез: () < без скобок;
+    [] << всё.'
+aliases: []
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-02T18:48:06Z'
+review_notes: Извлечено Claude через прямое чтение PDF (Гл.3, Неформальные правила
+  логики). Полный текст — ch03-informal-logic.md.
+requires_review: true

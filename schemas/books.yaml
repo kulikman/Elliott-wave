@@ -1,0 +1,118 @@
+# ============================================================
+# BOOK REGISTRY v1.0
+# Elliott Wave Brain
+# ============================================================
+#
+# Все источники знаний. Каждый book_id уникален и неизменяем.
+# Менять book_id запрещено — это ломает все AKU ссылающиеся на него.
+# ============================================================
+
+registry_version: "1.0"
+last_updated: "2026-06-02"
+
+books:
+
+  # ----------------------------------------------------------
+  # PRIMARY SOURCE — Главный источник
+  # Все конфликты решаются в пользу этого источника если strength=mandatory
+  # ----------------------------------------------------------
+  - id: neely-mwe-1990
+    full_title: "Mastering Elliott Wave"
+    title_ru: "Мастерство анализа волн Эллиотта"
+    author: "Glenn Neely"
+    author_short: "Neely"
+    year: 1990
+    language_original: en
+    language_available: [ru, en]
+    school: neowave           # neowave | classical | williams | other
+    priority: 1               # 1 = highest — используется при conflict resolution
+    methodology: quantitative # quantitative | qualitative | mixed
+
+    files:
+      - filename: "Glen Nili - Masterstvo analiza voln Elliotta razvyornutaya.doc"
+        format: doc
+        language: ru
+        note: "Развёрнутая версия — предположительно полная, с подробными объяснениями"
+        quality: high         # high | medium | low (ожидаемое качество extraction)
+        has_images: false     # в DOC обычно нет встроенных диаграмм
+
+      - filename: "Г.Нили.Мастерство анализа волн Элиотта_1.pdf"
+        format: pdf
+        language: ru
+        part: 1
+        note: "Часть 1 PDF — содержит диаграммы и иллюстрации"
+        quality: medium       # scanned PDF обычно medium
+        has_images: true
+
+      - filename: "Г.Нили.Мастерство анализа волн Элиотта_2.pdf"
+        format: pdf
+        language: ru
+        part: 2
+        note: "Часть 2 PDF"
+        quality: medium
+        has_images: true
+
+      - filename: "Г.Нили.Мастерство анализа волн Элиотта_3.pdf"
+        format: pdf
+        language: ru
+        part: 3
+        note: "Часть 3 PDF"
+        quality: medium
+        has_images: true
+
+    extraction_strategy:
+      primary_source: "Glen Nili - Masterstvo analiza voln Elliotta razvyornutaya.doc"
+      primary_reason: "DOC даёт чистый текст без OCR-артефактов. Использовать как основу для AKU."
+      image_source: "pdf_parts"
+      image_reason: "PDF части содержат оригинальные диаграммы для Vision-анализа"
+      figure_naming: "neely-fig-{chapter}-{number}"  # пример: neely-fig-5-3
+
+    known_structure:
+      # Заполнить после первого прочтения DOC
+      total_chapters: null
+      chapters: []
+
+    notes: |
+      Самая строгая и формализованная система волнового анализа.
+      Разделяет Mandatory Rules и Conditional Rules — это золото для индикатора.
+      Терминология NeoWave отличается от классического Эллиота — следить за путаницей.
+      Русский перевод может иметь терминологические расхождения с оригиналом.
+
+  # ----------------------------------------------------------
+  # SECONDARY SOURCE — Билл Уильямс
+  # ----------------------------------------------------------
+  - id: williams-tc-1995
+    full_title: "Trading Chaos"
+    title_ru: "Торговый хаос"
+    author: "Bill Williams"
+    author_short: "Williams"
+    year: 1995
+    language_original: en
+    language_available: [ru, en]
+    school: williams
+    priority: 2
+    methodology: mixed
+
+    files: []               # Заполнить когда файлы появятся
+
+    extraction_strategy:
+      primary_source: null  # TBD
+      image_source: null
+
+    notes: |
+      Использует Elliott Wave как часть более широкой торговой системы.
+      Добавляет индикаторы: Fractal, Alligator, AO, AC, MFI.
+      Менее строгая математика чем Neely — больше эвристик.
+      При конфликте с Neely: Neely побеждает на уровне mandatory rules,
+      Williams применяется на уровне trading_application heuristics.
+
+  # ----------------------------------------------------------
+  # PLACEHOLDER — для будущих книг
+  # ----------------------------------------------------------
+  # - id: prechter-frost-ewp
+  #   full_title: "Elliott Wave Principle"
+  #   author: "Robert Prechter, A.J. Frost"
+  #   year: 1978
+  #   school: classical
+  #   priority: 3
+  #   files: []

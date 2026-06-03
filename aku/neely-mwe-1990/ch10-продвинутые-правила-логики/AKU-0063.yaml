@@ -1,0 +1,39 @@
+id: AKU-0063
+type: rule
+strength: mandatory
+status: verified
+topic: combination
+subtopics:
+- triangle
+- ending-diagonal
+statement_ru: 'Тройная Комбинация может возникнуть только в Треугольнике или в Терминальном
+  Импульсе.
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: 10-3
+  chapter: 'Глава 10: Продвинутые Правила логики'
+  section: Тройная Комбинация
+  figure_id: null
+  verbatim_quote:
+    text: 'Тройная Комбинация может возникнуть только в Треугольнике или в Терминальном
+      Импульсе.
+
+      '
+    language: ru
+formalization:
+  status: draft
+  applies_when: pattern == 'triple_combination'
+  constraint: parent IN ('triangle', 'terminal_impulse')
+  formalization_notes: null
+aliases:
+- правило позиции тройной комбинации
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-02T18:04:31Z'
+review_notes: null
+requires_review: false

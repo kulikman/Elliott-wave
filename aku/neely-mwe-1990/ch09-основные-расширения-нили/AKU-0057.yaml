@@ -1,0 +1,40 @@
+id: AKU-0057
+type: rule
+strength: heuristic
+status: verified
+topic: informal-logic-rules
+subtopics:
+- triangle
+- ending-diagonal
+statement_ru: 'Причины, приведшие к нарушению одного правила, обычно порождают другое
+  правило. Треугольники и Терминальные фигуры являются исключениями практически из
+  всех правил, стандартных ситуаций и условий.
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: 9-5
+  chapter: 'Глава 9: Основные Расширения Нили'
+  section: Перечень исключений, Пункт 2
+  figure_id: null
+  verbatim_quote:
+    text: 'Причины, приведшие к нарушению одного правила, обычно порождают другое
+      правило.
+
+      '
+    language: ru
+formalization:
+  status: not_attempted
+aliases:
+- перечень исключений пункт 2
+related_aku:
+- AKU-0056
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-02T18:03:43Z'
+review_notes: 'Формулировка "обычно" указывает на heuristic, а не mandatory.
+
+  '
+requires_review: false

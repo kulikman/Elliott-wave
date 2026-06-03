@@ -1,0 +1,39 @@
+id: AKU-0173
+type: definition
+strength: mandatory
+status: draft
+topic: position-indicators
+subtopics:
+- structural-labels
+statement_ru: :F3 (первая тройка, First 3) — первый сегмент группы, либо возникает
+  после x:c3, либо между двумя :5. Если две :F3 идут подряд, вторая начинает новую
+  (меньшую) ценовую фигуру.
+statement_en: null
+source:
+  book_id: neely-mwe-1990
+  page: 3-61
+  chapter: 'Глава 3: Предварительный анализ'
+  section: Определения Индикаторов положения / :F3
+  figure_id: null
+  verbatim_quote:
+    text: Аббревиатура ":F3" расшифровывается как "первая тройка" ("First 3"). Волна
+      с этим Структурным обозначением либо первый сегмент группы, возникающий либо
+      "x:c3", либо встречается между двумя "пятерками" (":5"). Если две "первые тройки"
+      (":F3") встречаются подряд, значит, второй из них начинается новая ценовая фигура.
+    language: ru
+formalization:
+  status: draft
+  applies_when: assigning :F3 within a group
+  constraint: position(:F3) == first(group) OR prev == 'x:c3' OR between two :5 ;
+    two :F3 in a row => second starts new figure
+  formalization_notes: null
+aliases: []
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-03T12:15:47Z'
+review_notes: Извлечено Claude через прямое чтение PDF (Гл.3, Индикаторы положения).
+  Полный текст — ch03-position-indicators.md.
+requires_review: true

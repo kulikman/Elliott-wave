@@ -1,0 +1,38 @@
+id: AKU-0165
+type: rule
+strength: mandatory
+status: draft
+topic: compaction
+subtopics:
+- structural-series
+- structural-labels
+statement_ru: Если последнее структурное обозначение Стандартной Коррективной Серии
+  не содержит Индикатор положения «L», эту Серию необходимо сжать в тройку (:3) и
+  рассматривать как часть одной из Нестандартных фигур.
+statement_en: null
+source:
+  book_id: neely-mwe-1990
+  page: 4-2
+  chapter: 'Глава 4: Дальнейшие аналитические построения'
+  section: Структурные Серии (Таблица 4-3)
+  figure_id: null
+  verbatim_quote:
+    text: Если последнее Структурное обозначение Стандартной Коррективной Серии не
+      содержит Индикатор положения «L», эту Серию необходимо сжать в «тройку» (:3)
+      и рассматривать как часть одной из Нестандартных ценовых фигур.
+    language: ru
+formalization:
+  status: draft
+  applies_when: standard corrective series whose last label lacks 'L' position indicator
+  constraint: compact(series) -> ':3' ; treat as part of nonstandard figure
+  formalization_notes: null
+aliases: []
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-02T18:54:01Z'
+review_notes: Извлечено Claude через прямое чтение PDF (Гл.4, группировка/Структурные
+  Серии). Полный текст — ch04-grouping.md.
+requires_review: true

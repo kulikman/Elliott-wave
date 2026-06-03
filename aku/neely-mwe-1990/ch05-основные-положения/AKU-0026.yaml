@@ -1,0 +1,46 @@
+id: AKU-0026
+type: rule
+strength: mandatory
+status: verified
+topic: flat
+subtopics:
+- fibonacci-ratios
+statement_ru: 'В Плоской коррекции с сильной b-волной (превышающей начальный уровень
+  волны-а), b-волна обычно ограничена соотношением 138.2% или 161.8% волны-а, но не
+  может достигать ни одного из них.
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: 5-42
+  chapter: Chapter 5
+  section: Соотношения Фибоначчи — Плоские — Сильная b-волна
+  figure_id: null
+  verbatim_quote:
+    text: 'Когда b-волна превышает начальный уровень волны-а, обычно она будет ограничена
+      соотношением 138.2% (это ненастоящее соотношение Фибоначчи, но представляет
+      комбинацию двух - 1.00 и 0.382) или 161.8%, но не может достигать ни одного
+      из них.
+
+      '
+    language: ru
+formalization:
+  status: draft
+  applies_when: pattern == 'flat' AND end_level(wave_b) beyond start_level(wave_a)
+  constraint: length(wave_b) < 1.618 * length(wave_a) AND length(wave_b) != 1.382
+    * length(wave_a) AND length(wave_b) != 1.618 * length(wave_a)
+  formalization_notes: '''Обычно'' — мягкое ограничение. b приближается к 138.2%/161.8%,
+    но не достигает их точно.'
+aliases:
+- ограничение сильной b-волны в плоской
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-02T17:56:17Z'
+review_notes: 'Маркер "не может достигать". Контекст содержит "обычно", что ослабляет
+  обязательность первой части, но "не может" во второй части звучит как mandatory.
+
+  '
+requires_review: false

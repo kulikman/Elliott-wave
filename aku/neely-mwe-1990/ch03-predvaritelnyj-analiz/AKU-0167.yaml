@@ -1,0 +1,40 @@
+id: AKU-0167
+type: rule
+strength: conditional
+status: draft
+topic: structural-labels
+subtopics:
+- length-ratio-rules
+- monowave
+statement_ru: 'Правило 4 (61.8% < m2/m1 < 100%): структурные списки m1 по Условиям
+  — a:{:F3,:c3,:s5,[:sL3]}, b:{:F3,:c3,:s5,(:sL3),(x:c3),[:L5]}, c:{:c3,(:F3),(x:c3)},
+  d:{:F3,(:c3),(x:c3)}, e:{:F3,(x:c3),[:c3]}. Вероятная метка :F3 (или :c3 при Условии
+  c).'
+statement_en: null
+source:
+  book_id: neely-mwe-1990
+  page: 3-44
+  chapter: 'Глава 3: Предварительный анализ'
+  section: Неформальные Правила логики / структурные списки
+  figure_id: null
+  verbatim_quote:
+    text: Условие "a" {:F3/:c3/:s5/[:sL3]} ... Условие "b" {:F3/:c3/:s5/(:sL3)/(x:c3)/[:L5]}
+      ... Условие "c" {:c3/(:F3)/(x:c3)} ... Условие "d" {:F3/(:c3)/(x:c3)} ... Условие
+      "e" {:F3/(x:c3)[:c3]}
+    language: ru
+formalization:
+  status: draft
+  applies_when: rule(m1) == 4
+  constraint: structure(m1) in {':F3',':c3',':s5',':sL3','x:c3',':L5'} ; primary :=
+    ':F3'
+  formalization_notes: Списки зависят от Условия a-e; см. ch03-informal-logic.md.
+aliases: []
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-02T19:20:47Z'
+review_notes: Извлечено Claude через прямое чтение PDF (Гл.3, структурные списки Правил
+  4-7).
+requires_review: true

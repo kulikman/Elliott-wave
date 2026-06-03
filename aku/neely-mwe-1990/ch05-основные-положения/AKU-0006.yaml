@@ -1,0 +1,66 @@
+id: AKU-0006
+type: rule
+strength: mandatory
+status: verified
+topic: impulse
+subtopics:
+- length-ratio-rules
+statement_ru: 'Пятый сегмент импульса никогда не должен быть меньше 38.2% длины четвёртого
+  сегмента (в ценовом отношении). Когда пятый сегмент короче четвёртого, он называется
+  «Неудавшейся» волной.
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: 5-1
+  chapter: 'Глава 5: Основные положения'
+  section: Импульсы
+  figure_id: null
+  verbatim_quote:
+    text: Пятый сегмент будет почти, всегда длиннее четвертого, но никогда не должен
+      быть меньше 38.2% длины четвертого (в ценовом отношении).
+    language: ru
+formalization:
+  status: draft
+  applies_when: '# Правило применяется к импульсной структуре, когда определены сегменты
+    4 и 5
+
+    pattern == ''impulse'' AND wave_5.is_completed
+
+    '
+  constraint: '# Длина сегмента в ценовом отношении (вертикальное расстояние)
+
+    price_length_wave5 = abs(wave_5.end - wave_5.start)
+
+    price_length_wave4 = abs(wave_4.end - wave_4.start)
+
+
+    # Mandatory: пятый сегмент никогда не должен быть меньше 38.2% длины четвёртого
+
+    price_length_wave5 >= 0.382 * price_length_wave4
+
+
+    # Дополнительная классификация (информационная, не constraint):
+
+    # IF price_length_wave5 < price_length_wave4 THEN wave_5.label = "failure" (Неудавшаяся
+    волна)
+
+    '
+  formalization_notes: "Правило содержит два аспекта:\n1. Mandatory constraint: wave5\
+    \ >= 38.2% * wave4 (по цене) — это жёсткое правило (\"никогда не должен\").\n\
+    2. Классификация: если wave5 < wave4, то wave5 называется \"Неудавшейся\" волной\
+    \ — \n   это не ограничение, а маркировка/классификация, добавлена как комментарий.\n\
+    Фраза \"будет почти всегда длиннее четвертого\" — статистическое наблюдение, \n\
+    не формализуется как constraint.\nДлины измеряются в ценовом отношении (вертикальное\
+    \ расстояние), не по времени."
+aliases:
+- минимальная длина волны 5
+- правило 38.2% волны 5
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-02T17:54:51Z'
+review_notes: false
+requires_review: false

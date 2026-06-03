@@ -1,0 +1,43 @@
+id: AKU-0166
+type: rule
+strength: mandatory
+status: draft
+topic: wave-identification
+subtopics:
+- impulse
+- zigzag
+- multiple-interpretation
+statement_ru: '«Зигзаг или Импульс?»: обнаружив :L5, завершающую предполагаемый Зигзаг,
+  всегда сначала проверяй гипотезу Импульса — Зигзаг (:5-:F3-:L5) может быть тремя
+  последними сегментами Импульса. Только если импульсная гипотеза нарушает Правила
+  построения, принимается Зигзаг.'
+statement_en: null
+source:
+  book_id: neely-mwe-1990
+  page: 4-8
+  chapter: 'Глава 4: Дальнейшие аналитические построения'
+  section: Зигзаг или Импульс?
+  figure_id: null
+  verbatim_quote:
+    text: Работая с Зигзагами, всегда обращайте внимание на два предшествующих им
+      Структурных обозначения, чтобы убедиться, что случайно не пропустили Импульс.
+      ... всегда проверяйте импульсную гипотезу ... прежде чем идентифицировать группу
+      волн в качестве Зигзага. Если Импульсная ценовая фигура удовлетворяет всем Правилам
+      построения, остановитесь на этом варианте.
+    language: ru
+formalization:
+  status: draft
+  applies_when: a :L5 completes a candidate zigzag with 2 preceding labels
+  constraint: test impulse_hypothesis FIRST; accept zigzag only if impulse violates
+    construction rules
+  formalization_notes: null
+aliases: []
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-02T18:54:01Z'
+review_notes: Извлечено Claude через прямое чтение PDF (Гл.4, группировка/Структурные
+  Серии). Полный текст — ch04-grouping.md.
+requires_review: true

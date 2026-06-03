@@ -1,0 +1,41 @@
+id: AKU-0025
+type: rule
+strength: mandatory
+status: verified
+topic: flat
+subtopics:
+- fibonacci-ratios
+statement_ru: 'В Плоской коррекции с нормальной b-волной, волна-с не может составлять
+  менее 38.2% волны-а — это минимальное требование, ниже которого она опуститься не
+  может.
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: 5-42
+  chapter: Chapter 5
+  section: Соотношения Фибоначчи — Плоские
+  figure_id: null
+  verbatim_quote:
+    text: 'Очень редко волна-с может соотноситься с волной-а с коэффициентом 38.2%,
+      но это минимальное требование (ниже которого она опуститься не может).
+
+      '
+    language: ru
+formalization:
+  status: draft
+  applies_when: pattern == 'flat' AND b_type == 'normal'
+  constraint: length(wave_c) >= 0.382 * length(wave_a)
+  formalization_notes: Минимальный предел волны-c в нормальной Плоской.
+aliases:
+- минимум c-волны в плоской
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-02T17:56:17Z'
+review_notes: 'Маркер "не может". Применяется к Плоской с нормальной b-волной.
+
+  '
+requires_review: false

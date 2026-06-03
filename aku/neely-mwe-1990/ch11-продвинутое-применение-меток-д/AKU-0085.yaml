@@ -1,0 +1,37 @@
+id: AKU-0085
+type: rule
+strength: mandatory
+status: verified
+topic: motion-labels
+subtopics:
+- impulse
+- polywave
+statement_ru: 'Если волна-1 имеет уровень поливолны или выше, то волна-2 должна сегментировать
+  на поливолновую или более высокого порядка фигуру.
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: doc-ch11
+  chapter: 'Глава 11: Продвинутое применение Меток движения'
+  section: Трендовые Импульсы - Волна-2
+  figure_id: null
+  verbatim_quote:
+    text: Если волна-1 имеет уровень поливолны или выше, то волна-2 должна сегментировать
+      на поливолновую или более высокого порядка фигуру.
+    language: ru
+formalization:
+  status: draft
+  applies_when: pattern == 'impulse' AND degree(wave_1) >= 'polywave'
+  constraint: degree(wave_2) >= 'polywave'
+  formalization_notes: null
+aliases:
+- обязательная сегментация волны-2 при поливолновой волне-1
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-02T18:06:56Z'
+review_notes: null
+requires_review: false

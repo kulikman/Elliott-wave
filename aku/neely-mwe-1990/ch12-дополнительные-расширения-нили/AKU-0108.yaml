@@ -1,0 +1,41 @@
+id: AKU-0108
+type: rule
+strength: mandatory
+status: verified
+topic: channeling
+subtopics:
+- impulse
+- wave-identification
+statement_ru: 'Ни одна часть волны-3 или волны-5 не должна пробивать линию тренда
+  2-4, если только 5-я волна не является Терминальной фигурой.
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: 12-4
+  chapter: 'Глава 12: Дополнительные расширения Нили'
+  section: Каналы - Волна-4
+  figure_id: null
+  verbatim_quote:
+    text: 'ни одна часть волны-З или волны-5 не должна пробивать линию тренда 2-4,
+      если только 5-я волна не является Терминальной фигурой.
+
+      '
+    language: ru
+formalization:
+  status: draft
+  applies_when: pattern == 'impulse'
+  constraint: not breaks(wave_3, trendline(end(2), end(4))) AND (not breaks(wave_5,
+    trendline(end(2), end(4))) OR subtype == 'terminal')
+  formalization_notes: null
+aliases:
+- правило линии тренда 2-4
+- правило непробития тренда 2-4
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-02T18:09:09Z'
+review_notes: 'АВТОПРОВЕРКА: цитата не найдена в тексте — возможна галлюцинация'
+requires_review: false

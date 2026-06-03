@@ -1,0 +1,37 @@
+id: AKU-0169
+type: rule
+strength: conditional
+status: draft
+topic: structural-labels
+subtopics:
+- length-ratio-rules
+- position-indicators
+statement_ru: 'Правило 6 (161.8% ≤ m2/m1 ≤ 261.8%): возможна любая Структура m1. Если
+  ни одно описание не подходит — определять метку через последовательности Индикаторов
+  положения (стр. 3-61).'
+statement_en: null
+source:
+  book_id: neely-mwe-1990
+  page: 3-55
+  chapter: 'Глава 3: Предварительный анализ'
+  section: Неформальные Правила логики / структурные списки
+  figure_id: null
+  verbatim_quote:
+    text: Правило 6 {возможна любая Структура; если ни одно из описаний не подходит,
+      смотрите раздел о последовательностях Индикаторов положения на стр. 3-61}
+    language: ru
+formalization:
+  status: draft
+  applies_when: rule(m1) == 6
+  constraint: structure(m1) := any ; resolve via position_indicator_sequences
+  formalization_notes: Большой откат m1 → структура неоднозначна.
+aliases: []
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-02T19:20:47Z'
+review_notes: Извлечено Claude через прямое чтение PDF (Гл.3, структурные списки Правил
+  4-7).
+requires_review: true

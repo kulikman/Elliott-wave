@@ -1,0 +1,236 @@
+# ============================================================
+# TOPIC TAXONOMY v1.0
+# Elliott Wave Brain
+# ============================================================
+#
+# Закрытый список топиков. AKU может использовать ТОЛЬКО топики отсюда.
+#
+# Правила изменения:
+# - Добавить топик: обоснование в docs/taxonomy-changes.md + PR
+# - Переименовать: создать новый, старый пометить deprecated: true
+# - Удалить: запрещено если есть AKU с этим топиком
+#
+# Структура: group → topic slugs
+# ============================================================
+
+taxonomy_version: "1.0"
+last_updated: "2026-06-02"
+
+groups:
+
+  # ----------------------------------------------------------
+  # FOUNDATIONS — основы методологии
+  # ----------------------------------------------------------
+  foundations:
+    description: "Базовые принципы волнового анализа, терминология, методология"
+    topics:
+      - slug: foundations
+        name: "Основы"
+      - slug: data-selection
+        name: "Выбор данных"
+        note: "Cash data vs closing prices, таймфреймы"
+      - slug: chart-preparation
+        name: "Подготовка графика"
+      - slug: analysis-workflow
+        name: "Процесс анализа"
+        note: "Пошаговый алгоритм от начала до конца"
+
+  # ----------------------------------------------------------
+  # WAVE BASICS — базовые волновые концепции
+  # ----------------------------------------------------------
+  wave_basics:
+    description: "Моноволны, степени, порядки, структурные обозначения"
+    topics:
+      - slug: monowave
+        name: "Моноволна"
+        note: "Определение, построение, классификация :3/:5"
+      - slug: polywave
+        name: "Поливолна"
+      - slug: multiwave
+        name: "Мультиволна"
+      - slug: macrowave
+        name: "Макроволна"
+      - slug: wave-degree
+        name: "Степень волны"
+        note: "Порядок, иерархия от SubMicro до Grand Supercycle"
+      - slug: structural-labels
+        name: "Структурные обозначения"
+        note: ":3, :5, :F3, :L3, :L5, :c3"
+      - slug: position-indicators
+        name: "Индикаторы положения"
+        note: "Метки положения внутри фигуры"
+      - slug: motion-labels
+        name: "Метки Движения"
+        note: "Система Нили для обозначения волн"
+      - slug: complexity-rule
+        name: "Правило сложности"
+        note: "0/1/2/3+ для моно/поли/мульти/макро"
+
+  # ----------------------------------------------------------
+  # IMPULSIVE PATTERNS — импульсные структуры
+  # ----------------------------------------------------------
+  impulsive:
+    description: "Все типы импульсных (трендовых) волновых фигур"
+    topics:
+      - slug: impulse
+        name: "Импульс"
+        note: "Стандартный 5-волновой импульс"
+      - slug: impulse-extension
+        name: "Растяжение импульса"
+        note: "Растяжение волны 1, 3 или 5"
+      - slug: leading-diagonal
+        name: "Ведущий диагональный треугольник"
+        note: "В позиции волны 1 или A"
+      - slug: ending-diagonal
+        name: "Конечный диагональный треугольник"
+        aliases: ["terminal impulse", "терминальный импульс"]
+        note: "В позиции волны 5 или C"
+
+  # ----------------------------------------------------------
+  # CORRECTIVE PATTERNS — корректирующие структуры
+  # ----------------------------------------------------------
+  corrective:
+    description: "Все типы корректирующих волновых фигур"
+    topics:
+      - slug: zigzag
+        name: "Зигзаг"
+        note: "5-3-5 коррекция"
+      - slug: double-zigzag
+        name: "Двойной зигзаг"
+      - slug: triple-zigzag
+        name: "Тройной зигзаг"
+      - slug: flat
+        name: "Плоская коррекция"
+        note: "3-3-5: normal, expanded, running"
+      - slug: triangle
+        name: "Треугольник"
+        note: "contracting, expanding, barrier, running"
+      - slug: combination
+        name: "Комбинация"
+        note: "Double/Triple combination, сложные коррекции"
+      - slug: x-wave
+        name: "X-волна"
+        note: "Связующая волна между коррекциями"
+
+  # ----------------------------------------------------------
+  # RULES — правила волнового анализа
+  # ----------------------------------------------------------
+  rules:
+    description: "Именованные правила и принципы"
+    topics:
+      - slug: rule-of-alternation
+        name: "Правило чередования"
+      - slug: rule-of-equality
+        name: "Правило равенства"
+      - slug: rule-of-overlap
+        name: "Правило перекрытия"
+        note: "Волна 4 не должна перекрывать волну 1"
+      - slug: rule-of-similarity
+        name: "Правило подобия и баланса"
+        note: "min(m1,m2) >= max(m1,m2) / 3"
+      - slug: rule-of-extension
+        name: "Правило растяжения"
+      - slug: channeling
+        name: "Канализация"
+        note: "Построение трендовых каналов"
+
+  # ----------------------------------------------------------
+  # GROUPING — процедуры группировки
+  # ----------------------------------------------------------
+  grouping:
+    description: "Методология группировки волн"
+    topics:
+      - slug: grouping-procedure
+        name: "Процедура группировки"
+        note: "3 цикла, алгоритм Нили"
+      - slug: compaction
+        name: "Сжатие (уплотнение)"
+        note: "Compaction — замена группы на :3 или :5"
+      - slug: structural-series
+        name: "Структурные серии"
+        note: "Таблица Нили серий A-H"
+
+  # ----------------------------------------------------------
+  # FIBONACCI — ценовые и временные соотношения
+  # ----------------------------------------------------------
+  fibonacci:
+    description: "Числа Фибоначчи, ценовые цели, временные проекции"
+    topics:
+      - slug: fibonacci-ratios
+        name: "Соотношения Фибоначчи"
+      - slug: price-projection
+        name: "Ценовые цели"
+      - slug: time-projection
+        name: "Временные проекции"
+      - slug: retracement
+        name: "Откаты"
+        note: "Типичные уровни отката для каждого типа волны"
+
+  # ----------------------------------------------------------
+  # LOGIC RULES — логические правила предварительного анализа
+  # ----------------------------------------------------------
+  logic:
+    description: "Неформальные и формальные правила логики, условия, категории"
+    topics:
+      - slug: informal-logic-rules
+        name: "Неформальные правила логики"
+        note: "26 правил предварительного анализа Нили"
+      - slug: formal-logic-rules
+        name: "Формальные правила логики"
+        note: "Подтверждение/опровержение фигур"
+      - slug: conditions-categories
+        name: "Условия и категории"
+        note: "Условия a/b/c/d/e/f, категории i/ii/iii"
+      - slug: length-ratio-rules
+        name: "Правила соотношений длин"
+        note: "7 правил определения структурных обозначений"
+      - slug: post-pattern-logic
+        name: "Постфигурная логика"
+        note: "Поведение рынка после завершения фигуры"
+      - slug: energy-rating
+        name: "Рейтинг энергии"
+        note: "Ограничение следующей волны по энергии предыдущей"
+
+  # ----------------------------------------------------------
+  # WILLIAMS — топики специфичные для Билла Уильямса
+  # ----------------------------------------------------------
+  williams:
+    description: "Концепции из системы Билла Уильямса (Trading Chaos)"
+    topics:
+      - slug: williams-fractal
+        name: "Фрактал Уильямса"
+      - slug: williams-alligator
+        name: "Аллигатор"
+      - slug: williams-ao
+        name: "Awesome Oscillator"
+      - slug: williams-ac
+        name: "Accelerator Oscillator"
+      - slug: williams-mfi
+        name: "Market Facilitation Index"
+      - slug: williams-zones
+        name: "Зоны (Profitunity)"
+
+  # ----------------------------------------------------------
+  # METHODOLOGY — общая методология анализа
+  # ----------------------------------------------------------
+  methodology:
+    description: "Процессы, алгоритмы, интерпретация"
+    topics:
+      - slug: wave-identification
+        name: "Идентификация волн"
+      - slug: multiple-interpretation
+        name: "Множественные интерпретации"
+        note: "Как работать когда возможно несколько счётов"
+      - slug: reverse-logic
+        name: "Обратная логика"
+        note: "Правило Обратной Логики Нили"
+      - slug: local-adjustments
+        name: "Локальные корректировки счёта"
+      - slug: trading-application
+        name: "Применение в трейдинге"
+        note: "Точки входа, стопы, цели"
+
+# ----------------------------------------------------------
+# DEPRECATED топики (не удалять — только помечать)
+# ----------------------------------------------------------
+deprecated: []

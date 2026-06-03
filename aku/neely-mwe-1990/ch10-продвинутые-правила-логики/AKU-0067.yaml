@@ -1,0 +1,40 @@
+id: AKU-0067
+type: rule
+strength: mandatory
+status: verified
+topic: post-pattern-logic
+subtopics:
+- impulse-extension
+statement_ru: 'Следующая за Подвижной Двойной Тройкой волна должна быть Импульсом,
+  а длина её должна превышать 161,8% длины предыдущей импульсной волны. Подвижная
+  Коррекция Двойная Тройка может быть только волной-2.
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: 10-8
+  chapter: 'Глава 10: Продвинутые Правила логики'
+  section: Подвижная Коррекция Двойная Тройка
+  figure_id: null
+  verbatim_quote:
+    text: 'Следующая за Подвижной Двойной Тройкой волна должна быть Импульсом, а длина
+      ее должна превышать 161,8%, а часто - и 261,8% длины предыдущей импульсной волны.
+      Подвижная Коррекция Двойная Тройка может быть только волной-2
+
+      '
+    language: ru
+formalization:
+  status: draft
+  applies_when: pattern == 'moving_double_three' AND position == 'post_pattern'
+  constraint: type(next_wave) == 'impulse' AND length(next_wave) > 1.618 * length(previous_impulse)
+  formalization_notes: Подвижная Двойная Тройка может быть только волной-2.
+aliases:
+- правило подвижной двойной тройки
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-02T18:04:31Z'
+review_notes: null
+requires_review: false

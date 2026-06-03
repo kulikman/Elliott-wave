@@ -1,0 +1,40 @@
+id: AKU-0142
+type: rule
+strength: mandatory
+status: draft
+topic: conditions-categories
+subtopics:
+- length-ratio-rules
+statement_ru: 'Условие Правила (буква a–f) определяется соотношением длины предшествующей
+  моноволны m0 к m1. Пороги Фибоначчи (38.2/61.8/100/161.8/261.8%) делят диапазон
+  m0/m1 на условия; набор букв зависит от номера Правила (Пр.1: a–d, Пр.2: a–e, Пр.3:
+  a–f, Пр.4: a–e, Пр.5–7: a–d).'
+statement_en: null
+source:
+  book_id: neely-mwe-1990
+  page: 3-22
+  chapter: 'Глава 3: Предварительный анализ'
+  section: Правила соотношений длин волн / Условия
+  figure_id: null
+  verbatim_quote:
+    text: Соотношение m0/m1 определяет применение обозначенного буквой Условия этого
+      Правила. ... В подзаголовке "Условия" каждого конкретного Правила ищите нужное
+      вам соотношение m0/m1 (арабские цифры).
+    language: ru
+formalization:
+  status: draft
+  applies_when: refining a length-ratio Rule by ratio(m0, m1)
+  constraint: condition_letter = lookup(rule_number, ratio(m0,m1)) using Fibonacci
+    breakpoints [0.382, 0.618, 1.000, 1.618, 2.618]
+  formalization_notes: Точное соответствие буква↔диапазон зависит от Правила; полная
+    таблица в ch03-length-ratio-rules.md.
+aliases: []
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-02T18:42:47Z'
+review_notes: Извлечено Claude через прямое чтение PDF (Гл.3, Правила соотношений
+  длин). Полная таблица условий — в ch03-length-ratio-rules.md.
+requires_review: true

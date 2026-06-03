@@ -1,0 +1,40 @@
+id: AKU-0132
+type: rule
+strength: mandatory
+status: verified
+topic: impulse
+subtopics:
+- impulse-extension
+- wave-identification
+statement_ru: 'Когда в Импульсной фигуре растягивается первая волна, волна-2 должна
+  почти всегда быть самой сложной и длительной по времени фигурой.
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: 12-54
+  chapter: Глава 12
+  section: Дополнительные расширения Нили — Импульс с Растянутой первой
+  figure_id: null
+  verbatim_quote:
+    text: 'Когда растягивается первая волна, волна-2 должна почти всегда быть самой
+      сложной и длительной по времени фигурой.
+
+      '
+    language: ru
+formalization:
+  status: draft
+  applies_when: pattern == 'impulse' AND extended_wave == 1
+  constraint: complexity(wave_2) == max AND duration(wave_2) == max
+  formalization_notes: '''Почти всегда'' — сильная эвристика-правило.'
+aliases:
+- сложность волны-2 при растянутой первой
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-02T18:10:31Z'
+review_notes: Формулировка 'должна почти всегда' — смягчённый mandatory. Скорее heuristic,
+  но 'должна' указывает на сильное правило.
+requires_review: false

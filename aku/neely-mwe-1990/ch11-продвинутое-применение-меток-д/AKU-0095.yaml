@@ -1,0 +1,39 @@
+id: AKU-0095
+type: rule
+strength: mandatory
+status: verified
+topic: flat
+subtopics:
+- motion-labels
+- post-pattern-logic
+statement_ru: 'Движение непосредственно после Подвижной коррекции должно всегда быть
+  самым длинным сегментом завершённой фигуры Эллиотта.
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: 11-18
+  chapter: Глава 11
+  section: Продвинутое применение Меток движения — Подвижная
+  figure_id: null
+  verbatim_quote:
+    text: 'Движение непосредственно после Подвижной коррекции должно всегда быть самым
+      длинным сегментом завершенной фигуры Эллиотта.
+
+      '
+    language: ru
+formalization:
+  status: draft
+  applies_when: pattern == 'moving_correction' AND position == 'post_pattern'
+  constraint: length(next_segment) == max(length(all_segments(completed_pattern)))
+  formalization_notes: null
+aliases:
+- правило постподвижного движения
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-02T18:07:39Z'
+review_notes: null
+requires_review: false

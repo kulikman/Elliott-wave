@@ -1,0 +1,39 @@
+id: AKU-0172
+type: definition
+strength: mandatory
+status: draft
+topic: structural-series
+subtopics:
+- grouping-procedure
+statement_ru: 'Разделители в Структурных сериях: дефис «-» разграничивает части ОДНОЙ
+  Стандартной фигуры Эллиота; два плюса «++» разграничивают ДВЕ Стандартные фигуры,
+  а также x-волны между ними.'
+statement_en: null
+source:
+  book_id: neely-mwe-1990
+  page: 3-61
+  chapter: 'Глава 3: Предварительный анализ'
+  section: Инструкции
+  figure_id: null
+  verbatim_quote:
+    text: Разделитель первого типа (дефис) применяется для разграничения частей одной
+      и той же Стандартной ценовой фигуры Эллиота, а разделитель второго типа (два
+      плюса) – для разграничения двух Стандартных ценовых фигур Эллиота, а также x-волн,
+      возникающих между ними.
+    language: ru
+formalization:
+  status: draft
+  applies_when: parsing a structural series string
+  constraint: '''-'' => within one standard figure ; ''++'' => boundary between figures
+    / x-wave'
+  formalization_notes: null
+aliases: []
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-03T12:15:47Z'
+review_notes: Извлечено Claude через прямое чтение PDF (Гл.3, Индикаторы положения).
+  Полный текст — ch03-position-indicators.md.
+requires_review: true

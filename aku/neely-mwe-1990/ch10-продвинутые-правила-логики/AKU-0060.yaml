@@ -1,0 +1,46 @@
+id: AKU-0060
+type: rule
+strength: mandatory
+status: verified
+topic: ending-diagonal
+subtopics:
+- post-pattern-logic
+- retracement
+statement_ru: 'По завершении Терминальной Импульсной фигуры начальный уровень всей
+  Терминальной фигуры должен быть достигнут за время, не превышающее половины её длительности.
+  Если это правило не выполняется вовсе, гипотеза о Терминальной Импульсной фигуре
+  должна быть отвергнута.
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: 10-1
+  chapter: 'Глава 10: Продвинутые Правила логики'
+  section: Продвинутые Правила логики
+  figure_id: null
+  verbatim_quote:
+    text: 'по завершении Терминальной Импульсной фигуры реакция должна быть достаточно
+      мощной, а начальный уровень всей Терминальной фигуры должен быть достигнут за
+      время, не превышающее половины ее длительности. Частичное несоблюдение этого
+      Правила - существенный изъян текущей интерпретации, а если оно не выполняется
+      вовсе, значит, гипотеза о Терминальной Импульсной фигуре оказалась несостоятельной
+      и должна быть отвергнута.
+
+      '
+    language: ru
+formalization:
+  status: draft
+  applies_when: pattern == 'terminal_impulse' AND position == 'post_pattern'
+  constraint: reaches(next_move, start_level(terminal)) AND duration(until_reach)
+    <= 0.5 * duration(terminal)
+  formalization_notes: null
+aliases:
+- правило постэффекта терминала
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-02T18:04:31Z'
+review_notes: null
+requires_review: false

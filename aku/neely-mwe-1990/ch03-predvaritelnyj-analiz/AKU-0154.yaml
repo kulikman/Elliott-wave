@@ -1,0 +1,38 @@
+id: AKU-0154
+type: rule
+strength: mandatory
+status: draft
+topic: wave-identification
+subtopics:
+- grouping-procedure
+statement_ru: Каждая конфигурация Эллиота состоит из нечётного количества волн. Между
+  двумя граничными точками фигуры (волнами :L5/:L3) число волн должно быть нечётным;
+  при чётном — поиск границы продолжается справа налево.
+statement_en: null
+source:
+  book_id: neely-mwe-1990
+  page: 3-66
+  chapter: 'Глава 3: Предварительный анализ'
+  section: Процедуры выделения ценовых фигур
+  figure_id: null
+  verbatim_quote:
+    text: Поскольку каждая конфигурация Эллиота должна состоять из нечетного количества
+      волн, необходимо сосчитать число волн между двумя закрашенными кружками и, в
+      случае его четности, продолжить поиск другой волны ... т. е. в обратном временном
+      порядке.
+    language: ru
+formalization:
+  status: draft
+  applies_when: isolating an Elliott figure between two boundary waves
+  constraint: wave_count(between boundary_waves) is odd AND >= 3
+  formalization_notes: null
+aliases: []
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-02T18:50:02Z'
+review_notes: 'Извлечено Claude через прямое чтение PDF (Гл.3, 3-60..3-69: выделение
+  фигур, особые условия).'
+requires_review: true

@@ -1,0 +1,40 @@
+id: AKU-0062
+type: rule
+strength: mandatory
+status: verified
+topic: combination
+subtopics:
+- triangle
+statement_ru: 'В Тройной Комбинации две первые коррекции (та, с которой начинается
+  Комбинация, и та, которая немедленно следует за первой x-волной) не должны быть
+  Треугольниками.
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: 10-3
+  chapter: 'Глава 10: Продвинутые Правила логики'
+  section: Тройная Комбинация
+  figure_id: null
+  verbatim_quote:
+    text: 'Две первые коррекции (та, c которой начинается Комбинация, и та, которая
+      немедленно следует за первой x-волной) не должны быть Треугольниками.
+
+      '
+    language: ru
+formalization:
+  status: draft
+  applies_when: pattern == 'triple_combination'
+  constraint: type(correction_1) != 'triangle' AND type(correction_2) != 'triangle'
+  formalization_notes: correction_1 = начальная коррекция; correction_2 = коррекция
+    сразу после первой x-волны.
+aliases:
+- правило треугольников в тройной комбинации
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-02T18:04:31Z'
+review_notes: null
+requires_review: false

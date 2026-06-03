@@ -1,0 +1,31 @@
+id: AKU-0123
+type: rule
+strength: mandatory
+status: verified
+topic: wave-identification
+subtopics:
+- polywave
+- data-selection
+statement_ru: 'Как только число точек данных достигает уровня вдвое больше минимального,
+  пропажу волны следует считать невозможной.
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: 12-46
+  chapter: Глава 12
+  section: Пропавшие волны
+  figure_id: null
+  verbatim_quote:
+    text: Как только число точек данных достигает уровня вдвое больше минимального,
+      пропажу волны следует считать невозможной.
+    language: ru
+formalization:
+  status: draft
+  applies_when: evaluating missing_wave possibility
+  constraint: data_points >= 2 * minimum_data_points IMPLIES missing_wave_possible
+    == false
+  formalization_notes: null
+created_by: claude
+created_at: '2026-06-02T18:09:46Z'
+requires_review: false

@@ -1,0 +1,30 @@
+id: AKU-0015
+type: rule
+strength: mandatory
+status: disputed
+topic: zigzag
+subtopics:
+- length-ratio-rules
+- retracement
+statement_ru: 'Волна-b Зигзага должна откатиться от волны-а хотя бы на 1%.
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: 5-22
+  chapter: Chapter 5
+  section: Зигзаги (5-3-5)
+  figure_id: 5-22b
+  verbatim_quote:
+    text: 'Волна-Ь должна откатиться от волны-а хотя бы на 1%
+
+      '
+    language: ru
+formalization:
+  status: not_attempted
+created_by: claude
+created_at: '2026-06-02T17:55:31Z'
+requires_review: true
+review_notes: 'АВТОПРОВЕРКА: цитата не найдена в тексте — возможна галлюцинация
+
+  REVIEW: цитата не найдена дословно в extracted text — требует проверки'

@@ -1,0 +1,38 @@
+id: AKU-0035
+type: rule
+strength: mandatory
+status: verified
+topic: formal-logic-rules
+subtopics:
+- impulse
+- post-pattern-logic
+statement_ru: 'Длина волны, следующей за Импульсом с Неудавшейся пятой, должна достигать
+  длины всего этого Импульса; до достижения начального уровня данного Импульса рынок
+  не должен образовывать новых точек экстремума (максимума в повышательном Импульсе
+  или минимума в понижательном Импульсе).
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: 6-1
+  chapter: 'Глава 6: Формальные правила логики'
+  section: Импульсы - Пятая Неудавшаяся волна
+  figure_id: null
+  verbatim_quote:
+    text: 'Длина волны, следующей за Импульсом с Неудавшейся пятой, должна достигать
+      длины всего этого Импульса; до достижения начального уровня данного Импульса
+      рынок не должен образовывать новых точек экстремума (максимума в повышательном
+      Импульсе или минимума в понижательном Импульсе).
+
+      '
+    language: ru
+formalization:
+  status: draft
+  applies_when: pattern == 'impulse' AND subtype == 'failure_5th' AND position ==
+    'post_pattern'
+  constraint: length(next_wave) >= length(whole_impulse) AND no_new_extreme(before
+    reaching start_level(impulse))
+  formalization_notes: null
+created_by: claude
+created_at: '2026-06-02T17:57:59Z'
+requires_review: false

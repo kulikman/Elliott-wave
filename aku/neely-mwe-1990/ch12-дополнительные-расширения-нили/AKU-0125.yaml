@@ -1,0 +1,33 @@
+id: AKU-0125
+type: rule
+strength: mandatory
+status: verified
+topic: impulse-extension
+subtopics:
+- fibonacci-ratios
+- length-ratio-rules
+statement_ru: 'При Растянутой 5-й волне волна-5 должна быть не меньше более короткого
+  из двух расстояний — 100% длины (волна-1 + волна-3) или 161.8% волны-3. Максимальная
+  длина волны-5 составляет примерно 261.8% длины (волна-1 + волна-3).
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: 12-28
+  chapter: Глава 12
+  section: Дополнительные расширения Нили
+  figure_id: 12-28
+  verbatim_quote:
+    text: Волна-5 должна быть не меньше более короткого из двух расстояний -100% длины
+      (1+3) или 161.8% волны-3. Она может составлять до 261.8% длины (1+3), но это
+      примерно максимальный предел для длины Растянутой 5-й волны
+    language: ru
+formalization:
+  status: draft
+  applies_when: pattern == 'impulse' AND extended_wave == 5
+  constraint: length(wave_5) >= min(1.000 * (length(wave_1) + length(wave_3)), 1.618
+    * length(wave_3)) AND length(wave_5) <= 2.618 * (length(wave_1) + length(wave_3))
+  formalization_notes: null
+created_by: claude
+created_at: '2026-06-02T18:09:46Z'
+requires_review: false

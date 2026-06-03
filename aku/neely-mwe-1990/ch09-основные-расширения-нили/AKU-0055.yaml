@@ -1,0 +1,47 @@
+id: AKU-0055
+type: rule
+strength: conditional
+status: verified
+topic: channeling
+subtopics:
+- flat
+- zigzag
+statement_ru: 'Все Стандартные Коррекции (кроме Треугольника) характеризуются четырьмя
+  возможными точками касания, но только три из них могут действительно касаться параллельных
+  линий тренда. Если четыре точки одинакового Порядка касаются параллельных линий
+  тренда Стандартной Коррекции (за исключением Треугольника), значит, эта Коррекция
+  — часть Сложной Нестандартной конфигурации.
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: 9-2
+  chapter: 'Глава 9: Основные Расширения Нили'
+  section: Точки касания линии тренда
+  figure_id: null
+  verbatim_quote:
+    text: 'Все Стандартные Коррекции характеризуются четырьмя возможными точками касания,
+      но только три из них могут действительно касаться параллельных линий тренда.
+      Если четыре точки одинакового Порядка касаются параллельных линий тренда какой-либо
+      Стандартной Коррекции (за исключением Треугольника), значит, эта Коррекция -
+      часть Сложной Нестандартной конфигурации.
+
+      '
+    language: ru
+formalization:
+  status: draft
+  applies_when: pattern IN corrective AND pattern != 'triangle'
+  constraint: count(same_degree_points touching parallel_trendlines) <= 3
+  formalization_notes: 4 возможные точки касания, но касаться параллельных линий могут
+    только 3.
+aliases:
+- правило точек касания коррекции
+related_aku:
+- AKU-0052
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-02T18:03:43Z'
+review_notes: null
+requires_review: false

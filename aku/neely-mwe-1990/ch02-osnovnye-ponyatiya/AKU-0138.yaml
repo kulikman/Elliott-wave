@@ -1,0 +1,36 @@
+id: AKU-0138
+type: definition
+strength: mandatory
+status: draft
+topic: structural-labels
+subtopics:
+- impulse
+statement_ru: Структурная метка ':5' обозначает принадлежность волны к классу Импульсов
+  (пять сегментов), метка ':3' — к классу Коррекций (три сегмента). Двоеточие используется
+  как разделитель.
+statement_en: null
+source:
+  book_id: neely-mwe-1990
+  page: 2-5
+  chapter: 'Глава 2: Основные понятия'
+  section: Как вы должны метить волны? / Структурные метки
+  figure_id: null
+  verbatim_quote:
+    text: символ, отражающий принадлежность волны к классу Импульсов, – цифра пять
+      (5) с предшествующей ей двоеточием (":5"). Для обозначения Коррекций применяется
+      символ ":3".
+    language: ru
+formalization:
+  status: not_formalizable
+  applies_when: null
+  constraint: null
+  formalization_notes: Определение — не формализуется как ценовой constraint.
+aliases: []
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-02T18:40:32Z'
+review_notes: Извлечено Claude через прямое чтение PDF (Гл.2). Цитата — из ch02-pdf.md.
+requires_review: false

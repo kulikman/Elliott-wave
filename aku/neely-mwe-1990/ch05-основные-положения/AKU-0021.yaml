@@ -1,0 +1,31 @@
+id: AKU-0021
+type: rule
+strength: mandatory
+status: verified
+topic: triangle
+subtopics:
+- length-ratio-rules
+statement_ru: 'Расширяющиеся Треугольники не могут возникать в b-волнах Зигзагов или
+  в волнах b, с, d более крупных Треугольников.
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: 5-41
+  chapter: Chapter 5
+  section: Расширяющиеся Треугольники (общие правила)
+  figure_id: null
+  verbatim_quote:
+    text: 'Расширяющиеся Треугольники не могут возникать в b-волнах Зигзагов или в
+      волнах b, с, d более крупных Треугольников.
+
+      '
+    language: ru
+formalization:
+  status: draft
+  applies_when: pattern == 'expanding_triangle'
+  constraint: position NOT IN {zigzag.wave_b, triangle.wave_b, triangle.wave_c, triangle.wave_d}
+  formalization_notes: null
+created_by: claude
+created_at: '2026-06-02T17:55:31Z'
+requires_review: false

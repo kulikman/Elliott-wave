@@ -1,0 +1,43 @@
+id: AKU-0099
+type: rule
+strength: mandatory
+status: verified
+topic: triangle
+subtopics:
+- motion-labels
+- post-pattern-logic
+statement_ru: 'Любой Неограничивающий Треугольник (за исключением случая, когда он
+  х-волна) должен завершать фазу более крупной Коррекции. Если Неограничивающий Треугольник
+  обнаружен в какой-либо позиции (кроме позиции x-волны), то всё более крупное движение
+  можно сжать (уплотнить) до простой тройки.
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: 11-27
+  chapter: Глава 11
+  section: Продвинутое применение Меток движения
+  figure_id: null
+  verbatim_quote:
+    text: 'любой Неограничивающий Треугольник (за исключением случая, когда он х-волна)
+      должен завершать фазу более крупной Коррекции. Если вы обнаружили один из них
+      в какой-либо позиции (кроме позиции x-волны), то вы можете сжать (уплотнить)
+      все более крупное движение до простой тройки.
+
+      '
+    language: ru
+formalization:
+  status: draft
+  applies_when: pattern == 'nonlimiting_triangle' AND role != 'x_wave'
+  constraint: completes_phase(larger_correction) == true
+  formalization_notes: null
+aliases:
+- правило завершения коррекции неограничивающим треугольником
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-02T18:08:13Z'
+review_notes: null
+requires_review: false

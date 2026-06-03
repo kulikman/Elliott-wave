@@ -1,0 +1,45 @@
+id: AKU-0107
+type: rule
+strength: mandatory
+status: verified
+topic: channeling
+subtopics:
+- impulse
+- wave-identification
+statement_ru: 'Ни одна часть волны-3 не должна пробивать настоящую линию тренда 0-2
+  в Импульсной фигуре. Если повышение после предполагаемой волны-2 не имеет силы остаться
+  выше линии тренда 0-2, то оно по своему характеру не Импульсное и не может быть
+  частью Импульсной волны-3.
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: 12-2
+  chapter: 'Глава 12: Дополнительные расширения Нили'
+  section: Каналы - Волна-2
+  figure_id: null
+  verbatim_quote:
+    text: 'ни одна часть волны-3 не должна пробивать настоящую линию тренда 0-2. Если
+      повышение, удаляющееся от волны-2, не имеет силы остаться выше "первоначальной"
+      линии тренда 0-2, то оно по своему характеру не Импульсное и не может быть частью
+      Импульсной волны-3.
+
+      '
+    language: ru
+formalization:
+  status: draft
+  applies_when: pattern == 'impulse'
+  constraint: not breaks(wave_3, trendline(start(0), end(2)))
+  formalization_notes: Если откат после волны-2 не удерживается выше линии 0-2 → движение
+    не импульсное.
+aliases:
+- правило линии тренда 0-2
+- правило непробития тренда волной-3
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-02T18:09:09Z'
+review_notes: 'АВТОПРОВЕРКА: цитата не найдена в тексте — возможна галлюцинация'
+requires_review: false

@@ -1,0 +1,41 @@
+id: AKU-0027
+type: rule
+strength: mandatory
+status: verified
+topic: triangle
+subtopics:
+- fibonacci-ratios
+statement_ru: 'Сужающиеся Треугольники без соотношений Фибоначчи следует считать невозможными.
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: 5-42
+  chapter: Chapter 5
+  section: Соотношения Фибоначчи — Треугольники
+  figure_id: null
+  verbatim_quote:
+    text: 'Фактически, Сужающиеся Треугольники без соотношений Фибоначчи следует считать
+      невозможными.
+
+      '
+    language: ru
+formalization:
+  status: draft
+  applies_when: pattern == 'contracting_triangle'
+  constraint: has_fibonacci_ratio(among_segments) == true
+  formalization_notes: Требует определения 'fib-соотношение между сегментами' на уровне
+    распознавания.
+aliases:
+- обязательность соотношений Фибоначчи в сужающихся треугольниках
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-02T17:56:17Z'
+review_notes: 'Маркер "невозможными". Формулировка "следует считать" немного смягчает,
+  но по сути это mandatory правило.
+
+  '
+requires_review: false

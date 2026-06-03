@@ -1,0 +1,37 @@
+id: AKU-0143
+type: rule
+strength: conditional
+status: draft
+topic: conditions-categories
+subtopics:
+- length-ratio-rules
+statement_ru: 'Категория Условия (i/ii/iii) применяется при Правиле 4 и определяется
+  соотношением m3/m2: 100–161.8%→i; 161.8–261.8%→ii; >261.8%→iii.'
+statement_en: null
+source:
+  book_id: neely-mwe-1990
+  page: 3-26
+  chapter: 'Глава 3: Предварительный анализ'
+  section: Правила соотношений длин волн / Категории Правила 4
+  figure_id: null
+  verbatim_quote:
+    text: 'Категория i: если длина m3 не меньше 100%, но меньше 161,8% длины m2; Категория
+      ii: если длина m3 лежит в пределах 161,8–261,8% длины m2 (включительно); Категория
+      iii: если длина m3 больше 261,8% длины m2.'
+    language: ru
+formalization:
+  status: draft
+  applies_when: rule == 4 (refining condition by ratio(m3, m2))
+  constraint: category = 'i' if 1.000 <= ratio(m3,m2) < 1.618 else 'ii' if ratio(m3,m2)
+    <= 2.618 else 'iii'
+  formalization_notes: null
+aliases: []
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-02T18:42:47Z'
+review_notes: Извлечено Claude через прямое чтение PDF (Гл.3, Правила соотношений
+  длин). Полная таблица условий — в ch03-length-ratio-rules.md.
+requires_review: true

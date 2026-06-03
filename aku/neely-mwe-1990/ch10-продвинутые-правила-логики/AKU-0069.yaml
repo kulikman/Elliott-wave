@@ -1,0 +1,38 @@
+id: AKU-0069
+type: rule
+strength: mandatory
+status: verified
+topic: post-pattern-logic
+subtopics:
+- triangle
+statement_ru: '«Выброс» после Расширяющегося Треугольника должен быть меньше самой
+  широкой волны Треугольника.
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: doc-ch10
+  chapter: Глава 10
+  section: Продвинутые Правила логики
+  figure_id: null
+  verbatim_quote:
+    text: '"Выброс" (крайне неудачный в данном контексте термин) должен быть меньше
+      самой широкой волны Треугольника
+
+      '
+    language: ru
+formalization:
+  status: draft
+  applies_when: pattern == 'expanding_triangle' AND position == 'post_pattern'
+  constraint: length(thrust) < max_width(triangle)
+  formalization_notes: null
+aliases:
+- правило выброса расширяющегося треугольника
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-02T18:05:11Z'
+review_notes: null
+requires_review: false

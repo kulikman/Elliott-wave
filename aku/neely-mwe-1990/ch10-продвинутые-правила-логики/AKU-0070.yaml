@@ -1,0 +1,38 @@
+id: AKU-0070
+type: rule
+strength: mandatory
+status: verified
+topic: post-pattern-logic
+subtopics:
+- triangle
+- flat
+statement_ru: 'Если Расширяющийся Треугольник возникает в позиции b-волны, Неудавшаяся-с
+  неизбежна.
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: doc-ch10
+  chapter: Глава 10
+  section: Продвинутые Правила логики
+  figure_id: null
+  verbatim_quote:
+    text: 'если данная фигура возникает в позиции b-волны, Неудавшаяся-с неизбежна.
+
+      '
+    language: ru
+formalization:
+  status: draft
+  applies_when: pattern == 'expanding_triangle' AND position == 'wave_b'
+  constraint: next_structure_contains('failure_c') == true
+  formalization_notes: 'Предиктивное правило: Неудавшаяся-с неизбежна.'
+aliases:
+- неудавшаяся-с после расширяющегося треугольника в b-волне
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-02T18:05:11Z'
+review_notes: null
+requires_review: false

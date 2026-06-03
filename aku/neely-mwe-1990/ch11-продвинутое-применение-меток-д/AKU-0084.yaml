@@ -1,0 +1,39 @@
+id: AKU-0084
+type: rule
+strength: mandatory
+status: verified
+topic: motion-labels
+subtopics:
+- impulse
+- retracement
+statement_ru: 'Если волна-1 является (или считается) самой длинной волной данной последовательности,
+  то вторая волна не может откатиться более чем на 38.2% первой волны.
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: doc-ch11
+  chapter: 'Глава 11: Продвинутое применение Меток движения'
+  section: Трендовые Импульсы - Волна-2
+  figure_id: null
+  verbatim_quote:
+    text: Если волна-1 оказывается (или вы ее считаете) самой длинной волной данной
+      последовательности, то вторая волна не может откатиться более чем на 38.2% первой
+      волны.
+    language: ru
+formalization:
+  status: draft
+  applies_when: pattern == 'impulse' AND length(wave_1) == max(length(wave_1), length(wave_3),
+    length(wave_5))
+  constraint: retrace(wave_2) <= 0.382 * length(wave_1)
+  formalization_notes: null
+aliases:
+- ограничение отката волны-2 при самой длинной волне-1
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-02T18:06:56Z'
+review_notes: null
+requires_review: false

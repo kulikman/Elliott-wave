@@ -1,0 +1,39 @@
+id: AKU-0053
+type: rule
+strength: mandatory
+status: verified
+topic: length-ratio-rules
+subtopics:
+- time-projection
+statement_ru: 'Временные длины (длительности) трёх последовательно расположенных (смежных)
+  волн одного и того же Порядка не могут быть равны между собой.
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: 9-3
+  chapter: 'Глава 9: Основные Расширения Нили'
+  section: Правило соотношения длительностей волн
+  figure_id: null
+  verbatim_quote:
+    text: 'временные длины (длительности) трех последовательно расположенных (смежных)
+      волн (одного и того же Порядка) не могут быть равны между собой
+
+      '
+    language: ru
+formalization:
+  status: draft
+  applies_when: three consecutive adjacent waves of same degree
+  constraint: not (duration(w_i) == duration(w_i+1) AND duration(w_i+1) == duration(w_i+2))
+  formalization_notes: null
+aliases:
+- правило соотношения длительностей
+- rule of duration ratios
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-02T18:03:43Z'
+review_notes: null
+requires_review: false

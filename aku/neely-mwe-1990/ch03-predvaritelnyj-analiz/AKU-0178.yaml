@@ -1,0 +1,39 @@
+id: AKU-0178
+type: definition
+strength: mandatory
+status: draft
+topic: structural-labels
+subtopics:
+- impulse
+- position-indicators
+statement_ru: :s5 («особенная пятёрка», special five) — функционирует как :L5 (завершает
+  фигуру), но не требует резкого разворота направления; обычно третий сегмент Трендового
+  Импульса с Неудавшейся или Растянутой пятой.
+statement_en: null
+source:
+  book_id: neely-mwe-1990
+  page: 3-64
+  chapter: 'Глава 3: Предварительный анализ'
+  section: Структурные обозначения / :s5
+  figure_id: null
+  verbatim_quote:
+    text: Эта аббревиатура расшифровывается как "необычная (особенная) пятерка" (special
+      five (5)). ... Функции обозначения ":s5" схожи с функциями ":L5", единственное
+      отличие их в том, что для подтверждения волны со структурой ":s5" не требуется
+      резкого изменения направления движения котировок.
+    language: ru
+formalization:
+  status: not_formalizable
+  applies_when: null
+  constraint: null
+  formalization_notes: null
+aliases: []
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-03T12:15:47Z'
+review_notes: Извлечено Claude через прямое чтение PDF (Гл.3, Индикаторы положения).
+  Полный текст — ch03-position-indicators.md.
+requires_review: true

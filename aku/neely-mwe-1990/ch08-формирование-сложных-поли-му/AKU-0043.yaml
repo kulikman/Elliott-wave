@@ -1,0 +1,42 @@
+id: AKU-0043
+type: rule
+strength: mandatory
+status: verified
+topic: multiwave
+subtopics:
+- impulse
+- wave-degree
+statement_ru: 'При формировании импульсной мультиволны как минимум одна из коррективных
+  фаз Импульса (волна 2 или 4) должна быть поливолной. Другая может быть как моно-,
+  так и поливолной.
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: doc-ch8
+  chapter: 'Глава 8: Формирование сложных поли-, мульти- и макроволн'
+  section: Формирование мультиволн — Импульсы
+  figure_id: null
+  verbatim_quote:
+    text: 'Как минимум одна из коррективных фаз Импульса (волна 2 или 4) должна быть
+      поливолной. Другая может быть как моно -, так и поливолной.
+
+      '
+    language: ru
+formalization:
+  status: draft
+  applies_when: pattern == 'impulse' AND degree == 'multiwave'
+  constraint: is_polywave(wave_2) OR is_polywave(wave_4)
+  formalization_notes: null
+aliases:
+- правило коррективных поливолн в мультиволне
+related_aku:
+- AKU-0042
+- AKU-0044
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-02T18:02:39Z'
+review_notes: null
+requires_review: false

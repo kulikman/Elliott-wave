@@ -1,0 +1,33 @@
+id: AKU-0124
+type: rule
+strength: mandatory
+status: verified
+topic: impulse-extension
+subtopics:
+- fibonacci-ratios
+- length-ratio-rules
+statement_ru: 'При Растянутой 3-й волне, если волна-4 — сложная Коррекция, то 5-я
+  волна не должна быть равна или больше волны-1. Если волна-2 — сложная Коррекция,
+  то волна-5 должна быть равна или меньше волны-1.
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: 12-27
+  chapter: Глава 12
+  section: Дополнительные расширения Нили
+  figure_id: null
+  verbatim_quote:
+    text: Если волна-4 сложная Коррекция, то 5-я волна не должна быть равна или больше
+      волны-1. Если волна-2 сложная Коррекция, то волна-5 должна быть равна или меньше
+      волны-1.
+    language: ru
+formalization:
+  status: draft
+  applies_when: pattern == 'impulse' AND extended_wave == 3
+  constraint: (is_complex(wave_4) IMPLIES length(wave_5) < length(wave_1)) AND (is_complex(wave_2)
+    IMPLIES length(wave_5) <= length(wave_1))
+  formalization_notes: null
+created_by: claude
+created_at: '2026-06-02T18:09:46Z'
+requires_review: false

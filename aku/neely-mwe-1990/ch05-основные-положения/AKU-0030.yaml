@@ -1,0 +1,45 @@
+id: AKU-0030
+type: rule
+strength: conditional
+status: verified
+topic: triangle
+subtopics:
+- informal-logic-rules
+statement_ru: '"Выброс" из Расширяющегося Треугольника не подчиняется требованиям,
+  выполнение которых необходимо для Сужающихся Треугольников. "Выброс" не может начать
+  крупное новое повышение или снижение, поскольку он не должен быть таким большим,
+  как ширина Расширяющегося Треугольника (волна-e).
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: 5-42
+  chapter: Chapter 5
+  section: Специфика Неограничивающих Треугольников
+  figure_id: null
+  verbatim_quote:
+    text: 'Поскольку "прорыв" не должен быть таким большим, как ширина Расширяющегося
+      Треугольника (волна-e), очевидно, что "выброс" не может начать крупное новое
+      повышение или снижение.
+
+      '
+    language: ru
+formalization:
+  status: draft
+  applies_when: pattern == 'expanding_triangle' AND position == 'post_pattern_thrust'
+  constraint: length(thrust) < length(wave_e)
+  formalization_notes: Выброс из Расширяющегося Треугольника не может превышать ширину
+    (волну-e).
+aliases:
+- ограничение выброса расширяющегося треугольника
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-02T17:56:17Z'
+review_notes: 'Маркеры "не должен", "не может". Относится к неограничивающим расширяющимся
+  треугольникам. Strength может быть mandatory, но контекст специфичен.
+
+  '
+requires_review: false

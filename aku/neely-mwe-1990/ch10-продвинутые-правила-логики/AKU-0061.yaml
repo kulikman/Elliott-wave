@@ -1,0 +1,42 @@
+id: AKU-0061
+type: rule
+strength: mandatory
+status: verified
+topic: triple-zigzag
+subtopics:
+- post-pattern-logic
+- retracement
+- triangle
+statement_ru: 'Если Тройной Зигзаг является частью Плоской или Сужающегося Треугольника,
+  следующая за ним волна одного с ним Порядка никогда не может откатиться до его начального
+  уровня.
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: 10-3
+  chapter: 'Глава 10: Продвинутые Правила логики'
+  section: Тройной Зигзаг
+  figure_id: null
+  verbatim_quote:
+    text: 'Если же Тройной Зигзаг - часть Плоской или Сужающегося Треугольника, следующая
+      за ним волна одного с ним Порядка никогда не может откатиться до его начального
+      Порядка.
+
+      '
+    language: ru
+formalization:
+  status: draft
+  applies_when: pattern == 'triple_zigzag' AND parent IN ('flat', 'contracting_triangle')
+  constraint: not reaches(next_wave_same_degree, start_level(triple_zigzag))
+  formalization_notes: null
+aliases:
+- правило отката тройного зигзага
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-02T18:04:31Z'
+review_notes: null
+requires_review: false

@@ -1,0 +1,23 @@
+.env
+.DS_Store
+
+# Книги и сырые данные
+inbox/
+raw-vault/
+
+# Результаты extraction (большие файлы)
+extracted/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+*.egg-info/
+
+# ZIP-архивы и исходники
+*.zip
+*.docx
+*.doc
+*.pdf

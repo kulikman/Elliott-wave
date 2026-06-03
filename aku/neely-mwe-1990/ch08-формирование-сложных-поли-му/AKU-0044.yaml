@@ -1,0 +1,47 @@
+id: AKU-0044
+type: rule
+strength: mandatory
+status: verified
+topic: multiwave
+subtopics:
+- impulse
+- impulse-extension
+statement_ru: 'Самая длительная Коррекция (волна 2 или 4) Импульса должна следовать
+  непосредственно перед или после растянутой волны. Если первая волна растянута, волна-2
+  должна занять больше времени, чем волна-4. Если растянута пятая, длительность волны-4
+  должна превысить длительность волны-2.
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: doc-ch8
+  chapter: 'Глава 8: Формирование сложных поли-, мульти- и макроволн'
+  section: Формирование мультиволн — Импульсы
+  figure_id: null
+  verbatim_quote:
+    text: 'Самая длительная Коррекция (волна 2 или 4) Импульса должна следовать непосредственно
+      перед или после растянутой волны. Если первая волна растянута, волна-2 должна
+      занять больше времени, чем волна-4. Если растянута пятая, длительность волны-4
+      должна превысить длительность волны-2.
+
+      '
+    language: ru
+formalization:
+  status: draft
+  applies_when: pattern == 'impulse' AND degree == 'multiwave'
+  constraint: adjacent(longest_correction, extended_wave) AND (extended_wave==1 IMPLIES
+    duration(wave_2) > duration(wave_4)) AND (extended_wave==5 IMPLIES duration(wave_4)
+    > duration(wave_2))
+  formalization_notes: null
+aliases:
+- правило длительности коррекций относительно растянутой волны
+related_aku:
+- AKU-0042
+- AKU-0043
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-02T18:02:39Z'
+review_notes: null
+requires_review: false

@@ -1,0 +1,50 @@
+id: AKU-0005
+type: rule
+strength: mandatory
+status: verified
+topic: impulse
+subtopics:
+- retracement
+statement_ru: 'Четвёртый сегмент импульса (волна 4) никогда не должен достигать начального
+  уровня третьего сегмента (волны 3).
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: 5-1
+  chapter: 'Глава 5: Основные положения'
+  section: Импульсы
+  figure_id: null
+  verbatim_quote:
+    text: Четвертый сегмент никогда не должен достигать начального уровня третьего
+      сегмента.
+    language: ru
+formalization:
+  status: draft
+  applies_when: 'pattern == ''impulse'' AND wave_4_completed
+
+    '
+  constraint: "# Волна 4 никогда не должна достигать начального уровня волны 3\n#\
+    \ Начальный уровень волны 3 = конец волны 2 = start(wave_3)\n\nif direction ==\
+    \ 'up':\n  # В восходящем импульсе волна 4 корректирует вниз,\n  # но не должна\
+    \ опуститься до начала волны 3 (или ниже)\n  low(wave_4) > start(wave_3)\nelif\
+    \ direction == 'down':\n  # В нисходящем импульсе волна 4 корректирует вверх,\n\
+    \  # но не должна подняться до начала волны 3 (или выше)\n  high(wave_4) < start(wave_3)\n"
+  formalization_notes: 'Правило эквивалентно классическому правилу "волна 4 не перекрывает
+    территорию волны 1",
+
+    поскольку start(wave_3) == end(wave_2), а end(wave_2) по другому правилу не достигает
+
+    start(wave_1). Однако данное правило сформулировано именно через начальный уровень
+
+    третьего сегмента. Использовано строгое неравенство ("никогда не должен достигать").'
+aliases:
+- правило волны 4 импульса
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-02T17:54:51Z'
+review_notes: null
+requires_review: false

@@ -1,0 +1,100 @@
+id: AKU-0009
+type: rule
+strength: mandatory
+status: verified
+topic: impulse
+subtopics:
+- rule-of-overlap
+statement_ru: 'Ценовые проекции волн 2 и 4 Трендовых импульсных поливолн (или более
+  сложных трендовых импульсных формаций) не могут перекрываться (накладываться) даже
+  частично.
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: 5-5
+  chapter: 'Глава 5: Основные положения'
+  section: Правило Перекрытия
+  figure_id: 5-5a
+  verbatim_quote:
+    text: Ценовые проекции волн 2 и 4 Трендовых импульсных поливолн (или более сложных
+      трендовых импульсных формаций) не могут перекрываться (накладываться) даже частично
+    language: ru
+formalization:
+  status: draft
+  applies_when: '# Правило применяется к трендовым импульсным формациям (5-3-5-3-5)
+
+    pattern_type == ''trending_impulse''
+
+    # Формация содержит волны 1, 2, 3, 4, 5
+
+    waves_count == 5
+
+    '
+  constraint: '# "Ценовые проекции" волн 2 и 4 — это вертикальные ценовые диапазоны,
+
+    # которые эти волны занимают на графике.
+
+
+    # Определяем ценовой диапазон волны 2:
+
+    wave2_price_min = min(start_price(wave_2), end_price(wave_2))
+
+    wave2_price_max = max(start_price(wave_2), end_price(wave_2))
+
+
+    # Определяем ценовой диапазон волны 4:
+
+    wave4_price_min = min(start_price(wave_4), end_price(wave_4))
+
+    wave4_price_max = max(start_price(wave_4), end_price(wave_4))
+
+
+    # Ценовые проекции волн 2 и 4 НЕ должны перекрываться даже частично.
+
+    # Перекрытие существует, если один диапазон заходит в другой:
+
+    # overlap = max(wave2_price_min, wave4_price_min) < min(wave2_price_max, wave4_price_max)
+
+
+    # Правило (mandatory): перекрытия быть НЕ должно
+
+    overlap_exists = max(wave2_price_min, wave4_price_min) < min(wave2_price_max,
+    wave4_price_max)
+
+
+    REQUIRE overlap_exists == false
+
+
+    # Эквивалентная запись:
+
+    # Для бычьего тренда: wave4_price_min >= wave2_price_max
+
+    # Для медвежьего тренда: wave4_price_max <= wave2_price_min
+
+    #
+
+    # Обобщённо (без привязки к направлению):
+
+    # wave4_price_min >= wave2_price_max  OR  wave4_price_max <= wave2_price_min
+
+    '
+  formalization_notes: "- \"Ценовые проекции\" интерпретируются как вертикальные ценовые\
+    \ диапазоны волн\n  (от начальной до конечной цены волны), спроецированные на\
+    \ ось цен.\n- Правило mandatory: нарушение означает, что формация НЕ является\
+    \ трендовым импульсом.\n- Правило применяется к поливолнам и более сложным трендовым\
+    \ импульсным формациям.\n- Касание границ (wave4_price_min == wave2_price_max)\
+    \ формально не является\n  перекрытием (\"даже частично\" подразумевает любое\
+    \ вхождение внутрь диапазона,\n  но не точечное касание). Используется строгое\
+    \ неравенство (<) для определения overlap."
+aliases:
+- правило перекрытия трендового импульса
+- запрет перекрытия волн 2 и 4
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-02T17:54:51Z'
+review_notes: null
+requires_review: false

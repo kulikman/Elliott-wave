@@ -1,0 +1,37 @@
+id: AKU-0079
+type: rule
+strength: mandatory
+status: verified
+topic: motion-labels
+subtopics:
+- impulse
+- position-indicators
+statement_ru: 'Волны 2, 4, b, d, e или x никогда не могут быть Импульсной фигурой.
+  Импульс может быть обнаружен с Метками движения только в конкретных положениях,
+  исключающих эти позиции.
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: doc-ch11
+  chapter: 'Глава 11: Продвинутое применение Меток движения'
+  section: Импульсные фигуры
+  figure_id: null
+  verbatim_quote:
+    text: Волны 2, 4, b, d, e или x никогда не могут быть Импульсной фигурой.
+    language: ru
+formalization:
+  status: draft
+  applies_when: position IN ('wave_2','wave_4','wave_b','wave_d','wave_e','wave_x')
+  constraint: structure(wave) != ':5'
+  formalization_notes: Эти позиции не могут быть Импульсом.
+aliases:
+- запрет импульса в коррективных позициях
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-02T18:06:56Z'
+review_notes: null
+requires_review: false

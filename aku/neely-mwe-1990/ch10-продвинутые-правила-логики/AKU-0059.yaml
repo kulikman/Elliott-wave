@@ -1,0 +1,41 @@
+id: AKU-0059
+type: rule
+strength: mandatory
+status: verified
+topic: energy-rating
+subtopics:
+- post-pattern-logic
+- retracement
+statement_ru: 'Начальный уровень любой волны, завершающейся в восходящем направлении
+  и обладающей положительным рейтингом Энергии (от +1 до +3), не может быть достигнут
+  следующей за ней волной такой же степени.
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: 10-1
+  chapter: 'Глава 10: Продвинутые Правила логики'
+  section: Откат в зависимости от рейтинга Энергии
+  figure_id: null
+  verbatim_quote:
+    text: 'Начальный уровень любой волны, завершающейся в восходящем направлении и
+      обладающей положительным рейтингом (от +1 до +3), не может быть достигнут следующей
+      за ней волной такой же степени.
+
+      '
+    language: ru
+formalization:
+  status: draft
+  applies_when: energy_rating(wave) IN [+1, +2, +3] AND direction(wave) == up
+  constraint: not reaches(next_wave_same_degree, start_level(wave))
+  formalization_notes: Рейтинг Энергии определяется в Гл.10.
+aliases:
+- правило отката по рейтингу энергии
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-02T18:04:31Z'
+review_notes: null
+requires_review: false

@@ -1,0 +1,45 @@
+id: AKU-0131
+type: rule
+strength: mandatory
+status: verified
+topic: reverse-logic
+subtopics:
+- multiple-interpretation
+statement_ru: 'Когда одни и те же ряды данных могут быть интерпретированы более чем
+  одной абсолютно допустимой волновой фигурой, рынок должен быть близок к центру более
+  крупной конфигурации Эллиотта (находиться в волне-b более крупной волны-b, в волне-3
+  более крупной волны-3 или в волне-х Нестандартной Сложной Коррекции).
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: 12-55
+  chapter: Глава 12
+  section: Дополнительные возможности
+  figure_id: null
+  verbatim_quote:
+    text: 'когда одни и те же ряды данных могут быть интерпретированы более чем одной
+      абсолютно допустимой волновой фигурой, рынок должен быть близок к центру более
+      крупной конфигурации Эллиота (находиться в волне-b более крупной волны-b; в
+      волне-3 более крупной волны-3 или в волне-х Нестандартной Сложной Коррекции).
+
+      '
+    language: ru
+formalization:
+  status: draft
+  applies_when: multiple_valid_interpretations == true
+  constraint: position == near_center_of(larger_pattern)
+  formalization_notes: 'Правило Обратной Логики: множественность счётов → рынок близок
+    к центру более крупной фигуры (волна-b в волне-b и т.п.).'
+aliases:
+- правило обратной логики
+- reverse logic rule
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-02T18:10:31Z'
+review_notes: Слово 'должен' указывает на mandatory, но это скорее эвристическое правило.
+  Автор называет его 'правилом', но по сути это логический вывод.
+requires_review: false

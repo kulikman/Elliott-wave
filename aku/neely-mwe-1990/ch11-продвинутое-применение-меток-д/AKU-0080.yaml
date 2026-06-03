@@ -1,0 +1,37 @@
+id: AKU-0080
+type: rule
+strength: mandatory
+status: verified
+topic: motion-labels
+subtopics:
+- impulse-extension
+- impulse
+statement_ru: 'В Трендовом Импульсе с Растянутой первой волной: движение после Растянутой
+  волны-1 (волна-2) не может откатываться от волны-1 намного более 38.2%.
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: doc-ch11
+  chapter: 'Глава 11: Продвинутое применение Меток движения'
+  section: Трендовые Импульсы - Растянутая первая
+  figure_id: null
+  verbatim_quote:
+    text: Движение, следующее за Растянутой волной-1 (волна-2), не может откатываться
+      от волны-1 намного более 38.2%.
+    language: ru
+formalization:
+  status: draft
+  applies_when: pattern == 'trend_impulse' AND extended_wave == 1
+  constraint: retrace(wave_2) <= 0.382 * length(wave_1)
+  formalization_notes: '''Намного более 38.2%'' — мягкая верхняя граница.'
+aliases:
+- ограничение отката волны-2 при растянутой первой
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-02T18:06:56Z'
+review_notes: null
+requires_review: false

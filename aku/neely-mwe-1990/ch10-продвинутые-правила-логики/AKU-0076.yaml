@@ -1,0 +1,42 @@
+id: AKU-0076
+type: rule
+strength: mandatory
+status: verified
+topic: post-pattern-logic
+subtopics:
+- impulse
+- impulse-extension
+- retracement
+statement_ru: 'Импульс с Растянутой пятой — единственная из растянутых волн, после
+  которой следующая волна такого же Порядка должна быть больше 61,8% её длины, вне
+  зависимости от того, какой частью большей волны этот Импульс является.
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: doc-ch10
+  chapter: Глава 10
+  section: Продвинутые Правила логики
+  figure_id: null
+  verbatim_quote:
+    text: 'Импульс с Растянутой пятой - единственная из растянутых волн, после которой
+      следующая волна такого же Порядка должна быть больше 61,8% ее длины, вне зависимости
+      от того, какой частью большей волны этот Импульс является.
+
+      '
+    language: ru
+formalization:
+  status: draft
+  applies_when: pattern == 'impulse' AND extended_wave == 5 AND position == 'post_pattern'
+  constraint: length(next_wave_same_degree) > 0.618 * length(wave_5)
+  formalization_notes: Строгое '>' и независимо от роли Импульса (отличие от AKU-0034).
+aliases:
+- правило 61.8% после растянутой пятой
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-02T18:05:11Z'
+review_notes: null
+requires_review: false

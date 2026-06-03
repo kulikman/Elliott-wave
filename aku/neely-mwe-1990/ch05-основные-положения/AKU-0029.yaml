@@ -1,0 +1,42 @@
+id: AKU-0029
+type: rule
+strength: mandatory
+status: verified
+topic: zigzag
+subtopics:
+- rule-of-alternation
+- length-ratio-rules
+statement_ru: 'Волна-а и волна-b Зигзага должны отличаться по цене. Волна-b составит
+  61.8% или менее волны-а.
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: 5-42
+  chapter: Chapter 5
+  section: Условные правила построения поливолн коррекции — Чередование — Цена
+  figure_id: null
+  verbatim_quote:
+    text: 'Волна-а и волна-b Зигзага должны отличаться по цене. Волна-b составит 61.8%
+      или менее волны-а.
+
+      '
+    language: ru
+formalization:
+  status: draft
+  applies_when: pattern == 'zigzag'
+  constraint: length(wave_b) <= 0.618 * length(wave_a) AND length(wave_b) != length(wave_a)
+  formalization_notes: null
+aliases:
+- ценовое чередование в зигзаге
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-02T17:56:17Z'
+review_notes: 'Маркер "должны". Контекст — "Условные правила", что может означать
+  conditional. Но формулировка "должны" звучит обязательно.
+
+  '
+requires_review: false

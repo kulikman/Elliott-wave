@@ -1,0 +1,47 @@
+id: AKU-0001
+type: rule
+strength: mandatory
+status: verified
+topic: impulse
+subtopics: [rule-of-overlap, retracement]
+
+statement_ru: >
+  Волна 2 не может откатываться более чем на 100% длины Волны 1.
+  Если ценовое движение опускается ниже начала Волны 1, импульсный
+  счёт неверен.
+
+statement_en: >
+  Wave 2 may never retrace more than 100% of wave 1.
+
+source:
+  book_id: neely-mwe-1990
+  page: "3-14"
+  chapter: "Chapter 3: Preliminary Analysis"
+  section: "Rules for Impulse Waves"
+  figure_id: null
+  verbatim_quote:
+    text: >
+      Волна 2 не может превышать исходную точку Волны 1 — то есть
+      откат не может составлять более 100% длины Волны 1.
+    language: ru
+
+formalization:
+  status: verified
+  applies_when: "pattern == 'impulse' AND current_wave == 2"
+  constraint: "low(wave_2) > low(wave_1_start)"
+  formalization_notes: null
+
+aliases:
+  - "правило 100% отката"
+  - "rule of wave 2"
+  - "100% retracement rule"
+
+related_aku: [AKU-0002, AKU-0003]
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+
+created_by: manual
+created_at: "2026-06-02T10:00:00Z"
+review_notes: null
+requires_review: false

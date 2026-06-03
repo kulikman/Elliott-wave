@@ -1,0 +1,34 @@
+id: AKU-0037
+type: rule
+strength: mandatory
+status: disputed
+topic: formal-logic-rules
+subtopics:
+- flat
+- zigzag
+- post-pattern-logic
+statement_ru: 'Для Плоских и Зигзагов, где волна-b короче волны-a: на втором этапе
+  подтверждения следующая за Коррекцией волна должна достичь начала волны-с за время,
+  не превышающее длительности последней.
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: 6-2
+  chapter: 'Глава 6: Формальные правила логики'
+  section: Коррекции - Плоские волны и Зигзаги - Волна-b короче волны-a
+  figure_id: 6-2
+  verbatim_quote:
+    text: 'на втором этапе, на котором от следующей за Коррекцией волны требуется
+      достичь начала волны-с за время, не превышающее длительности последней.
+
+      '
+    language: ru
+formalization:
+  status: not_attempted
+created_by: claude
+created_at: '2026-06-02T17:57:59Z'
+requires_review: true
+review_notes: 'АВТОПРОВЕРКА: цитата не найдена в тексте — возможна галлюцинация
+
+  REVIEW: цитата не найдена дословно в extracted text — требует проверки'

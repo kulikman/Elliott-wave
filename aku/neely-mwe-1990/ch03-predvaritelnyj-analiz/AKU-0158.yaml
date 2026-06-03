@@ -1,0 +1,42 @@
+id: AKU-0158
+type: definition
+strength: mandatory
+status: draft
+topic: structural-labels
+subtopics:
+- channeling
+statement_ru: Структурное обозначение :L5 («последняя пятёрка») символизирует Импульс,
+  завершающий более крупную ценовую фигуру Эллиота (возможно несколько сразу). Минимальное
+  подтверждение — пересечение трендовой линии по конечным точкам m0 и m(-2) за время,
+  не превышающее длительности формирования волны :L5.
+statement_en: null
+source:
+  book_id: neely-mwe-1990
+  page: 3-64
+  chapter: 'Глава 3: Предварительный анализ'
+  section: Структурные обозначения / :L5
+  figure_id: null
+  verbatim_quote:
+    text: Поскольку волна с обозначением «:L5» всегда завершает более крупную ценовую
+      фигуру Эллиота, она может одновременно завершать и несколько таких ценовых фигур.
+      Минимальным требованием к ее подтверждению является пересечение линии тренда,
+      проведенной по конечным точкам волн m0 и m(-2), которое должно произойти в течение
+      периода времени, не превышающего длительности формирования волны с обозначением
+      «:L5».
+    language: ru
+formalization:
+  status: draft
+  applies_when: confirming a :L5 wave
+  constraint: breaks(next_wave, trendline(end(m0), end(m-2))) AND duration(until_break)
+    <= duration(L5_wave)
+  formalization_notes: null
+aliases: []
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-02T18:50:02Z'
+review_notes: 'Извлечено Claude через прямое чтение PDF (Гл.3, 3-60..3-69: выделение
+  фигур, особые условия).'
+requires_review: true

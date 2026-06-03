@@ -1,0 +1,42 @@
+id: AKU-0074
+type: rule
+strength: mandatory
+status: verified
+topic: post-pattern-logic
+subtopics:
+- impulse
+- impulse-extension
+- retracement
+statement_ru: 'Когда Трендовый Импульс представляет собой волну-а, 1 или 3 более крупной
+  фигуры, откат следующей за ним волны не должен превышать 61.8% его собственной длины.
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: doc-ch10
+  chapter: Глава 10
+  section: Продвинутые Правила логики
+  figure_id: null
+  verbatim_quote:
+    text: 'Когда Трендовый Импульс представляет собой волну-а, 1 или S более крупной
+      фигуры, откат следующей за ним волны не должен превышать 61.8% его собственной
+      длины.
+
+      '
+    language: ru
+formalization:
+  status: draft
+  applies_when: pattern == 'trend_impulse' AND role IN ('wave_a', 'wave_1', 'wave_3')
+    AND position == 'post_pattern'
+  constraint: retrace(next_wave) <= 0.618 * length(impulse)
+  formalization_notes: null
+aliases:
+- правило 61.8% отката трендового импульса
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-02T18:05:11Z'
+review_notes: S в тексте вероятно означает 3 (опечатка OCR)
+requires_review: false

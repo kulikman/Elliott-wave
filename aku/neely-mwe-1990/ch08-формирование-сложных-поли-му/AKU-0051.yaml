@@ -1,0 +1,48 @@
+id: AKU-0051
+type: rule
+strength: mandatory
+status: verified
+topic: wave-identification
+subtopics:
+- polywave
+- multiwave
+statement_ru: 'В трёх из четырёх ситуаций потери силы импульса (Неудавшаяся пятая
+  волна, Неудавшаяся волна-С Плоской, завершение Сужающимся Неограничивающим Треугольником)
+  точка экстремума (максимума или минимума) не является конечной точкой фигуры Эллиотта.
+  Если следующая за фигурой волна достигла её начального уровня и самая высокая цена
+  не является конечной точкой фигуры, то точка завершения будет возникать после достижения
+  точки экстремума, а не до этого.
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: 8-24
+  chapter: Глава 8
+  section: Формирование сложных поли-, мульти- и макроволн
+  figure_id: null
+  verbatim_quote:
+    text: 'B трех первых из четырех описанных ситуаций (пункты A, B и C) точка экстремума
+      (максимума или минимума) не является конечной точкой фигуры Эллиотта.
+
+      '
+    language: ru
+formalization:
+  status: draft
+  applies_when: subtype IN ('failure_5th', 'flat_failure_c', 'contracting_nonlimiting_triangle')
+  constraint: extreme_point(pattern) != end_point(pattern)
+  formalization_notes: В 3 из 4 ситуаций потери силы импульса экстремум не совпадает
+    с концом фигуры.
+aliases:
+- правило точки экстремума
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-02T18:02:56Z'
+review_notes: 'Утверждение сформулировано как констатация факта ("не является"), что
+  по смыслу является обязательным правилом. Однако это скорее описание свойства, чем
+  запрет.
+
+  '
+requires_review: false

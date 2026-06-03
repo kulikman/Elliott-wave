@@ -1,0 +1,39 @@
+id: AKU-0068
+type: rule
+strength: mandatory
+status: verified
+topic: zigzag
+subtopics:
+- post-pattern-logic
+- retracement
+statement_ru: 'Следующая за Удлинённым Зигзагом волна одного с ним Порядка никогда
+  не должна достигать его начального уровня.
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: 10-4
+  chapter: 'Глава 10: Продвинутые Правила логики'
+  section: Удлиненный зигзаг
+  figure_id: null
+  verbatim_quote:
+    text: 'Следующая за ним волна одного с ней Порядка никогда не должна достигать
+      его начального уровня.
+
+      '
+    language: ru
+formalization:
+  status: draft
+  applies_when: pattern == 'zigzag' AND subtype == 'elongated' AND position == 'post_pattern'
+  constraint: not reaches(next_wave_same_degree, start_level(zigzag))
+  formalization_notes: null
+aliases:
+- правило отката удлинённого зигзага
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-02T18:04:31Z'
+review_notes: null
+requires_review: false

@@ -1,0 +1,38 @@
+id: AKU-0105
+type: rule
+strength: mandatory
+status: verified
+topic: triangle
+subtopics:
+- motion-labels
+statement_ru: 'В Расширяющемся Ограничивающем Горизонтальном Треугольнике волна-e
+  должна быть самой интенсивной, сложной и длительной в группе.
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: 11-31
+  chapter: Глава 11
+  section: Продвинутое применение Меток движения — Расширяющиеся Треугольники — Горизонтальные
+  figure_id: null
+  verbatim_quote:
+    text: 'Волна-e должна быть самой интенсивной, сложной и длительной в группе.
+
+      '
+    language: ru
+formalization:
+  status: draft
+  applies_when: pattern == 'expanding_limiting_horizontal_triangle'
+  constraint: complexity(wave_e) == max AND duration(wave_e) == max AND length(wave_e)
+    == max
+  formalization_notes: null
+aliases:
+- правило волны-е горизонтального расширяющегося треугольника
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-02T18:08:13Z'
+review_notes: null
+requires_review: false

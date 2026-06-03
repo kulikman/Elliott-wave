@@ -1,0 +1,40 @@
+id: AKU-0153
+type: rule
+strength: mandatory
+status: draft
+topic: complexity-rule
+subtopics:
+- grouping-procedure
+- wave-degree
+statement_ru: Уровни Сложности смежных (последовательно расположенных) ценовых фигур
+  отличаются не более чем на единицу. Если уровни сложности соседних волн различаются
+  более чем на 1 — группировка по методу Нили невозможна.
+statement_en: null
+source:
+  book_id: neely-mwe-1990
+  page: 3-68
+  chapter: 'Глава 3: Предварительный анализ'
+  section: Особые условия
+  figure_id: null
+  verbatim_quote:
+    text: Убедитесь, что Уровни Сложности смежных (последовательно расположенных)
+      ценовых фигур ... отличаются не более чем на единицу. ... по методу Нили это
+      было бы невозможно, если бы уровни сложности данных волн отличались более чем
+      на единицу.
+    language: ru
+formalization:
+  status: draft
+  applies_when: grouping two adjacent waves/figures into a larger figure
+  constraint: abs(complexity_level(fig_i) - complexity_level(fig_i+1)) <= 1
+  formalization_notes: 'Уровни сложности: 0=моноволна, 1=поливолна, 2=мультиволна,
+    3+=макроволна (Гл.7).'
+aliases: []
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-02T18:50:02Z'
+review_notes: 'Извлечено Claude через прямое чтение PDF (Гл.3, 3-60..3-69: выделение
+  фигур, особые условия).'
+requires_review: true

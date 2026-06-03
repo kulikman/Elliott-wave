@@ -1,0 +1,40 @@
+id: AKU-0078
+type: rule
+strength: mandatory
+status: verified
+topic: post-pattern-logic
+subtopics:
+- ending-diagonal
+statement_ru: 'Терминальный Импульс всегда завершает более крупную фигуру, и созданная
+  им точка минимума/максимума должна удержаться примерно в течение как минимум двух
+  периодов времени его формирования (отсчитанных с момента его окончания).
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: doc-ch10
+  chapter: Глава 10
+  section: Продвинутые Правила логики
+  figure_id: null
+  verbatim_quote:
+    text: 'Терминальный Импульс всегда завершает более крупную фигуру, и созданная
+      им точка минимума/максимума должна удержаться примерно в течение как минимум
+      двух периодов времени его формирования (отсчитанных с момента его окончания).
+
+      '
+    language: ru
+formalization:
+  status: draft
+  applies_when: pattern == 'terminal_impulse' AND position == 'post_pattern'
+  constraint: hold(extreme(terminal)) for duration >= 2 * duration(terminal)
+  formalization_notes: '''Примерно'' два периода — мягкое ограничение.'
+aliases:
+- правило удержания экстремума терминального импульса
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-02T18:05:11Z'
+review_notes: null
+requires_review: false

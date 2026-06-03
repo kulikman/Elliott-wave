@@ -1,0 +1,43 @@
+id: AKU-0141
+type: rule
+strength: mandatory
+status: draft
+topic: length-ratio-rules
+subtopics:
+- monowave
+- structural-labels
+statement_ru: 'Определитель Правил: применяемое к моноволне m1 Правило (1–7) определяется
+  соотношением длины следующей моноволны m2 к m1: <38.2%→Пр.1; 38.2–61.8%→Пр.2; =61.8%→Пр.3;
+  61.8–100%→Пр.4; 100–161.8%→Пр.5; 161.8–261.8%→Пр.6; >261.8%→Пр.7.'
+statement_en: null
+source:
+  book_id: neely-mwe-1990
+  page: 3-22
+  chapter: 'Глава 3: Предварительный анализ'
+  section: Правила соотношений длин волн / Определитель Правил
+  figure_id: null
+  verbatim_quote:
+    text: 'Если отношение m2 к m1: меньше 38,2%, см. Правило 1; от 38,2% включительно
+      до 61,8% (не включая), см. Правило 2; ровно 61,8%, см. Правило 3; между 61,8%
+      и 100% (не включая), см. Правило 4; от 100% включительно до 161,8% (не включая),
+      см. Правило 5; между 161,8% и 261,8% (включительно), см. Правило 6; более 261,8%,
+      см. Правило 7.'
+    language: ru
+formalization:
+  status: draft
+  applies_when: classifying monowave m1 by retracement ratio
+  constraint: rule = 1 if ratio(m2,m1) < 0.382 else 2 if ratio(m2,m1) < 0.618 else
+    3 if ratio(m2,m1) == 0.618 else 4 if ratio(m2,m1) < 1.000 else 5 if ratio(m2,m1)
+    < 1.618 else 6 if ratio(m2,m1) <= 2.618 else 7
+  formalization_notes: ratio(m2,m1) = вертикальная ценовая проекция m2 / проекция
+    m1. Не зависит от направления m1.
+aliases: []
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-02T18:42:47Z'
+review_notes: Извлечено Claude через прямое чтение PDF (Гл.3, Правила соотношений
+  длин). Полная таблица условий — в ch03-length-ratio-rules.md.
+requires_review: true

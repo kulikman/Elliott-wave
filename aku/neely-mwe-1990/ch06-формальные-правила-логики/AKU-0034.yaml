@@ -1,0 +1,36 @@
+id: AKU-0034
+type: rule
+strength: mandatory
+status: verified
+topic: formal-logic-rules
+subtopics:
+- impulse
+- impulse-extension
+- post-pattern-logic
+statement_ru: 'Длина следующей за Импульсом с Растянутой пятой коррективной волны
+  должна составлять как минимум 61,8% длины пятой волны и должна быть меньше длины
+  пятой волны, если тренд всё ещё силён.
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: 6-1
+  chapter: 'Глава 6: Формальные правила логики'
+  section: Импульсы - Пятая Растянутая волна
+  figure_id: null
+  verbatim_quote:
+    text: 'Длина следующей за этой разновидностью Импульса коррективной волны должна
+      составлять как минимум 61,8% длины пятой волны и должна быть меньше ее, если
+      тренд все еще силен.
+
+      '
+    language: ru
+formalization:
+  status: draft
+  applies_when: pattern == 'impulse' AND extended_wave == 5 AND position == 'post_pattern'
+  constraint: length(next_corrective) >= 0.618 * length(wave_5)
+  formalization_notes: 'Доп. условие: length(next_corrective) < length(wave_5), если
+    тренд силён.'
+created_by: claude
+created_at: '2026-06-02T17:57:59Z'
+requires_review: false

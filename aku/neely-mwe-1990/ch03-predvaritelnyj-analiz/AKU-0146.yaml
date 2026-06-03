@@ -1,0 +1,36 @@
+id: AKU-0146
+type: rule
+strength: mandatory
+status: draft
+topic: length-ratio-rules
+subtopics:
+- foundations
+statement_ru: Если объект измерения при проверке гипотезы не оговорён особо, по умолчанию
+  измеряется ценовая длина волны (а не временная).
+statement_en: null
+source:
+  book_id: neely-mwe-1990
+  page: 3-34
+  chapter: 'Глава 3: Предварительный анализ'
+  section: Неформальные Правила логики / Конвенции измерений
+  figure_id: null
+  verbatim_quote:
+    text: Если при проверке обоснованности той или иной гипотезы необходимо произвести
+      какие-либо измерения, объект которых ... не оговаривается особо, по умолчанию
+      измеряется ценовая длина волны.
+    language: ru
+formalization:
+  status: draft
+  applies_when: measuring wave length when dimension unspecified
+  constraint: default_measure(wave) := price_length(wave)
+  formalization_notes: null
+aliases: []
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-02T18:48:06Z'
+review_notes: Извлечено Claude через прямое чтение PDF (Гл.3, Неформальные правила
+  логики). Полный текст — ch03-informal-logic.md.
+requires_review: true

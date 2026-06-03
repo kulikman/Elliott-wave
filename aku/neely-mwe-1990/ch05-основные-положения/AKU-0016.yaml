@@ -1,0 +1,40 @@
+id: AKU-0016
+type: rule
+strength: mandatory
+status: verified
+topic: zigzag
+subtopics:
+- length-ratio-rules
+statement_ru: 'Волна-с Зигзага должна двигаться (пусть даже ненамного) дальше конечной
+  точки волны-а.
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: 5-23
+  chapter: Chapter 5
+  section: Зигзаги (5-3-5)
+  figure_id: 5-23-1
+  verbatim_quote:
+    text: 'Волна-с должна двигаться (пусть даже ненамного) дальше конечной точки волны-а
+
+      '
+    language: ru
+formalization:
+  status: draft
+  applies_when: 'pattern == ''zigzag''
+
+    '
+  constraint: "# Волна-с должна двигаться дальше конечной точки волны-а\n# Для бычьего\
+    \ зигзага (направление вверх): конец волны-с выше конца волны-а\n# Для медвежьего\
+    \ зигзага (направление вниз): конец волны-с ниже конца волны-а\n\nif direction\
+    \ == 'up':\n    end(wave_c) > end(wave_a)\nelif direction == 'down':\n    end(wave_c)\
+    \ < end(wave_a)\n"
+  formalization_notes: 'Правило допускает минимальное превышение ("пусть даже ненамного"),
+
+    то есть строгое неравенство без минимального порога.
+
+    Направление зигзага определяет знак сравнения.'
+created_by: claude
+created_at: '2026-06-02T17:55:31Z'
+requires_review: false

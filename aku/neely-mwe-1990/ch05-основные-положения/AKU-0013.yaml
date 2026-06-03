@@ -1,0 +1,75 @@
+id: AKU-0013
+type: rule
+strength: mandatory
+status: verified
+topic: impulse
+subtopics:
+- rule-of-alternation
+statement_ru: 'Для продолжения исследования группы волн в качестве возможного импульса
+  между волнами 2 и 4 должно наблюдаться чередование значений как минимум одного из
+  параметров: цена, время, сила отката, сложность или строение.
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: 5-3
+  chapter: 'Глава 5: Основные положения'
+  section: Правило Чередования
+  figure_id: null
+  verbatim_quote:
+    text: Для продолжения исследования группы волн в качестве возможного импульса
+      между волнами 2 и 4 должно наблюдаться чередование значений как минимум одного
+      из описанных выше параметров.
+    language: ru
+formalization:
+  status: draft
+  applies_when: '# Применяется при проверке группы волн как кандидата на импульс
+
+    pattern_candidate == ''impulse''
+
+    AND wave_2 IS defined
+
+    AND wave_4 IS defined
+
+    '
+  constraint: "# Параметры чередования между волнами 2 и 4:\n\n# A. Цена (длина волны\
+    \ в пунктах)\nprice_alternation = (price_length(wave_2) != price_length(wave_4))\n\
+    # Существенное различие в абсолютной длине (амплитуде) волн 2 и 4\n\n# B. Время\
+    \ (длительность волны)\ntime_alternation = (duration(wave_2) != duration(wave_4))\n\
+    # Существенное различие в продолжительности волн 2 и 4\n\n# C. Сила отката (процент\
+    \ коррекции предшествующей волны)\nretracement_w2 = price_length(wave_2) / price_length(wave_1)\n\
+    retracement_w4 = price_length(wave_4) / price_length(wave_3)\nseverity_alternation\
+    \ = (retracement_w2 != retracement_w4)\n# Существенное различие в глубине отката\
+    \ волн 2 и 4\n\n# D. Сложность (количество составляющих подволн)\ncomplexity_alternation\
+    \ = (subwave_count(wave_2) != subwave_count(wave_4))\n# Различие в количестве\
+    \ внутренних сегментов\n\n# E. Строение (тип коррекционной фигуры)\nconstruction_alternation\
+    \ = (pattern_type(wave_2) != pattern_type(wave_4))\n# Например: wave_2 == 'zigzag'\
+    \ AND wave_4 == 'flat', или наоборот\n\n# Обязательное условие: хотя бы один параметр\
+    \ должен чередоваться\nalternation_exists = (\n  price_alternation\n  OR time_alternation\n\
+    \  OR severity_alternation\n  OR complexity_alternation\n  OR construction_alternation\n\
+    )\n\n# Если чередование отсутствует — группа волн НЕ может рассматриваться\n#\
+    \ как возможный импульс (исследование в качестве импульса прекращается)\nREQUIRE\
+    \ alternation_exists == true\n"
+  formalization_notes: "1. Правило говорит \"чередование значений\", но не определяет\
+    \ порог\n   существенности различия для количественных параметров (цена, время,\n\
+    \   сила отката). Операторы \"!=\" здесь означают \"существенно отличаются\",\n\
+    \   но конкретные пороги (например, разница > 10%) не указаны в данном\n   правиле\
+    \ и должны быть определены из других AKU или контекста.\n2. Для параметра \"сложность\"\
+    \ подсчёт subwave_count зависит от уровня\n   детализации разметки, что вносит\
+    \ субъективность.\n3. Для параметра \"строение\" необходима предварительная классификация\n\
+    \   типа коррекционной фигуры каждой волны (zigzag, flat, triangle и т.п.).\n\
+    4. Нарушение правила не означает абсолютную невозможность счёта —\n   согласно\
+    \ review_notes, группа волн может быть переинтерпретирована\n   как сложная коррекция,\
+    \ но как импульс она рассматриваться не может."
+aliases:
+- минимальное чередование волн 2 и 4
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-02T17:54:51Z'
+review_notes: Формулировка 'должно' указывает на обязательность, но нарушение ведёт
+  к альтернативной интерпретации (Сложная Коррекция), а не к полной невозможности
+  счёта.
+requires_review: false

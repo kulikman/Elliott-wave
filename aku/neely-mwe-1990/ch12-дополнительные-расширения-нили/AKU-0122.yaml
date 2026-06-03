@@ -1,0 +1,30 @@
+id: AKU-0122
+type: rule
+strength: mandatory
+status: verified
+topic: wave-identification
+subtopics:
+- monowave
+- polywave
+statement_ru: 'Когда волна «Пропавшая», она всегда представляет собой моноволну и
+  никогда не бывает поливолной или более крупной фигурой.
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: 12-45
+  chapter: Глава 12
+  section: Пропавшие волны
+  figure_id: null
+  verbatim_quote:
+    text: Когда волна "Пропавшая", она всегда представляет собой моноволну и никогда
+      не бывает поливолной или более крупной фигурой.
+    language: ru
+formalization:
+  status: draft
+  applies_when: wave_status == 'missing'
+  constraint: degree(missing_wave) == 'monowave'
+  formalization_notes: null
+created_by: claude
+created_at: '2026-06-02T18:09:46Z'
+requires_review: false

@@ -1,0 +1,32 @@
+id: AKU-0022
+type: rule
+strength: mandatory
+status: verified
+topic: zigzag
+subtopics:
+- length-ratio-rules
+statement_ru: 'Волна-с Усечённого Зигзага не может быть короче 38.2% волны-а, но должна
+  быть короче 61.8% волны-а.
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: 5-26
+  chapter: Chapter 5
+  section: Усечённый Зигзаг
+  figure_id: null
+  verbatim_quote:
+    text: 'Волна-с не может быть короче 38.2% волны-а, но должна быть короче 61.8%
+      волны-а.
+
+      '
+    language: ru
+formalization:
+  status: draft
+  applies_when: pattern == 'zigzag' AND subtype == 'truncated'
+  constraint: 0.382 * length(wave_a) <= length(wave_c) AND length(wave_c) < 0.618
+    * length(wave_a)
+  formalization_notes: null
+created_by: claude
+created_at: '2026-06-02T17:55:31Z'
+requires_review: false

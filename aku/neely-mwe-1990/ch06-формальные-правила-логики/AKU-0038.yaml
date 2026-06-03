@@ -1,0 +1,35 @@
+id: AKU-0038
+type: rule
+strength: mandatory
+status: verified
+topic: formal-logic-rules
+subtopics:
+- triangle
+- post-pattern-logic
+statement_ru: 'Для Сужающихся Треугольников: на первом этапе подтверждения первая
+  после завершения Треугольника волна должна достичь и пробить линию тренда B-D за
+  время, не превышающее длительности волны-е Треугольника.
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: 6-3
+  chapter: 'Глава 6: Формальные правила логики'
+  section: Коррекции - Треугольники - Этап 1
+  figure_id: null
+  verbatim_quote:
+    text: 'На первом этапе процесса подтверждения первая после завершения Треугольника
+      волна должна достичь и пробить линию тренда B-D за время, не превышающее длительности
+      волны-е Треугольника.
+
+      '
+    language: ru
+formalization:
+  status: draft
+  applies_when: pattern == 'contracting_triangle' AND position == 'post_pattern_stage1'
+  constraint: breaks(next_wave, trendline(end(B), end(D))) AND duration(until_break)
+    <= duration(wave_e)
+  formalization_notes: null
+created_by: claude
+created_at: '2026-06-02T17:57:59Z'
+requires_review: false

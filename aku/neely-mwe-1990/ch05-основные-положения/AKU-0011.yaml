@@ -1,0 +1,72 @@
+id: AKU-0011
+type: rule
+strength: mandatory
+status: verified
+topic: impulse
+subtopics:
+- channeling
+statement_ru: 'Ни одна часть волн 1 или 3 не должна пересекать действительную линию
+  тренда 0-2.
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: 5-6
+  chapter: 'Глава 5: Основные положения'
+  section: Каналы
+  figure_id: null
+  verbatim_quote:
+    text: ни одна часть волн 1 или 3 не должна пересекать действительную линию тренда
+      0-2.
+    language: ru
+formalization:
+  status: draft
+  applies_when: '# Применяется к импульсной фигуре, когда определены точки 0, 1, 2,
+    3
+
+    # и можно построить линию тренда через точки 0 и 2
+
+    pattern == ''impulse''
+
+    AND wave_0 IS defined
+
+    AND wave_1 IS defined
+
+    AND wave_2 IS defined
+
+    AND wave_3 IS defined
+
+    '
+  constraint: "# Построить действительную линию тренда (base channel line) через точки\
+    \ 0 и 2\n# Точка 0 = начало волны 1, Точка 2 = конец волны 2\ntrendline_0_2 =\
+    \ line_through(point_0, point_2)\n\n# Для каждого ценового бара внутри волны 1:\n\
+    #   ни один бар не должен пересекать (пробивать) линию тренда 0-2\nFOR each bar\
+    \ IN wave_1.all_bars:\n  IF direction == 'up':\n    # В бычьем импульсе линия\
+    \ 0-2 проходит по низам, \n    # ни один low бара волны 1 не должен быть ниже\
+    \ значения линии тренда в этот момент\n    bar.low >= trendline_0_2.value_at(bar.time)\n\
+    \  ELIF direction == 'down':\n    # В медвежьем импульсе линия 0-2 проходит по\
+    \ верхам,\n    # ни один high бара волны 1 не должен быть выше значения линии\
+    \ тренда в этот момент\n    bar.high <= trendline_0_2.value_at(bar.time)\n\n#\
+    \ Для каждого ценового бара внутри волны 3:\n#   ни один бар не должен пересекать\
+    \ (пробивать) линию тренда 0-2\nFOR each bar IN wave_3.all_bars:\n  IF direction\
+    \ == 'up':\n    bar.low >= trendline_0_2.value_at(bar.time)\n  ELIF direction\
+    \ == 'down':\n    bar.high <= trendline_0_2.value_at(bar.time)\n"
+  formalization_notes: "1. \"Действительная линия тренда 0-2\" — это линия, проведённая\
+    \ через начало волны 1 (точка 0) \n   и конец волны 2 (точка 2). В контексте каналов\
+    \ Нили это базовая линия канала.\n2. \"Пересекать\" означает, что ценовое действие\
+    \ волны проходит сквозь линию тренда \n   (любой бар волны оказывается по другую\
+    \ сторону линии).\n3. В бычьем импульсе линия 0-2 проходит снизу (по минимумам),\
+    \ \n   в медвежьем — сверху (по максимумам).\n4. Правило является mandatory —\
+    \ нарушение означает, что разметка импульса некорректна.\n5. Контекст указывает\
+    \ на диаграмму B, где волна 3 растянута, но само правило \n   сформулировано как\
+    \ общее (\"Важное замечание\"), применимое к импульсам с каналом 0-2."
+aliases:
+- правило линии тренда 0-2
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-02T17:54:51Z'
+review_notes: null
+requires_review: false

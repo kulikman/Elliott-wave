@@ -1,0 +1,38 @@
+id: AKU-0048
+type: rule
+strength: mandatory
+status: verified
+topic: impulse-extension
+subtopics:
+- rule-of-alternation
+- complexity-rule
+statement_ru: 'Когда волна-1 Импульса растянута, волна-2 должна быть сложнее волны-4.
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: doc-ch8
+  chapter: 'Глава 8: Формирование сложных поли-, мульти- и макроволн'
+  section: Подробнее о растянутых волнах
+  figure_id: Рис. 8-20-1
+  verbatim_quote:
+    text: 'Когда волна-1 растянута, волна-2 должна быть сложнее волны-4.
+
+      '
+    language: ru
+formalization:
+  status: draft
+  applies_when: pattern == 'impulse' AND extended_wave == 1
+  constraint: complexity(wave_2) > complexity(wave_4)
+  formalization_notes: null
+aliases:
+- правило сложности при растянутой первой
+related_aku:
+- AKU-0049
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-02T18:02:39Z'
+review_notes: null
+requires_review: false

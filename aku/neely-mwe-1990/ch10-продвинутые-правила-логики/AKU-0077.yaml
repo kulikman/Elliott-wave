@@ -1,0 +1,42 @@
+id: AKU-0077
+type: rule
+strength: mandatory
+status: verified
+topic: post-pattern-logic
+subtopics:
+- ending-diagonal
+- retracement
+statement_ru: 'Следующая за Терминальным Импульсом волна должна достичь его начального
+  уровня не более чем за 50% времени его формирования; обычно это занимает примерно
+  25% этого времени.
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: doc-ch10
+  chapter: Глава 10
+  section: Продвинутые Правила логики
+  figure_id: null
+  verbatim_quote:
+    text: 'Следующая за Терминальным Импульсом волна должна достичь его начального
+      уровня не более чем за 50% времени его формирования; обычно это занимает примерно
+      25% этого времени.
+
+      '
+    language: ru
+formalization:
+  status: draft
+  applies_when: pattern == 'terminal_impulse' AND position == 'post_pattern'
+  constraint: reaches(next_wave, start_level(terminal)) AND duration(until_reach)
+    <= 0.5 * duration(terminal)
+  formalization_notes: Обычно достигается за ~25% времени формирования.
+aliases:
+- правило отката терминального импульса
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-02T18:05:11Z'
+review_notes: null
+requires_review: false

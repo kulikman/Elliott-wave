@@ -1,0 +1,28 @@
+id: AKU-0116
+type: rule
+strength: mandatory
+status: verified
+topic: impulse-extension
+subtopics:
+- fibonacci-ratios
+- length-ratio-rules
+statement_ru: 'При Растянутой 1-й волне волна-3 не должна быть более 61.8% волны-1.
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: 12-26
+  chapter: Глава 12
+  section: Дополнительные расширения Нили
+  figure_id: 12-26
+  verbatim_quote:
+    text: волна-3 не должна быть более 61.8% волны-1.
+    language: ru
+formalization:
+  status: draft
+  applies_when: pattern == 'impulse' AND extended_wave == 1
+  constraint: length(wave_3) <= 0.618 * length(wave_1)
+  formalization_notes: null
+created_by: claude
+created_at: '2026-06-02T18:09:46Z'
+requires_review: false

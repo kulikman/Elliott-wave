@@ -1,0 +1,38 @@
+id: AKU-0093
+type: rule
+strength: mandatory
+status: disputed
+topic: flat
+subtopics:
+- motion-labels
+- length-ratio-rules
+statement_ru: 'В Неправильной Плоской коррекции волна-b должна быть не меньше 101%
+  волны-а, и волна-с должна быть не меньше 101% волны-b.
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: 11-17
+  chapter: Глава 11
+  section: Продвинутое применение Меток движения — Неправильная
+  figure_id: 11-17, 11-18
+  verbatim_quote:
+    text: 'Волна-в должна быть не меньше 101% волны-а... Волна-с должна быть не меньше
+      101% волны-в
+
+      '
+    language: ru
+formalization:
+  status: not_attempted
+aliases:
+- минимальные требования неправильной плоской
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-02T18:07:39Z'
+review_notes: 'АВТОПРОВЕРКА: цитата не найдена в тексте — возможна галлюцинация
+
+  REVIEW: цитата не найдена дословно в extracted text — требует проверки'
+requires_review: true

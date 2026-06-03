@@ -1,0 +1,42 @@
+id: AKU-0102
+type: rule
+strength: mandatory
+status: verified
+topic: triangle
+subtopics:
+- motion-labels
+- flat
+statement_ru: 'Расширяющийся Ограничивающий Треугольник в позиции b-волны может быть
+  только частью Плоской коррекции. Он не может быть b-волной Зигзага, x-волной Сложной
+  Коррекции или b-волной более крупного Треугольника.
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: 11-31
+  chapter: Глава 11
+  section: Продвинутое применение Меток движения — Расширяющиеся Треугольники — Ограничивающие
+  figure_id: null
+  verbatim_quote:
+    text: 'Если он b-волна, то может быть только частью Плоской. Этот Треугольник,
+      по всей видимости, не может быть Ь-волной Зигзага, x-волной Сложной Коррекции
+      или Ь-волной более крупного Треугольника.
+
+      '
+    language: ru
+formalization:
+  status: draft
+  applies_when: pattern == 'expanding_limiting_triangle' AND position == 'wave_b'
+  constraint: parent == 'flat' AND parent NOT IN ('zigzag', 'complex_correction_x',
+    'larger_triangle')
+  formalization_notes: null
+aliases:
+- ограничение позиции расширяющегося ограничивающего треугольника
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-02T18:08:13Z'
+review_notes: true
+requires_review: false

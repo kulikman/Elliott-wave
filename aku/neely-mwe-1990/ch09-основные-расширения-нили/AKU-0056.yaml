@@ -1,0 +1,49 @@
+id: AKU-0056
+type: exception
+strength: conditional
+status: verified
+topic: informal-logic-rules
+subtopics:
+- triangle
+- ending-diagonal
+statement_ru: 'В важных точках разворота рынка или при необычных условиях одно из
+  критически важных правил формирования волновой фигуры может не выполняться. Исключительными
+  ситуациями являются: A) завершение мультиволны или более крупной фигуры; B) волна-5
+  или с-волна Терминальной фигуры; C) волна, являющаяся или завершающаяся Сужающимся
+  или Расширяющимся Треугольником.
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: 9-5
+  chapter: 'Глава 9: Основные Расширения Нили'
+  section: Перечень исключений, Пункт 1
+  figure_id: null
+  verbatim_quote:
+    text: 'Случается, что в важных точках "разворота" рынка или при "необычных" условиях
+      одно из правил, обычно критически важное для правильного формирования волновой
+      фигуры, может не применяться или не выполняться.
+
+      '
+    language: ru
+formalization:
+  status: not_formalizable
+  applies_when: null
+  constraint: null
+  formalization_notes: 'Мета-правило об исключениях: в особых точках (завершение мультиволны+,
+    b-волна, и т.д.) одно критическое правило может не выполняться. Используется как
+    контекст для смягчения mandatory-проверок, не как constraint.'
+aliases:
+- перечень исключений пункт 1
+- exception list point 1
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-02T18:03:43Z'
+review_notes: 'Это исключение из обязательных правил, а не само обязательное правило.
+  Тем не менее критически важно для корректного применения mandatory rules.
+
+  '
+requires_review: false

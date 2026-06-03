@@ -1,0 +1,39 @@
+id: AKU-0065
+type: rule
+strength: mandatory
+status: verified
+topic: flat
+subtopics:
+- post-pattern-logic
+- retracement
+statement_ru: 'Следующая за Неправильной Неудавшейся волна такого же Порядка должна
+  достигать её начального уровня.
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: 10-5
+  chapter: 'Глава 10: Продвинутые Правила логики'
+  section: Неправильная Неудавшаяся
+  figure_id: null
+  verbatim_quote:
+    text: 'Следующая за Неправильной Неудавшейся волна такого же Порядка должна достигать
+      ее начального уровня.
+
+      '
+    language: ru
+formalization:
+  status: draft
+  applies_when: subtype == 'irregular_failure' AND position == 'post_pattern'
+  constraint: reaches(next_wave_same_degree, start_level(pattern))
+  formalization_notes: null
+aliases:
+- правило постэффекта неправильной неудавшейся
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-02T18:04:31Z'
+review_notes: null
+requires_review: false

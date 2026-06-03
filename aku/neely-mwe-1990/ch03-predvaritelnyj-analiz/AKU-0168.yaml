@@ -1,0 +1,35 @@
+id: AKU-0168
+type: rule
+strength: conditional
+status: draft
+topic: structural-labels
+subtopics:
+- length-ratio-rules
+- monowave
+statement_ru: 'Правило 5 (100% ≤ m2/m1 < 161.8%): структурный список m1 = {:F3, :c3,
+  :5, :L5, (:L3)}. Вероятная метка :F3.'
+statement_en: null
+source:
+  book_id: neely-mwe-1990
+  page: 3-51
+  chapter: 'Глава 3: Предварительный анализ'
+  section: Неформальные Правила логики / структурные списки
+  figure_id: null
+  verbatim_quote:
+    text: Правило 5 {:F3/:c3/:5/:L5/(:L3)}
+    language: ru
+formalization:
+  status: draft
+  applies_when: rule(m1) == 5
+  constraint: structure(m1) in {':F3',':c3',':5',':L5','(:L3)'} ; primary := ':F3'
+  formalization_notes: null
+aliases: []
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-02T19:20:47Z'
+review_notes: Извлечено Claude через прямое чтение PDF (Гл.3, структурные списки Правил
+  4-7).
+requires_review: true

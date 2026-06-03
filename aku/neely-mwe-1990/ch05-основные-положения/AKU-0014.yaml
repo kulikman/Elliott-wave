@@ -1,0 +1,79 @@
+id: AKU-0014
+type: rule
+strength: mandatory
+status: verified
+topic: zigzag
+subtopics:
+- length-ratio-rules
+- retracement
+statement_ru: 'Волна-а Зигзага не должна откатиться от предыдущей Импульсной волны
+  более высокого Порядка (если такая волна имеется) больше, чем на 61.8%.
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: 5-22
+  chapter: Chapter 5
+  section: Зигзаги (5-3-5)
+  figure_id: 5-22а
+  verbatim_quote:
+    text: 'Волна-а не должна откатиться от предыдущей Импульсной волны более высокого
+      Порядке (если такая волна имеется) больше, чем на 61.8%
+
+      '
+    language: ru
+formalization:
+  status: draft
+  applies_when: '# Текущий паттерн — Зигзаг (Zigzag)
+
+    # Рассматривается волна-a этого Зигзага
+
+    # Существует предыдущая Импульсная волна более высокого Порядка (degree),
+
+    # частью коррекции которой является данный Зигзаг
+
+    pattern == ''zigzag'' AND current_wave == ''a''
+
+    AND exists(previous_higher_degree_impulse_wave)
+
+    '
+  constraint: '# Волна-а Зигзага не должна откатить более 61.8% от предыдущей
+
+    # Импульсной волны более высокого Порядка
+
+    #
+
+    # previous_impulse = предыдущая Импульсная волна более высокого Порядка
+
+    # retracement = насколько волна-a откатила от этой импульсной волны
+
+    #
+
+    # Длина предыдущей импульсной волны:
+
+    prev_impulse_length = abs(end_price(previous_higher_degree_impulse_wave) - start_price(previous_higher_degree_impulse_wave))
+
+
+    # Длина отката волны-a (волна-a идёт в направлении, противоположном предыдущему
+    импульсу):
+
+    wave_a_length = abs(end_price(wave_a) - start_price(wave_a))
+
+
+    # Ограничение:
+
+    wave_a_length <= 0.618 * prev_impulse_length
+
+    '
+  formalization_notes: "- Правило применяется только при наличии предыдущей Импульсной\
+    \ волны\n  более высокого Порядка (\"если такая волна имеется\").\n- Определение\
+    \ \"предыдущей Импульсной волны более высокого Порядка\"\n  требует контекста\
+    \ мультиградусной структуры: это импульсная волна\n  на один Порядок (degree)\
+    \ выше, которая непосредственно предшествует\n  текущему Зигзагу (т.е. Зигзаг\
+    \ является коррекцией после этого импульса).\n- start_price(wave_a) совпадает\
+    \ с end_price(previous_higher_degree_impulse_wave),\n  поскольку Зигзаг начинается\
+    \ от конца предыдущей импульсной волны.\n- Строгое неравенство (<=) соответствует\
+    \ формулировке \"не более чем\"."
+created_by: claude
+created_at: '2026-06-02T17:55:31Z'
+requires_review: false

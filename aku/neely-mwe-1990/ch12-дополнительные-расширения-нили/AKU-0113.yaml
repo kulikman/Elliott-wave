@@ -1,0 +1,42 @@
+id: AKU-0113
+type: rule
+strength: mandatory
+status: verified
+topic: post-pattern-logic
+subtopics:
+- ending-diagonal
+- channeling
+statement_ru: 'Для подтверждения Терминальной фигуры активность после волны-(5) должна
+  вернуться к минимуму волны-(4); если этого не происходит, интерпретация неправильная.
+  В 99% случаев рынок будет возвращаться к началу волны-(1) или ниже.
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: 12-8
+  chapter: 'Глава 12: Дополнительные расширения Нили'
+  section: Каналы - Терминальная активность
+  figure_id: null
+  verbatim_quote:
+    text: 'для подтверждения ваших аналитических выводов активность после волны-(5)
+      должна вернуться к минимуму волны-(4); если этого не происходит, ваша интерпретация
+      неправильная.
+
+      '
+    language: ru
+formalization:
+  status: draft
+  applies_when: pattern == 'terminal_impulse' AND position == 'post_pattern'
+  constraint: reaches(next_move, extreme(wave_4))
+  formalization_notes: В 99% случаев рынок возвращается к началу волны-1 или ниже.
+aliases:
+- правило подтверждения терминала
+- правило отката после терминальной фигуры
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-02T18:09:09Z'
+review_notes: null
+requires_review: false

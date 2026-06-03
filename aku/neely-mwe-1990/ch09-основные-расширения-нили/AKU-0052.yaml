@@ -1,0 +1,49 @@
+id: AKU-0052
+type: rule
+strength: mandatory
+status: verified
+topic: channeling
+subtopics:
+- impulse
+- triangle
+statement_ru: 'Только четыре из пяти сегментов фигуры (имеющей 6 возможных точек касания
+  одного и того же Порядка) могут одновременно касаться двух противоположных линий
+  тренда. Это правило применяется к Импульсным фигурам (Трендовым и Терминальным)
+  и Треугольникам. Если больше четырёх точек касания одного и того же Порядка с параллельными
+  линиями тренда — формируется не Импульс, а Коррекция.
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: 9-1
+  chapter: 'Глава 9: Основные Расширения Нили'
+  section: Точки касания линии тренда
+  figure_id: null
+  verbatim_quote:
+    text: 'только четыре из пяти сегментов фигуры (имеющей 6 возможных точек касания
+      "одного и того же Порядка" (т. e. крайних точек волн одной и той же степени))
+      могут одновременно касаться двух противоположных линий тренда
+
+      '
+    language: ru
+formalization:
+  status: draft
+  applies_when: pattern IN ('impulse', 'terminal_impulse', 'triangle')
+  constraint: count(segments simultaneously touching both opposite_trendlines) <=
+    4
+  formalization_notes: Из 5 сегментов (6 возможных точек касания одного Порядка) одновременно
+    касаться двух линий могут только 4.
+aliases:
+- правило точек касания
+- trendline touch rule
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-02T18:03:43Z'
+review_notes: 'Текст использует формулировку "могут" а не "не может/никогда", но правило
+  используется как разграничительный критерий Импульс/Коррекция. Strength спорна.
+
+  '
+requires_review: false

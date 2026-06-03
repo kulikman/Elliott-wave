@@ -1,0 +1,42 @@
+id: AKU-0175
+type: rule
+strength: mandatory
+status: draft
+topic: x-wave
+subtopics:
+- position-indicators
+- complexity-rule
+statement_ru: x:c3 (центральная тройка в позиции x-волны) никогда не первый/последний
+  сегмент; возникает между Стандартными фигурами, объединяя простые коррекции в более
+  крупные. Её уровень сложности не выше завершённой предшествующей фигуры; следующая
+  фигура обычно на уровень ниже обеих окружающих. :c3 можно преобразовать в x:c3,
+  но не наоборот.
+statement_en: null
+source:
+  book_id: neely-mwe-1990
+  page: 3-62
+  chapter: 'Глава 3: Предварительный анализ'
+  section: Определения Индикаторов положения / x:c3
+  figure_id: null
+  verbatim_quote:
+    text: Волна с этим Структурным обозначением никогда не может быть первым либо
+      последним сегментом последовательности ... Такая волна возникает между Стандартными
+      ценовыми фигурами Эллиота, объединяя простые коррекции в более крупные конфигурации.
+      ... уровень сложности волны с обозначением "x:c3" не может быть выше уровня
+      сложности завершенной ценовой фигуры Эллиота, предшествующей "x:c3".
+    language: ru
+formalization:
+  status: draft
+  applies_when: assigning x:c3 (x-wave linker)
+  constraint: position(x:c3) NOT IN {first, last} AND complexity(x:c3) <= complexity(preceding_completed_figure)
+  formalization_notes: null
+aliases: []
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-03T12:15:47Z'
+review_notes: Извлечено Claude через прямое чтение PDF (Гл.3, Индикаторы положения).
+  Полный текст — ch03-position-indicators.md.
+requires_review: true

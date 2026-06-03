@@ -1,0 +1,45 @@
+id: AKU-0110
+type: rule
+strength: mandatory
+status: verified
+topic: post-pattern-logic
+subtopics:
+- impulse
+- channeling
+statement_ru: 'Чтобы подтвердилась Неудача 5-й волны, откат на величину всей Импульсной
+  фигуры должен произойти быстрее времени её формирования. Чтобы превысить конец Неудавшейся
+  5-й волны, рынку должно потребоваться по меньшей мере в два раза больше времени,
+  чем заняло формирование всей Импульсной фигуры (1-5).
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: 12-5
+  chapter: 'Глава 12: Дополнительные расширения Нили'
+  section: Каналы - Волна-4
+  figure_id: null
+  verbatim_quote:
+    text: 'Чтобы подтвердилась Неудача 5-й волны, откат на величину всей данной Импульсной
+      фигуры должен произойти быстрее времени его (Импульса) формирования. Чтобы превысить
+      конец Неудавшейся 5-й волны, рынку должно потребоваться по меньшей мере в два
+      раза больше времени, чем заняло формирование всей Импульсной фигуры (1-5)
+
+      '
+    language: ru
+formalization:
+  status: draft
+  applies_when: subtype == 'failure_5th' AND position == 'post_pattern'
+  constraint: duration(retrace_whole_impulse) < duration(impulse) AND duration(to_exceed_end(failed_5th))
+    >= 2 * duration(impulse)
+  formalization_notes: null
+aliases:
+- правило подтверждения неудавшейся 5-й волны
+- временное правило неудачи волны-5
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-02T18:09:09Z'
+review_notes: null
+requires_review: false

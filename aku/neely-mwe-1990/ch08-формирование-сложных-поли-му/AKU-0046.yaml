@@ -1,0 +1,39 @@
+id: AKU-0046
+type: rule
+strength: mandatory
+status: verified
+topic: impulse
+subtopics:
+- complexity-rule
+- rule-of-alternation
+statement_ru: 'Волна-1 не может сегментировать в отсутствие сегментированной волны-2
+  (если рынок не формирует Терминальную фигуру).
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: doc-ch8
+  chapter: 'Глава 8: Формирование сложных поли-, мульти- и макроволн'
+  section: Подробнее о чередовании — Сложность
+  figure_id: Рис. 8-15-1
+  verbatim_quote:
+    text: 'волна-1 не можeт сегментировать в отсутствие сегментированной волны-2 (если
+      рынок не формирует Терминальную фигуру).
+
+      '
+    language: ru
+formalization:
+  status: draft
+  applies_when: pattern == 'impulse' AND subtype != 'terminal'
+  constraint: is_subdivided(wave_1) IMPLIES is_subdivided(wave_2)
+  formalization_notes: null
+aliases:
+- правило сегментирования волны-1 и волны-2
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-02T18:02:39Z'
+review_notes: null
+requires_review: false

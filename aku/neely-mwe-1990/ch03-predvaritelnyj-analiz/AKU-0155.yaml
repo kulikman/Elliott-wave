@@ -1,0 +1,38 @@
+id: AKU-0155
+type: rule
+strength: mandatory
+status: draft
+topic: wave-identification
+subtopics:
+- structural-labels
+statement_ru: Ценовая фигура Эллиота всегда завершается волной с обозначением :L5
+  или :L3. Для выделения фигур график просматривается слева направо в поиске первой
+  волны :L5/:L3 — высока вероятность, что в этой точке завершается фигура Эллиота.
+statement_en: null
+source:
+  book_id: neely-mwe-1990
+  page: 3-64
+  chapter: 'Глава 3: Предварительный анализ'
+  section: Процедуры выделения ценовых фигур
+  figure_id: null
+  verbatim_quote:
+    text: Начиная с левого края графика, слева направо ищите первую волну с обозначением
+      «:L5» и/или «:L3» ... поскольку высока вероятность, что в этой точке завершается
+      ценовая фигура Эллиота. ... В любом случае ценовая фигура Эллиота должна завершаться
+      волной «:L5» или «:L3», вне зависимости от наблюдаемого типа группировки.
+    language: ru
+formalization:
+  status: draft
+  applies_when: locating Elliott figure boundaries on the chart
+  constraint: end_label(elliott_figure) in {':L5', ':L3'}
+  formalization_notes: null
+aliases: []
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-02T18:50:02Z'
+review_notes: 'Извлечено Claude через прямое чтение PDF (Гл.3, 3-60..3-69: выделение
+  фигур, особые условия).'
+requires_review: true

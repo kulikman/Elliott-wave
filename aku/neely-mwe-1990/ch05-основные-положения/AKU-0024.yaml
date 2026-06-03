@@ -1,0 +1,46 @@
+id: AKU-0024
+type: rule
+strength: mandatory
+status: verified
+topic: channeling
+subtopics:
+- zigzag
+statement_ru: 'В Зигзаге с-волна не должна касаться параллельной трендовой линии (проведённой
+  параллельно линии 0-В через завершение волны-а). Если наблюдается касание, это свидетельствует,
+  что данный зигзаг является частью более сложной Коррекции.
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: 5-42
+  chapter: Chapter 5
+  section: Дополнительные правила раскрытия коррекций — Каналы
+  figure_id: null
+  verbatim_quote:
+    text: 'Если фигура, с которой вы работаете, Зигзаг, то с-волна может пробивать
+      параллельную трендовую линию или оставаться далеко от нее, но она не должна
+      ее касаться. Если же наблюдается касание, это свидетельствует, что данный зигзаг
+      часть более сложной Коррекции
+
+      '
+    language: ru
+formalization:
+  status: draft
+  applies_when: pattern == 'zigzag'
+  constraint: not touches(wave_c, parallel_line(through=end(wave_a), parallel_to=trendline(start(0),
+    end(B))))
+  formalization_notes: Касание параллельной линии → зигзаг есть часть более сложной
+    Коррекции.
+aliases:
+- правило касания параллельной линии в зигзаге
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-02T17:56:17Z'
+review_notes: 'Маркер "не должна". Правило определяет не невозможность счёта, а переклассификацию
+  фигуры как части более сложной коррекции. Может быть conditional, а не mandatory.
+
+  '
+requires_review: false

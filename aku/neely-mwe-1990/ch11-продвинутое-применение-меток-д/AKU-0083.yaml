@@ -1,0 +1,36 @@
+id: AKU-0083
+type: rule
+strength: mandatory
+status: verified
+topic: motion-labels
+subtopics:
+- impulse
+- impulse-extension
+statement_ru: 'В Трендовом Импульсе с Нерастянутой волной-1: третья волна должна быть
+  длиннее волны-1.
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: doc-ch11
+  chapter: 'Глава 11: Продвинутое применение Меток движения'
+  section: Трендовые Импульсы - Волна-1 Нерастянутая
+  figure_id: null
+  verbatim_quote:
+    text: Третья волна должна быть длиннее волны-1.
+    language: ru
+formalization:
+  status: draft
+  applies_when: pattern == 'trend_impulse' AND extended_wave != 1
+  constraint: length(wave_3) > length(wave_1)
+  formalization_notes: null
+aliases:
+- волна-3 длиннее волны-1 при нерастянутой первой
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-02T18:06:56Z'
+review_notes: null
+requires_review: false

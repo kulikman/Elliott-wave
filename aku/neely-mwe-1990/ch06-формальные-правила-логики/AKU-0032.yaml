@@ -1,0 +1,32 @@
+id: AKU-0032
+type: rule
+strength: mandatory
+status: verified
+topic: formal-logic-rules
+subtopics:
+- impulse
+- impulse-extension
+- post-pattern-logic
+statement_ru: 'Следующая за Импульсом с Растянутой первой волной волна должна достичь
+  конца волны-4 этого Импульса.
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: 6-1
+  chapter: 'Глава 6: Формальные правила логики'
+  section: Импульсы - Первая Растянутая волна
+  figure_id: null
+  verbatim_quote:
+    text: 'Следующая за этой разновидностью Импульса волна должна достичь конца волны-4.
+
+      '
+    language: ru
+formalization:
+  status: draft
+  applies_when: pattern == 'impulse' AND extended_wave == 1 AND position == 'post_pattern'
+  constraint: extreme(next_wave) reaches price(end(wave_4))
+  formalization_notes: null
+created_by: claude
+created_at: '2026-06-02T17:57:59Z'
+requires_review: false

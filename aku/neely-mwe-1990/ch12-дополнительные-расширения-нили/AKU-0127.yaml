@@ -1,0 +1,41 @@
+id: AKU-0127
+type: rule
+strength: mandatory
+status: verified
+topic: impulse
+subtopics:
+- retracement
+statement_ru: 'Волна-2 не может завершиться дальше уровня отката 61.8% от волны-1.
+  Часть волны-2 может откатываться от волны-1 более 61.8%, но волна-2 не может завершиться
+  дальше уровня 61.8%.
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: 12-50
+  chapter: Глава 12
+  section: Дополнительные расширения Нили — Двойные плоские волны
+  figure_id: 12-50
+  verbatim_quote:
+    text: 'часть волны-2 может откатываться от волны-1 более 61.8%о, но волна-2 не
+      может завершиться дальше уровня 61.8%о
+
+      '
+    language: ru
+formalization:
+  status: draft
+  applies_when: pattern == 'impulse'
+  constraint: retrace(end(wave_2)) <= 0.618 * length(wave_1)
+  formalization_notes: Часть волны-2 может уходить глубже, но ЗАВЕРШИТЬСЯ должна <=
+    61.8%.
+aliases:
+- предел завершения волны-2
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-02T18:10:31Z'
+review_notes: Контекст — различение двойной Плоской от Импульса с Растянутой 3-й.
+  Возможно, это правило применяется шире, но в тексте дано в контексте имитации.
+requires_review: false

@@ -1,0 +1,32 @@
+id: AKU-0018
+type: rule
+strength: mandatory
+status: verified
+topic: triangle
+subtopics:
+- structural-labels
+statement_ru: 'В Треугольнике ровно пять сегментов — ни больше, ни меньше. Каждому
+  сегменту присваивается буквенное обозначение в порядке появления: a, b, c, d, e.
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: 5-29
+  chapter: Chapter 5
+  section: Треугольники (3-3-3-3-3)
+  figure_id: 5-29
+  verbatim_quote:
+    text: 'Эллиотт говорил, что в Треугольнике пять сегментов - ни больше, ни меньше.
+      B соответствии c порядком появления, каждому сегменту Треугольника присваивается
+      буквенное обозначение: (а, b, c, d, e).
+
+      '
+    language: ru
+formalization:
+  status: draft
+  applies_when: pattern == 'triangle'
+  constraint: segment_count == 5 AND labels(segments) == ['a','b','c','d','e']
+  formalization_notes: null
+created_by: claude
+created_at: '2026-06-02T17:55:31Z'
+requires_review: false

@@ -1,0 +1,37 @@
+id: AKU-0170
+type: rule
+strength: conditional
+status: draft
+topic: structural-labels
+subtopics:
+- length-ratio-rules
+- position-indicators
+statement_ru: 'Правило 7 (m2/m1 > 261.8%): возможна любая Структура m1. Если ни одно
+  описание не подходит — через Индикаторы положения (стр. 3-61). Условия favor :5/:s5,
+  :L5, :L3, :F3.'
+statement_en: null
+source:
+  book_id: neely-mwe-1990
+  page: 3-57
+  chapter: 'Глава 3: Предварительный анализ'
+  section: Неформальные Правила логики / структурные списки
+  figure_id: null
+  verbatim_quote:
+    text: Правило 7 {возможна любая Структура, если ни одно из описаний не подходит,
+      см. раздел о последовательностях Индикаторов положения на стр. 3-61}
+    language: ru
+formalization:
+  status: draft
+  applies_when: rule(m1) == 7
+  constraint: structure(m1) := any ; resolve via position_indicator_sequences
+  formalization_notes: Очень большой откат m1.
+aliases: []
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-02T19:20:47Z'
+review_notes: Извлечено Claude через прямое чтение PDF (Гл.3, структурные списки Правил
+  4-7).
+requires_review: true

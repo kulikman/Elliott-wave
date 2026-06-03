@@ -1,0 +1,41 @@
+id: AKU-0152
+type: rule
+strength: mandatory
+status: draft
+topic: wave-identification
+subtopics:
+- compaction
+statement_ru: 'При переоценке (reassessment) подтверждённой компактной фигуры: если
+  её базовая Структура не соответствует ни одному из условий перечисленных Правил,
+  в фигуре может быть «пропавшая» (missing) волна; несогласующиеся обозначения помещаются
+  в квадратные скобки. Если фигура «не вписывается» в окружение — она часть Сложной
+  конфигурации.'
+statement_en: null
+source:
+  book_id: neely-mwe-1990
+  page: 3-34
+  chapter: 'Глава 3: Предварительный анализ'
+  section: Неформальные Правила логики
+  figure_id: null
+  verbatim_quote:
+    text: Если базовая Структура переоцениваемой компактной ценовой фигуры не соответствует
+      ни одному из перечисленных в соответствующем разделе условий, в ценовой фигуре
+      может быть так называемая «пропавшая» волна ... Если ... компактная ценовая
+      фигура «не вписывается» в окружающие моноволны ... данная ценовая фигура – часть
+      Сложной конфигурации.
+    language: ru
+formalization:
+  status: draft
+  applies_when: reassessing a compact figure whose base structure fits no rule-condition
+  constraint: possible_missing_wave := true OR part_of_complex_formation := true
+  formalization_notes: Связь с пропавшими волнами (Гл.12) и сжатием (Гл.4).
+aliases: []
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-02T18:48:06Z'
+review_notes: Извлечено Claude через прямое чтение PDF (Гл.3, Неформальные правила
+  логики). Полный текст — ch03-informal-logic.md.
+requires_review: true

@@ -1,0 +1,36 @@
+id: AKU-0023
+type: rule
+strength: mandatory
+status: verified
+topic: zigzag
+subtopics:
+- post-pattern-logic
+- retracement
+statement_ru: 'После Удлиненного Зигзага рынок должен развернуться и откатиться более
+  чем на 61.8% длины волны-с, до того как конечный уровень волны-с будет преодолен.
+  Если эти условия не выполняются, вероятно, данная фигура Импульс.
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: 5-27
+  chapter: Chapter 5
+  section: Удлиненный Зигзаг
+  figure_id: 5-27
+  verbatim_quote:
+    text: 'После Удлиненного Зигзага рынок должен развернуться и откатиться более
+      чем на 61.8% длины волны-с, до того как конечный уровень волны-с будет преодолен.
+      Если эти условия выполняются, можно предположить, что данная фигура - Удлиненный
+      Зигзаг. Если эти условия не выполняются, вероятно, данная фигура Импульс.
+
+      '
+    language: ru
+formalization:
+  status: draft
+  applies_when: pattern == 'zigzag' AND subtype == 'elongated' AND position == 'post_pattern'
+  constraint: retrace(next_wave) > 0.618 * length(wave_c) BEFORE price passes end(wave_c)
+  formalization_notes: 'Подтверждающее правило: если не выполнено — вероятно это Импульс,
+    а не Зигзаг.'
+created_by: claude
+created_at: '2026-06-02T17:55:31Z'
+requires_review: false

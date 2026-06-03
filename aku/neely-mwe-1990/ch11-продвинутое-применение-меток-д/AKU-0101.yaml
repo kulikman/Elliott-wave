@@ -1,0 +1,40 @@
+id: AKU-0101
+type: rule
+strength: mandatory
+status: verified
+topic: triangle
+subtopics:
+- motion-labels
+- post-pattern-logic
+statement_ru: 'Фигура после Расширяющегося Треугольника (волна-с или волна-5) не должна
+  откатываться до начального уровня волны-е.
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: 11-31
+  chapter: Глава 11
+  section: Продвинутое применение Меток движения — Расширяющиеся Треугольники
+  figure_id: null
+  verbatim_quote:
+    text: 'Фигура после Треугольника (волна-с или волна-5) не должна откатываться
+      до начального уровня волны-е.
+
+      '
+    language: ru
+formalization:
+  status: draft
+  applies_when: pattern == 'expanding_triangle' AND position == 'post_pattern' AND
+    role IN ('wave_c','wave_5')
+  constraint: not reaches(next_wave, start_level(wave_e))
+  formalization_notes: null
+aliases:
+- правило постфигурного отката расширяющегося треугольника
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-02T18:08:13Z'
+review_notes: null
+requires_review: false

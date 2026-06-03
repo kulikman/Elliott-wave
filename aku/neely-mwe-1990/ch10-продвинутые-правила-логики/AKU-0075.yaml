@@ -1,0 +1,40 @@
+id: AKU-0075
+type: rule
+strength: mandatory
+status: verified
+topic: post-pattern-logic
+subtopics:
+- impulse
+- impulse-extension
+- retracement
+statement_ru: 'Откат рынка по завершении Импульса с Растянутой третьей должен дойти
+  как минимум до ценовой зоны волны-4 только что завершившейся импульсной волны.
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: doc-ch10
+  chapter: Глава 10
+  section: Продвинутые Правила логики
+  figure_id: null
+  verbatim_quote:
+    text: 'Откат рынка по завершении Импульса с Растянутой третьей должен дойти как
+      минимум до ценовой зоны волны-4 только что завершившейся импульсной волны.
+
+      '
+    language: ru
+formalization:
+  status: draft
+  applies_when: pattern == 'impulse' AND extended_wave == 3 AND position == 'post_pattern'
+  constraint: extreme(retrace) reaches price_zone(wave_4)
+  formalization_notes: null
+aliases:
+- минимальный откат после растянутой третьей
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-02T18:05:11Z'
+review_notes: null
+requires_review: false

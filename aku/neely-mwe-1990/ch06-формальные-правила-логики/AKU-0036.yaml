@@ -1,0 +1,40 @@
+id: AKU-0036
+type: rule
+strength: mandatory
+status: verified
+topic: formal-logic-rules
+subtopics:
+- flat
+- zigzag
+- post-pattern-logic
+statement_ru: 'Для Плоских и Зигзагов, где волна-b короче волны-a: следующая за Коррекцией
+  волна должна пробить линию тренда 0-B за период времени, не превышающий длительности
+  волны-с. Если этот процесс занимает больше времени, то либо волна-с формирует Терминал,
+  либо четвёртая волна (волны-с) ещё не завершилась, либо интерпретация коррекции
+  ошибочная.
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: 6-2
+  chapter: 'Глава 6: Формальные правила логики'
+  section: Коррекции - Плоские волны и Зигзаги - Волна-b короче волны-a
+  figure_id: 6-2
+  verbatim_quote:
+    text: 'следующая за данной Коррекцией волна должна пробить линию тренда 0-В за
+      период времени, не превышающий длительности волны-с. Если этот процесс занимает
+      больше времени, то либо волна-с формирует Терминал, либо четвертая волна (волны-с)
+      еще не завершилась, либо интерпретация коррекции ошибочная.
+
+      '
+    language: ru
+formalization:
+  status: draft
+  applies_when: pattern IN ('flat','zigzag') AND length(wave_b) < length(wave_a) AND
+    position == 'post_pattern'
+  constraint: duration(until_break(trendline(start(0), end(B)))) <= duration(wave_c)
+  formalization_notes: 'Иначе: волна-c терминальная, либо 4-я волна не завершена,
+    либо интерпретация ошибочна.'
+created_by: claude
+created_at: '2026-06-02T17:57:59Z'
+requires_review: false

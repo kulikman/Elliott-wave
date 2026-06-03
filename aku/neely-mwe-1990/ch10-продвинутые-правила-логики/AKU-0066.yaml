@@ -1,0 +1,41 @@
+id: AKU-0066
+type: rule
+strength: mandatory
+status: verified
+topic: post-pattern-logic
+subtopics:
+- impulse-extension
+statement_ru: 'По завершении Подвижной Коррекции должна начаться следующая импульсная
+  волна, длина которой должна составлять больше 161,8% длины предыдущего Импульса;
+  в Двойную или Тройную Тройку она развиться не должна.
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: 10-7
+  chapter: 'Глава 10: Продвинутые Правила логики'
+  section: Подвижная Коррекция
+  figure_id: null
+  verbatim_quote:
+    text: 'По завершении Подвижной Коррекции должна начаться следующая импульсная
+      волна, длина которой должна составлять больше 161,8% длины предыдущего Импульса
+      (зачастую 261,8% и более); в двойную или Тройную Тройку она развиться не должна.
+
+      '
+    language: ru
+formalization:
+  status: draft
+  applies_when: pattern == 'moving_correction' AND position == 'post_pattern'
+  constraint: length(next_impulse) > 1.618 * length(previous_impulse) AND type(next)
+    NOT IN ('double_three', 'triple_three')
+  formalization_notes: null
+aliases:
+- правило постэффекта подвижной коррекции
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-02T18:04:31Z'
+review_notes: null
+requires_review: false

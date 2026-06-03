@@ -1,0 +1,39 @@
+id: AKU-0049
+type: rule
+strength: mandatory
+status: verified
+topic: impulse-extension
+subtopics:
+- rule-of-alternation
+- complexity-rule
+statement_ru: 'Когда волна-5 Импульса растянута, волна-4 должна быть сложнее и длительнее
+  волны-2.
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: doc-ch8
+  chapter: 'Глава 8: Формирование сложных поли-, мульти- и макроволн'
+  section: Подробнее о растянутых волнах
+  figure_id: Рис. 8-20-5
+  verbatim_quote:
+    text: 'Когда волна-5 Растянутая, волна-4 должна быть сложнее и длительнее волны-2
+
+      '
+    language: ru
+formalization:
+  status: draft
+  applies_when: pattern == 'impulse' AND extended_wave == 5
+  constraint: complexity(wave_4) > complexity(wave_2) AND duration(wave_4) > duration(wave_2)
+  formalization_notes: null
+aliases:
+- правило сложности при растянутой пятой
+related_aku:
+- AKU-0048
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-02T18:02:39Z'
+review_notes: null
+requires_review: false

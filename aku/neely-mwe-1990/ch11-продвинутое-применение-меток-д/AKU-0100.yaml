@@ -1,0 +1,44 @@
+id: AKU-0100
+type: rule
+strength: mandatory
+status: verified
+topic: triangle
+subtopics:
+- motion-labels
+- impulse-extension
+statement_ru: 'Расширяющиеся Треугольники не могут иметь место непосредственно перед
+  любой мощной фигурой, такой как Растянутая 1-я, 2-я или 3-я волна либо Удлинённая
+  c-волна. Они также не могут завершать Двойную или Тройную Коррекцию или Комбинацию
+  Коррекций Подвижная Тройка.
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: 11-31
+  chapter: Глава 11
+  section: Продвинутое применение Меток движения — Расширяющиеся Треугольники
+  figure_id: null
+  verbatim_quote:
+    text: 'Расширяющиеся Треугольники не могут иметь место непосредственно перед любой
+      мощной фигурой, такой как Растянутая 1-я, 2-я или 3-я волна либо Удлиненная
+      c-волна. Они не могут завершать двойную или Тройную Коррекцию или Комбинацию
+      Коррекций Подвижная Тройка.
+
+      '
+    language: ru
+formalization:
+  status: draft
+  applies_when: pattern == 'expanding_triangle'
+  constraint: next_pattern NOT IN ('extended_1','extended_2','extended_3','elongated_c')
+    AND not ends_correction(['double','triple','combination'])
+  formalization_notes: null
+aliases:
+- запрет расширяющегося треугольника перед мощными фигурами
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-02T18:08:13Z'
+review_notes: null
+requires_review: false

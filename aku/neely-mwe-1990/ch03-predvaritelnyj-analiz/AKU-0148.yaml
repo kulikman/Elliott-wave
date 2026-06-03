@@ -1,0 +1,36 @@
+id: AKU-0148
+type: rule
+strength: conditional
+status: draft
+topic: structural-labels
+subtopics:
+- length-ratio-rules
+- monowave
+statement_ru: 'Правило 1 (m2/m1 < 38.2%): структурный список возможных обозначений
+  m1 = {:5, (:c3), (x:c3), [:sL3], [:s5]}. Наиболее вероятно :5 (Импульс).'
+statement_en: null
+source:
+  book_id: neely-mwe-1990
+  page: 3-33
+  chapter: 'Глава 3: Предварительный анализ'
+  section: Неформальные Правила логики / Правило 1
+  figure_id: null
+  verbatim_quote:
+    text: 'справа от заголовка ... Правило 1 располагается следующий Структурный список:
+      {:5/(:c3)/(x:c3)/[:sL3]/[:s5]}'
+    language: ru
+formalization:
+  status: draft
+  applies_when: rule(m1) == 1
+  constraint: structure(m1) in {':5', '(:c3)', '(x:c3)', '[:sL3]', '[:s5]'}
+  formalization_notes: 'Приоритет: :5 наиболее вероятно.'
+aliases: []
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-02T18:48:06Z'
+review_notes: Извлечено Claude через прямое чтение PDF (Гл.3, Неформальные правила
+  логики). Полный текст — ch03-informal-logic.md.
+requires_review: true
