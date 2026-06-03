@@ -1,0 +1,40 @@
+id: AKU-0207
+type: rule
+strength: mandatory
+status: draft
+topic: formal-logic-rules
+subtopics:
+- impulse
+- rule-of-extension
+- complexity-rule
+statement_ru: 'Правило Независимости: все правила Теории Волн Эллиота и Расширения
+  Нили применяются независимо друг от друга к каждой волне. Одновременное проявление
+  двух признаков у одной волны не означает их взаимосвязи. Например, ''Растянутая''
+  и ''сегментированная'' волна — синонимы только в 90% случаев, но не всегда.'
+statement_en: null
+source:
+  book_id: neely-mwe-1990
+  page: 9-7
+  chapter: 'Глава 9: Основные Расширения Нили'
+  section: Правило Независимости
+  figure_id: null
+  verbatim_quote:
+    text: Правило Независимости применяется ко всем остальным правилам Теории в данной
+      книге... все правила и руководства Эллиота, а также Расширения Нили должны применяться
+      независимо друг от друга к каждой анализируемой волне.
+    language: ru
+formalization:
+  status: draft
+  applies_when: applying multiple rules simultaneously
+  constraint: 'FOR each rule IN all_neely_rules: apply(rule, wave) INDEPENDENTLY ;
+    correlated_rules != causally_linked'
+  formalization_notes: null
+aliases: []
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-03T13:48:59Z'
+review_notes: Извлечено Claude (PDF ч.2 Гл.9 стр.9-1..9-10, Расширения Нили).
+requires_review: true

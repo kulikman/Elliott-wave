@@ -1,0 +1,44 @@
+id: AKU-0209
+type: rule
+strength: conditional
+status: draft
+topic: formal-logic-rules
+subtopics:
+- impulse
+- triangle
+- ending-diagonal
+- analysis-workflow
+statement_ru: 'Перечень исключений (Exception Rule), Пункт 1: на важных точках разворота
+  или при ''необычных'' условиях ОДНО важное правило может не выполняться. Допустимые
+  исключения: A) завершение мультиволны или более крупной фигуры; B) волна-5 или c-волна
+  Терминальной фигуры; C) волна, являющаяся или завершающаяся Треугольником. Одновременное
+  нарушение ДВУХ важных правил — недопустимо.'
+statement_en: null
+source:
+  book_id: neely-mwe-1990
+  page: 9-7
+  chapter: 'Глава 9: Основные Расширения Нили'
+  section: Перечень исключений / Пункт 1
+  figure_id: null
+  verbatim_quote:
+    text: 'Случается, что в важных точках "разворота" рынка или при "необычных" условиях
+      одно из правил... может не применяться или не выполняться... Ситуациями с "необычными"
+      условиями являются: А. Завершение мультиволны или более крупной фигуры. B. Волна-5
+      или с-волна Терминальной фигуры... C. Волна, являющаяся или завершающаяся Сужающимся
+      или Расширяющимся Треугольником.'
+    language: ru
+formalization:
+  status: draft
+  applies_when: one mandatory rule violated
+  constraint: 'if violated_rules_count == 1 AND context IN {multiwave_end, terminal_w5,
+    triangle}: allow_exception ; if violated_rules_count >= 2: reject_hypothesis'
+  formalization_notes: Треугольники и Терминалы — исключения практически из всех правил.
+aliases: []
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-03T13:48:59Z'
+review_notes: Извлечено Claude (PDF ч.2 Гл.9 стр.9-1..9-10, Расширения Нили).
+requires_review: true

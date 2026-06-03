@@ -1,0 +1,41 @@
+id: AKU-0212
+type: rule
+strength: mandatory
+status: draft
+topic: motion-labels
+subtopics:
+- compaction
+- analysis-workflow
+statement_ru: 'Гибкость Меток Движения: Метки Движения (1-2-3-4-5, A-B-C) — ПОСЛЕДНИЙ
+  штрих волновой фигуры, а не первый. После завершения и сжатия волны информация о
+  Метках теряет ценность — на новом графике значима только базовая структура (:3 или
+  :5). До завершения минимум трёх (а лучше пяти) волн структурной серии нельзя говорить
+  о завершении фигуры.'
+statement_en: null
+source:
+  book_id: neely-mwe-1990
+  page: 9-10
+  chapter: 'Глава 9: Основные Расширения Нили'
+  section: Гибкость Меток Движения
+  figure_id: null
+  verbatim_quote:
+    text: Метки Движения – определение типа волны – достигнута, они ничем больше не
+      могут помочь в деле прояснения более крупной картины... До тех пор, пока минимум
+      три (а может быть, и пять) волн установленной структуры не образуют структурную
+      серию, завершение фигуры Эллиота невозможно.
+    language: ru
+formalization:
+  status: draft
+  applies_when: after figure compaction
+  constraint: 'motion_labels VALID UNTIL compaction ; after compact: use base_structure
+    only ; min_waves_to_confirm = 3 (or 5 for impulse)'
+  formalization_notes: null
+aliases: []
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-03T13:48:59Z'
+review_notes: Извлечено Claude (PDF ч.2 Гл.9 стр.9-1..9-10, Расширения Нили).
+requires_review: true

@@ -1,0 +1,47 @@
+id: AKU-0211
+type: rule
+strength: mandatory
+status: draft
+topic: analysis-workflow
+subtopics:
+- compaction
+- wave-identification
+- formal-logic-rules
+statement_ru: 'Полный 10-шаговый алгоритм анализа Нили (стр.9-8..9-9): a) отметить
+  конечные точки моноволн; b) разместить Метки Движения (Неформальные правила); c)
+  найти комбинации групповых структур (Серии A-E/F-H); d) определить Серию → Глава
+  5; e) проверить Основные правила построения; f) расставить Метки Движения + Условные
+  правила; g) проверить Продвинутые Метки + Продвинутые Правила логики; h) уплотнить
+  до :3/:5; i) повысить Уровень Сложности; j) повторить с шага b.'
+statement_en: null
+source:
+  book_id: neely-mwe-1990
+  page: 9-8
+  chapter: 'Глава 9: Основные Расширения Нили'
+  section: Фиксация структуры
+  figure_id: null
+  verbatim_quote:
+    text: а. Отметить кружками конечные точки каждой отдельной моноволны... b. Изучить
+      Правила соотношений длин волн (отката) и, используя Неформальные Правила логики,
+      тщательно разместить Метки Движения... c. Найти комбинации групповых структур
+      смежных моноволн... d. Определив структурную серию, перейти к соответствующему
+      разделу... h. Уплотнить (сжать) волну до ее базовой структуры (":3" или ":5")...
+      j. Определив уровень Сложности компактной волны, повторите описанную процедуру,
+      начиная с этапа b.
+    language: ru
+formalization:
+  status: draft
+  applies_when: full wave analysis procedure
+  constraint: 'algorithm: a→b→c→d→e→f→g→h→i→j(loop) ; each compacted wave = new monowave
+    for next level'
+  formalization_notes: ГЛАВНЫЙ АЛГОРИТМ методологии Нили. Pine реализует шаги a-h
+    в Уровнях 1-4.
+aliases: []
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-03T13:48:59Z'
+review_notes: Извлечено Claude (PDF ч.2 Гл.9 стр.9-1..9-10, Расширения Нили).
+requires_review: true

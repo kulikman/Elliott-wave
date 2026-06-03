@@ -327,7 +327,7 @@ confirmImpulse(array<float> ep, int i0, string dir) =>
     // AKU-0203: признаки неправильной начальной точки — длины 1/3/5 почти равны
     float minW = math.min(lw1, math.min(lw3, lw4))
     float maxW = math.max(lw1, math.max(lw3, lw4))
-    bool r7 = maxW > 0 ? minW / maxW < 0.85 : true  // хотя бы одна > другой на 15%
+    bool r7 = maxW > 0 ? minW / maxW < 0.85 : true
     bool ok = r1 and r2 and r3 and r4
     string msg = not r1 ? "W2>W1start" : not r2 ? "W4>W3start" :
          not r3 ? "W3<W1" : not r4 ? "W2>61.8%W1" :
@@ -354,6 +354,29 @@ confirmTriangle(array<float> ep, int i0) =>
 // Возвращает направление по p0→p1
 figDirection(float p0px, float p1px) =>
     p1px > p0px ? "up" : "down"
+
+// ─── Правило соотношения длительностей (AKU-0205, Гл.9 стр.9-4) ─────────────
+// 3 смежных волны одного Порядка не могут иметь одинаковую временную длину.
+// Возвращает true если нарушение (все три равны ±10%).
+checkTimeEquality(int t1, int t2, int t3) =>
+    float tmax = math.max(t1, math.max(t2, t3))
+    float tmin = math.min(t1, math.min(t2, t3))
+    tmax > 0 ? tmin / tmax > 0.9 : false  // все три в пределах 10% → нарушение
+
+// ─── Правило точек касания (AKU-0204, Гл.9 стр.9-1) ─────────────────────────
+// Считает, сколько из 6 пивотов Импульса (p0..p5) лежат на двух линиях канала.
+// Если > 4 → скорее Коррекция, чем Импульс.
+countTouchpoints(array<float> ep, int i0, int b0lo, float p0lo,
+                 int b1lo, float p1lo, int b0hi, float p0hi, int b1hi, float p1hi) =>
+    int touches = 0
+    for i = 0 to 5
+        if i0 + i < array.size(ep)
+            float px = array.get(ep, i0 + i)
+            float loLine = priceOnLine(b0lo, p0lo, b1lo, p1lo, b0lo + i * 5)
+            float hiLine = priceOnLine(b0hi, p0hi, b1hi, p1hi, b0hi + i * 5)
+            if math.abs(px - loLine) < loLine * 0.005 or math.abs(px - hiLine) < hiLine * 0.005
+                touches += 1
+    touches
 
 // ─── Сжатие (Compaction) — Цикл 2 Нили (AKU-0180) ────────────────────────────
 // После подтверждения фигуры удаляем N элементов из хвоста массивов и заменяем
@@ -399,6 +422,15 @@ matchFigure(array<int> s, array<int> eb, array<float> ep, color c) =>
             drawFig(nm, b0, b1, lo, hi, fc)
             labelSeg(eb, ep, n - 5, ":5|:F3|:5|:F3|:L5", fc)
             if impOK
+                // AKU-0205: проверка соотношения длительностей волн (3 не могут быть равны)
+                int tb0 = array.get(eb, pi0),  int tb1 = array.get(eb, pi0+1)
+                int tb2 = array.get(eb, pi0+2), int tb3 = array.get(eb, pi0+3)
+                int tb4 = array.get(eb, pi0+4)
+                bool timeEqWarn = checkTimeEquality(tb1-tb0, tb2-tb1, tb3-tb2)
+                if timeEqWarn
+                    label.new(b1, hi, "⚠ t1≈t2≈t3", xloc = xloc.bar_index,
+                         yloc = yloc.price, style = label.style_label_down,
+                         color = color.new(color.orange, 20), textcolor = color.white, size = size.tiny)
                 drawImpulseChannels(eb, ep, pi0, color.green)
                 drawMotionLabels(eb, ep, pi0, 6, "0|1|2|3|4|5", color.green)
                 compactFigure(figStruct, figEndBar, figEndPx, n, 4, 5)  // 5 волн → :5

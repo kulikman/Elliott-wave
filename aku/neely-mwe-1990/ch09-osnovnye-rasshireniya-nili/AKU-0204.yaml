@@ -1,0 +1,42 @@
+id: AKU-0204
+type: rule
+strength: mandatory
+status: draft
+topic: channeling
+subtopics:
+- impulse
+- triangle
+- formal-logic-rules
+statement_ru: 'Правило точек касания линии тренда: только ЧЕТЫРЕ из пяти сегментов
+  5-волновой фигуры (из 6 возможных точек касания одного Порядка) могут одновременно
+  касаться двух противоположных параллельных линий тренда. Если точек касания больше
+  четырёх → фигура Коррективная (Двойной/Тройной Зигзаг или Комбинация), не Импульс.'
+statement_en: null
+source:
+  book_id: neely-mwe-1990
+  page: 9-1
+  chapter: 'Глава 9: Основные Расширения Нили'
+  section: Точки касания линии тренда
+  figure_id: null
+  verbatim_quote:
+    text: только четыре из пяти сегментов фигуры (имеющей 6 возможных точек касания
+      "одного и того же Порядка"...) могут одновременно касаться двух противоположных
+      линий тренда... Если в процессе формирования... имеется больше четырёх точек
+      касания..., значит, формируется не Импульс, а Коррекция.
+    language: ru
+formalization:
+  status: draft
+  applies_when: confirming impulse vs complex correction via channel touchpoints
+  constraint: 'count_touchpoints(channel, pivots_same_order) <= 4 ; if > 4: figure
+    IS correction NOT impulse'
+  formalization_notes: Рис.9-1. Применяется к Импульсам (Трендовым+Терминальным) и
+    Треугольникам.
+aliases: []
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-03T13:48:59Z'
+review_notes: Извлечено Claude (PDF ч.2 Гл.9 стр.9-1..9-10, Расширения Нили).
+requires_review: true
