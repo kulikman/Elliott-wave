@@ -1,0 +1,45 @@
+id: AKU-0199
+type: rule
+strength: mandatory
+status: draft
+topic: rule-of-alternation
+subtopics:
+- impulse
+- zigzag
+- flat
+- structural-series
+statement_ru: 'Чередование по строению (Construction): если смежные волны в Импульсной
+  или Коррективной фигуре сегментируют, другие формы Чередования должны сохраняться
+  для точности подсчёта. Зигзаг → следующая фигура того же Порядка будет Плоской или
+  иной (не Зигзаг). Импульс (:5) → следующая всегда Коррекция (:3).'
+statement_en: null
+source:
+  book_id: neely-mwe-1990
+  page: 8-20
+  chapter: 'Глава 8: Формирование сложных поли-, мульти- и макроволн'
+  section: Подробнее о Чередовании / Строение
+  figure_id: null
+  verbatim_quote:
+    text: Если смежные волны в Импульсной или Коррективной фигуре сегментируют, другие
+      формы Чередования должны сохраняться, чтобы сохранить точность подсчёта. Одна
+      из форм, в которой возможно Чередование [Сложности], является Конструкция волны.
+      Если одна фигура Зигзаг, ожидается, что следующая фигура будет Зигзагом (см.
+      Рисунок 8-16а). Если рынок формирует Импульсную фигуру, ожидаемое следующее
+      движение того же Порядка всегда будет Коррективной фигурой.
+    language: ru
+formalization:
+  status: draft
+  applies_when: confirming alternation between adjacent figures
+  constraint: 'if fig_A == ''zigzag'': next_fig != ''zigzag'' ; if fig_A == ''impulse'':
+    next_fig IS correction'
+  formalization_notes: 'Рис.8-16a: Зигзаг ++ Плоская. Рис.8-16b: Импульс(:5) ++ Коррекция(:3).'
+aliases: []
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-03T13:44:32Z'
+review_notes: Извлечено Claude (PDF ч.2 Гл.8 стр.8-19..8-30, чередование/растяжение/начальная
+  точка).
+requires_review: true

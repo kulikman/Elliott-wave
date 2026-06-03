@@ -285,6 +285,17 @@ drawImpulseChannels(array<int> eb, array<float> ep, int i0, color c) =>
     line.new(b0, priceOnLine(b2, p2, b4, p4, b0), b4, p4,
          xloc = xloc.bar_index, color = color.new(c, 30),
          width = 1, style = line.style_dashed)
+    // Fibonacci проекции Волны-5 (AKU-0201):
+    // Цель W5 = end(W3) + 1.618 * (end(W3) - start(W1)) — точка "n"
+    bool isUp = p1 > p0
+    float m = math.abs(p2 - p0)          // расстояние от start(W1) до end(W3)
+    float w5target = isUp ? p4 + 1.618 * m : p4 - 1.618 * m
+    int   w5bar    = b4 + (b4 - b2)      // экстраполяция времени W5 ≈ длина W3 по барам
+    line.new(b4, p4, w5bar, w5target, xloc = xloc.bar_index,
+         color = color.new(color.yellow, 30), width = 1, style = line.style_dotted)
+    label.new(w5bar, w5target, "W5 161.8%", xloc = xloc.bar_index, yloc = yloc.price,
+         style = label.style_label_left, color = color.new(color.yellow, 20),
+         textcolor = color.white, size = size.tiny)
     // Параллельная граница через пивот 3 (вершина W3)
     float offset24 = p3 - priceOnLine(b2, p2, b4, p4, b3)
     line.new(b0, priceOnLine(b2, p2, b4, p4, b0) + offset24, b4, p4 + offset24,
@@ -313,10 +324,15 @@ confirmImpulse(array<float> ep, int i0, string dir) =>
     bool r5 = w2hi < w4lo or w4hi < w2lo  // нет пересечения
     // AKU-0126: чередование W2/W4 по цене (>20% разница)
     bool r6 = lw2 > 0 ? (lw4 / lw2 < 0.8 or lw4 / lw2 > 1.2) : true
+    // AKU-0203: признаки неправильной начальной точки — длины 1/3/5 почти равны
+    float minW = math.min(lw1, math.min(lw3, lw4))
+    float maxW = math.max(lw1, math.max(lw3, lw4))
+    bool r7 = maxW > 0 ? minW / maxW < 0.85 : true  // хотя бы одна > другой на 15%
     bool ok = r1 and r2 and r3 and r4
     string msg = not r1 ? "W2>W1start" : not r2 ? "W4>W3start" :
          not r3 ? "W3<W1" : not r4 ? "W2>61.8%W1" :
-         not r5 ? "⚠W2/W4 overlap" : not r6 ? "⚠нет чередования" : ""
+         not r5 ? "⚠W2/W4 overlap" : not r6 ? "⚠нет чередования" :
+         not r7 ? "⚠W1≈W3≈W5 (неверный старт?)" : ""
     [ok, msg]
 
 // Проверяет Плоскую: B >= 61.8% A (AKU-0017)

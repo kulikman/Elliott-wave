@@ -1,0 +1,44 @@
+id: AKU-0202
+type: rule
+strength: mandatory
+status: draft
+topic: wave-identification
+subtopics:
+- impulse
+- foundations
+- analysis-workflow
+statement_ru: 'Большинство фигур Эллиота НЕ завершается в точке абсолютного максимума
+  или минимума. 4 формы завершения без нового экстремума: A — Неудавшаяся пятая; B
+  — Плоская с Неудавшейся c-волной; C — Сужающийся Неограничивающий Треугольник на
+  вершине; D — Терминальная фигура. Начинать счёт следует от конца предыдущей фигуры,
+  не от точки глобального экстремума.'
+statement_en: null
+source:
+  book_id: neely-mwe-1990
+  page: 8-27
+  chapter: 'Глава 8: Формирование сложных поли-, мульти- и макроволн'
+  section: Как выбирать начальную точку счёта
+  figure_id: null
+  verbatim_quote:
+    text: Верите вы в это или нет, но большинство фигур Эллиота не завершается в точке
+      абсолютного максимума или минимума... Если начать анализ группы волн не с конечной
+      точки фигуры Эллиота, прогнозы поведения рынка могут очень долго оставаться
+      неверными.
+    language: ru
+formalization:
+  status: draft
+  applies_when: choosing wave count start point
+  constraint: start_point = end(previous_completed_figure) NOT = absolute_high_or_low
+    ; look for secondary_spike AFTER global_extreme
+  formalization_notes: 'Рис.8-21: типичная ошибка новичка — старт от абсолютного экстремума.
+    Рис.8-23: 4 формы завершения A/B/C/D.'
+aliases: []
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-03T13:44:32Z'
+review_notes: Извлечено Claude (PDF ч.2 Гл.8 стр.8-19..8-30, чередование/растяжение/начальная
+  точка).
+requires_review: true
