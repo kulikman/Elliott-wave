@@ -24,7 +24,10 @@ source:
       '
     language: ru
 formalization:
-  status: not_attempted
+  status: draft
+  applies_when: multiple rule violations detected in wave analysis
+  constraint: IF rule_violation(R1) THEN check_for_secondary_violation(related_rules)
+  formalization_notes: Добавлено в ходе аудита качества AKU
 aliases:
 - перечень исключений пункт 2
 related_aku:

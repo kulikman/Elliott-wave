@@ -22,7 +22,10 @@ source:
       '
     language: ru
 formalization:
-  status: not_attempted
+  status: draft
+  applies_when: expanding limiting triangle post-thrust
+  constraint: thrust < widest_segment_length
+  formalization_notes: Добавлено в ходе аудита качества AKU
 aliases:
 - правило выброса ограничивающего расширяющегося треугольника
 related_aku: []

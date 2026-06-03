@@ -25,7 +25,11 @@ source:
       '
     language: ru
 formalization:
-  status: not_attempted
+  status: draft
+  applies_when: flat or zigzag where wave-b < wave-a, second confirmation step
+  constraint: 'IF Wb < Wa AND pattern IN (flat, zigzag) THEN at_2nd_confirmation:
+    check Wc_structure'
+  formalization_notes: Добавлено в ходе аудита качества AKU
 created_by: claude
 created_at: '2026-06-02T17:57:59Z'
 requires_review: false

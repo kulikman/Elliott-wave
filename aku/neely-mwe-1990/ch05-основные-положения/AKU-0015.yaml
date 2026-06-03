@@ -21,7 +21,10 @@ source:
       '
     language: ru
 formalization:
-  status: not_attempted
+  status: draft
+  applies_when: zigzag correction, wave-b retracement
+  constraint: Wb_retrace_from_Wa >= 0.01 (minimum 1% retrace)
+  formalization_notes: Добавлено в ходе аудита качества AKU
 created_by: claude
 created_at: '2026-06-02T17:55:31Z'
 requires_review: false

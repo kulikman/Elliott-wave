@@ -1,6 +1,6 @@
 {
   "spec_version": "3.0",
-  "generated_at": "2026-06-03T17:57:04Z",
+  "generated_at": "2026-06-03T18:09:02Z",
   "generated_from": {
     "books": [
       "neely-mwe-1990"
@@ -487,8 +487,8 @@
           "type": "rule",
           "strength": "mandatory",
           "statement_ru": "Волна-b Зигзага должна откатиться от волны-а хотя бы на 1%.\n",
-          "applies_when": "",
-          "constraint": "",
+          "applies_when": "zigzag correction, wave-b retracement",
+          "constraint": "Wb_retrace_from_Wa >= 0.01 (minimum 1% retrace)",
           "verbatim_quote": "Волна-Ь должна откатиться от волны-а хотя бы на 1%\n",
           "source": "neely-mwe-1990 p.5-22",
           "related_aku": []
@@ -733,8 +733,8 @@
           "type": "rule",
           "strength": "mandatory",
           "statement_ru": "В Неправильной Плоской коррекции волна-b должна быть не меньше 101% волны-а, и волна-с должна быть не меньше 101% волны-b.\n",
-          "applies_when": "",
-          "constraint": "",
+          "applies_when": "irregular flat identification",
+          "constraint": "Wb >= 1.01 * Wa AND Wc >= 1.01 * Wb",
           "verbatim_quote": "Волна-в должна быть не меньше 101% волны-а... Волна-с должна быть не меньше 101% волны-в\n",
           "source": "neely-mwe-1990 p.11-17",
           "related_aku": []
@@ -1011,8 +1011,8 @@
           "type": "rule",
           "strength": "mandatory",
           "statement_ru": "В Расширяющемся Ограничивающем Треугольнике только волне-b или волне-d может «не удаться» превысить конец предыдущей волны. Другие волны не могут быть «неудавшимися».\n",
-          "applies_when": "",
-          "constraint": "",
+          "applies_when": "expanding limiting triangle, wave failure",
+          "constraint": "only Wb OR Wd may fail_to_exceed previous wave; no other waves may fail",
           "verbatim_quote": "Только волне-Ь или волне-d может «Не удаться» превысить конец предыдущей волны.\n",
           "source": "neely-mwe-1990 p.11-31",
           "related_aku": []
@@ -1022,8 +1022,8 @@
           "type": "rule",
           "strength": "mandatory",
           "statement_ru": "В Расширяющемся Ограничивающем Горизонтальном Треугольнике волна-а является наименьшим сегментом Треугольника, каждая последующая волна немного крупнее предыдущей, поэтому «неудавшихся» волн нет.\n",
-          "applies_when": "",
-          "constraint": "",
+          "applies_when": "expanding limiting horizontal triangle",
+          "constraint": "Wa = smallest_segment ; each_subsequent_wave > previous",
           "verbatim_quote": "Волна-а - наименьший сегмент Треугольника. Каждая волна после волны-а немного крупнее предыдущей, поэтому «неудавшихся» нет.\n",
           "source": "neely-mwe-1990 p.11-31",
           "related_aku": []
@@ -1044,8 +1044,8 @@
           "type": "rule",
           "strength": "mandatory",
           "statement_ru": "Выброс из Ограничивающего Расширяющегося Треугольника должен быть меньше длины е-волны.\n",
-          "applies_when": "",
-          "constraint": "",
+          "applies_when": "expanding limiting triangle post-thrust",
+          "constraint": "thrust < widest_segment_length",
           "verbatim_quote": "он будет b-волной или 4-й волной, а «выброс» из этого Треугольника будет очень ограниченным. Он должен быть меньше длины е-волны.\n",
           "source": "neely-mwe-1990 p.11-31",
           "related_aku": []
@@ -1581,8 +1581,8 @@
           "type": "rule",
           "strength": "mandatory",
           "statement_ru": "Для Плоских и Зигзагов, где волна-b короче волны-a: на втором этапе подтверждения следующая за Коррекцией волна должна достичь начала волны-с за время, не превышающее длительности последней.\n",
-          "applies_when": "",
-          "constraint": "",
+          "applies_when": "flat or zigzag where wave-b < wave-a, second confirmation step",
+          "constraint": "IF Wb < Wa AND pattern IN (flat, zigzag) THEN at_2nd_confirmation: check Wc_structure",
           "verbatim_quote": "на втором этапе, на котором от следующей за Коррекцией волны требуется достичь начала волны-с за время, не превышающее длительности последней.\n",
           "source": "neely-mwe-1990 p.6-2",
           "related_aku": []
@@ -1696,8 +1696,8 @@
           "type": "rule",
           "strength": "heuristic",
           "statement_ru": "Причины, приведшие к нарушению одного правила, обычно порождают другое правило. Треугольники и Терминальные фигуры являются исключениями практически из всех правил, стандартных ситуаций и условий.\n",
-          "applies_when": "",
-          "constraint": "",
+          "applies_when": "multiple rule violations detected in wave analysis",
+          "constraint": "IF rule_violation(R1) THEN check_for_secondary_violation(related_rules)",
           "verbatim_quote": "Причины, приведшие к нарушению одного правила, обычно порождают другое правило.\n",
           "source": "neely-mwe-1990 p.9-5",
           "related_aku": [
@@ -2086,8 +2086,8 @@
           "type": "rule",
           "strength": "mandatory",
           "statement_ru": "Необходимо вовремя идентифицировать и классифицировать (по признаку «Импульс — Коррекция», т.е. «:5» или «:3») все составляющие каждого сегмента каждой волны графика. Необходимо придерживаться предыдущей, проверенной ценовой структуры, даже если намерения рынка не вполне ясны.\n",
-          "applies_when": null,
-          "constraint": null,
+          "applies_when": "any monowave, before grouping",
+          "constraint": "classify_each_monowave AS impulse(:5) OR corrective(:3) BEFORE grouping",
           "verbatim_quote": "Если вовремя не идентифицировать и не классифицировать (по признаку \"Импульс - Коррекция\", т. е. \":5\" или \":3\") все составляющие каждого сегмента каждой волны графика, то с увеличением исследуемой фигуры ее анализ усложняется. Даже если \"намерения\" рынка не вполне ясны, необходимо придерживаться пре",
           "source": "neely-mwe-1990 p.9-6",
           "related_aku": []
@@ -2308,6 +2308,22 @@
           "constraint": "first_zigzag_length = 1.00 ; second_thrust ≈ 0.618 * first_zigzag_length ; IF third_thrust THEN ≈ 0.382 * first_zigzag_length ; double_triple_flat: waterfall = false (except triple_flat: waterfall = possible)\n",
           "verbatim_quote": "Почти всегда второй толчок к новым ценовым уровням составит лишь 61.8% предыдущего прорыва. Если имеет место третий прорыв, он должен составить 38.2% первоначального движения. Я называю это «эффектом водопада»... Внешние соотношения для фигур Двойных Плоских и Комбинаций, вероятно, не создадут «Эффе",
           "source": "neely-mwe-1990 p.12-33",
+          "related_aku": []
+        }
+      ]
+    },
+    "time-projection": {
+      "count": 1,
+      "rules": [
+        {
+          "aku_id": "AKU-0206",
+          "type": "rule",
+          "strength": "mandatory",
+          "statement_ru": "Правило соотношения длительностей волн: временные длины трёх последовательно расположённых смежных волн одного Порядка НЕ МОГУТ быть равны между собой. Зависимости: A) если первые два одинаковы → третий значительно иной (часто = сумма двух); B) если второй значительно длиннее первого → третий = 100%, 61.8% или 161.8% первого; C) три попарно неравны → соотношения Фибоначчи.",
+          "applies_when": "checking time durations of 3 consecutive same-order waves",
+          "constraint": "NOT(time(w1) == time(w2) == time(w3)) ; patterns: A: t1==t2 => t3 >> or << ; B: t2>>t1 => t3 IN {t1, 0.618*t1, 1.618*t1} ; C: t1!=t2!=t3 => fib_ratio(ti,tj)",
+          "verbatim_quote": "Правило соотношений длительностей в общем виде звучит следующим образом: временные длины (длительности) трех последовательно расположенных (смежных) волн (одного и того же Порядка) не могут быть равны между собой.",
+          "source": "neely-mwe-1990 p.9-4",
           "related_aku": []
         }
       ]
@@ -3003,13 +3019,13 @@
   },
   "summary": {
     "total_aku": 247,
-    "total_rules_in_spec": 246,
+    "total_rules_in_spec": 247,
     "coverage": {
-      "foundations": 51,
       "patterns": 100,
       "universal_rules": 82,
-      "fibonacci": 9,
-      "advanced": 4
+      "fibonacci": 10,
+      "advanced": 4,
+      "foundations": 51
     }
   }
 }

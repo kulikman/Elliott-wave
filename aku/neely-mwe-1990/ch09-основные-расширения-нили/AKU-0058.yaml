@@ -28,11 +28,10 @@ source:
       '
     language: ru
 formalization:
-  status: not_formalizable
-  applies_when: null
-  constraint: null
-  formalization_notes: Директива рабочего процесса (классифицировать все сегменты
-    как :5/:3, придерживаться проверенной структуры). Не выражается как ценовой constraint.
+  status: draft
+  applies_when: any monowave, before grouping
+  constraint: classify_each_monowave AS impulse(:5) OR corrective(:3) BEFORE grouping
+  formalization_notes: Добавлено в ходе аудита качества AKU
 aliases:
 - правило структурной целостности
 - structural integrity rule

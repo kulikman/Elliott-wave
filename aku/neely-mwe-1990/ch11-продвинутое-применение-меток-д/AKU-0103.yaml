@@ -23,7 +23,10 @@ source:
       '
     language: ru
 formalization:
-  status: not_attempted
+  status: draft
+  applies_when: expanding limiting triangle, wave failure
+  constraint: only Wb OR Wd may fail_to_exceed previous wave; no other waves may fail
+  formalization_notes: Добавлено в ходе аудита качества AKU
 aliases:
 - правило неудавшихся волн расширяющегося треугольника
 related_aku: []

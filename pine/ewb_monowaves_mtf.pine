@@ -286,11 +286,12 @@ drawImpulseChannels(array<int> eb, array<float> ep, int i0, color c) =>
          xloc = xloc.bar_index, color = color.new(c, 30),
          width = 1, style = line.style_dashed)
     // Fibonacci проекции Волны-5 (AKU-0201):
-    // Цель W5 = end(W3) + 1.618 * (end(W3) - start(W1)) — точка "n"
+    // Цель W5 = end(W3) + 1.618 * (end(W3) - start(W1))
+    // Старт от p2 (end W3), не от p4 (end W4)
     bool isUp = p1 > p0
-    float m = math.abs(p2 - p0)          // расстояние от start(W1) до end(W3)
-    float w5target = isUp ? p4 + 1.618 * m : p4 - 1.618 * m
-    int   w5bar    = b4 + (b4 - b2)      // экстраполяция времени W5 ≈ длина W3 по барам
+    float m = math.abs(p2 - p0)          // расстояние start(W1) → end(W3)
+    float w5target = isUp ? p2 + 1.618 * m : p2 - 1.618 * m
+    int   w5bar    = b2 + (b4 - b0)      // проецируем от end(W3) на ту же длину что W1..W4
     line.new(b4, p4, w5bar, w5target, xloc = xloc.bar_index,
          color = color.new(color.yellow, 30), width = 1, style = line.style_dotted)
     label.new(w5bar, w5target, "W5 161.8%", xloc = xloc.bar_index, yloc = yloc.price,

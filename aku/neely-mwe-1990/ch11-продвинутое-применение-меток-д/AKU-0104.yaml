@@ -23,7 +23,10 @@ source:
       '
     language: ru
 formalization:
-  status: not_attempted
+  status: draft
+  applies_when: expanding limiting horizontal triangle
+  constraint: Wa = smallest_segment ; each_subsequent_wave > previous
+  formalization_notes: Добавлено в ходе аудита качества AKU
 aliases:
 - правило горизонтального расширяющегося треугольника
 related_aku: []

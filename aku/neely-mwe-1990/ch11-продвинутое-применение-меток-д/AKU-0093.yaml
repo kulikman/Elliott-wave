@@ -23,7 +23,10 @@ source:
       '
     language: ru
 formalization:
-  status: not_attempted
+  status: draft
+  applies_when: irregular flat identification
+  constraint: Wb >= 1.01 * Wa AND Wc >= 1.01 * Wb
+  formalization_notes: Добавлено в ходе аудита качества AKU
 aliases:
 - минимальные требования неправильной плоской
 related_aku: []
