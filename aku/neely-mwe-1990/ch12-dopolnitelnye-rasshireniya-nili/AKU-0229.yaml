@@ -1,0 +1,46 @@
+id: AKU-0229
+type: rule
+strength: mandatory
+status: draft
+topic: fibonacci-ratios
+subtopics:
+- impulse
+- impulse-extension
+- internal-ratio
+statement_ru: >
+  Внутренние Фибоначчи при Растянутой 1-й: волна-3 НЕ ДОЛЖНА быть более 61.8%
+  волны-1. Если W3 = 61.8% W1 → W5 обычно = 38.2% W3. Если W3 = 38.2% W1 →
+  W5 обычно = 61.8% W3.
+statement_en: null
+source:
+  book_id: neely-mwe-1990
+  page: 12-23
+  chapter: 'Глава 12: Дополнительные Расширения Нили'
+  section: Продвинутые соотношения Фибоначчи / Внутренние / Растяжение первой
+  figure_id: '12-26'
+  verbatim_quote:
+    text: >
+      Когда волна-1 в фигуре самая длинная, волна-3 не должна быть более 61.8%
+      волны-1. Когда волна-3 составляет 61.8% волны-1, волна-5 (в соответствии с
+      правилом Чередования) обычно будет составлять 38.2% волны-3. Если волна-3
+      составляет 38.2% волны-1, волна-5 обычно будет составлять 61.8% волны-3.
+    language: ru
+formalization:
+  status: draft
+  applies_when: impulse with extended wave-1
+  constraint: >
+    W3_price_length <= 0.618 * W1_price_length ;
+    IF W3 ≈ 0.618*W1 THEN W5 ≈ 0.382*W3 ;
+    IF W3 ≈ 0.382*W1 THEN W5 ≈ 0.618*W3
+  formalization_notes: 'Рис.12-26. Все возможные Внутренние при Растянутой 1-й.'
+aliases: []
+related_aku:
+- AKU-0230
+- AKU-0231
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-03T16:00:00Z'
+review_notes: Извлечено Claude (PDF ч.3 Гл.12 стр.12-23).
+requires_review: true

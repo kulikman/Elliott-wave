@@ -1,0 +1,48 @@
+id: AKU-0230
+type: rule
+strength: mandatory
+status: draft
+topic: fibonacci-ratios
+subtopics:
+- impulse
+- impulse-extension
+- internal-ratio
+statement_ru: >
+  Внутренние Фибоначчи при Растянутой 3-й: волна-1 НЕ ДОЛЖНА быть связана с
+  волной-3 Внутренним соотношением 61.8%. Волна-1 и волна-5 должны быть примерно
+  равны (100%) или соотноситься коэффициентом 61.8% или 38.2%. Волна-5 ДОЛЖНА
+  быть меньше 61.8% Растянутой волны-3.
+statement_en: null
+source:
+  book_id: neely-mwe-1990
+  page: 12-23
+  chapter: 'Глава 12: Дополнительные Расширения Нили'
+  section: Продвинутые соотношения Фибоначчи / Внутренние / Растяжение третьей
+  figure_id: '12-27'
+  verbatim_quote:
+    text: >
+      Когда в фигуре Растянута волна-3, волна-1 не должна быть связана с волной-3
+      Внутренним соотношением 61.8%. Она может составлять 38.2% волны-3, но часто
+      они вообще не связаны никаким Внутренним соотношением... Когда 3-я волна самая
+      длинная, волна-1 и волна-5 должны быть в ценовом отношении примерно равны
+      (соотношение 100%) или соотноситься с коэффициентом 61.8% или 38.2%.
+    language: ru
+formalization:
+  status: draft
+  applies_when: impulse with extended wave-3
+  constraint: >
+    W1_price_length != 0.618 * W3_price_length ;
+    W1 ≈ W5 (100%) OR W1/W5 ≈ 0.618 OR W1/W5 ≈ 0.382 ;
+    W5_price_length < 0.618 * W3_price_length
+  formalization_notes: 'Рис.12-27. Если W4 сложная → W5 ≤ W1; если W2 сложная → W5 ≤ W1.'
+aliases: []
+related_aku:
+- AKU-0229
+- AKU-0231
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-03T16:00:00Z'
+review_notes: Извлечено Claude (PDF ч.3 Гл.12 стр.12-23).
+requires_review: true

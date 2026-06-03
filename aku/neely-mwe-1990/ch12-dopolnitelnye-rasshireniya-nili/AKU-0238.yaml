@@ -1,0 +1,52 @@
+id: AKU-0238
+type: rule
+strength: mandatory
+status: draft
+topic: missing-waves
+subtopics:
+- polywave
+- wave-identification
+statement_ru: >
+  Пропавшие волны возникают ТОЛЬКО в поливолновом масштабе. Стандартные Коррекции
+  НЕ МОГУТ содержать Пропавших волн. Минимальное число точек данных: Импульс=8,
+  Зигзаг=5, Плоская=5, Треугольник=8, Двойные=10, Двойные с Треуг.=13, Тройные=15,
+  Тройные с Треуг.=18. Если точек данных от (min/2+1) до (2×min−1) → возможна
+  пропажа. При ≥2×min → пропажа невозможна.
+statement_en: null
+source:
+  book_id: neely-mwe-1990
+  page: 12-35
+  chapter: 'Глава 12: Дополнительные Расширения Нили'
+  section: Пропавшие волны / Где и когда возникают / Как они возникают
+  figure_id: '12-45,12-46'
+  verbatim_quote:
+    text: >
+      Пропавшие волны могут возникать только в поливолновом масштабе, но не в
+      мультиволновом или выше... Стандартные Коррекции Эллиота не могут содержать
+      «Пропавших» волн... Импульсная волна — 8, Зигзаг — 5, Плоская — 5,
+      Треугольник — 8, Двойные Плоские и Зигзаги — 10... Любое число точек данных
+      меньше минимума (но больше половины минимума) указывает либо на однозначное
+      наличие пропавшей волны, либо на неправильность вашего волнового счёта.
+    language: ru
+formalization:
+  status: draft
+  applies_when: polywave scale analysis, checking for missing waves
+  constraint: >
+    missing_waves ONLY polywave (NOT multiwave+) ;
+    standard_corrections: missing_wave = impossible ;
+    min_data_points = {impulse:8, zigzag:5, flat:5, triangle:8,
+      double_flat_zigzag:10, double_with_triangle:13,
+      triple_flat_zigzag:15, triple_with_triangle:18} ;
+    IF data_points >= min/2+1 AND data_points <= 2*min-1 THEN missing_wave_possible ;
+    IF data_points >= 2*min THEN missing_wave_impossible
+  formalization_notes: 'Рис.12-45/46. Начальная точка данных включена в подсчёт.'
+aliases: []
+related_aku:
+- AKU-0239
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-03T16:00:00Z'
+review_notes: Извлечено Claude (PDF ч.3 Гл.12 стр.12-34..12-37).
+requires_review: true

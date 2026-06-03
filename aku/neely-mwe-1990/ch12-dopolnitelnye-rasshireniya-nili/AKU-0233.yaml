@@ -1,0 +1,47 @@
+id: AKU-0233
+type: rule
+strength: mandatory
+status: draft
+topic: fibonacci-ratios
+subtopics:
+- retracement
+- zigzag
+- internal-ratio
+statement_ru: >
+  Внутренние Фибоначчи для волны-c Зигзага: Internal «лимит» волны-c ≈ 161.8%
+  волны-a. Если превышает → Удлинённый Зигзаг, часть Треугольника. Волна-c может
+  быть равна волне-a (очень часто). Волна-c НЕ ДОЛЖНА быть Внутренне меньше 61.8%
+  волны-a; если меньше → часть Треугольника.
+statement_en: null
+source:
+  book_id: neely-mwe-1990
+  page: 12-26
+  chapter: 'Глава 12: Дополнительные Расширения Нили'
+  section: Продвинутые соотношения Фибоначчи / Внутренние / Волна-c Зигзага
+  figure_id: '12-30'
+  verbatim_quote:
+    text: >
+      Внутренний «лимит» длины волны-c по сравнению с волной-a примерно равен
+      161.8% волны-a. Если длина волны-c превышает максимальные Внутренний и Внешний
+      пределы своего соотношения, то данный Зигзаг Удлиненный и должен считаться
+      частью Треугольника... Волна-c Внутренне не должна быть меньше 61.8% волны-a.
+    language: ru
+formalization:
+  status: draft
+  applies_when: zigzag correction, wave-c analysis
+  constraint: >
+    0.618 * Wa_price <= Wc_price_internal <= 1.618 * Wa_price ;
+    IF Wc > 1.618*Wa THEN elongated_zigzag → part_of_triangle ;
+    IF Wc < 0.618*Wa THEN part_of_triangle ;
+    most_common: Wc ≈ Wa (100%)
+  formalization_notes: 'Рис.12-30 диаграммы A/B.'
+aliases: []
+related_aku:
+- AKU-0234
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-03T16:00:00Z'
+review_notes: Извлечено Claude (PDF ч.3 Гл.12 стр.12-26).
+requires_review: true

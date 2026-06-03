@@ -158,6 +158,15 @@ groups:
     topics:
       - slug: fibonacci-ratios
         name: "Соотношения Фибоначчи"
+      - slug: internal-ratio
+        name: "Внутренние соотношения"
+        note: "Сравнение ценовых длин волн (перекрывающиеся диапазоны)"
+      - slug: external-ratio
+        name: "Внешние соотношения"
+        note: "Неперекрывающиеся касающиеся диапазоны, уровни от конца волны"
+      - slug: waterfall-effect
+        name: "Эффект водопада"
+        note: "Каскадные уровни в Двойных/Тройных Зигзагах"
       - slug: price-projection
         name: "Ценовые цели"
       - slug: time-projection
@@ -226,6 +235,12 @@ groups:
         note: "Правило Обратной Логики Нили"
       - slug: local-adjustments
         name: "Локальные корректировки счёта"
+      - slug: missing-waves
+        name: "Пропавшие волны"
+        note: "Волны, невидимые из-за недостатка точек данных; только поливолны"
+      - slug: emulation
+        name: "Имитация"
+        note: "Фигура имитирует противоположный класс; индикатор Пропавшей волны"
       - slug: trading-application
         name: "Применение в трейдинге"
         note: "Точки входа, стопы, цели"

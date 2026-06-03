@@ -1,0 +1,49 @@
+id: AKU-0235
+type: rule
+strength: heuristic
+status: draft
+topic: fibonacci-ratios
+subtopics:
+- retracement
+- triangle
+- internal-ratio
+statement_ru: >
+  Внутренние Фибоначчи для Треугольника: волна-c обычно = 61.8% волны-a (если
+  b > a → c может = 61.8% b). Волна-d: только в Треугольниках, обычно = 61.8%
+  волны-a; может = 61.8% или 38.2% любой волны. Волна-e: обычно = 61.8% ИЛИ
+  38.2% волны-d. Минимум два соотношения Фибоначчи между пятью сегментами.
+statement_en: null
+source:
+  book_id: neely-mwe-1990
+  page: 12-28
+  chapter: 'Глава 12: Дополнительные Расширения Нили'
+  section: Продвинутые соотношения Фибоначчи / Внутренние / Треугольник
+  figure_id: '12-35,12-36'
+  verbatim_quote:
+    text: >
+      Волна-с Треугольника обычно связана с волной-а соотношением 61.8%, но
+      несоответствие этого параметра отнюдь не отменяет волновой счет Треугольника...
+      Волна-d имеет место только в Треугольниках. Обычно она будет связана с
+      волной-а соотношением 61.8%... Волна-е обычно будет связана с волной-d
+      соотношением 61.8% или 38.2%.
+    language: ru
+formalization:
+  status: draft
+  applies_when: triangle pattern, fibonacci validation
+  constraint: >
+    Wc ≈ 0.618 * Wa (typical) ;
+    Wd ≈ 0.618 * Wa (typical) ; Wd may ≈ 0.618 or 0.382 * any_wave ;
+    We ≈ 0.618 * Wd OR We ≈ 0.382 * Wd ;
+    min 2 fibonacci relationships among 5 segments
+  formalization_notes: 'Рис.12-35/36. Наличие мин. 2 Фиб соотношений = сильный признак Треугольника.'
+aliases: []
+related_aku:
+- AKU-0233
+- AKU-0234
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-03T16:00:00Z'
+review_notes: Извлечено Claude (PDF ч.3 Гл.12 стр.12-28).
+requires_review: true

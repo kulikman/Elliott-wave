@@ -1,0 +1,49 @@
+id: AKU-0237
+type: rule
+strength: heuristic
+status: draft
+topic: fibonacci-ratios
+subtopics:
+- retracement
+- combination
+- external-ratio
+- waterfall-effect
+statement_ru: >
+  «Эффект водопада» для Двойных/Тройных Зигзагов и Комбинаций: после прорыва
+  уровня поддержки/сопротивления, второй толчок к новым ценовым уровням ≈ 61.8%
+  первоначального движения. Если третий прорыв → 38.2%. Длина первого Зигзага =
+  общая мера (1.00) для всех последующих уровней. Двойные/Тройные Плоские и
+  Комбинации НЕ создают эффекта водопада (кроме Тройных Плоских).
+statement_en: null
+source:
+  book_id: neely-mwe-1990
+  page: 12-33
+  chapter: 'Глава 12: Дополнительные Расширения Нили'
+  section: Продвинутые соотношения Фибоначчи / Внешние / Двойные и Тройные Зигзаги
+  figure_id: '12-42,12-43,12-44'
+  verbatim_quote:
+    text: >
+      Почти всегда второй толчок к новым ценовым уровням составит лишь 61.8%
+      предыдущего прорыва. Если имеет место третий прорыв, он должен составить
+      38.2% первоначального движения. Я называю это «эффектом водопада»... Внешние
+      соотношения для фигур Двойных Плоских и Комбинаций, вероятно, не создадут
+      «Эффекта водопада».
+    language: ru
+formalization:
+  status: draft
+  applies_when: double/triple zigzag or combination, external fibonacci
+  constraint: >
+    first_zigzag_length = 1.00 ;
+    second_thrust ≈ 0.618 * first_zigzag_length ;
+    IF third_thrust THEN ≈ 0.382 * first_zigzag_length ;
+    double_triple_flat: waterfall = false (except triple_flat: waterfall = possible)
+  formalization_notes: 'Рис.12-42..12-44. Эффект водопада наиболее часто в Двойных Зигзагах.'
+aliases: []
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-03T16:00:00Z'
+review_notes: Извлечено Claude (PDF ч.3 Гл.12 стр.12-33..12-34).
+requires_review: true

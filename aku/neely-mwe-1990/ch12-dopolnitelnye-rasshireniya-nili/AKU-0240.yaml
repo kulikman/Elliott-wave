@@ -1,0 +1,51 @@
+id: AKU-0240
+type: rule
+strength: heuristic
+status: draft
+topic: reverse-logic
+subtopics:
+- multiple-interpretation
+- trading-application
+- local-adjustments
+statement_ru: >
+  Обратная Логика: когда одни и те же данные допускают более одной волновой
+  интерпретации → рынок ДОЛЖЕН быть ближе к центру более крупной конфигурации
+  (волна-b, волна-3 или волна-x). Множество интерпретаций = не торговать. По мере
+  развития число интерпретаций сокращается до одной → фигура у завершения.
+  Локальные изменения Меток: если рынок ведёт себя неожиданно → уменьшить
+  Наименование Порядка на 1 начиная с последней моноволны.
+statement_en: null
+source:
+  book_id: neely-mwe-1990
+  page: 12-43
+  chapter: 'Глава 12: Дополнительные Расширения Нили'
+  section: Дополнительные возможности (Обратная Логика) / Локальные изменения Меток
+  figure_id: null
+  verbatim_quote:
+    text: >
+      Когда одни и те же ряды данных могут быть интерпретированы более чем одной
+      абсолютно допустимой волновой фигурой, рынок должен быть ближе к центру более
+      крупной конфигурации Эллиота... Если вы ждете момента войти в рынок, но
+      возможны многочисленные интерпретации, не надо торговать, пока их число не
+      сократится всего до одной... Наиболее важное соображение при изменении счёта —
+      постараться менять как можно меньше.
+    language: ru
+formalization:
+  status: draft
+  applies_when: multiple valid wave interpretations exist; unexpected market behavior
+  constraint: >
+    IF count(valid_interpretations) > 1 THEN market_near_center_of_larger_pattern ;
+    center_segments = {wave_b, wave_3, wave_x} ;
+    IF count(valid_interpretations) == 1 THEN pattern_near_completion ;
+    label_adjustment: decrease_order_by_1 starting_from last_monowave
+  formalization_notes: 'стр.12-43..12-45. Обратная Логика = торговый инструмент.'
+aliases: []
+related_aku:
+- AKU-0239
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-03T16:00:00Z'
+review_notes: Извлечено Claude (PDF ч.3 Гл.12 стр.12-43..12-45).
+requires_review: true

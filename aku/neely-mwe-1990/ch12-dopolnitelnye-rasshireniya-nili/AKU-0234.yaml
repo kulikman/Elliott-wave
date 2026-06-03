@@ -1,0 +1,49 @@
+id: AKU-0234
+type: rule
+strength: mandatory
+status: draft
+topic: fibonacci-ratios
+subtopics:
+- retracement
+- flat
+- internal-ratio
+statement_ru: >
+  Внутренние Фибоначчи для волны-c Плоской: волна-c НЕ ДОЛЖНА превышать 138.2%
+  волны-a (иначе → Удлинённая Плоская). Наиболее распространённое: волна-a ≈ волна-c
+  (100%). Следующее: 61.8%. Минимальное Внутреннее при Неудаче: 38.2%.
+  Суровая Неудача: b-волна откатывается ≈81% от a; min откат b от a ≥ 61.8%.
+statement_en: null
+source:
+  book_id: neely-mwe-1990
+  page: 12-26
+  chapter: 'Глава 12: Дополнительные Расширения Нили'
+  section: Продвинутые соотношения Фибоначчи / Внутренние / Волна-c Плоской
+  figure_id: '12-31,12-32,12-33,12-34'
+  verbatim_quote:
+    text: >
+      С-волна Плоской не должна превышать 138.2% а-волны. Если с-волна больше
+      138.2% волны-а, эта фигура попадает в категорию Удлиненной Плоской. Наиболее
+      распространённое соотношение между волной-а и волной-с Плоской — это их
+      примерное равенство. Следующее по распространённости соотношение — 61.8%.
+    language: ru
+formalization:
+  status: draft
+  applies_when: flat correction, wave-c analysis
+  constraint: >
+    Wc_price_internal <= 1.382 * Wa_price ;
+    IF Wc > 1.382*Wa THEN elongated_flat ;
+    most_common: Wc ≈ Wa (100%) ;
+    next: Wc ≈ 0.618*Wa ;
+    min (failure): Wc ≈ 0.382*Wa ;
+    severe_failure REQUIRES Wb_retrace >= 0.618*Wa AND Wb ≈ 0.81*Wa
+  formalization_notes: 'Рис.12-31..12-34.'
+aliases: []
+related_aku:
+- AKU-0233
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-03T16:00:00Z'
+review_notes: Извлечено Claude (PDF ч.3 Гл.12 стр.12-26..12-28).
+requires_review: true

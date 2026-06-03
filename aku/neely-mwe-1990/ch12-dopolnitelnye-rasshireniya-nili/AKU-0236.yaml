@@ -1,0 +1,48 @@
+id: AKU-0236
+type: rule
+strength: heuristic
+status: draft
+topic: fibonacci-ratios
+subtopics:
+- impulse
+- external-ratio
+- impulse-extension
+statement_ru: >
+  Внешние Фибоначчи при Растянутой 5-й: (1) волна-3 может остановиться на 161.8%
+  выше конца W1 (наиболее вероятно; следующее — 100%). (2) Волна-5 может
+  остановиться на 100%, 161.8% или 261.8% выше вершины W3. Уровень 161.8% =
+  самый вероятный завершения W5. При Растянутой 3-й — нет надёжных Внешних.
+statement_en: null
+source:
+  book_id: neely-mwe-1990
+  page: 12-31
+  chapter: 'Глава 12: Дополнительные Расширения Нили'
+  section: Продвинутые соотношения Фибоначчи / Внешние / Растяжение пятой
+  figure_id: '12-38,12-40,12-41'
+  verbatim_quote:
+    text: >
+      Когда Растянутой является 5-я волна, Внешние соотношения наблюдаются чаще,
+      чем Внутренние. Существует две ситуации: во-первых, 3-я волна может
+      остановиться в точке, которая на 161.8% выше конца волны-1... Во-вторых,
+      5-я волна может остановиться на 100%, 161.8% или 261.8% выше вершины
+      волны-3. Уровень 161.8% — самый вероятный уровень завершения Растянутой 5-й.
+    language: ru
+formalization:
+  status: draft
+  applies_when: impulse with extended wave-5, external fibonacci targets
+  constraint: >
+    W3_target_external = end_W1 + {1.618, 1.0} * W1_price ;
+    W5_target_external = top_W3 + {1.0, 1.618, 2.618} * W3_price ;
+    most_probable_W5 = top_W3 + 1.618*W3 ;
+    ext3_no_reliable_external = true
+  formalization_notes: 'Рис.12-38..12-41. При Растянутой 3-й — внешние ненадёжны (Рис.12-39).'
+aliases: []
+related_aku:
+- AKU-0231
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-03T16:00:00Z'
+review_notes: Извлечено Claude (PDF ч.3 Гл.12 стр.12-30..12-32).
+requires_review: true

@@ -1,0 +1,56 @@
+id: AKU-0239
+type: rule
+strength: heuristic
+status: draft
+topic: missing-waves
+subtopics:
+- emulation
+- wave-identification
+- x-wave
+statement_ru: >
+  Имитация: одна фигура имитирует поведение противоположного Класса (корректирующая
+  выглядит импульсной и наоборот). Указывает на наличие Пропавшей волны. Наиболее
+  предрасположены к пропаже: Сложные Корректирующие поливолны — почти всегда
+  x-волна «пропадает» первой. В Импульсах: при Растянутой 1-й может пропасть W4,
+  при Растянутой 5-й — W2. Ключевые признаки имитации: (1) нет Чередования W2/W4,
+  (2) канал не соответствует импульсу, (3) тренд 2-4 не пробивается быстро, (4) фигура
+  выглядит как Импульс но не удовлетворяет Правилам → Сложная Коррекция с x-волнами.
+statement_en: null
+source:
+  book_id: neely-mwe-1990
+  page: 12-38
+  chapter: 'Глава 12: Дополнительные Расширения Нили'
+  section: Имитация / Двойные Плоские / Двойной и Тройной Зигзаги
+  figure_id: '12-48,12-49,12-50,12-51,12-52,12-53'
+  verbatim_quote:
+    text: >
+      Имитация — тема трудная. Этот феномен возникает, когда одна фигура
+      (Коррективная или Импульсная) имитирует поведение фигуры противоположного
+      Класса... Наиболее предрасположены к возникновению Пропавших волн Сложные
+      Корректирующие поливолны (Коррекции, включающие х-волны). Практически без
+      исключений именно х-волна «Пропавшая»... если фигура «выглядит как Импульс»,
+      но не удовлетворяет важным параметрам Импульса, данная фигура должна быть
+      Сложной Коррекцией, включающей x-волны.
+    language: ru
+formalization:
+  status: draft
+  applies_when: polywave scale, suspected missing wave, emulation detection
+  constraint: >
+    emulation_signs = {no_alternation_W2_W4, channel_mismatch,
+      trendline_2_4_not_broken_fast, looks_impulsive_but_fails_rules} ;
+    IF count(emulation_signs) >= 2 THEN suspect_complex_correction_with_x_waves ;
+    most_prone: complex_corrective_polywave → x_wave_missing ;
+    ext1_impulse: W4_may_be_missing ;
+    ext5_impulse: W2_may_be_missing
+  formalization_notes: 'Рис.12-48..12-55. 4 признака имитации на стр.12-40.'
+aliases: []
+related_aku:
+- AKU-0238
+- AKU-0240
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-03T16:00:00Z'
+review_notes: Извлечено Claude (PDF ч.3 Гл.12 стр.12-38..12-44).
+requires_review: true

@@ -1,0 +1,50 @@
+id: AKU-0231
+type: rule
+strength: mandatory
+status: draft
+topic: fibonacci-ratios
+subtopics:
+- impulse
+- impulse-extension
+- internal-ratio
+statement_ru: >
+  Внутренние Фибоначчи при Растянутой 5-й: единственное Внутреннее между W1 и W3 —
+  волна-3 = 161.8% волны-1. Если нет соотношения → W3 должна быть >100% но ≤261.8%
+  W1. Волна-5 ДОЛЖНА быть не менее min(100% длины 0-3, 161.8% волны-3).
+  Максимум Растянутой 5-й ≈ 261.8% длины (1+3).
+statement_en: null
+source:
+  book_id: neely-mwe-1990
+  page: 12-24
+  chapter: 'Глава 12: Дополнительные Расширения Нили'
+  section: Продвинутые соотношения Фибоначчи / Внутренние / Растяжение пятой
+  figure_id: '12-28'
+  verbatim_quote:
+    text: >
+      Единственное возможное Внутреннее соотношение между волной-1 и волной-3 при
+      Растянутой 5-й — волна-3 составляет 161.8% волны-1. Если между ними нет
+      никакого соотношения, волна-3 должна быть больше 100%, но не меньше 261.8%
+      волны-1... Волна-5 должна быть не менее более короткого из двух расстояний —
+      100% длины (1+3) или 161.8% волны-3. Она может составить до 261.8% длины
+      (1+3), но это примерно максимальный предел.
+    language: ru
+formalization:
+  status: draft
+  applies_when: impulse with extended wave-5
+  constraint: >
+    W3_price_length ≈ 1.618 * W1_price_length (or no Internal) ;
+    IF no_internal THEN 1.0*W1 < W3 <= 2.618*W1 ;
+    W5_price_length >= min(1.0 * length_0_to_3, 1.618 * W3) ;
+    W5_price_length <= 2.618 * length_0_to_3
+  formalization_notes: 'Рис.12-28. length_0_to_3 = от начала W1 до конца W3.'
+aliases: []
+related_aku:
+- AKU-0229
+- AKU-0230
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-03T16:00:00Z'
+review_notes: Извлечено Claude (PDF ч.3 Гл.12 стр.12-24).
+requires_review: true
