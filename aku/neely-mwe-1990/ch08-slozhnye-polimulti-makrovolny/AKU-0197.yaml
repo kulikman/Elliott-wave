@@ -1,0 +1,40 @@
+id: AKU-0197
+type: rule
+strength: mandatory
+status: draft
+topic: multiwave
+subtopics:
+- flat
+- zigzag
+- complexity-rule
+statement_ru: 'Мультиволновая Коррекция: одна или две пятёрки ('':5'') в более крупной
+  фигуре должны быть явно сегментированы в поливолне. Если сегментирована только одна
+  пятёрка — она должна быть c-волной Зигзага или Плоской. Очень высока вероятность,
+  что b-волна мультиволны будет Коррективной поливолной.'
+statement_en: null
+source:
+  book_id: neely-mwe-1990
+  page: 8-17
+  chapter: 'Глава 8: Формирование сложных поли-, мульти- и макроволн'
+  section: Формирование мультиволн / Коррективы
+  figure_id: null
+  verbatim_quote:
+    text: Одна или две пятерки (":5") в более крупной фигуре должны быть явно (визуально)
+      сегментированы в поливолне... Очень высока вероятность, что b-волна мультиволны
+      будет Коррективной поливолной.
+    language: ru
+formalization:
+  status: draft
+  applies_when: classifying multiwave correction
+  constraint: 'count(polywave '':5'') IN {1,2} AND if count==1: polywave('':5'') IS
+    c_wave AND polywave(b_wave) IS corrective'
+  formalization_notes: null
+aliases: []
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-03T13:36:11Z'
+review_notes: Извлечено Claude (PDF ч.2 Гл.8 стр.8-11..8-17, Таблица B + мультиволны).
+requires_review: true

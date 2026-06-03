@@ -1,0 +1,39 @@
+id: AKU-0196
+type: rule
+strength: mandatory
+status: draft
+topic: multiwave
+subtopics:
+- impulse
+- rule-of-alternation
+- complexity-rule
+statement_ru: 'Мультиволновый Импульс: как минимум одна коррективная фаза (волна 2
+  или 4) должна быть поливолной. Самая длинная Коррекция должна следовать непосредственно
+  перед или после растянутой импульсной волны.'
+statement_en: null
+source:
+  book_id: neely-mwe-1990
+  page: 8-16
+  chapter: 'Глава 8: Формирование сложных поли-, мульти- и макроволн'
+  section: Формирование мультиволн / Импульсы / Правила
+  figure_id: null
+  verbatim_quote:
+    text: Как минимум одна Коррекция (волна 2 или 4) Импульса должна быть поливолной...
+      Самая длинная Коррекция (волна 2 или 4) Импульса должна следовать непосредственно
+      перед или после растянутой волны.
+    language: ru
+formalization:
+  status: draft
+  applies_when: classifying multiwave impulse, identifying extended wave
+  constraint: count(polywave IN {wave_2, wave_4}) >= 1 AND longest_correction IS adjacent_to
+    extended_wave
+  formalization_notes: null
+aliases: []
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-03T13:36:11Z'
+review_notes: Извлечено Claude (PDF ч.2 Гл.8 стр.8-11..8-17, Таблица B + мультиволны).
+requires_review: true

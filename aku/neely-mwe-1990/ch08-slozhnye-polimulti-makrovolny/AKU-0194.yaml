@@ -1,0 +1,38 @@
+id: AKU-0194
+type: pattern
+strength: mandatory
+status: draft
+topic: combination
+subtopics:
+- x-wave
+- structural-series
+- flat
+- triangle
+statement_ru: 'Таблица B: Тройная Тройка — (3-3-5) ++ x:3 ++ (3-3-5) ++ x:3 ++ (3-3-5).
+  Очень редкая фигура. Сжимается в '':3''. Рис.8-12. Перемещается с трендом на один
+  Порядок выше.'
+statement_en: null
+source:
+  book_id: neely-mwe-1990
+  page: 8-11
+  chapter: 'Глава 8: Формирование сложных поли-, мульти- и макроволн'
+  section: Таблица B / Тройная Тройка
+  figure_id: null
+  verbatim_quote:
+    text: (3-3-5) + (х-волна) + (3-3-5) + (х-волна) + (3-3-5) = Тройная Тройка = 3
+    language: ru
+formalization:
+  status: draft
+  applies_when: three flat corrections separated by two large x-waves
+  constraint: series=[':3',:3(x),':3',:3(x),':3'] ; compact → ':3' ; trend_drift ==
+    true
+  formalization_notes: 'Рис.8-12: крайне редка. Медленно перемещается с трендом.'
+aliases: []
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-03T13:36:11Z'
+review_notes: Извлечено Claude (PDF ч.2 Гл.8 стр.8-11..8-17, Таблица B + мультиволны).
+requires_review: true

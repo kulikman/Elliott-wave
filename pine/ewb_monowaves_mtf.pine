@@ -244,6 +244,21 @@ labelSeg(array<int> eb, array<float> ep, int firstIdx, string lset, color c) =>
              xloc = xloc.bar_index, yloc = yloc.price, style = label.style_label_up,
              color = color.new(c, 45), textcolor = color.white, size = size.tiny)
 
+// Метки Движения (Motion Labels) — нумерация волн на подтверждённой фигуре.
+// Импульс: 1 2 3 4 5 на пивотах. Коррекция: A B C. Треугольник: a b c d e.
+// Это классическая нотация Эллиота для отображения на графике трейдера.
+drawMotionLabels(array<int> eb, array<float> ep, int firstIdx,
+                 int count, string lblSet, color c) =>
+    array<string> lbs = str.split(lblSet, "|")
+    for i = 0 to math.min(count - 1, array.size(lbs) - 1)
+        int bi  = array.get(eb, firstIdx + i)
+        float px = array.get(ep, firstIdx + i)
+        string txt = array.get(lbs, i)
+        bool isImpOdd = txt == "1" or txt == "3" or txt == "5"
+        label.new(bi, px, txt, xloc = xloc.bar_index, yloc = yloc.price,
+             style = isImpOdd ? label.style_label_down : label.style_label_up,
+             color = color.new(c, 0), textcolor = color.white, size = size.normal)
+
 // ─── Уровень 4: inline-подтверждение + каналы Нили ───────────────────────────
 // Цена точки на линии через (b0,p0)→(b2,p2) при bar_index = bx
 priceOnLine(int b0, float p0, int b2, float p2, int bx) =>
@@ -369,6 +384,7 @@ matchFigure(array<int> s, array<int> eb, array<float> ep, color c) =>
             labelSeg(eb, ep, n - 5, ":5|:F3|:5|:F3|:L5", fc)
             if impOK
                 drawImpulseChannels(eb, ep, pi0, color.green)
+                drawMotionLabels(eb, ep, pi0, 6, "0|1|2|3|4|5", color.green)
                 compactFigure(figStruct, figEndBar, figEndPx, n, 4, 5)  // 5 волн → :5
             drew := true
         else if v1 == 3 and v2 == 3 and v3 == 3 and v4 == 3 and v5 == 3
@@ -384,6 +400,7 @@ matchFigure(array<int> s, array<int> eb, array<float> ep, color c) =>
             drawFig(nm, b0, b1, lo, hi, fc)
             labelSeg(eb, ep, n - 5, ":F3|:c3|:c3|:sL3|:L3", fc)
             if triOK
+                drawMotionLabels(eb, ep, pi0, 6, "0|a|b|c|d|e", color.purple)
                 // Сжатие: :3 для Треугольника, :5 для Терминала — пока :3 (безопасно)
                 compactFigure(figStruct, figEndBar, figEndPx, n, 4, 3)
             drew := true
@@ -443,6 +460,7 @@ matchFigure(array<int> s, array<int> eb, array<float> ep, color c) =>
             drawFig(nm, b0, b1, lo, hi, fc)
             labelSeg(eb, ep, n - 3, ":F3|:c3|:?5", fc)
             if flatOK
+                drawMotionLabels(eb, ep, n - 4, 4, "0|A|B|C", color.teal)
                 compactFigure(figStruct, figEndBar, figEndPx, n, 2, 3)  // 3 волны → :3
         // Зигзаг (5-3-5) подавлен: неотличим от хвоста Импульса без Индикаторов положения.
         // Активировать после реализации полной логики F/c/L (Гл.3 стр.3-60+).
