@@ -8,7 +8,7 @@
 // На этом уровне НЕ делается классификация :3/:5 и распознавание фигур —
 // это следующие уровни (см. pine/README.md и indicator-spec/spec_vN.json).
 // =============================================================================
-indicator("Elliott Wave Brain — Monowaves MTF", "EWB Monowaves",
+indicator("Elliott Wave Brain — Monowaves MTF", "EWB Mono",
      overlay = true, max_labels_count = 500, max_lines_count = 500, max_boxes_count = 200)
 
 // ───────────────────────────── ВВОД ─────────────────────────────
@@ -488,7 +488,7 @@ matchFigure(array<int> s, array<int> eb, array<float> ep, color c) =>
                          yloc = yloc.price, style = label.style_label_up,
                          color = color.new(color.yellow, 30), textcolor = color.white, size = size.tiny,
                          tooltip = "AKU-0224: прорыв линии 2-4 должен произойти в этот срок (≤ длительности W5). Иначе → W5 сегментирована или Терминал.")
-                compactFigure(figStruct, figEndBar, figEndPx, n, 4, 5)  // 5 волн → :5
+                compactFigure(s, eb, ep, n, 4, 5)  // 5 волн → :5
             drew := true
         else if v1 == 3 and v2 == 3 and v3 == 3 and v4 == 3 and v5 == 3
             // Уровень 4: Треугольник (→:3) ИЛИ Терминал (→:5)
@@ -505,7 +505,7 @@ matchFigure(array<int> s, array<int> eb, array<float> ep, color c) =>
             if triOK
                 drawMotionLabels(eb, ep, pi0, 6, "0|a|b|c|d|e", color.purple)
                 // Сжатие: :3 для Треугольника, :5 для Терминала — пока :3 (безопасно)
-                compactFigure(figStruct, figEndBar, figEndPx, n, 4, 3)
+                compactFigure(s, eb, ep, n, 4, 3)
             drew := true
     if not drew and n >= 5
         // Нестандартные серии с x-волнами: Двойной Зигзаг / Двойная Коррекция (AKU-0187..0191)
@@ -538,7 +538,7 @@ matchFigure(array<int> s, array<int> eb, array<float> ep, color c) =>
                 bool isBigX   = not na(xRatio) and xRatio >= 1.618  // Условие 2 (AKU-0186)
                 if isSmallX
                     drawFig("Двойн.Корр. ✅", db0, db1, dlo, dhi, color.new(color.orange, 20))
-                    compactFigure(figStruct, figEndBar, figEndPx, n, 2, 3)  // → :3 (AKU-0191)
+                    compactFigure(s, eb, ep, n, 2, 3)  // → :3 (AKU-0191)
                     drew := true
                 else if isBigX
                     drawFig("Двойн.Корр.? (большая x)", db0, db1, dlo, dhi, color.new(color.orange, 40))
@@ -567,7 +567,7 @@ matchFigure(array<int> s, array<int> eb, array<float> ep, color c) =>
                 float flatDir = array.get(ep, n-3) > array.get(ep, n-4) ? 1.0 : -1.0
                 float flatLen = math.abs(array.get(ep, n-1) - array.get(ep, n-4))
                 drawEnergy(b1, hi, "flat", int(flatDir), flatLen)
-                compactFigure(figStruct, figEndBar, figEndPx, n, 2, 3)  // 3 волны → :3
+                compactFigure(s, eb, ep, n, 2, 3)  // 3 волны → :3
         // Зигзаг (5-3-5) подавлен: неотличим от хвоста Импульса без Индикаторов положения.
         // Активировать после реализации полной логики F/c/L (Гл.3 стр.3-60+).
 
@@ -629,7 +629,8 @@ float hAtr   = request.security(syminfo.tickerid, htf, ta.atr(atrLen), lookahead
 revH = useATR ? hAtr * atrMult : hClose * pctRev / 100.0
 
 var ZZState zH = ZZState.new()
-bool newHTF = not na(hTime) and ta.change(hTime) != 0
+int   hTimeChg = ta.change(hTime)
+bool newHTF = not na(hTime) and hTimeChg != 0
 if showH and newHTF and not na(hHigh)
     ZZResult rh = zH.step(hHigh, hLow, revH)
     drawMono(rh, colCUp, colCDn, wH, true, colH, showLbl)
