@@ -281,9 +281,8 @@ matchFigure(array<int> s, array<int> eb, array<float> ep, color c) =>
         if w1 == 3 and w2 == 3 and w3 == 5
             drawFig("Плоская", b0, b1, lo, hi, c)
             labelSeg(eb, ep, n - 3, ":F3|:c3|:?5", c)
-        else if w1 == 5 and w2 == 3 and w3 == 5
-            drawFig("Зигзаг?", b0, b1, lo, hi, c)
-            labelSeg(eb, ep, n - 3, ":5|:F3|:?5", c)
+        // Зигзаг (5-3-5) подавлен: неотличим от хвоста Импульса без Индикаторов положения.
+        // Активировать после реализации полной логики F/c/L (Гл.3 стр.3-60+).
 
 // ──────────────────── ПОРОГ РАЗВОРОТА (текущий ТФ) ───────────────
 revC = useATR ? ta.atr(atrLen) * atrMult : close * pctRev / 100.0
