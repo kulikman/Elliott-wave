@@ -1,0 +1,42 @@
+id: AKU-0223
+type: rule
+strength: mandatory
+status: draft
+topic: channeling
+subtopics:
+- impulse
+- combination
+- x-wave
+statement_ru: 'Определение Подвижной Двойной Тройки во второй волне: ни одна часть
+  волны-3 не должна пробивать настоящую линию тренда 0-2. Если после предполагаемой
+  W2 следует коррективная фаза, пробивающая линию 0-2, и это повышение не было достаточно
+  значительным для волны-3, то рынок находится в Подвижной Двойной Тройке. Признак:
+  отсутствие Чередования между предполагаемыми W2 и W4.'
+statement_en: null
+source:
+  book_id: neely-mwe-1990
+  page: 12-2
+  chapter: 'Глава 12: Дополнительные Расширения Нили'
+  section: Каналы / Определение Подвижной Двойной Тройки
+  figure_id: null
+  verbatim_quote:
+    text: Согласно той же идее... ни одна часть волны-3 не должна пробивать настоящую
+      линию тренда 0-2... Другая важная причина, почему эта фигура не может быть интерпретирована
+      как волны 1, 2, 3, 4, за которыми должна последовать 5-я, – это недостаток Чередования
+      между предполагаемыми 2-й и 4-й волнами.
+    language: ru
+formalization:
+  status: draft
+  applies_when: wave_3 breaks trendline_0_2
+  constraint: 'wave_3 MUST NOT break trendline_0_2 ; if break AND no_alternation(w2,
+    w4): figure IS moving_double_three'
+  formalization_notes: 'Рис.12-2: ошибочная и правильная интерпретация.'
+aliases: []
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-03T14:01:58Z'
+review_notes: Извлечено Claude (PDF ч.3 Гл.12 стр.12-1..12-11, Каналы).
+requires_review: true

@@ -1,0 +1,44 @@
+id: AKU-0224
+type: rule
+strength: mandatory
+status: draft
+topic: channeling
+subtopics:
+- impulse
+- wave-identification
+- time-projection
+statement_ru: 'Реальная линия тренда 2-4 (подтверждение завершения W5): как только
+  W5 завершена, рынок должен быстро пробить линию тренда 2-4 и откататься на всю величину
+  W5. Скорость: прорыв от конца W5 до линии 2-4 должен занять время ≤ длительности
+  W5. Если прорыв медленный (дольше W5) → либо 2-4 построена неправильно, либо W5
+  ещё продолжается → Терминальная фигура.'
+statement_en: null
+source:
+  book_id: neely-mwe-1990
+  page: 12-8
+  chapter: 'Глава 12: Дополнительные Расширения Нили'
+  section: Каналы / Реальная линия тренда 2-4
+  figure_id: null
+  verbatim_quote:
+    text: Когда 5-я волна Импульсной фигуры завершена, правильно построенная линия
+      тренда 2-4 должна быть вскоре пробита... Если прорыв от завершения 5-й волны
+      до линии тренда 2-4 занимает равное количество времени или менее длительности
+      волны-5, то данный прорыв относится к нормальному поведению... Если прорыв занимает
+      больше времени, чем волна-5, вы должны допустить развитие волны-5 в Импульсную
+      фигуру, либо линия тренда 2-4 построена неправильно.
+    language: ru
+formalization:
+  status: draft
+  applies_when: after wave_5 completion, checking 2-4 breakout speed
+  constraint: time(breakout_2_4) <= time(wave_5) => normal ; time(breakout_2_4) >
+    time(wave_5) => wave_5_extended OR wrong_channel
+  formalization_notes: 'Рис.12-11. Терминал: W5 пробивает 2-4 ещё во время формирования.'
+aliases: []
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-03T14:01:58Z'
+review_notes: Извлечено Claude (PDF ч.3 Гл.12 стр.12-1..12-11, Каналы).
+requires_review: true

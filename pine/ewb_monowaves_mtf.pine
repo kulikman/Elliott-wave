@@ -477,6 +477,16 @@ matchFigure(array<int> s, array<int> eb, array<float> ep, color c) =>
                 drawMotionLabels(eb, ep, pi0, 6, "0|1|2|3|4|5", color.green)
                 float impLen = math.abs(array.get(ep, n-1) - array.get(ep, pi0))
                 drawEnergy(b1, hi, "impulse", dir == "up" ? 1 : -1, impLen)
+                // AKU-0224: Реальная линия 2-4 — временное окно прорыва = длительность W5
+                // Рисуем вертикальную зону: конец W5 + длительность W5 = ожидаемый прорыв
+                int w5dur = tb4 - tb3  // длительность W5 в барах
+                if w5dur > 0
+                    line.new(tb4 + w5dur, lo, tb4 + w5dur, hi, xloc = xloc.bar_index,
+                         color = color.new(color.yellow, 50), width = 1, style = line.style_dotted)
+                    label.new(tb4 + w5dur, lo, "↓2-4\n≤W5", xloc = xloc.bar_index,
+                         yloc = yloc.price, style = label.style_label_up,
+                         color = color.new(color.yellow, 30), textcolor = color.white, size = size.tiny,
+                         tooltip = "AKU-0224: прорыв линии 2-4 должен произойти в этот срок (≤ длительности W5). Иначе → W5 сегментирована или Терминал.")
                 compactFigure(figStruct, figEndBar, figEndPx, n, 4, 5)  // 5 волн → :5
             drew := true
         else if v1 == 3 and v2 == 3 and v3 == 3 and v4 == 3 and v5 == 3

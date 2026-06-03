@@ -1,0 +1,41 @@
+id: AKU-0227
+type: rule
+strength: mandatory
+status: draft
+topic: channeling
+subtopics:
+- impulse
+- rule-of-extension
+statement_ru: 'Форма канала → тип растяжения: Растяжение 1-й → каналы сужаются (клин),
+  W5 не достигает верхней линии тренда. Растяжение 3-й → линии параллельны или почти
+  параллельны независимо от точек касания. Растяжение 5-й → каналы расширяются (''мегафон''),
+  W5 пересекает верхнюю линию (''ложный прорыв'').'
+statement_en: null
+source:
+  book_id: neely-mwe-1990
+  page: 12-10
+  chapter: 'Глава 12: Дополнительные Расширения Нили'
+  section: Распознавание Импульсов с помощью каналов
+  figure_id: null
+  verbatim_quote:
+    text: Когда в некоторой волновой последовательности Растянутой является первая
+      волна, построение канала данной фигуры должно напоминать построение канала Терминального
+      движения... Существует несколько вариантов развития канала фигуры с Растянутой
+      3-й волной. Независимо от того, какие точки касания использованы для построения
+      трендовых линий, эти линии всегда должны быть параллельны или почти параллельны.
+    language: ru
+formalization:
+  status: draft
+  applies_when: identifying extended wave from channel shape
+  constraint: channel_converging(upper,lower) => extended_wave_1 ; channel_parallel
+    => extended_wave_3 ; channel_diverging('megaphone') => extended_wave_5
+  formalization_notes: Рис.12-12 (Раст.1-й), 12-13 (Раст.3-й), 12-14 (Раст.5-й).
+aliases: []
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-03T14:01:58Z'
+review_notes: Извлечено Claude (PDF ч.3 Гл.12 стр.12-1..12-11, Каналы).
+requires_review: true

@@ -1,0 +1,44 @@
+id: AKU-0222
+type: rule
+strength: mandatory
+status: draft
+topic: channeling
+subtopics:
+- impulse
+- analysis-workflow
+- wave-identification
+statement_ru: 'Волна-2: строить линию тренда 0-2 от точки ''0'' через нижнюю точку
+  коррективного движения W2. Пока линия 0-2 не пробита → W2 ещё развивается и считается
+  завершённой в точке касания линии тренда. Если линия пробита до завершения W3 (до
+  уровня 61.8% W1) → W2 ещё продолжается.'
+statement_en: null
+source:
+  book_id: neely-mwe-1990
+  page: 12-1
+  chapter: 'Глава 12: Дополнительные Расширения Нили'
+  section: Каналы / Волна-2
+  figure_id: null
+  verbatim_quote:
+    text: После того, как рынок развернулся в противоположном направлении (относительно
+      волны-1) и снова развернулся вверх..., проведите линию от точки "0" через нижнюю
+      точку понижательного движения, которое вы предположительно считаете волной-2...
+      Пока линия тренда "0-2" не пробита, вы можете считать волну-2 завершенной, причем
+      завершенной именно в точке, где она касается линии тренда.
+    language: ru
+formalization:
+  status: draft
+  applies_when: confirming wave-2 completion using 0-2 trendline
+  constraint: trendline_0_2 = line(start=p0, end=p2) ; wave_2_complete WHEN price
+    touches trendline_0_2 ; wave_2_ongoing IF trendline_0_2 broken BEFORE wave_3 >=
+    0.618*wave_1
+  formalization_notes: 'Рис.12-1: Диаграммы A/B/C. Пока линия 0-2 не пробита В4→W2
+    завершена у линии.'
+aliases: []
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-03T14:01:58Z'
+review_notes: Извлечено Claude (PDF ч.3 Гл.12 стр.12-1..12-11, Каналы).
+requires_review: true

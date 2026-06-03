@@ -1,0 +1,41 @@
+id: AKU-0228
+type: rule
+strength: mandatory
+status: draft
+topic: channeling
+subtopics:
+- flat
+- zigzag
+- triangle
+statement_ru: 'Распознавание Плоских с помощью каналов: все линии канала должны быть
+  параллельны и горизонтальны, проходить через точки максимума и минимума волны-a.
+  По форме канала определяется разновидность Плоской: Неудавшаяся-b, Неудавшаяся-с,
+  Обыкновенная, Двойная Неудавшаяся, Удлинённая, Неправильная и т.д.'
+statement_en: null
+source:
+  book_id: neely-mwe-1990
+  page: 12-10
+  chapter: 'Глава 12: Дополнительные Расширения Нили'
+  section: Распознавание Коррекций с помощью каналов / Плоские
+  figure_id: null
+  verbatim_quote:
+    text: Для определения разновидности Плоской, развивающейся на вашем графике, все
+      линии канала должны быть параллельны и горизонтальны, а также должны проходить
+      через точки максимума и минимума волны-а.
+    language: ru
+formalization:
+  status: draft
+  applies_when: identifying flat correction type via channel
+  constraint: 'flat_channel: parallel AND horizontal, passing through max(wave_a)
+    AND min(wave_a) ; flat_type determined by relative position of waves b and c within
+    channel'
+  formalization_notes: 'Рис.12-16a (стр.12-13): все разновидности Плоских.'
+aliases: []
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-03T14:01:58Z'
+review_notes: Извлечено Claude (PDF ч.3 Гл.12 стр.12-1..12-11, Каналы).
+requires_review: true

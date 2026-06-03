@@ -1,0 +1,39 @@
+id: AKU-0225
+type: rule
+strength: mandatory
+status: draft
+topic: channeling
+subtopics:
+- triangle
+- wave-identification
+statement_ru: 'Треугольная активность: случайный непреднамеренный прорыв линии тренда
+  (как будто она не имеет никакого значения) — ранний признак Треугольника. Первый
+  ложный прорыв указывает на Треугольную b-волну (не гарантировано). Второй ложный
+  прорыв практически гарантирует Треугольник того или иного Порядка.'
+statement_en: null
+source:
+  book_id: neely-mwe-1990
+  page: 12-6
+  chapter: 'Глава 12: Дополнительные Расширения Нили'
+  section: Каналы / Треугольная активность
+  figure_id: null
+  verbatim_quote:
+    text: Случайный, непреднамеренный прорыв установленной линии тренда не гарантирует
+      выявление формирования треугольной b-волны, но практически гарантирует наличие
+      некоторого типа Треугольника того или иного Порядка.
+    language: ru
+formalization:
+  status: draft
+  applies_when: detecting false breakouts of 0-B trendline
+  constraint: 'count(false_breakouts) == 1: triangle_b_wave_possible ; count(false_breakouts)
+    >= 2: triangle_practically_guaranteed'
+  formalization_notes: Рис.12-6,12-7,12-8. Признак раннего обнаружения Треугольника.
+aliases: []
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-03T14:01:58Z'
+review_notes: Извлечено Claude (PDF ч.3 Гл.12 стр.12-1..12-11, Каналы).
+requires_review: true

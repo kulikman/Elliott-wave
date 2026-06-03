@@ -1,0 +1,41 @@
+id: AKU-0226
+type: rule
+strength: mandatory
+status: draft
+topic: channeling
+subtopics:
+- ending-diagonal
+- wave-identification
+statement_ru: 'Терминальная активность на каналах: внутри Терминальной фигуры W5 пробивает
+  линию тренда 2-4 более крупной фигуры — это подтверждает Терминальную активность.
+  W3 сегментирована (отмечается ''x''), W5 — Терминальная (''s''). После W4 рынок
+  должен вернуться к минимуму W4 как первая цель.'
+statement_en: null
+source:
+  book_id: neely-mwe-1990
+  page: 12-8
+  chapter: 'Глава 12: Дополнительные Расширения Нили'
+  section: Каналы / Терминальная активность
+  figure_id: null
+  verbatim_quote:
+    text: 'В течение формирования Терминальной фигуры часть ее обычно будет пробивать
+      линию тренда 2-4 более крупной фигуры... Важное замечание: Волновая Теория действительно
+      позволяет спекулировать, когда определённая конфигурация (трендовая) сформирована...
+      активность после волны-(5) должна вернуться к минимуму волны-(4); если этого
+      не происходит, ваша интерпретация неправильная.'
+    language: ru
+formalization:
+  status: draft
+  applies_when: wave_5 breaks larger trendline_2_4 during terminal formation
+  constraint: 'if wave_5 breaks trendline_2_4(larger_degree): confirm terminal_impulse
+    ; after terminal: price MUST reach min(wave_4)'
+  formalization_notes: Рис.12-10 Диаграммы A/B. Важнейшее подтверждение Терминала.
+aliases: []
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-03T14:01:58Z'
+review_notes: Извлечено Claude (PDF ч.3 Гл.12 стр.12-1..12-11, Каналы).
+requires_review: true
