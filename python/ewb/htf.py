@@ -1,0 +1,66 @@
+"""HTF bias detector — last-2-monowaves direction.
+
+Returns bias in {-2, -1, 0, +1, +2} where:
++2 strong bull (2 last HTF monowaves both up)
++1 weak bull (last up, prev down or unknown)
+ 0 flat (alternating or insufficient data)
+-1 weak bear
+-2 strong bear
+"""
+from __future__ import annotations
+import pandas as pd
+from .monowaves import detect_monowaves, Pivot
+
+
+def htf_bias_from_pivots(pivots: list[Pivot]) -> int:
+    """Compute bias from last 2 confirmed pivots' directions."""
+    if len(pivots) == 0:
+        return 0
+    last = pivots[-1].direction
+    if len(pivots) == 1:
+        return last
+    prev = pivots[-2].direction
+    if last == prev:
+        return 2 * last     # strong: both same direction
+    return last             # weak: alternating, but last wave defines tilt
+
+
+def resample_ohlc(df: pd.DataFrame, rule: str) -> pd.DataFrame:
+    """Resample CTF OHLC to HTF using pandas. rule e.g. '1D','4H','1W'."""
+    agg = {"open": "first", "high": "max", "low": "min", "close": "last"}
+    if "volume" in df.columns:
+        agg["volume"] = "sum"
+    out = df.resample(rule).agg(agg).dropna(how="any")
+    return out
+
+
+def htf_bias_series(df: pd.DataFrame, htf_rule: str,
+                    atr_period: int = 14, atr_mult: float = 2.5) -> pd.Series:
+    """Compute HTF bias at each CTF bar — bias is updated when a new HTF
+    monowave is confirmed.
+
+    Returns Series aligned to df.index, values in {-2,-1,0,1,2}.
+    """
+    htf_df = resample_ohlc(df, htf_rule)
+    htf_pivots = detect_monowaves(htf_df, atr_period=atr_period, atr_mult=atr_mult)
+
+    # For each pivot, record the timestamp at which it was confirmed
+    # (= htf_df.index[pivot.idx])
+    pivot_ts = [htf_df.index[p.idx] for p in htf_pivots]
+
+    bias = pd.Series(0, index=df.index, dtype=int)
+    if not htf_pivots:
+        return bias
+
+    # Walk through CTF index, maintain running bias
+    p_iter = 0
+    current_bias = 0
+    confirmed_so_far: list[Pivot] = []
+    for ts in df.index:
+        # advance pivots whose confirmation happened ≤ ts
+        while p_iter < len(htf_pivots) and pivot_ts[p_iter] <= ts:
+            confirmed_so_far.append(htf_pivots[p_iter])
+            current_bias = htf_bias_from_pivots(confirmed_so_far)
+            p_iter += 1
+        bias.loc[ts] = current_bias
+    return bias
