@@ -44,9 +44,13 @@ def htf_bias_series(df: pd.DataFrame, htf_rule: str,
     htf_df = resample_ohlc(df, htf_rule)
     htf_pivots = detect_monowaves(htf_df, atr_period=atr_period, atr_mult=atr_mult)
 
-    # For each pivot, record the timestamp at which it was confirmed
-    # (= htf_df.index[pivot.idx])
-    pivot_ts = [htf_df.index[p.idx] for p in htf_pivots]
+    # CRITICAL: pivot becomes "known" at its CONFIRMATION bar (when reversal
+    # threshold was hit on HTF), NOT at the extremum bar. Using extremum bar
+    # = look-ahead because we don't know it's a pivot until the reversal.
+    pivot_ts = []
+    for p in htf_pivots:
+        idx = p.confirmation_idx if p.confirmation_idx >= 0 else p.idx
+        pivot_ts.append(htf_df.index[idx])
 
     bias = pd.Series(0, index=df.index, dtype=int)
     if not htf_pivots:
