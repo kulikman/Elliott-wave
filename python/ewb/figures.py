@@ -28,7 +28,8 @@ class Figure:
     type: str
     direction: str
     start_idx: int
-    end_idx: int
+    end_idx: int                                       # bar of LAST pivot (extremum)
+    confirmed_idx: int = -1                            # bar when figure became visible (set externally)
     pivots: list[Pivot] = field(default_factory=list)
     confirmed: bool = True
     checks: list[CheckResult] = field(default_factory=list)

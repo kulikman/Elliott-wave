@@ -12,15 +12,14 @@ import pandas as pd
 
 @dataclass
 class Pivot:
-    idx: int          # bar index in source series
+    idx: int          # bar of the extremum (peak/trough) — this is in the PAST relative to confirmation
     price: float
     direction: int    # +1 = high pivot (was up monowave), -1 = low pivot
+    confirmation_idx: int = -1  # bar when pivot was CONFIRMED (reversal threshold hit)
     # length & duration of the completed monowave that ended here
     price_len: float = 0.0
     time_len: int = 0
-    # similarity to previous monowave (AKU-0003)
     similar_to_prev: Optional[bool] = None
-    # rule classification of PREVIOUS monowave (m1) — set by classifier
     rule_no: int = 0
     cond_letter: str = ""
 
@@ -123,6 +122,7 @@ def detect_monowaves(
                 idx=s.ext_bar,
                 price=s.ext_price,
                 direction=ended_dir,
+                confirmation_idx=i,   # bar where reversal threshold was hit
             )
             piv.price_len = abs(s.ext_price - s.pivot_price)
             piv.time_len  = s.ext_bar - s.pivot_bar
