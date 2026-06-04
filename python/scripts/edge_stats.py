@@ -6,20 +6,19 @@ Test 4 hypotheses about whether Elliott figures give a directional edge.
 Output: docs/validation/sprint4-edge.md + figures/sprint4/*.png
 """
 from __future__ import annotations
-import sys, os, warnings, json
+import sys, os, warnings
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 warnings.filterwarnings("ignore")
 
 import numpy as np
 import pandas as pd
-import yfinance as yf
 import matplotlib.pyplot as plt
-from scipy import stats
 
 from ewb.monowaves import detect_monowaves
 from ewb.rules import classify_pivots
 from ewb.figures import match_figures
 from ewb.htf import htf_bias_series
+from ewb.research import download_ohlc, fmt_df, hypothesis_table, log_processing_error, t_test
 
 
 REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -43,24 +42,18 @@ SYMBOLS = [
 HORIZONS = [5, 10, 20, 50]   # bars ahead
 
 
-def download(ticker, interval, period):
-    df = yf.download(ticker, period=period, interval=interval,
-                     progress=False, auto_adjust=True)
-    if isinstance(df.columns, pd.MultiIndex):
-        df.columns = [c[0] for c in df.columns]
-    df.columns = [c.lower() for c in df.columns]
-    return df[["open","high","low","close"]].dropna()
-
-
 def build_dataset() -> pd.DataFrame:
     """One row per figure with features + future returns."""
     rows = []
     for ticker, interval, htf_rule, period in SYMBOLS:
         print(f"  {ticker} {interval}...", end=" ", flush=True)
         try:
-            df = download(ticker, interval, period)
+            df = download_ohlc(ticker, interval, period, min_rows=0)
         except Exception as e:
-            print(f"skip ({e})"); continue
+            log_processing_error(ticker, interval, e, context="download")
+            continue
+        if df is None:
+            print("no data"); continue
         if len(df) < 100:
             print("too short"); continue
         pivots = detect_monowaves(df, atr_mult=2.5)
@@ -68,7 +61,8 @@ def build_dataset() -> pd.DataFrame:
         figs = match_figures(pivots)
         try:
             bias = htf_bias_series(df, htf_rule)
-        except Exception:
+        except Exception as e:
+            log_processing_error(ticker, interval, e, context="htf_bias")
             bias = pd.Series(0, index=df.index)
 
         close = df["close"].to_numpy()
@@ -120,42 +114,6 @@ def build_dataset() -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
-def hit_rate(series: pd.Series) -> float:
-    """% of values > 0."""
-    s = series.dropna()
-    return (s > 0).mean() if len(s) else np.nan
-
-
-def t_test(series: pd.Series):
-    """One-sample t-test: mean ≠ 0."""
-    s = series.dropna()
-    if len(s) < 10:
-        return np.nan, np.nan
-    t, p = stats.ttest_1samp(s, 0)
-    return t, p
-
-
-def hypothesis_table(df: pd.DataFrame, groupby: list, horizon: int, signal_col: str) -> pd.DataFrame:
-    """Per-group hit rate / mean / Sharpe / t-stat / p-value / n."""
-    rows = []
-    for keys, grp in df.groupby(groupby):
-        s = grp[f"{signal_col}_{horizon}"].dropna()
-        if len(s) < 5:
-            continue
-        t, p = t_test(s)
-        rows.append({
-            **{k: v for k, v in zip(groupby if isinstance(groupby, list) else [groupby],
-                                    keys if isinstance(keys, tuple) else [keys])},
-            "n": len(s),
-            "hit_rate": (s > 0).mean(),
-            "mean_ret": s.mean(),
-            "sharpe": s.mean() / s.std() if s.std() > 0 else np.nan,
-            "t_stat": t,
-            "p_value": p,
-        })
-    return pd.DataFrame(rows)
-
-
 def plot_distribution(df, horizon, signal_col, title, fname):
     fig, ax = plt.subplots(figsize=(10, 5))
     s = df[f"{signal_col}_{horizon}"].dropna()
@@ -190,19 +148,6 @@ def walk_forward_split(df: pd.DataFrame, train_frac=0.5):
         train_parts.append(grp.iloc[:cut])
         test_parts.append(grp.iloc[cut:])
     return pd.concat(train_parts), pd.concat(test_parts)
-
-
-def fmt_df(df: pd.DataFrame, cols_pct=None, cols_round=None) -> str:
-    df = df.copy()
-    if cols_pct:
-        for c in cols_pct:
-            if c in df.columns:
-                df[c] = (df[c] * 100).round(2).astype(str) + "%"
-    if cols_round:
-        for c in cols_round:
-            if c in df.columns:
-                df[c] = df[c].round(3)
-    return df.to_markdown(index=False)
 
 
 def main():

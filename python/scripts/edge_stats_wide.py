@@ -7,7 +7,8 @@ warnings.filterwarnings("ignore")
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from scipy import stats
+
+from ewb.research import fmt_df, hypothesis_table, stats_row, t_test
 
 REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 PARQUET = os.path.join(REPO, "python", "data", "figures_wide.parquet")
@@ -18,57 +19,10 @@ os.makedirs(OUT_DIR, exist_ok=True)
 HORIZONS = [5, 10, 20, 50, 100]
 
 
-def t_test(s: pd.Series):
-    s = s.dropna()
-    if len(s) < 10: return np.nan, np.nan
-    t, p = stats.ttest_1samp(s, 0)
-    return t, p
-
-
-def stats_row(s: pd.Series, label: str) -> dict:
-    s = s.dropna()
-    if len(s) == 0:
-        return None
-    t, p = t_test(s)
-    return {
-        "group": label,
-        "n": len(s),
-        "hit_rate": (s > 0).mean(),
-        "mean_ret": s.mean(),
-        "std_ret": s.std(),
-        "sharpe": s.mean() / s.std() if s.std() > 0 else np.nan,
-        "t_stat": t,
-        "p_value": p,
-    }
-
-
 def grouped(df, gby, signal_col, horizon, min_n=20):
-    rows = []
-    for keys, grp in df.groupby(gby):
-        s = grp[f"{signal_col}_{horizon}"].dropna()
-        if len(s) < min_n: continue
-        r = stats_row(s, str(keys))
-        if r is None: continue
-        if not isinstance(keys, tuple): keys = (keys,)
-        col_names = gby if isinstance(gby, list) else [gby]
-        for k, v in zip(col_names, keys):
-            r[k] = v
-        rows.append(r)
     cols_keep = (gby if isinstance(gby, list) else [gby]) + ["n","hit_rate","mean_ret","sharpe","t_stat","p_value"]
-    return pd.DataFrame(rows)[cols_keep] if rows else pd.DataFrame()
-
-
-def fmt(df, cols_pct=None, cols_round=None):
-    df = df.copy()
-    cols_pct = cols_pct or []
-    cols_round = cols_round or []
-    for c in cols_pct:
-        if c in df.columns:
-            df[c] = (df[c]*100).round(2).astype(str) + "%"
-    for c in cols_round:
-        if c in df.columns:
-            df[c] = df[c].round(3)
-    return df.to_markdown(index=False)
+    table = hypothesis_table(df, gby, horizon, signal_col, min_n=min_n)
+    return table[cols_keep] if not table.empty else pd.DataFrame()
 
 
 def main():
@@ -105,8 +59,8 @@ def main():
         out += [f"### Горизонт {h} баров", ""]
         t = grouped(df, "fig_type", "signed_ret", h, min_n=50)
         if not t.empty:
-            out.append(fmt(t.sort_values("hit_rate", ascending=False),
-                          cols_pct=["hit_rate","mean_ret"], cols_round=["sharpe","t_stat","p_value"]))
+            out.append(fmt_df(t.sort_values("hit_rate", ascending=False),
+                              cols_pct=["hit_rate","mean_ret"], cols_round=["sharpe","t_stat","p_value"]))
         out += [""]
 
     # ─── H2: HTF filter — main test ────────────────
@@ -115,8 +69,8 @@ def main():
         out += [f"### Горизонт {h} баров", ""]
         t = grouped(df, ["fig_type","with_htf"], "signed_ret", h, min_n=30)
         if not t.empty:
-            out.append(fmt(t.sort_values(["fig_type","with_htf"]),
-                          cols_pct=["hit_rate","mean_ret"], cols_round=["sharpe","t_stat","p_value"]))
+            out.append(fmt_df(t.sort_values(["fig_type","with_htf"]),
+                              cols_pct=["hit_rate","mean_ret"], cols_round=["sharpe","t_stat","p_value"]))
         out += [""]
 
     # ─── H3: per-interval ────────────────
@@ -125,8 +79,8 @@ def main():
     if not t.empty:
         out.append("С HTF фильтром, h=20:")
         out.append("")
-        out.append(fmt(t.sort_values(["fig_type","interval"]),
-                       cols_pct=["hit_rate","mean_ret"], cols_round=["sharpe","t_stat","p_value"]))
+        out.append(fmt_df(t.sort_values(["fig_type","interval"]),
+                          cols_pct=["hit_rate","mean_ret"], cols_round=["sharpe","t_stat","p_value"]))
     out += [""]
 
     # ─── H4: walk-forward ────────────────
@@ -153,7 +107,7 @@ def main():
             })
     fold_df = pd.DataFrame(fold_results)
     if not fold_df.empty:
-        out.append(fmt(fold_df, cols_pct=["hit_rate","mean_ret"], cols_round=["p_value"]))
+        out.append(fmt_df(fold_df, cols_pct=["hit_rate","mean_ret"], cols_round=["p_value"]))
     out += [""]
 
     # ─── H5: amplitude / duration features ────────────────
@@ -165,8 +119,8 @@ def main():
     if not t.empty:
         out.append("Edge по квартилям амплитуды (с HTF):")
         out.append("")
-        out.append(fmt(t.sort_values(["fig_type","amp_q"]),
-                       cols_pct=["hit_rate","mean_ret"], cols_round=["sharpe","t_stat","p_value"]))
+        out.append(fmt_df(t.sort_values(["fig_type","amp_q"]),
+                          cols_pct=["hit_rate","mean_ret"], cols_round=["sharpe","t_stat","p_value"]))
     out += [""]
 
     # ─── Final verdict ────────────────

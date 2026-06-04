@@ -9,9 +9,10 @@ Loads trades_sprint6.parquet and simulates as a portfolio:
 from __future__ import annotations
 import sys, os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+
+from ewb.research import portfolio_metrics
 
 REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 TRADES = os.path.join(REPO, "python", "data", "trades_sprint6.parquet")
@@ -24,72 +25,22 @@ MAX_CONCURRENT = 10
 INITIAL_CAPITAL = 100_000
 
 
-def run_portfolio(trades: pd.DataFrame, risk=RISK_PER_TRADE,
-                  max_concurrent=MAX_CONCURRENT) -> pd.DataFrame:
-    """Sequential simulation with concurrent position cap."""
-    t = trades.copy().sort_values("entry_ts").reset_index(drop=True)
-    # Position size in $: risk / sl_distance% (sl = amp_pct away)
-    # if SL is X% away, $-loss on size $S = S*X. We want $-loss = equity*risk
-    # → S = equity*risk / X
-    equity = INITIAL_CAPITAL
-    open_positions = []   # list of (exit_ts, pnl_$)
-    eq_curve = []
-    skipped = 0
-
-    for _, row in t.iterrows():
-        # Close all positions that exited before this entry
-        open_positions = sorted(open_positions, key=lambda x: x[0])
-        while open_positions and open_positions[0][0] <= row["entry_ts"]:
-            exit_ts, pnl = open_positions.pop(0)
-            equity += pnl
-            eq_curve.append({"ts": exit_ts, "equity": equity, "event": "exit"})
-        if len(open_positions) >= max_concurrent:
-            skipped += 1
-            continue
-        sl_dist = row["amp_pct"]
-        if sl_dist <= 0: continue
-        pos_size = equity * risk / sl_dist
-        # cap position at 50% of equity (safety)
-        pos_size = min(pos_size, equity * 0.5)
-        pnl = pos_size * row["net_ret"]
-        open_positions.append((row["exit_ts"], pnl))
-        eq_curve.append({"ts": row["entry_ts"], "equity": equity, "event": "entry"})
-
-    # Close remaining
-    open_positions.sort(key=lambda x: x[0])
-    for exit_ts, pnl in open_positions:
-        equity += pnl
-        eq_curve.append({"ts": exit_ts, "equity": equity, "event": "exit"})
-
-    df_eq = pd.DataFrame(eq_curve).sort_values("ts").reset_index(drop=True)
-    return df_eq, skipped
-
-
-def metrics(eq: pd.DataFrame, n_trades: int) -> dict:
-    if eq.empty: return {}
-    final = eq["equity"].iloc[-1]
-    peak = eq["equity"].cummax()
-    dd = (eq["equity"] / peak - 1)
-    max_dd = dd.min()
-    # Yearly returns
-    eq2 = eq.copy()
-    eq2["ts"] = pd.to_datetime(eq2["ts"], utc=True)
-    eq2 = eq2.set_index("ts").sort_index()
-    daily = eq2["equity"].resample("1D").last().ffill()
-    daily_ret = daily.pct_change().dropna()
-    years = (daily.index[-1] - daily.index[0]).days / 365.25
-    cagr = (final / INITIAL_CAPITAL) ** (1/years) - 1 if years > 0 else 0
-    sharpe = daily_ret.mean() / daily_ret.std() * np.sqrt(252) if daily_ret.std()>0 else 0
-    calmar = cagr / abs(max_dd) if max_dd != 0 else 0
+def portfolio_report(trades: pd.DataFrame) -> dict | None:
+    """Portfolio metrics in the legacy report shape."""
+    m = portfolio_metrics(
+        trades,
+        initial=INITIAL_CAPITAL,
+        risk=RISK_PER_TRADE,
+        max_conc=MAX_CONCURRENT,
+        min_sl_dist=0.0,
+    )
+    if not m:
+        return None
     return {
-        "final_equity": final,
-        "total_return": final/INITIAL_CAPITAL - 1,
-        "cagr": cagr,
-        "max_dd": max_dd,
-        "sharpe": sharpe,
-        "calmar": calmar,
-        "n_trades": n_trades,
-        "years": years,
+        **m,
+        "eq": m["equity_curve"],
+        "max_dd": m["dd"],
+        "n_trades": m["n"],
     }
 
 
@@ -143,11 +94,13 @@ def main():
         "",
         "## Полный портфель", "",
     ]
-    eq_all, skipped_all = run_portfolio(trades)
-    m_all = metrics(eq_all, len(trades) - skipped_all)
+    m_all = portfolio_report(trades)
+    if not m_all:
+        print("No portfolio metrics — abort")
+        return
     lines.append(fmt_m(m_all))
-    lines.append(f"\n*Пропущено сделок (превышен лимит {MAX_CONCURRENT} параллельных): {skipped_all}*")
-    plot(eq_all, "Full portfolio — 1% risk, max 10 concurrent", "port_all.png")
+    lines.append(f"\n*Пропущено сделок (превышен лимит {MAX_CONCURRENT} параллельных): {m_all['skipped']}*")
+    plot(m_all["eq"], "Full portfolio — 1% risk, max 10 concurrent", "port_all.png")
 
     # Per fig_type
     lines += ["", "## По типу фигуры", "",
@@ -156,13 +109,12 @@ def main():
     for ft in ["impulse","flat","triangle","double_corr"]:
         sub = trades[trades["fig_type"]==ft]
         if len(sub) < 30: continue
-        eq, sk = run_portfolio(sub)
-        m = metrics(eq, len(sub)-sk)
+        m = portfolio_report(sub)
         if not m: continue
         lines.append(f"| {ft} | {m['n_trades']} | ${m['final_equity']:,.0f} | "
                      f"{m['total_return']*100:.1f}% | {m['cagr']*100:.1f}% | "
                      f"{m['sharpe']:.2f} | {m['max_dd']*100:.1f}% | {m['calmar']:.2f} |")
-        plot(eq, f"{ft} — portfolio", f"port_{ft}.png")
+        plot(m["eq"], f"{ft} — portfolio", f"port_{ft}.png")
 
     # Per interval
     lines += ["", "## По таймфрейму", "",
@@ -170,32 +122,29 @@ def main():
               "|---|---|---|---|---|---|---|"]
     for itv in sorted(trades["interval"].unique()):
         sub = trades[trades["interval"]==itv]
-        eq, sk = run_portfolio(sub)
-        m = metrics(eq, len(sub)-sk)
+        m = portfolio_report(sub)
         if not m: continue
         lines.append(f"| {itv} | {m['n_trades']} | ${m['final_equity']:,.0f} | "
                      f"{m['total_return']*100:.1f}% | {m['cagr']*100:.1f}% | "
                      f"{m['sharpe']:.2f} | {m['max_dd']*100:.1f}% |")
-        plot(eq, f"{itv} — portfolio", f"port_{itv}.png")
+        plot(m["eq"], f"{itv} — portfolio", f"port_{itv}.png")
 
     # High-confidence subset: impulse + flat + double_corr (skip noisy triangle)
     lines += ["", "## High-confidence subset (impulse + flat + double_corr, без triangle)", ""]
     hc = trades[trades["fig_type"].isin(["impulse","flat","double_corr"])]
-    eq_hc, sk_hc = run_portfolio(hc)
-    m_hc = metrics(eq_hc, len(hc)-sk_hc)
+    m_hc = portfolio_report(hc)
     if m_hc:
         lines.append(fmt_m(m_hc))
-    plot(eq_hc, "High-confidence subset (impulse+flat+DC)", "port_hc.png")
+        plot(m_hc["eq"], "High-confidence subset (impulse+flat+DC)", "port_hc.png")
 
     # Q4 (large) figures only
     lines += ["", "## Large figures only (amp_pct ≥ median)", ""]
     median_amp = trades["amp_pct"].median()
     big = trades[trades["amp_pct"] >= median_amp]
-    eq_big, sk_big = run_portfolio(big)
-    m_big = metrics(eq_big, len(big)-sk_big)
+    m_big = portfolio_report(big)
     if m_big:
         lines.append(fmt_m(m_big))
-    plot(eq_big, "Large figures (amp ≥ median)", "port_large.png")
+        plot(m_big["eq"], "Large figures (amp ≥ median)", "port_large.png")
 
     lines += ["", "## Графики", "",
               "![All](screenshots/sprint6/port_all.png)",

@@ -10,28 +10,26 @@ warnings.filterwarnings("ignore")
 
 import numpy as np
 import pandas as pd
-import yfinance as yf
 import matplotlib.pyplot as plt
 
 from ewb.monowaves import detect_monowaves
 from ewb.rules import classify_pivots
 from ewb.figures import match_figures
 from ewb.htf import htf_bias_series, resample_ohlc
+from ewb.research import (
+    SYMBOLS,
+    cost_for,
+    download_ohlc,
+    exit_for_trade,
+    log_processing_error,
+    portfolio_metrics,
+)
 
 
 REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 OUT_DIR = os.path.join(REPO, "docs", "validation", "screenshots", "sprint6")
 REPORT  = os.path.join(REPO, "docs", "validation", "sprint6-all-tfs-bt.md")
 os.makedirs(OUT_DIR, exist_ok=True)
-
-SP500 = ["AAPL","MSFT","GOOGL","AMZN","NVDA","META","TSLA","BRK-B","JPM","V",
-         "UNH","XOM","JNJ","WMT","MA","PG","HD","LLY","ABBV","KO",
-         "PEP","MRK","CVX","AVGO","ORCL","CSCO","NFLX","CRM","AMD","INTC"]
-ETFS = ["SPY","QQQ","IWM","DIA","GLD","SLV","USO","TLT","XLF","XLE"]
-CRYPTO = ["BTC-USD","ETH-USD","SOL-USD","BNB-USD","XRP-USD","ADA-USD","AVAX-USD","DOGE-USD"]
-FOREX = ["EURUSD=X","GBPUSD=X","USDJPY=X","AUDUSD=X","USDCAD=X"]
-COMMODS = ["GC=F","SI=F","CL=F","NG=F","HG=F"]
-SYMBOLS = SP500 + ETFS + CRYPTO + FOREX + COMMODS
 
 ALL_INTERVALS = [
     ("1wk","1ME","10y","1w"),
@@ -46,26 +44,6 @@ FIG_CONFIG = {
     "flat":        {"exit_bars": 20, "use_tp_sl": True},
     "double_corr": {"exit_bars": 50, "use_tp_sl": True},
 }
-
-
-def cost_for(ticker):
-    if ticker.endswith("-USD") or ticker.endswith("=X") or ticker.endswith("=F"):
-        return 0.0013
-    return 0.0008
-
-
-def download(ticker, yf_interval, period):
-    try:
-        df = yf.download(ticker, period=period, interval=yf_interval,
-                         progress=False, auto_adjust=True, threads=False)
-    except Exception: return None
-    if df is None or df.empty: return None
-    if isinstance(df.columns, pd.MultiIndex):
-        df.columns = [c[0] for c in df.columns]
-    df.columns = [c.lower() for c in df.columns]
-    df = df[[c for c in ["open","high","low","close"] if c in df.columns]].dropna()
-    return df if len(df) > 50 else None
-
 
 def simulate_ticker(df_ctf, figs, bias, ticker, interval_label, cost):
     close = df_ctf["close"].to_numpy()
@@ -86,26 +64,9 @@ def simulate_ticker(df_ctf, figs, bias, ticker, interval_label, cost):
         amp = f.amplitude
         if amp <= 0: continue
         side = -1 if f.direction == "up" else +1
-        if use_tp_sl:
-            tp_px = entry_px - amp if side == -1 else entry_px + amp
-            sl_px = entry_px + amp if side == -1 else entry_px - amp
-        else:
-            tp_px = sl_px = None
-        exit_idx, exit_px, reason = None, None, "time"
-        for k in range(1, exit_bars + 1):
-            bi = entry_idx + k
-            if bi >= n: break
-            hi, lo = high[bi], low[bi]
-            if tp_px is not None:
-                if side == -1:
-                    if hi >= sl_px: exit_idx, exit_px, reason = bi, sl_px, "sl"; break
-                    if lo <= tp_px: exit_idx, exit_px, reason = bi, tp_px, "tp"; break
-                else:
-                    if lo <= sl_px: exit_idx, exit_px, reason = bi, sl_px, "sl"; break
-                    if hi >= tp_px: exit_idx, exit_px, reason = bi, tp_px, "tp"; break
-        if exit_idx is None:
-            exit_idx = entry_idx + exit_bars
-            exit_px = close[exit_idx]
+        exit_idx, exit_px, reason = exit_for_trade(
+            high, low, close, entry_idx, entry_px, side, exit_bars, amp, use_tp_sl
+        )
         raw = side * (exit_px - entry_px) / entry_px
         net = raw - 2 * cost
         trades.append({
@@ -118,44 +79,6 @@ def simulate_ticker(df_ctf, figs, bias, ticker, interval_label, cost):
             "win": net > 0,
         })
     return trades
-
-
-def portfolio_metrics(trades, initial=100_000, risk=0.01, max_conc=10):
-    if not trades: return None
-    t = pd.DataFrame(trades)
-    t["entry_ts"] = pd.to_datetime(t["entry_ts"], utc=True)
-    t["exit_ts"]  = pd.to_datetime(t["exit_ts"],  utc=True)
-    t = t.sort_values("entry_ts").reset_index(drop=True)
-    eq = initial
-    open_pos, curve = [], []
-    for _, row in t.iterrows():
-        open_pos.sort(key=lambda x: x[0])
-        while open_pos and open_pos[0][0] <= row["entry_ts"]:
-            _, pnl = open_pos.pop(0); eq += pnl
-            curve.append({"ts": _, "eq": eq})
-        if len(open_pos) >= max_conc: continue
-        sl = max(row["amp_pct"], 0.005)
-        size = min(eq * risk / sl, eq * 0.5)
-        open_pos.append((row["exit_ts"], size * row["net_ret"]))
-        curve.append({"ts": row["entry_ts"], "eq": eq})
-    for ts, pnl in sorted(open_pos):
-        eq += pnl; curve.append({"ts": ts, "eq": eq})
-    if not curve: return None
-    df_eq = pd.DataFrame(curve).sort_values("ts")
-    df_eq["ts"] = pd.to_datetime(df_eq["ts"], utc=True)
-    final = df_eq["eq"].iloc[-1]
-    peak = df_eq["eq"].cummax()
-    dd = (df_eq["eq"]/peak-1).min()
-    daily = df_eq.set_index("ts")["eq"].resample("1D").last().ffill()
-    dr = daily.pct_change().dropna()
-    yrs = (daily.index[-1]-daily.index[0]).days/365.25
-    cagr = (final/initial)**(1/yrs)-1 if yrs>0 else 0
-    sh = dr.mean()/dr.std()*252**0.5 if dr.std()>0 else 0
-    wr = (t["net_ret"]>0).mean()
-    return {"n":len(t), "final":final, "cagr":cagr, "sharpe":sh,
-            "dd":dd, "calmar":cagr/abs(dd) if dd!=0 else 0,
-            "win":wr, "yrs":yrs, "curve":df_eq}
-
 
 def plot_combined(all_trades, per_tf_metrics, fname):
     fig, axes = plt.subplots(2, 1, figsize=(16, 9), sharex=True,
@@ -208,16 +131,16 @@ def main():
             if label == "4h":
                 df_raw = downloaded_1h.get(ticker)
                 if df_raw is None:
-                    df_raw = download(ticker, "1h", "730d")
+                    df_raw = download_ohlc(ticker, "1h", "730d")
                     downloaded_1h[ticker] = df_raw
                 df_ctf = resample_ohlc(df_raw, "4h") if df_raw is not None else None
             else:
                 if label == "1h":
-                    df_raw = download(ticker, yf_interval, period)
+                    df_raw = download_ohlc(ticker, yf_interval, period)
                     downloaded_1h[ticker] = df_raw  # cache for 4h
                     df_ctf = df_raw
                 else:
-                    df_ctf = download(ticker, yf_interval, period)
+                    df_ctf = download_ohlc(ticker, yf_interval, period)
 
             if df_ctf is None or len(df_ctf) < 50: continue
 
@@ -226,7 +149,9 @@ def main():
                 classify_pivots(pivots)
                 figs = match_figures(pivots)
                 bias = htf_bias_series(df_ctf, htf_rule)
-            except Exception: continue
+            except Exception as exc:
+                log_processing_error(ticker, label, exc)
+                continue
 
             trades = simulate_ticker(df_ctf, figs, bias, ticker, label, cost)
             per_tf[label].extend(trades)

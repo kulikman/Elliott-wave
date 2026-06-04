@@ -25,13 +25,21 @@ warnings.filterwarnings("ignore")
 
 import numpy as np
 import pandas as pd
-import yfinance as yf
 import matplotlib.pyplot as plt
 
 from ewb.monowaves import detect_monowaves
 from ewb.rules import classify_pivots
 from ewb.figures import match_figures
 from ewb.htf import htf_bias_series
+from ewb.research import (
+    SYMBOLS,
+    cost_for,
+    download_ohlc,
+    exit_for_trade,
+    fmt_trade_metrics as fmt_metrics,
+    log_processing_error,
+    trade_metrics as metrics,
+)
 
 
 REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -39,41 +47,7 @@ OUT_DIR = os.path.join(REPO, "docs", "validation", "screenshots", "sprint6")
 REPORT  = os.path.join(REPO, "docs", "validation", "sprint6-backtest.md")
 os.makedirs(OUT_DIR, exist_ok=True)
 
-
-def cost_for(ticker: str) -> float:
-    """Per-side total cost (commission + slippage)."""
-    if ticker.endswith("-USD") or ticker.endswith("=X") or ticker.endswith("=F"):
-        return 0.0010 + 0.0003   # 0.13% per side (crypto/FX/futures)
-    return 0.0005 + 0.0003       # 0.08% per side (stocks/ETFs)
-
-
-SP500_TOP = [
-    "AAPL","MSFT","GOOGL","AMZN","NVDA","META","TSLA","BRK-B","JPM","V",
-    "UNH","XOM","JNJ","WMT","MA","PG","HD","LLY","ABBV","KO",
-    "PEP","MRK","CVX","AVGO","ORCL","CSCO","NFLX","CRM","AMD","INTC",
-]
-ETFS = ["SPY","QQQ","IWM","DIA","GLD","SLV","USO","TLT","XLF","XLE"]
-CRYPTO = ["BTC-USD","ETH-USD","SOL-USD","BNB-USD","XRP-USD","ADA-USD","AVAX-USD","DOGE-USD"]
-FOREX = ["EURUSD=X","GBPUSD=X","USDJPY=X","AUDUSD=X","USDCAD=X"]
-COMMODITIES = ["GC=F","SI=F","CL=F","NG=F","HG=F"]
-SYMBOLS = SP500_TOP + ETFS + CRYPTO + FOREX + COMMODITIES
-
 INTERVALS = [("1d","1W","5y"), ("1h","1D","730d")]
-
-
-def download(ticker, interval, period):
-    try:
-        df = yf.download(ticker, period=period, interval=interval,
-                         progress=False, auto_adjust=True, threads=False)
-    except Exception:
-        return None
-    if df is None or df.empty: return None
-    if isinstance(df.columns, pd.MultiIndex):
-        df.columns = [c[0] for c in df.columns]
-    df.columns = [c.lower() for c in df.columns]
-    df = df[[c for c in ["open","high","low","close"] if c in df.columns]].dropna()
-    return df if len(df) > 100 else None
-
 
 def simulate_trades(symbols=SYMBOLS, intervals=INTERVALS,
                     n_bars_exit=20, fig_filter=None) -> pd.DataFrame:
@@ -85,14 +59,15 @@ def simulate_trades(symbols=SYMBOLS, intervals=INTERVALS,
     for ticker in symbols:
         for (interval, htf_rule, period) in intervals:
             done += 1
-            df = download(ticker, interval, period)
+            df = download_ohlc(ticker, interval, period, min_rows=100)
             if df is None: continue
             try:
                 pivots = detect_monowaves(df, atr_mult=2.5)
                 classify_pivots(pivots)
                 figs = match_figures(pivots)
                 bias = htf_bias_series(df, htf_rule)
-            except Exception:
+            except Exception as exc:
+                log_processing_error(ticker, interval, exc)
                 continue
 
             close = df["close"].to_numpy()
@@ -119,42 +94,10 @@ def simulate_trades(symbols=SYMBOLS, intervals=INTERVALS,
                 # Trade direction: opposite to figure (fade)
                 side = -1 if f.direction == "up" else +1  # -1 short, +1 long
 
-                # SL / TP levels from figure geometry
-                # SL = figure end price + amplitude (price keeps going with figure)
-                # TP = figure start price (full retracement of the figure)
                 amp = f.amplitude
-                if side == -1:    # SHORT (figure was UP)
-                    sl_px = entry_px + amp        # price keeps rising → stop
-                    tp_px = entry_px - amp        # price falls full amp → take
-                else:             # LONG (figure was DOWN)
-                    sl_px = entry_px - amp
-                    tp_px = entry_px + amp
-
-                # Walk forward bar by bar — TP/SL/time exit, whichever first
-                exit_idx = None
-                exit_px  = None
-                exit_reason = "time"
-                for k in range(1, n_bars_exit + 1):
-                    bi = entry_idx + k
-                    if bi >= n: break
-                    hi, lo = high[bi], low[bi]
-                    if side == -1:
-                        if hi >= sl_px:
-                            exit_idx, exit_px, exit_reason = bi, sl_px, "sl"
-                            break
-                        if lo <= tp_px:
-                            exit_idx, exit_px, exit_reason = bi, tp_px, "tp"
-                            break
-                    else:
-                        if lo <= sl_px:
-                            exit_idx, exit_px, exit_reason = bi, sl_px, "sl"
-                            break
-                        if hi >= tp_px:
-                            exit_idx, exit_px, exit_reason = bi, tp_px, "tp"
-                            break
-                if exit_idx is None:
-                    exit_idx = entry_idx + n_bars_exit
-                    exit_px  = close[exit_idx]
+                exit_idx, exit_px, exit_reason = exit_for_trade(
+                    high, low, close, entry_idx, entry_px, side, n_bars_exit, amp
+                )
 
                 # Raw return per side
                 raw_ret = side * (exit_px - entry_px) / entry_px
@@ -182,42 +125,6 @@ def simulate_trades(symbols=SYMBOLS, intervals=INTERVALS,
             elapsed = time.time() - t0
             print(f"[{done:3}/{total}] {ticker:10} {interval:3} → trades so far: {len(trades)}  ({elapsed:.0f}s)")
     return pd.DataFrame(trades)
-
-
-def metrics(trades: pd.DataFrame, key: str = "net_ret") -> dict:
-    if trades.empty: return {}
-    r = trades[key]
-    win = trades["win"]
-    mean = r.mean()
-    std  = r.std()
-    n = len(trades)
-    sharpe = mean / std * np.sqrt(252) if std > 0 else np.nan  # naive annualization
-    # Build equity curve over trades in time order
-    sorted_t = trades.sort_values("entry_ts")
-    eq = (1 + sorted_t[key]).cumprod()
-    peak = eq.cummax()
-    dd = (eq / peak - 1).min()
-    return {
-        "n_trades": n,
-        "win_rate": win.mean(),
-        "mean_ret": mean,
-        "median_ret": r.median(),
-        "std_ret": std,
-        "total_ret": eq.iloc[-1] - 1 if len(eq) else 0,
-        "sharpe_naive": sharpe,
-        "max_dd": dd,
-        "calmar": (eq.iloc[-1] - 1) / abs(dd) if dd != 0 else np.nan,
-        "avg_win":  r[win].mean()   if win.any()       else 0,
-        "avg_loss": r[~win].mean()  if (~win).any()    else 0,
-        "profit_factor": -r[win].sum() / r[~win].sum() if (~win).any() and r[~win].sum() < 0 else np.nan,
-    }
-
-
-def fmt_metrics(m: dict) -> str:
-    return (f"n={m['n_trades']}, win={m['win_rate']*100:.1f}%, "
-            f"mean={m['mean_ret']*100:.2f}%, total={m['total_ret']*100:.1f}%, "
-            f"DD={m['max_dd']*100:.1f}%, Sharpe~{m['sharpe_naive']:.2f}, "
-            f"PF={m['profit_factor']:.2f}, avg W/L={m['avg_win']*100:.2f}%/{m['avg_loss']*100:.2f}%")
 
 
 def plot_equity(trades: pd.DataFrame, title: str, fname: str):

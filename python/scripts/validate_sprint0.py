@@ -8,21 +8,20 @@ For each of 8 symbols × CTF/HTF pairs:
 5. Aggregate metrics into a Markdown report
 """
 from __future__ import annotations
-import sys, os, warnings, json
+import sys, os, warnings
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 warnings.filterwarnings("ignore")
 
-import numpy as np
 import pandas as pd
-import yfinance as yf
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 from matplotlib.lines import Line2D
 
 from ewb.monowaves import detect_monowaves
-from ewb.rules import classify_pivots, rule_to_structure
+from ewb.rules import classify_pivots
 from ewb.figures import match_figures, Figure
-from ewb.htf import resample_ohlc, htf_bias_series, htf_bias_from_pivots
+from ewb.htf import resample_ohlc, htf_bias_series
+from ewb.research import download_ohlc
 
 
 REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -42,21 +41,6 @@ SYMBOLS = [
     ("NQ=F",    "15m","1h", "30d", "NQ 15m / HTF 1H — intraday"),
     ("SOL-USD", "1h", "4h", "60d", "SOL 1H / HTF 4H — альткоин"),
 ]
-
-
-def download(ticker: str, interval: str, period: str) -> pd.DataFrame:
-    """yfinance wrapper → normalised lowercase OHLC."""
-    df = yf.download(ticker, period=period, interval=interval,
-                     progress=False, auto_adjust=True)
-    if df.empty:
-        return df
-    # Flatten MultiIndex columns (yfinance returns ('Close', 'SPY') etc.)
-    if isinstance(df.columns, pd.MultiIndex):
-        df.columns = [c[0] for c in df.columns]
-    df.columns = [c.lower() for c in df.columns]
-    df = df[["open", "high", "low", "close"] + (["volume"] if "volume" in df.columns else [])]
-    df = df.dropna()
-    return df
 
 
 def analyze(df: pd.DataFrame, htf_rule: str, atr_period=14, atr_mult=2.5):
@@ -210,10 +194,12 @@ def main():
     for (ticker, interval, htf_rule, period, label) in SYMBOLS:
         print(f"\n=== {label} ===")
         try:
-            df = download(ticker, interval, period)
+            df = download_ohlc(ticker, interval, period, include_volume=True, min_rows=0)
         except Exception as e:
             print(f"  download failed: {e}")
             continue
+        if df is None:
+            df = pd.DataFrame()
         if df.empty or len(df) < 50:
             print(f"  empty or too short ({len(df)} bars), skip")
             continue

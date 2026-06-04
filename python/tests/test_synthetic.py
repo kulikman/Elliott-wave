@@ -64,7 +64,6 @@ def test_clean_impulse_up():
     impulses = [f for f in figs if f.type == "impulse"]
     print(f"[impulse_up] figures      : {[f.type for f in figs]}")
     print(f"[impulse_up] OK\n")
-    return len(pivots), len(figs), len(impulses)
 
 
 def test_clean_zigzag_down():
@@ -79,7 +78,6 @@ def test_clean_zigzag_down():
     figs = match_figures(pivots)
     print(f"[zigzag_dn] figs  : {[(f.type, f.direction) for f in figs]}")
     print(f"[zigzag_dn] OK\n")
-    return len(pivots), len(figs)
 
 
 def test_clean_flat():
@@ -94,7 +92,6 @@ def test_clean_flat():
     print(f"[flat     ] figs  : {[(f.type, f.direction) for f in figs]}")
     flats = [f for f in figs if f.type == "flat"]
     print(f"[flat     ] {'FOUND' if flats else 'NOT FOUND (expected — base classifier may not output 3-3-5)'}\n")
-    return len(pivots), len(figs)
 
 
 def test_clean_triangle():
@@ -108,7 +105,6 @@ def test_clean_triangle():
     figs = match_figures(pivots)
     print(f"[triangle ] figs  : {[(f.type, f.direction) for f in figs]}")
     print()
-    return len(pivots), len(figs)
 
 
 def test_confirm_impulse_pure_math():
