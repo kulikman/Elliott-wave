@@ -33,26 +33,50 @@ colH    = input.color(color.orange, "Цвет старшего ТФ", group = gr
 wH      = input.int(3, "Толщина линий", group = grpH, minval = 1, maxval = 5)
 
 grpL    = "Метки"
-showLbl = input.bool(true, "Нумеровать моноволны (m0, m1, ...)", group = grpL)
+showLbl = input.bool(false, "Нумеровать моноволны (m0, m1, ...)", group = grpL)
 
 grpS    = "Правило подобия и баланса (AKU-0003, Уровень 3)"
-showSim = input.bool(true, "Помечать смену Порядка между моноволнами", group = grpS,
+showSim = input.bool(false, "Помечать смену Порядка между моноволнами", group = grpS,
      tooltip = "Правило Нили: две смежные моноволны могут быть одного Порядка, " +
      "только если меньшая >= 1/3 большей по ЦЕНЕ ИЛИ по ВРЕМЕНИ. " +
      "Если нет — разный Порядок, кандидат на сжатие (compaction).")
 
 grpClass = "Определитель Правил (Уровень 2, AKU-0141/0142)"
-showClass = input.bool(true, "Классифицировать моноволны (Пр.1-7 + Условие a-f)", group = grpClass,
+showClass = input.bool(false, "Классифицировать моноволны (Пр.1-7 + Условие a-f)", group = grpClass,
      tooltip = "Для каждой моноволны m1: m2/m1 -> Правило 1-7 (Определитель Правил), " +
      "m0/m1 -> Условие a-f. Это структурная классификация Нили (Гл.3).")
 colClass = input.color(color.fuchsia, "Цвет меток классификации", group = grpClass)
 
 grpFig  = "Распознавание фигур по Структурным Сериям (Уровень 3, AKU-0158..0166)"
-showFig = input.bool(true, "Распознавать фигуры (Импульс/Зигзаг/Плоская/Треугольник)", group = grpFig,
+showFig = input.bool(false, "Распознавать фигуры (Импульс/Зигзаг/Плоская/Треугольник)", group = grpFig,
      tooltip = "Сопоставление окна базовых структур (:5/:3) со Структурными Сериями A-E (Гл.4). " +
      "Базовая разметка: точные метки :F3/:c3 требуют Индикаторов положения (Гл.3), " +
      "поэтому Зигзаг и хвост Импульса могут совпадать (правило 'Зигзаг или Импульс?' AKU-0166).")
 colFig  = input.color(color.aqua, "Цвет рамок фигур", group = grpFig)
+
+grpTrade = "Торговый слой Антона (research: Flat/DC fade)"
+showTrade = input.bool(true, "Показывать торговые сигналы Flat/DC", group = grpTrade,
+     tooltip = "Research-слой после Sprint 6: торгуются только подтверждённые Flat и Double Correction в fade-направлении. Impulse/Triangle не дают вход.")
+showTradeMarkers = input.bool(false, "Рисовать исторические trade-метки/зоны", group = grpTrade,
+     tooltip = "Выключено по умолчанию, чтобы график не шумел. Таблица, статус и alerts продолжают работать.")
+showNoise = input.bool(false, "Показывать Impulse/Triangle как NO TRADE", group = grpTrade)
+flatProb = input.float(61.0, "Вероятность Flat fade, %", group = grpTrade, minval = 0, maxval = 100, step = 0.1,
+     tooltip = "Оценка из Sprint 6/all-TF: Flat fade около 60-63% hit-rate; это research, не гарантия.")
+dcProb = input.float(89.0, "Вероятность Double Correction fade, %", group = grpTrade, minval = 0, maxval = 100, step = 0.1,
+     tooltip = "Оценка из Sprint 6/all-TF: DC fade сильный, но редкий сигнал; n меньше, поэтому использовать осторожно.")
+maxHybridPivots = input.int(40, "Память hybrid-пивотов", group = grpTrade, minval = 10, maxval = 200)
+tradeMaxAgeBars = input.int(80, "Срок актуальности сигнала, баров", group = grpTrade, minval = 1, maxval = 500,
+     tooltip = "После этого количества баров сигнал помечается EXPIRED, если TP/SL ещё не достигнуты.")
+stockOnlyMode = input.bool(true, "Только акции: crypto = UNSUPPORTED", group = grpTrade,
+     tooltip = "Probability calibration v0 построена по акциям. Для crypto Action now будет WAIT/UNSUPPORTED.")
+actionFreshBars = input.int(3, "Свежий вход: максимум баров", group = grpTrade, minval = 0, maxval = 50,
+     tooltip = "BUY/SELL разрешён только пока сигнал свежий. Позже таблица покажет WAIT/STALE.")
+maxEntryProgress = input.float(0.35, "Поздно входить после % пути к TP", group = grpTrade, minval = 0.05, maxval = 0.95, step = 0.05,
+     tooltip = "Если цена уже прошла эту долю пути от Entry к TP, Action now станет WAIT/LATE.")
+minActionRR = input.float(1.0, "Минимальный текущий R:R", group = grpTrade, minval = 0.1, maxval = 10.0, step = 0.1,
+     tooltip = "Если оставшаяся прибыль к риску меньше порога, Action now станет WAIT/RR BAD.")
+useHtfFilter = input.bool(true, "Использовать HTF-фильтр", group = grpTrade,
+     tooltip = "BUY блокируется при DOWN bias старшего ТФ, SELL блокируется при UP bias старшего ТФ.")
 
 // ───────────────────────────── ТИПЫ ─────────────────────────────
 // Состояние ZigZag-детектора моноволн (по reversal-порогу).
@@ -356,6 +380,146 @@ confirmTriangle(array<float> ep, int i0) =>
 figDirection(float p0px, float p1px) =>
     p1px > p0px ? "up" : "down"
 
+// ─── Hybrid matcher: как Python, напрямую по окнам подтверждённых пивотов ───
+// В отличие от base-sequence matcher, этот слой не зависит от :5/:3 для W2/W4,
+// поэтому Flat/DC сигналы не пропадают из-за Правил 6-7.
+hybridAlternate(array<int> dirs, int i0, int waves) =>
+    bool ok = true
+    for k = i0 + 2 to i0 + waves
+        if array.get(dirs, k) == array.get(dirs, k - 1)
+            ok := false
+    ok
+
+hybridBounds(array<int> bars, array<float> pxs, int i0, int count) =>
+    int b0 = array.get(bars, i0)
+    int b1 = array.get(bars, i0 + count - 1)
+    float hi = array.get(pxs, i0)
+    float lo = array.get(pxs, i0)
+    for k = i0 to i0 + count - 1
+        float px = array.get(pxs, k)
+        hi := math.max(hi, px)
+        lo := math.min(lo, px)
+    [b0, b1, lo, hi]
+
+hybridFlatOK(array<float> pxs, int i0) =>
+    float a = math.abs(array.get(pxs, i0 + 1) - array.get(pxs, i0))
+    float b = math.abs(array.get(pxs, i0 + 2) - array.get(pxs, i0 + 1))
+    a > 0 and b / a >= 0.618
+
+hybridDoubleCorrOK(array<float> pxs, int i0) =>
+    float w = math.abs(array.get(pxs, i0 + 1) - array.get(pxs, i0))
+    float x = math.abs(array.get(pxs, i0 + 2) - array.get(pxs, i0 + 1))
+    float xr = w > 0 ? x / w : na
+    not na(xr) and xr > 0.1 and xr < 0.618
+
+hybridImpulseOK(array<float> pxs, int i0) =>
+    string dir = figDirection(array.get(pxs, i0), array.get(pxs, i0 + 1))
+    [ok, msg] = confirmImpulse(pxs, i0, dir)
+    ok
+
+hybridTriangleOK(array<float> pxs, int i0) =>
+    [ok, msg] = confirmTriangle(pxs, i0)
+    ok
+
+drawTradeSignal(string figType, string figDir, int confBar, float entryPx,
+                int b0, int b1, float lo, float hi, float amp) =>
+    bool figUp = figDir == "up"
+    bool isLong = not figUp
+    float tp = isLong ? entryPx + amp : entryPx - amp
+    float sl = isLong ? entryPx - amp : entryPx + amp
+    float prob = figType == "flat" ? flatProb : dcProb
+    string side = isLong ? "LONG" : "SHORT"
+    color sigCol = isLong ? color.lime : color.red
+    string title = figType == "flat" ? "FLAT fade" : "DOUBLE CORR fade"
+    drawFig(title, b0, b1, lo, hi, color.new(sigCol, 55))
+    label.new(confBar, entryPx, side + "\n" + title + "\nP≈" + str.tostring(prob, "#.0") + "%",
+         xloc = xloc.bar_index, yloc = yloc.price,
+         style = isLong ? label.style_label_up : label.style_label_down,
+         color = color.new(sigCol, 0), textcolor = color.white, size = size.normal,
+         tooltip = "Research Sprint 6: сигнал появляется на баре подтверждения pivot, не на экстремуме. TP/SL = amplitude фигуры.")
+    line.new(confBar, tp, confBar + 50, tp, xloc = xloc.bar_index,
+         color = color.new(color.lime, 25), width = 1, style = line.style_dotted)
+    line.new(confBar, sl, confBar + 50, sl, xloc = xloc.bar_index,
+         color = color.new(color.red, 25), width = 1, style = line.style_dotted)
+    label.new(confBar + 50, tp, "TP", xloc = xloc.bar_index, yloc = yloc.price,
+         style = label.style_label_left, color = color.new(color.lime, 25),
+         textcolor = color.white, size = size.tiny)
+    label.new(confBar + 50, sl, "SL/invalid", xloc = xloc.bar_index, yloc = yloc.price,
+         style = label.style_label_left, color = color.new(color.red, 25),
+         textcolor = color.white, size = size.tiny)
+
+drawNoTrade(string figType, int confBar, float entryPx) =>
+    label.new(confBar, entryPx, "NO TRADE\n" + figType,
+         xloc = xloc.bar_index, yloc = yloc.price,
+         style = label.style_label_left, color = color.new(color.gray, 25),
+         textcolor = color.white, size = size.tiny,
+         tooltip = "Sprint 6: этот тип фигуры не показал торговый edge. Использовать только как контекст.")
+
+tradeStatusColor(string status, string side) =>
+    status == "ACTIVE" ? (side == "LONG" ? color.new(color.lime, 35) : side == "SHORT" ? color.new(color.red, 35) : color.new(color.gray, 55)) :
+     status == "TP HIT" ? color.new(color.lime, 20) :
+     status == "SL HIT" ? color.new(color.red, 20) :
+     status == "EXPIRED" ? color.new(color.orange, 30) :
+     color.new(color.gray, 60)
+
+actionColor(string action) =>
+    action == "BUY" ? color.new(color.lime, 20) :
+     action == "SELL" ? color.new(color.red, 20) :
+     color.new(color.gray, 45)
+
+tfCalibKey() =>
+    timeframe.isdaily and timeframe.multiplier == 1 ? "1d" :
+     timeframe.isintraday and timeframe.multiplier == 60 ? "1h" :
+     "fallback"
+
+calibratedTradeStats(string figType, string side) =>
+    string tfKey = tfCalibKey()
+    float prob = figType == "flat" ? flatProb : dcProb
+    int sampleN = 0
+    string conf = "fallback"
+    string src = "input"
+    if figType == "flat" and side == "LONG"
+        if tfKey == "1d"
+            prob := 66.7, sampleN := 24, conf := "low", src := "flat|1d|long"
+        else if tfKey == "1h"
+            prob := 55.4, sampleN := 251, conf := "high", src := "flat|1h|long"
+        else
+            prob := 56.4, sampleN := 275, conf := "high", src := "flat|long"
+    else if figType == "flat" and side == "SHORT"
+        if tfKey == "1d"
+            prob := 69.6, sampleN := 23, conf := "low", src := "flat|1d|short"
+        else if tfKey == "1h"
+            prob := 54.5, sampleN := 233, conf := "high", src := "flat|1h|short"
+        else
+            prob := 55.9, sampleN := 256, conf := "high", src := "flat|short"
+    else if figType == "double_corr" and side == "LONG"
+        if tfKey == "1d"
+            prob := 100.0, sampleN := 3, conf := "low", src := "double_corr|1d|long"
+        else if tfKey == "1h"
+            prob := 78.6, sampleN := 14, conf := "low", src := "double_corr|1h|long"
+        else
+            prob := 82.4, sampleN := 17, conf := "low", src := "double_corr|long"
+    else if figType == "double_corr" and side == "SHORT"
+        if tfKey == "1d"
+            prob := 100.0, sampleN := 1, conf := "low", src := "double_corr|1d|short"
+        else if tfKey == "1h"
+            prob := 86.7, sampleN := 15, conf := "low", src := "double_corr|1h|short"
+        else
+            prob := 87.5, sampleN := 16, conf := "low", src := "double_corr|short"
+    [prob, sampleN, conf, src]
+
+signalGrade(string action, float prob, int sampleN, string conf, float rr) =>
+    if action != "BUY" and action != "SELL"
+        "NO TRADE"
+    else if sampleN < 20 or conf == "low"
+        "B-SMALL-N"
+    else if prob >= 65 and not na(rr) and rr >= 1.5
+        "A"
+    else if prob >= 55 and not na(rr) and rr >= 1.0
+        "B"
+    else
+        "C"
+
 // ─── Рейтинг Энергии (AKU-0213, Гл.10 стр.10-2) ─────────────────────────────
 // Возвращает рейтинг энергии и макс. откат следующей волны для подтверждённой фигуры.
 // figType: "impulse"|"terminal"|"flat"|"zigzag"|"triangle"|"double_corr"
@@ -617,6 +781,123 @@ if showFig and rc.ruleNo > 0
     if base > 0
         matchFigure(figStruct, figEndBar, figEndPx, colFig)
 
+// ── Hybrid trade matcher: подтверждённые пивоты текущего ТФ ──
+var array<int>   hybBar  = array.new<int>()
+var array<float> hybPx   = array.new<float>()
+var array<int>   hybDir  = array.new<int>()
+var array<int>   hybConf = array.new<int>()
+var bool hybInit = false
+var int lastTradeConfBar = na
+var string lastTradeSide = "—"
+var string lastTradeType = "—"
+var float lastTradeProb = na
+var float lastTradeEntry = na
+var float lastTradeTp = na
+var float lastTradeSl = na
+var string lastTradeStatus = "—"
+var int lastTradeAge = na
+var int lastTradeSampleN = 0
+var string lastTradeConfidence = "—"
+var string lastTradeProbSource = "—"
+var bool tradeLongSignal = false
+var bool tradeShortSignal = false
+tradeLongSignal := false
+tradeShortSignal := false
+
+if showTrade and rc.confirmed and not na(rc.prevBar)
+    if not hybInit
+        array.push(hybBar, rc.prevBar)
+        array.push(hybPx, rc.prevPrice)
+        array.push(hybDir, 0)
+        array.push(hybConf, rc.prevBar)
+        hybInit := true
+    array.push(hybBar, rc.bar)
+    array.push(hybPx, rc.price)
+    array.push(hybDir, rc.dir)
+    array.push(hybConf, bar_index)
+    while array.size(hybBar) > maxHybridPivots
+        array.shift(hybBar)
+        array.shift(hybPx)
+        array.shift(hybDir)
+        array.shift(hybConf)
+
+    int hn = array.size(hybBar)
+    bool matchedTrade = false
+    if hn >= 4
+        int s4 = hn - 4
+        bool alt4 = hybridAlternate(hybDir, s4, 3)
+        if alt4
+            string figDir4 = figDirection(array.get(hybPx, s4), array.get(hybPx, s4 + 1))
+            int confBar4 = array.get(hybConf, hn - 1)
+            float entry4 = close
+            float amp4 = math.abs(array.get(hybPx, s4 + 3) - array.get(hybPx, s4))
+            [b0h4, b1h4, loh4, hih4] = hybridBounds(hybBar, hybPx, s4, 4)
+            if hybridFlatOK(hybPx, s4)
+                if showTradeMarkers
+                    drawTradeSignal("flat", figDir4, confBar4, entry4, b0h4, b1h4, loh4, hih4, amp4)
+                bool isLongFlat = figDir4 == "down"
+                tradeLongSignal := isLongFlat
+                tradeShortSignal := not isLongFlat
+                string sideFlat = isLongFlat ? "LONG" : "SHORT"
+                [probFlat, nFlat, confFlat, srcFlat] = calibratedTradeStats("flat", sideFlat)
+                lastTradeConfBar := confBar4
+                lastTradeSide := sideFlat
+                lastTradeType := "Flat fade"
+                lastTradeProb := probFlat
+                lastTradeEntry := entry4
+                lastTradeTp := isLongFlat ? entry4 + amp4 : entry4 - amp4
+                lastTradeSl := isLongFlat ? entry4 - amp4 : entry4 + amp4
+                lastTradeStatus := "ACTIVE"
+                lastTradeAge := 0
+                lastTradeSampleN := nFlat
+                lastTradeConfidence := confFlat
+                lastTradeProbSource := srcFlat
+                matchedTrade := true
+            else if hybridDoubleCorrOK(hybPx, s4)
+                if showTradeMarkers
+                    drawTradeSignal("double_corr", figDir4, confBar4, entry4, b0h4, b1h4, loh4, hih4, amp4)
+                bool isLongDc = figDir4 == "down"
+                tradeLongSignal := isLongDc
+                tradeShortSignal := not isLongDc
+                string sideDc = isLongDc ? "LONG" : "SHORT"
+                [probDc, nDc, confDc, srcDc] = calibratedTradeStats("double_corr", sideDc)
+                lastTradeConfBar := confBar4
+                lastTradeSide := sideDc
+                lastTradeType := "DoubleCorr fade"
+                lastTradeProb := probDc
+                lastTradeEntry := entry4
+                lastTradeTp := isLongDc ? entry4 + amp4 : entry4 - amp4
+                lastTradeSl := isLongDc ? entry4 - amp4 : entry4 + amp4
+                lastTradeStatus := "ACTIVE"
+                lastTradeAge := 0
+                lastTradeSampleN := nDc
+                lastTradeConfidence := confDc
+                lastTradeProbSource := srcDc
+                matchedTrade := true
+    if showNoise and not matchedTrade and hn >= 6
+        int s6 = hn - 6
+        bool alt6 = hybridAlternate(hybDir, s6, 5)
+        if alt6
+            int confBar6 = array.get(hybConf, hn - 1)
+            float entry6 = close
+            if hybridImpulseOK(hybPx, s6)
+                drawNoTrade("Impulse", confBar6, entry6)
+            else if hybridTriangleOK(hybPx, s6)
+                drawNoTrade("Triangle", confBar6, entry6)
+
+if lastTradeStatus == "ACTIVE" and not na(lastTradeConfBar) and bar_index > lastTradeConfBar and not na(lastTradeTp) and not na(lastTradeSl)
+    lastTradeAge := bar_index - lastTradeConfBar
+    bool lastIsLong = lastTradeSide == "LONG"
+    bool tpHit = lastIsLong ? high >= lastTradeTp : low <= lastTradeTp
+    bool slHit = lastIsLong ? low <= lastTradeSl : high >= lastTradeSl
+    if slHit
+        // Консервативно: если TP и SL достигнуты в одном баре, считаем риск первым.
+        lastTradeStatus := "SL HIT"
+    else if tpHit
+        lastTradeStatus := "TP HIT"
+    else if lastTradeAge > tradeMaxAgeBars
+        lastTradeStatus := "EXPIRED"
+
 // ──────────────────── СТАРШИЙ ТАЙМФРЕЙМ (MTF) ────────────────────
 // Запрашиваем OHLC старшего ТФ; детектор шагает только при закрытии HTF-бара.
 // Pine v6: tuple в request.security не поддерживается — отдельный запрос на каждое значение.
@@ -629,18 +910,98 @@ float hAtr   = request.security(syminfo.tickerid, htf, ta.atr(atrLen), lookahead
 revH = useATR ? hAtr * atrMult : hClose * pctRev / 100.0
 
 var ZZState zH = ZZState.new()
+var int htfBiasDir = 0
 int   hTimeChg = ta.change(hTime)
 bool newHTF = not na(hTime) and hTimeChg != 0
-if showH and newHTF and not na(hHigh)
+if newHTF and not na(hHigh)
     ZZResult rh = zH.step(hHigh, hLow, revH)
-    drawMono(rh, colCUp, colCDn, wH, true, colH, showLbl)
+    if rh.confirmed
+        htfBiasDir := rh.dir
+    if showH
+        drawMono(rh, colCUp, colCDn, wH, true, colH, showLbl)
+
+string htfBias = htfBiasDir > 0 ? "UP" : htfBiasDir < 0 ? "DOWN" : "NEUTRAL"
+
+bool supportedTradeSymbol = not stockOnlyMode or syminfo.type == "stock"
+string actionNow = "WAIT"
+string actionReason = "NO SIGNAL"
+float actionRR = na
+float actionProgress = na
+
+if not supportedTradeSymbol
+    actionReason := "UNSUPPORTED " + syminfo.type
+else if lastTradeSide != "LONG" and lastTradeSide != "SHORT"
+    actionReason := "NO SIGNAL"
+else if lastTradeStatus != "ACTIVE"
+    actionReason := lastTradeStatus
+else if na(lastTradeEntry) or na(lastTradeTp) or na(lastTradeSl)
+    actionReason := "INCOMPLETE"
+else
+    int actionAge = na(lastTradeAge) and not na(lastTradeConfBar) ? bar_index - lastTradeConfBar : lastTradeAge
+    bool actionLong = lastTradeSide == "LONG"
+    float rewardNow = actionLong ? lastTradeTp - close : close - lastTradeTp
+    float riskNow = actionLong ? close - lastTradeSl : lastTradeSl - close
+    float pathToTp = math.abs(lastTradeTp - lastTradeEntry)
+    float movedToTp = actionLong ? close - lastTradeEntry : lastTradeEntry - close
+    actionProgress := pathToTp > 0 ? movedToTp / pathToTp : na
+    actionRR := riskNow > 0 ? rewardNow / riskNow : na
+    if actionAge > actionFreshBars
+        actionReason := "STALE " + str.tostring(actionAge) + "b"
+    else if rewardNow <= 0
+        actionReason := "TP PASSED"
+    else if riskNow <= 0
+        actionReason := "SL ZONE"
+    else if not na(actionProgress) and actionProgress > maxEntryProgress
+        actionReason := "LATE " + str.tostring(actionProgress * 100, "#") + "%"
+    else if not na(actionRR) and actionRR < minActionRR
+        actionReason := "RR BAD " + str.tostring(actionRR, "#.00")
+    else if useHtfFilter and actionLong and htfBiasDir < 0
+        actionReason := "HTF AGAINST " + htfBias
+    else if useHtfFilter and not actionLong and htfBiasDir > 0
+        actionReason := "HTF AGAINST " + htfBias
+    else
+        actionNow := actionLong ? "BUY" : "SELL"
+        actionReason := "FRESH + RR OK"
+
+bool actionBuySignal = actionNow == "BUY" and tradeLongSignal
+bool actionSellSignal = actionNow == "SELL" and tradeShortSignal
+string signalGradeNow = signalGrade(actionNow, lastTradeProb, lastTradeSampleN, lastTradeConfidence, actionRR)
 
 // ──────────────────────── ИНФО-ПАНЕЛЬ ────────────────────────────
-var table info = table.new(position.top_right, 2, 3, border_width = 1)
+alertcondition(actionBuySignal, "EWB Action BUY", "EWB Action now BUY on {{ticker}} {{interval}}")
+alertcondition(actionSellSignal, "EWB Action SELL", "EWB Action now SELL on {{ticker}} {{interval}}")
+
+var table info = table.new(position.top_right, 2, 14, border_width = 1)
 if barstate.islast
-    table.cell(info, 0, 0, "Слой",        text_color = color.white, bgcolor = color.new(color.gray, 30))
-    table.cell(info, 1, 0, "Моноволн",    text_color = color.white, bgcolor = color.new(color.gray, 30))
-    table.cell(info, 0, 1, "Текущий ТФ",  text_color = color.white, bgcolor = color.new(colCUp, 40))
-    table.cell(info, 1, 1, str.tostring(zC.count), text_color = color.white, bgcolor = color.new(colCUp, 40))
-    table.cell(info, 0, 2, "Старший " + htf, text_color = color.white, bgcolor = color.new(colH, 40))
-    table.cell(info, 1, 2, str.tostring(zH.count), text_color = color.white, bgcolor = color.new(colH, 40))
+    table.cell(info, 0, 0, "Action now", text_color = color.white, bgcolor = color.new(color.gray, 20))
+    table.cell(info, 1, 0, actionNow, text_color = color.white, bgcolor = actionColor(actionNow))
+    table.cell(info, 0, 1, "Reason", text_color = color.white, bgcolor = color.new(color.gray, 45))
+    table.cell(info, 1, 1, actionReason, text_color = color.white, bgcolor = actionColor(actionNow))
+    table.cell(info, 0, 2, "Слой",        text_color = color.white, bgcolor = color.new(color.gray, 30))
+    table.cell(info, 1, 2, "Моноволн",    text_color = color.white, bgcolor = color.new(color.gray, 30))
+    table.cell(info, 0, 3, "Trade", text_color = color.white, bgcolor = color.new(color.gray, 35))
+    table.cell(info, 1, 3, lastTradeSide, text_color = color.white,
+         bgcolor = tradeStatusColor(lastTradeStatus, lastTradeSide))
+    table.cell(info, 0, 4, "Фигура", text_color = color.white, bgcolor = color.new(color.gray, 50))
+    table.cell(info, 1, 4, lastTradeType, text_color = color.white, bgcolor = color.new(color.gray, 70))
+    table.cell(info, 0, 5, "Status", text_color = color.white, bgcolor = color.new(color.gray, 50))
+    table.cell(info, 1, 5, lastTradeStatus + (na(lastTradeAge) ? "" : " / " + str.tostring(lastTradeAge) + "b"),
+         text_color = color.white, bgcolor = tradeStatusColor(lastTradeStatus, lastTradeSide))
+    table.cell(info, 0, 6, "P≈", text_color = color.white, bgcolor = color.new(color.gray, 50))
+    table.cell(info, 1, 6, na(lastTradeProb) ? "—" : str.tostring(lastTradeProb, "#.0") + "%", text_color = color.white, bgcolor = color.new(color.gray, 70))
+    table.cell(info, 0, 7, "Grade", text_color = color.white, bgcolor = color.new(color.gray, 50))
+    table.cell(info, 1, 7, signalGradeNow, text_color = color.white, bgcolor = actionColor(actionNow))
+    table.cell(info, 0, 8, "n / conf", text_color = color.white, bgcolor = color.new(color.gray, 50))
+    table.cell(info, 1, 8, str.tostring(lastTradeSampleN) + " / " + lastTradeConfidence, text_color = color.white, bgcolor = color.new(color.gray, 70))
+    table.cell(info, 0, 9, "Entry / TP", text_color = color.white, bgcolor = color.new(color.gray, 50))
+    table.cell(info, 1, 9, na(lastTradeEntry) ? "—" : str.tostring(lastTradeEntry, format.mintick) + " / " + str.tostring(lastTradeTp, format.mintick), text_color = color.white, bgcolor = color.new(color.gray, 70))
+    table.cell(info, 0, 10, "SL / invalid", text_color = color.white, bgcolor = color.new(color.gray, 50))
+    table.cell(info, 1, 10, na(lastTradeSl) ? "—" : str.tostring(lastTradeSl, format.mintick), text_color = color.white, bgcolor = color.new(color.gray, 70))
+    table.cell(info, 0, 11, "RR / progress", text_color = color.white, bgcolor = color.new(color.gray, 50))
+    table.cell(info, 1, 11, (na(actionRR) ? "—" : str.tostring(actionRR, "#.00")) + " / " + (na(actionProgress) ? "—" : str.tostring(actionProgress * 100, "#") + "%"),
+         text_color = color.white, bgcolor = color.new(color.gray, 70))
+    table.cell(info, 0, 12, "HTF bias", text_color = color.white, bgcolor = color.new(color.gray, 50))
+    table.cell(info, 1, 12, htfBias, text_color = color.white,
+         bgcolor = htfBias == "UP" ? color.new(color.lime, 45) : htfBias == "DOWN" ? color.new(color.red, 45) : color.new(color.gray, 70))
+    table.cell(info, 0, 13, "Calib / TF", text_color = color.white, bgcolor = color.new(color.gray, 50))
+    table.cell(info, 1, 13, lastTradeProbSource, text_color = color.white, bgcolor = color.new(color.gray, 70))
