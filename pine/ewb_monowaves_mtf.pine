@@ -1063,12 +1063,14 @@ else
         actionNow := actionLong ? "BUY" : "SELL"
         actionReason := htfAgainstAction and htfActionMode == "WARN" ? "FRESH + RR OK / HTF WARN " + htfBias : "FRESH + RR OK"
 
-bool actionBuySignal = actionNow == "BUY" and tradeLongSignal
-bool actionSellSignal = actionNow == "SELL" and tradeShortSignal
+bool actionBuySignal = actionableTradeSymbol and actionNow == "BUY" and tradeLongSignal
+bool actionSellSignal = actionableTradeSymbol and actionNow == "SELL" and tradeShortSignal
 string signalGradeNow = signalGrade(actionNow, lastTradeProb, lastTradeSampleN, lastTradeConfidence, actionRR)
 if actionNow != "WAIT" and htfAgainstAction and htfActionMode == "WARN"
     signalGradeNow := signalGradeNow == "A" ? "B-HTF" : signalGradeNow == "B" ? "C-HTF" : signalGradeNow + "-HTF"
 
+string decisionMode = actionableTradeSymbol ? "STOCK LIVE" : cryptoResearchMarket ? "CRYPTO RESEARCH" : "UNSUPPORTED"
+color decisionModeColor = actionableTradeSymbol ? color.new(color.lime, 50) : cryptoResearchMarket ? color.new(color.orange, 20) : color.new(color.red, 45)
 string displayTradeSide = actionableTradeSymbol ? lastTradeSide : "WAIT"
 string displayTradeType = actionableTradeSymbol ? lastTradeType : marketModel
 string displayTradeStatus = actionableTradeSymbol ? lastTradeStatus : "WAIT"
@@ -1076,6 +1078,10 @@ string displayTradeProb = actionableTradeSymbol and not na(lastTradeProb) ? str.
 string displaySampleConf = actionableTradeSymbol ? str.tostring(lastTradeSampleN) + " / " + lastTradeConfidence : "—"
 string displayEntryTp = actionableTradeSymbol and not na(lastTradeEntry) ? str.tostring(lastTradeEntry, format.mintick) + " / " + str.tostring(lastTradeTp, format.mintick) : "—"
 string displaySl = actionableTradeSymbol and not na(lastTradeSl) ? str.tostring(lastTradeSl, format.mintick) : "—"
+string displaySignalGrade = actionableTradeSymbol ? signalGradeNow : cryptoResearchMarket ? "RESEARCH" : "—"
+string displayRrProgress = actionableTradeSymbol ? (na(actionRR) ? "—" : str.tostring(actionRR, "#.00")) + " / " + (na(actionProgress) ? "—" : str.tostring(actionProgress * 100, "#") + "%") : "—"
+string displayMarket = marketMode + " / " + marketModel
+string displayCalibration = actionableTradeSymbol ? lastTradeProbSource : marketModel
 
 // ───────────────────── ТЕКУЩИЙ ТОРГОВЫЙ ПЛАН ─────────────────────
 var int drawnActionKey = na
@@ -1307,8 +1313,8 @@ if showTradePanel and barstate.islast
     table.cell(info, 1, 0, actionNow, text_color = color.white, bgcolor = actionColor(actionNow))
     table.cell(info, 0, 1, "Reason", text_color = color.white, bgcolor = color.new(color.gray, 45))
     table.cell(info, 1, 1, actionReason, text_color = color.white, bgcolor = actionColor(actionNow))
-    table.cell(info, 0, 2, "Слой",        text_color = color.white, bgcolor = color.new(color.gray, 30))
-    table.cell(info, 1, 2, "Моноволн",    text_color = color.white, bgcolor = color.new(color.gray, 30))
+    table.cell(info, 0, 2, "Mode", text_color = color.white, bgcolor = color.new(color.gray, 30))
+    table.cell(info, 1, 2, decisionMode, text_color = color.white, bgcolor = decisionModeColor)
     table.cell(info, 0, 3, "Trade", text_color = color.white, bgcolor = color.new(color.gray, 35))
     table.cell(info, 1, 3, displayTradeSide, text_color = color.white,
          bgcolor = tradeStatusColor(displayTradeStatus, displayTradeSide))
@@ -1320,7 +1326,7 @@ if showTradePanel and barstate.islast
     table.cell(info, 0, 6, "P≈", text_color = color.white, bgcolor = color.new(color.gray, 50))
     table.cell(info, 1, 6, displayTradeProb, text_color = color.white, bgcolor = color.new(color.gray, 70))
     table.cell(info, 0, 7, "Grade", text_color = color.white, bgcolor = color.new(color.gray, 50))
-    table.cell(info, 1, 7, signalGradeNow, text_color = color.white, bgcolor = actionColor(actionNow))
+    table.cell(info, 1, 7, displaySignalGrade, text_color = color.white, bgcolor = actionableTradeSymbol ? actionColor(actionNow) : decisionModeColor)
     table.cell(info, 0, 8, "n / conf", text_color = color.white, bgcolor = color.new(color.gray, 50))
     table.cell(info, 1, 8, displaySampleConf, text_color = color.white, bgcolor = color.new(color.gray, 70))
     table.cell(info, 0, 9, "Entry / TP", text_color = color.white, bgcolor = color.new(color.gray, 50))
@@ -1328,13 +1334,12 @@ if showTradePanel and barstate.islast
     table.cell(info, 0, 10, "SL / invalid", text_color = color.white, bgcolor = color.new(color.gray, 50))
     table.cell(info, 1, 10, displaySl, text_color = color.white, bgcolor = color.new(color.gray, 70))
     table.cell(info, 0, 11, "RR / progress", text_color = color.white, bgcolor = color.new(color.gray, 50))
-    table.cell(info, 1, 11, (na(actionRR) ? "—" : str.tostring(actionRR, "#.00")) + " / " + (na(actionProgress) ? "—" : str.tostring(actionProgress * 100, "#") + "%"),
-         text_color = color.white, bgcolor = color.new(color.gray, 70))
+    table.cell(info, 1, 11, displayRrProgress, text_color = color.white, bgcolor = color.new(color.gray, 70))
     table.cell(info, 0, 12, "HTF mode/bias", text_color = color.white, bgcolor = color.new(color.gray, 50))
     table.cell(info, 1, 12, htfActionMode + " / " + htfBias, text_color = color.white,
          bgcolor = htfBiasDir > 0 ? color.new(color.lime, 45) : htfBiasDir < 0 ? color.new(color.red, 45) : color.new(color.gray, 70))
     table.cell(info, 0, 13, "Market", text_color = color.white, bgcolor = color.new(color.gray, 50))
-    table.cell(info, 1, 13, marketMode + " / " + marketModel, text_color = color.white,
+    table.cell(info, 1, 13, displayMarket, text_color = color.white,
          bgcolor = actionableTradeSymbol ? color.new(color.lime, 55) : cryptoResearchMarket ? color.new(color.orange, 35) : color.new(color.gray, 70))
     table.cell(info, 0, 14, "Calib / TF", text_color = color.white, bgcolor = color.new(color.gray, 50))
-    table.cell(info, 1, 14, actionableTradeSymbol ? lastTradeProbSource : marketModel, text_color = color.white, bgcolor = color.new(color.gray, 70))
+    table.cell(info, 1, 14, displayCalibration, text_color = color.white, bgcolor = color.new(color.gray, 70))
