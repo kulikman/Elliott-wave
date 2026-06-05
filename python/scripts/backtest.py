@@ -77,6 +77,8 @@ def simulate_trades(symbols=SYMBOLS, intervals=INTERVALS,
             cost = cost_for(ticker)
 
             for f in figs:
+                if not f.confirmed:
+                    continue
                 if fig_filter and f.type not in fig_filter:
                     continue
                 entry_idx = f.pivots[-1].confirmation_idx

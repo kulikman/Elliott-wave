@@ -52,6 +52,8 @@ def simulate_ticker(df_ctf, figs, bias, ticker, interval_label, cost):
     n = len(close)
     trades = []
     for f in figs:
+        if not f.confirmed:
+            continue
         if f.type not in FIG_CONFIG: continue
         cfg = FIG_CONFIG[f.type]
         exit_bars = cfg["exit_bars"]

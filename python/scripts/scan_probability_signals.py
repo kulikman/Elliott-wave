@@ -84,6 +84,8 @@ def scan_ticker(ticker: str, interval: str, period: str, calibration: dict) -> l
     figures = match_figures(pivots)
     signals = []
     for figure in figures:
+        if not figure.confirmed:
+            continue
         signal = probability_signal_from_figure(calibration, figure, df, ticker, interval)
         if signal is not None:
             signals.append(signal)

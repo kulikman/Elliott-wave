@@ -5,7 +5,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import numpy as np
 import pandas as pd
-from ewb.monowaves import detect_monowaves
+from ewb.monowaves import Pivot, detect_monowaves
 from ewb.rules import classify_pivots, classify_rule
 from ewb.figures import match_figures
 from ewb.confirm import confirm_impulse
@@ -46,6 +46,28 @@ def _build_ohlc_from_pivots(pivot_prices: list[float], bars_per_seg: int = 20,
     rows.append({"open": p_last, "high": p_last, "low": p_last, "close": p_last})
     df = pd.DataFrame(rows, index=idx_dt[:len(rows)])
     return df
+
+
+def _manual_pivots(prices: list[float], directions: list[int]) -> list[Pivot]:
+    return [
+        Pivot(idx=i, price=price, direction=direction, confirmation_idx=i)
+        for i, (price, direction) in enumerate(zip(prices, directions))
+    ]
+
+
+def test_matcher_identifies_confirmed_core_patterns():
+    cases = [
+        ("impulse", [100, 120, 110, 140, 130, 160], [0, 1, -1, 1, -1, 1], "up"),
+        ("flat", [100, 80, 100, 80], [0, -1, 1, -1], "down"),
+        ("triangle", [100, 120, 105, 117, 108, 114], [0, 1, -1, 1, -1, 1], "up"),
+        ("double_corr", [100, 80, 88, 70], [0, -1, 1, -1], "down"),
+    ]
+    for expected_type, prices, directions, expected_direction in cases:
+        figs = match_figures(_manual_pivots(prices, directions))
+        assert figs, f"expected {expected_type}, got no figures"
+        assert figs[0].type == expected_type
+        assert figs[0].direction == expected_direction
+        assert figs[0].confirmed is True
 
 
 def test_clean_impulse_up():

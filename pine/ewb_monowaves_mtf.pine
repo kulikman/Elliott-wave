@@ -55,10 +55,10 @@ showFig = input.bool(false, "Распознавать фигуры (Импуль
 colFig  = input.color(color.aqua, "Цвет рамок фигур", group = grpFig)
 
 grpTrade = "Research слой Flat/DC"
-showTrade = input.bool(false, "Показывать research-сигналы Flat/DC", group = grpTrade,
-     tooltip = "Research-слой выключен по умолчанию, чтобы не конфликтовать с главным Probability Overlay v0. Торгуются только подтверждённые Flat и Double Correction в fade-направлении.")
-showTradePanel = input.bool(false, "Показывать research-панель Action", group = grpTrade,
-     tooltip = "Включай только для исследования. Главный торговый Action now находится в EWB Probability Overlay v0.")
+showTrade = input.bool(true, "Показывать торговые сигналы Flat/DC", group = grpTrade,
+     tooltip = "Главный торговый слой: моноволны и MTF ближе к Python runtime. Торгуются только подтверждённые Flat и Double Correction в fade-направлении.")
+showTradePanel = input.bool(true, "Показывать панель Action now", group = grpTrade,
+     tooltip = "Главная панель рабочего решения BUY/SELL/WAIT. Probability Overlay v0 использовать только как research-сверку baseline.")
 showTradeMarkers = input.bool(false, "Рисовать исторические trade-метки/зоны", group = grpTrade,
      tooltip = "Выключено по умолчанию, чтобы график не шумел. Таблица, статус и alerts продолжают работать.")
 showTradePlan = input.bool(true, "Show trade plan", group = grpTrade,

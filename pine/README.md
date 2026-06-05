@@ -5,29 +5,31 @@
 
 ## Роли индикаторов
 
-- Главный торговый индикатор для Антона: `pine/ewb_probability_overlay_v0.pine`.
-- `pine/ewb_monowaves_mtf.pine` оставлен как структурный/research overlay для моноволн,
-  MTF-разметки и ручной сверки.
+- Главный торговый индикатор для Антона: `pine/ewb_monowaves_mtf.pine`.
+- `pine/ewb_probability_overlay_v0.pine` оставлен как research overlay для сверки baseline
+  `probability_calibration_v0`, поэтому его panel, trade-plan и alerts выключены по умолчанию.
 - Если оба индикатора добавлены на один график, рабочим источником `Action now` считать только
-  `EWB — Probability Overlay v0`.
+  `Elliott Wave Brain — Monowaves MTF`.
 
 ## Probability Overlay v0
 
 Файл: `pine/ewb_probability_overlay_v0.pine`
 
-Это главный торговый overlay для baseline Probability Model v0. Он показывает Антону
-рабочее решение `BUY / SELL / WAIT`, вероятность, EV и уровни риска.
+Это research overlay для baseline Probability Model v0. Он полезен для сравнения
+`probability_calibration_v0.json` с главным индикатором, но не должен быть вторым
+равноправным источником торгового `Action now`.
 
 **Что делает:**
 - строит подтверждённые pivot-окна без look-ahead: сигнал появляется только после
   `rightBars` подтверждения;
 - ищет `flat` и `double_corr` как торговые паттерны v0;
-- показывает `Action now` (`BUY / SELL / WAIT`) отдельно от исторического `Last signal`;
+- может показывать `Action now` (`BUY / SELL / WAIT`) отдельно от исторического `Last signal`,
+  если включить `Enable research Action/alerts`;
 - показывает силу `A/B/C`, `P(win)`, `EV`, stop и цели `TP1 / TP2 / TP3`;
 - рисует на графике актуальный trade-plan: иконку `BUY/SELL`, `Entry`, `SL`,
   `TP1`, `TP2`, `TP3`, зоны risk/reward и волну, которая сформировала сигнал;
-- по умолчанию рисует только актуальный trade-plan и panel, чтобы не засорять график
-  историческими сигналами;
+- по умолчанию не рисует trade-plan, signal icon, panel и не включает alerts, чтобы не
+  конфликтовать с главным `Monowaves MTF`;
 - показывает `Conf / N`, чтобы отличать сильную вероятность на большой выборке от
   сигнала с маленьким числом наблюдений;
 - калибрует `double_corr long` и `double_corr short` отдельно, потому их выборки и EV
@@ -59,20 +61,19 @@
 1. Открой TradingView → Pine Editor.
 2. Вставь содержимое `pine/ewb_probability_overlay_v0.pine`.
 3. Add to chart.
-4. Для рабочих решений Антона используй этот индикатор как главный источник
-   `Action now`.
+4. Включай `Enable research Action/alerts` только для ручной research-сверки. Для рабочих
+   решений Антона используй `pine/ewb_monowaves_mtf.pine`.
 
 ## Monowaves MTF
 
 Файл: `pine/ewb_monowaves_mtf.pine`
 
-Это структурный/research-индикатор: моноволны, MTF-разметка, классификация и
-исследовательская подсветка Flat/DC. Чтобы не было двух конфликтующих источников
-`Action now`, его research-торговый слой и research-панель выключены по умолчанию.
+Это главный рабочий индикатор: моноволны, MTF-разметка, baseline Probability Model v0
+и торговый `Action now` в одном месте. Он ближе к Python runtime по monowave/MTF-логике,
+чем `Probability Overlay v0`.
 
-Если включать research-сигналы вручную, они используют baseline Probability Model v0,
-а не top20/watchlist calibration. Главный торговый Action для Антона остаётся в
-`Probability Overlay v0`.
+Research-вероятности top20/watchlist убраны из рабочего Action: используются baseline
+значения Probability Model v0.
 
 **Как сверять с Python:**
 1. Обнови daily report: `python3 python/scripts/daily_report.py`.

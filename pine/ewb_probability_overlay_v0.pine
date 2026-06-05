@@ -47,19 +47,19 @@ grpMarket = "Market filter"
 marketMode = input.string("Stocks", "Market mode", group = grpMarket, options = ["Stocks", "Crypto", "Any"])
 
 grpView = "Display"
-enableActions = input.bool(true, "Enable Action/alerts", group = grpView,
-     tooltip = "Main trading overlay. Keep enabled for Anton's BUY/SELL/WAIT decision; Monowaves MTF is research-only by default.")
-showTradePlan = input.bool(true, "Show latest trade plan", group = grpView)
-showSignalIcon = input.bool(true, "Show buy/sell icon", group = grpView)
-showSignalWaves = input.bool(true, "Show signal waves", group = grpView)
-showTradeZones = input.bool(true, "Show risk/reward zones", group = grpView)
+enableActions = input.bool(false, "Enable research Action/alerts", group = grpView,
+     tooltip = "Research-only baseline overlay. Keep disabled when Monowaves MTF is the main trading indicator.")
+showTradePlan = input.bool(false, "Show latest trade plan", group = grpView)
+showSignalIcon = input.bool(false, "Show buy/sell icon", group = grpView)
+showSignalWaves = input.bool(false, "Show signal waves", group = grpView)
+showTradeZones = input.bool(false, "Show risk/reward zones", group = grpView)
 showTpProb = input.bool(true, "Show TP probabilities", group = grpView)
 onlyLatestSignal = input.bool(true, "Only latest visual signal", group = grpView)
 showSignals = input.bool(false, "Show buy/sell labels", group = grpView)
 showRiskLines = input.bool(false, "Show stop/target lines", group = grpView)
 showPatternBoxes = input.bool(false, "Show pattern boxes", group = grpView)
 showNoTrade = input.bool(false, "Show impulse/triangle no-trade context", group = grpView)
-showPanel = input.bool(true, "Show info panel", group = grpView)
+showPanel = input.bool(false, "Show info panel", group = grpView)
 panelPositionInput = input.string("Bottom right", "Panel position", group = grpView,
      options = ["Top right", "Top left", "Bottom right", "Bottom left"])
 
@@ -525,9 +525,9 @@ remainingRR = not na(remainingReward) and not na(currentRisk) and currentRisk > 
 isLateEntry = tradeStatus == "ACTIVE" and (na(remainingRR) or remainingRR < minRemainingRR)
 isMarketSupported = marketSupported()
 
-actionNow = enableResearchActions and tradeStatus == "ACTIVE" and not isLateEntry and isMarketSupported ? lastAction : "WAIT"
+actionNow = enableActions and tradeStatus == "ACTIVE" and not isLateEntry and isMarketSupported ? lastAction : "WAIT"
 actionNowColor = actionNow == "BUY" ? color.new(color.lime, 35) : actionNow == "SELL" ? color.new(color.red, 35) : color.new(color.orange, 35)
-actionReason = not enableResearchActions ? "research overlay disabled" : not isMarketSupported ? "unsupported market" : not isTradeLast ? lastAction == "SKIP" ? "skip pattern" : "no trade signal" : slHit ? "stop hit" : tp3Hit ? "tp3 passed" : tp2Hit ? "tp2 passed" : tp1Hit ? "tp1 passed / late" : isStale ? "signal stale" : isLateEntry ? "late entry" : "fresh active signal"
+actionReason = not enableActions ? "actions disabled" : not isMarketSupported ? "unsupported market" : not isTradeLast ? lastAction == "SKIP" ? "skip pattern" : "no trade signal" : slHit ? "stop hit" : tp3Hit ? "tp3 passed" : tp2Hit ? "tp2 passed" : tp1Hit ? "tp1 passed / late" : isStale ? "signal stale" : isLateEntry ? "late entry" : "fresh active signal"
 alertBuyNow = enableActions and buySignal and actionNow == "BUY"
 alertSellNow = enableActions and sellSignal and actionNow == "SELL"
 
@@ -537,8 +537,8 @@ alertcondition(alertSellNow, "EWB Action SELL", "EWB Probability Overlay v0 fres
 var table info = table.new(panelPosition(panelPositionInput), 2, 17, border_width = 1)
 if showPanel and barstate.islast
     table.cell(info, 0, 0, "EWB Prob v0", text_color = color.white, bgcolor = color.new(color.gray, 25))
-    table.cell(info, 1, 0, enableResearchActions ? tradeStatus : "RESEARCH", text_color = color.white,
-         bgcolor = enableResearchActions ? statusColor : color.new(color.orange, 35))
+    table.cell(info, 1, 0, enableActions ? tradeStatus : "DISABLED", text_color = color.white,
+         bgcolor = enableActions ? statusColor : color.new(color.orange, 35))
     table.cell(info, 0, 1, "Current", text_color = color.white, bgcolor = color.new(color.gray, 55))
     table.cell(info, 1, 1, fmtPx(close), text_color = color.white, bgcolor = color.new(color.gray, 70))
     table.cell(info, 0, 2, "Action now", text_color = color.white, bgcolor = color.new(color.gray, 55))

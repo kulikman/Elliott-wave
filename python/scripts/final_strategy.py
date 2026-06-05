@@ -57,6 +57,8 @@ def simulate_one(df, figs, bias, ticker, interval, require_with_htf=False):
     }
 
     for f in figs:
+        if not f.confirmed:
+            continue
         if f.type not in config: continue
         exit_bars, use_tp_sl = config[f.type]
         entry_idx = f.pivots[-1].confirmation_idx

@@ -55,6 +55,8 @@ def simulate_one(df, figs, bias, ticker, interval,
     trades = []
 
     for f in figs:
+        if not f.confirmed:
+            continue
         entry_idx = f.pivots[-1].confirmation_idx
         if entry_idx < 0: entry_idx = f.end_idx
         if entry_idx + exit_bars >= n: continue
