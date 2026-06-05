@@ -164,8 +164,11 @@ def build_crypto_markdown(trades: pd.DataFrame, limit: int, source_path: str) ->
         "",
         "- На crypto-графике `Action now` остаётся `WAIT` независимо от найденной фигуры.",
         "- Панель явно показывает `crypto-v0 research`, а не `stocks-v0`.",
+        "- Crypto calibration сверяется по canonical unique signals, а не по grid-вариантам TP/SL/MTF.",
         "- `P≈`, `Entry / TP`, `SL` не выглядят как рабочий stock trade-plan для crypto.",
         "- `alertcondition` BUY/SELL не срабатывает для crypto.",
+        "- Источник данных указан как Binance spot klines; расхождения с TradingView venue/timezone заносятся как data finding.",
+        "- Тикеры с миграцией/плохими данными, например `MATIC/POL`, не используются для production defaults без отдельной проверки.",
         "- Если Pine и Python по фигуре расходятся, это finding для будущей crypto parity, но не причина включать crypto-сделки.",
         "",
     ])

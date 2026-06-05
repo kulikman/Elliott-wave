@@ -81,8 +81,9 @@ Research-вероятности top20/watchlist убраны из рабочег
 значения Probability Model v0.
 
 `Market mode = Stocks` является рабочим режимом по умолчанию. `Market mode = Crypto`
-показывает crypto как отдельный research-контур и не разрешает BUY/SELL, чтобы Антон
-не видел stock P(win) как пригодную crypto-рекомендацию.
+и `Market mode = Auto` на crypto-графиках показывают отдельный research-контур и
+не разрешают BUY/SELL, чтобы Антон не видел stock P(win) как пригодную
+crypto-рекомендацию.
 
 **Как сверять с Python:**
 1. Обнови daily report: `python3 python/scripts/daily_report.py`.

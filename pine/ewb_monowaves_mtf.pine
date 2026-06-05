@@ -85,8 +85,8 @@ maxHybridPivots = input.int(40, "Память hybrid-пивотов", group = gr
 tradeMaxAgeBars = input.int(80, "Срок актуальности сигнала, баров", group = grpTrade, minval = 1, maxval = 500,
      tooltip = "После этого количества баров сигнал помечается EXPIRED, если TP/SL ещё не достигнуты.")
 marketMode = input.string("Stocks", "Market mode", group = grpTrade,
-     options = ["Stocks", "Crypto", "Any"],
-     tooltip = "Stocks: рабочий Action только для акций. Crypto: пока research-only до Pine/Python parity crypto calibration. Any: не блокирует рынок, но crypto остаётся WAIT/research.")
+     options = ["Stocks", "Crypto", "Auto", "Research any"],
+     tooltip = "Stocks: рабочий Action только для акций. Crypto/Auto на crypto-графике: WAIT / crypto-v0 research. Research any: ручная сверка, crypto остаётся WAIT/research.")
 actionFreshBars = input.int(3, "Свежий вход: максимум баров", group = grpTrade, minval = 0, maxval = 50,
      tooltip = "BUY/SELL разрешён только пока сигнал свежий. Позже таблица покажет WAIT/STALE.")
 maxEntryProgress = input.float(0.35, "Поздно входить после % пути к TP", group = grpTrade, minval = 0.05, maxval = 0.95, step = 0.05,
@@ -1006,9 +1006,9 @@ string htfBias = htfBiasDir > 1 ? "UP strong" : htfBiasDir > 0 ? "UP" : htfBiasD
 
 bool chartIsStock = syminfo.type == "stock"
 bool chartIsCrypto = syminfo.type == "crypto"
-bool marketModeAllowsChart = marketMode == "Any" or (marketMode == "Stocks" and chartIsStock) or (marketMode == "Crypto" and chartIsCrypto)
-bool cryptoResearchMarket = chartIsCrypto and (marketMode == "Crypto" or marketMode == "Any")
-bool actionableTradeSymbol = chartIsStock and marketModeAllowsChart
+bool marketModeAllowsChart = marketMode == "Research any" or (marketMode == "Stocks" and chartIsStock) or (marketMode == "Crypto" and chartIsCrypto) or (marketMode == "Auto" and (chartIsStock or chartIsCrypto))
+bool cryptoResearchMarket = chartIsCrypto and (marketMode == "Crypto" or marketMode == "Auto" or marketMode == "Research any")
+bool actionableTradeSymbol = chartIsStock and (marketMode == "Stocks" or marketMode == "Auto" or marketMode == "Research any")
 string marketModel = actionableTradeSymbol ? "stocks-v0" : cryptoResearchMarket ? "crypto-v0 research" : "unsupported"
 string actionNow = "WAIT"
 string actionReason = "NO SIGNAL"

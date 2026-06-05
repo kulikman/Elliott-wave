@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import os
 import sys
 from datetime import datetime, timedelta, timezone
@@ -38,22 +39,35 @@ DEFAULT_PERIODS = {
 
 
 def pct(value: float | None, digits: int = 1) -> str:
-    if value is None:
+    number = finite_number(value)
+    if number is None:
         return "n/a"
-    return f"{value * 100:.{digits}f}%"
+    return f"{number * 100:.{digits}f}%"
 
 
 def money_pct(value: float | None) -> str:
-    if value is None:
+    number = finite_number(value)
+    if number is None:
         return "n/a"
-    sign = "+" if value >= 0 else ""
-    return f"{sign}{value * 100:.2f}%"
+    sign = "+" if number >= 0 else ""
+    return f"{sign}{number * 100:.2f}%"
 
 
 def fmt_px(value: float | None) -> str:
-    if value is None:
+    number = finite_number(value)
+    if number is None:
         return "n/a"
-    return f"{value:.2f}"
+    return f"{number:.2f}"
+
+
+def finite_number(value: float | None) -> float | None:
+    if value is None:
+        return None
+    try:
+        number = float(value)
+    except (TypeError, ValueError):
+        return None
+    return number if math.isfinite(number) else None
 
 
 def parser() -> argparse.ArgumentParser:

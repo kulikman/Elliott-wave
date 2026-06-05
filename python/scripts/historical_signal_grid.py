@@ -166,6 +166,21 @@ def output_paths(asset_class: str) -> tuple[str, str, str]:
     )
 
 
+def checkpoint_path_for(trades_path: str) -> str:
+    return trades_path.replace(".parquet", "_checkpoint.parquet")
+
+
+def write_trades_frame(df: pd.DataFrame, path: str) -> str:
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    try:
+        df.to_parquet(path, index=False)
+        return path
+    except Exception:
+        csv_path = path.replace(".parquet", ".csv")
+        df.to_csv(csv_path, index=False)
+        return csv_path
+
+
 def calibration_for_asset_class(asset_class: str) -> tuple[str, dict]:
     if asset_class == "crypto":
         if os.path.exists(CRYPTO_CALIBRATION_PATH):
@@ -941,6 +956,11 @@ def main() -> None:
         action="store_true",
         help="Reuse python/data/historical_signal_grid_trades.parquet and rebuild reports only.",
     )
+    parser.add_argument(
+        "--resume-checkpoint",
+        action="store_true",
+        help="Resume from *_checkpoint.parquet when a long grid run was interrupted.",
+    )
     args = parser.parse_args()
 
     global ACTIVE_ASSET_CLASS, ACTIVE_UNIVERSE, OUT_MD, OUT_JSON, OUT_TRADES
@@ -953,6 +973,7 @@ def main() -> None:
     tickers = ACTIVE_UNIVERSE[:max_rank]
     ok_tickers = set()
     failures: list[dict] = []
+    checkpoint_path = checkpoint_path_for(OUT_TRADES)
 
     if args.from_trades:
         trades = pd.read_parquet(OUT_TRADES)
@@ -961,6 +982,17 @@ def main() -> None:
     else:
         calibration_path, calibration = calibration_for_asset_class(args.asset_class)
         all_rows: list[dict] = []
+        processed_pairs: set[tuple[str, str]] = set()
+        if args.resume_checkpoint and os.path.exists(checkpoint_path):
+            checkpoint = pd.read_parquet(checkpoint_path)
+            all_rows = checkpoint.to_dict("records")
+            processed_pairs = set(zip(checkpoint["ticker"], checkpoint["interval"]))
+            ok_tickers = set(checkpoint["ticker"].dropna().unique())
+            print(
+                f"Resuming checkpoint: {checkpoint_path} "
+                f"rows={len(all_rows)} pairs={len(processed_pairs)}",
+                flush=True,
+            )
         cache_1h: dict[str, pd.DataFrame | None] = {}
         start = time.time()
         total = len(tickers) * len(args.intervals)
@@ -968,6 +1000,9 @@ def main() -> None:
         for ticker in tickers:
             for label in args.intervals:
                 done += 1
+                if (ticker, label) in processed_pairs:
+                    print(f"[{done:03}/{total}] {ticker:6} {label:3} skipped checkpoint", flush=True)
+                    continue
                 try:
                     df = load_frame(ticker, label, cache_1h)
                     if df is None or len(df) < 100:
@@ -980,22 +1015,21 @@ def main() -> None:
                     eta = elapsed / max(done, 1) * (total - done)
                     print(
                         f"[{done:03}/{total}] {ticker:6} {label:3} rows={len(rows):5} "
-                        f"total={len(all_rows):7} elapsed={elapsed:.0f}s eta={eta:.0f}s"
+                        f"total={len(all_rows):7} elapsed={elapsed:.0f}s eta={eta:.0f}s",
+                        flush=True,
                     )
+                    write_trades_frame(pd.DataFrame(all_rows), checkpoint_path)
                 except Exception as exc:
                     failures.append({"ticker": ticker, "interval": label, "error": repr(exc)})
-                    print(f"[{done:03}/{total}] {ticker:6} {label:3} ERROR {exc!r}")
+                    print(f"[{done:03}/{total}] {ticker:6} {label:3} ERROR {exc!r}", flush=True)
 
         if not all_rows:
             raise SystemExit("No trades generated.")
 
         trades = pd.DataFrame(all_rows)
-        os.makedirs(os.path.dirname(OUT_TRADES), exist_ok=True)
-        try:
-            trades.to_parquet(OUT_TRADES, index=False)
-        except Exception:
-            csv_path = OUT_TRADES.replace(".parquet", ".csv")
-            trades.to_csv(csv_path, index=False)
+        write_trades_frame(trades, OUT_TRADES)
+        if os.path.exists(checkpoint_path):
+            os.remove(checkpoint_path)
 
     trades["entry_ts"] = pd.to_datetime(trades["entry_ts"], utc=True)
     trades["exit_ts"] = pd.to_datetime(trades["exit_ts"], utc=True)

@@ -51,7 +51,6 @@ from ewb.research import (
     validate_trade_records,
 )
 
-
 def test_cost_for_asset_classes():
     assert cost_for("AAPL") == 0.0008
     assert cost_for("SPY") == 0.0008
@@ -628,6 +627,33 @@ def test_crypto_pine_parity_checklist_is_research_only():
     assert "AAPL" not in markdown
 
 
+def test_crypto_pine_parity_checklist_hides_missing_model_ev():
+    trades = pd.DataFrame([
+        {
+            "ticker": "BTC-USD",
+            "asset_class": "crypto",
+            "interval": "1h",
+            "fig_type": "triangle",
+            "side": "short",
+            "entry_variant": "confirm_close",
+            "mtf_policy": "none",
+            "tp_mult": 1.0,
+            "sl_mult": 1.0,
+            "exit_plan": "full",
+            "entry_ts": "2026-06-05 12:00:00+00:00",
+            "entry_px": 100.0,
+            "amp_pct": 0.10,
+            "p_win_model": float("nan"),
+            "model_ev": float("nan"),
+        },
+    ])
+
+    markdown = build_crypto_markdown(trades, limit=10, source_path="crypto.parquet")
+    assert "nan%" not in markdown
+    assert "n/a / n/a" in markdown
+    assert "WAIT / crypto research" in markdown
+
+
 def test_crypto_research_report_keeps_wait_contract():
     trades = pd.DataFrame([
         {
@@ -684,6 +710,39 @@ def test_crypto_research_report_keeps_wait_contract():
     assert "BTC-USD" in markdown
     assert "AAPL" not in markdown
     assert "Action now` is always `WAIT`" in markdown
+
+
+def test_crypto_research_report_hides_missing_model_ev():
+    trades = pd.DataFrame([
+        {
+            "ticker": "BTC-USD",
+            "asset_class": "crypto",
+            "interval": "1h",
+            "fig_type": "impulse",
+            "side": "short",
+            "entry_variant": "confirm_close",
+            "mtf_policy": "none",
+            "tp_mult": 1.0,
+            "sl_mult": 1.0,
+            "exit_plan": "full",
+            "entry_ts": "2026-06-05 12:00:00+00:00",
+            "entry_px": 100.0,
+            "amp_pct": 0.10,
+            "p_win_model": float("nan"),
+            "model_ev": float("nan"),
+            "confidence": "none",
+            "sample_size": 0,
+            "exit_reason": "time",
+            "net_ret": 0.0,
+        },
+    ])
+
+    payload = build_crypto_research_payload(trades, limit=10)
+    assert payload["rows"][0]["p_win"] is None
+    assert payload["rows"][0]["expected_net_return"] is None
+    markdown = crypto_research_markdown(payload)
+    assert "nan%" not in markdown
+    assert "| n/a | n/a |" in markdown
 
 
 

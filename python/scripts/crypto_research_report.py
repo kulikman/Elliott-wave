@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import os
 import sys
 from datetime import datetime, timezone
@@ -31,6 +32,13 @@ def pwin_fraction(value: float | None) -> float | None:
     if value is None or pd.isna(value):
         return None
     return float(value) / 100.0
+
+
+def finite_float(value: float | None) -> float | None:
+    if value is None or pd.isna(value):
+        return None
+    value = float(value)
+    return value if math.isfinite(value) else None
 
 
 def trade_level(row: pd.Series, level: str) -> float | None:
@@ -86,14 +94,14 @@ def research_rows(trades: pd.DataFrame, limit: int) -> list[dict]:
             "reason": "CRYPTO_RESEARCH_ONLY",
             "model": "crypto-v0 research",
             "p_win": pwin_fraction(row.get("p_win_model")),
-            "expected_net_return": row.get("model_ev"),
+            "expected_net_return": finite_float(row.get("model_ev")),
             "confidence": row.get("confidence"),
             "sample_size": int(row.get("sample_size", 0)) if not pd.isna(row.get("sample_size")) else 0,
-            "entry": trade_level(row, "entry"),
-            "stop": trade_level(row, "stop"),
-            "target": trade_level(row, "target"),
+            "entry": finite_float(trade_level(row, "entry")),
+            "stop": finite_float(trade_level(row, "stop")),
+            "target": finite_float(trade_level(row, "target")),
             "exit_reason": row.get("exit_reason"),
-            "net_return": row.get("net_ret"),
+            "net_return": finite_float(row.get("net_ret")),
         })
     return rows
 

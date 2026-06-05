@@ -25,9 +25,15 @@ with the stock probability model.
 
 ## Data Notes
 
-`yfinance` is acceptable for MVP research. Exchange-grade validation should use
-Binance/CCXT before crypto defaults become production-like, because 24/7 bar
-boundaries, spreads, and liquidity vary by venue.
+Crypto grid research now uses Binance spot klines for exchange-grade 24/7 bars.
+TradingView parity still needs manual venue checks, because Binance spot,
+perpetual futures, and other exchanges can have different bar boundaries,
+spreads, and liquidity.
+
+Migrated or poor-history tickers should stay out of production defaults. The
+current research artifact still includes legacy `MATIC-USD`, so Polygon
+migration history must be treated as a data-quality finding before crypto
+defaults are promoted.
 
 ## Risk Notes
 
