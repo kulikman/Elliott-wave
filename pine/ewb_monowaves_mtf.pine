@@ -54,9 +54,11 @@ showFig = input.bool(false, "Распознавать фигуры (Импуль
      "поэтому Зигзаг и хвост Импульса могут совпадать (правило 'Зигзаг или Импульс?' AKU-0166).")
 colFig  = input.color(color.aqua, "Цвет рамок фигур", group = grpFig)
 
-grpTrade = "Торговый слой Антона (research: Flat/DC fade)"
-showTrade = input.bool(true, "Показывать торговые сигналы Flat/DC", group = grpTrade,
-     tooltip = "Research-слой после Sprint 6: торгуются только подтверждённые Flat и Double Correction в fade-направлении. Impulse/Triangle не дают вход.")
+grpTrade = "Research слой Flat/DC"
+showTrade = input.bool(false, "Показывать research-сигналы Flat/DC", group = grpTrade,
+     tooltip = "Research-слой выключен по умолчанию, чтобы не конфликтовать с главным Probability Overlay v0. Торгуются только подтверждённые Flat и Double Correction в fade-направлении.")
+showTradePanel = input.bool(false, "Показывать research-панель Action", group = grpTrade,
+     tooltip = "Включай только для исследования. Главный торговый Action now находится в EWB Probability Overlay v0.")
 showTradeMarkers = input.bool(false, "Рисовать исторические trade-метки/зоны", group = grpTrade,
      tooltip = "Выключено по умолчанию, чтобы график не шумел. Таблица, статус и alerts продолжают работать.")
 showTradePlan = input.bool(true, "Show trade plan", group = grpTrade,
@@ -71,10 +73,10 @@ maxHistoricalSignals = input.int(3, "Max historical signals", group = grpTrade, 
      tooltip = "Используется только если выключить Only latest signal.")
 actionLevelBars = input.int(80, "Длина уровней Action, баров", group = grpTrade, minval = 10, maxval = 300)
 showNoise = input.bool(false, "Показывать Impulse/Triangle как NO TRADE", group = grpTrade)
-flatProb = input.float(61.0, "Вероятность Flat fade, %", group = grpTrade, minval = 0, maxval = 100, step = 0.1,
-     tooltip = "Оценка из Sprint 6/all-TF: Flat fade около 60-63% hit-rate; это research, не гарантия.")
-dcProb = input.float(89.0, "Вероятность Double Correction fade, %", group = grpTrade, minval = 0, maxval = 100, step = 0.1,
-     tooltip = "Оценка из Sprint 6/all-TF: DC fade сильный, но редкий сигнал; n меньше, поэтому использовать осторожно.")
+flatProb = input.float(56.1, "Fallback Flat fade P(win), %", group = grpTrade, minval = 0, maxval = 100, step = 0.1,
+     tooltip = "Fallback из baseline Probability Model v0. Для 1h/1d используются side-specific baseline значения.")
+dcProb = input.float(84.8, "Fallback Double Correction P(win), %", group = grpTrade, minval = 0, maxval = 100, step = 0.1,
+     tooltip = "Fallback из baseline Probability Model v0. Double Correction имеет маленькую выборку, поэтому confidence остаётся low.")
 maxHybridPivots = input.int(40, "Память hybrid-пивотов", group = grpTrade, minval = 10, maxval = 200)
 tradeMaxAgeBars = input.int(80, "Срок актуальности сигнала, баров", group = grpTrade, minval = 1, maxval = 500,
      tooltip = "После этого количества баров сигнал помечается EXPIRED, если TP/SL ещё не достигнуты.")
@@ -88,6 +90,8 @@ minActionRR = input.float(1.0, "Минимальный текущий R:R", grou
      tooltip = "Если оставшаяся прибыль к риску меньше порога, Action now станет WAIT/RR BAD.")
 minActionProb = input.float(55.0, "Минимальная P(win) для Action now, %", group = grpTrade, minval = 0, maxval = 100, step = 0.5,
      tooltip = "Если калиброванная вероятность ниже порога, Action now станет WAIT/PROB LOW.")
+minActionSample = input.int(20, "Минимальная выборка для Action now", group = grpTrade, minval = 0, maxval = 500,
+     tooltip = "Если исторических наблюдений меньше порога, Action now станет WAIT/SMALL N. Это защищает от слишком уверенных low-sample сигналов.")
 htfActionMode = input.string("WARN", "HTF режим для Action now", group = grpTrade,
      options = ["OFF", "WARN", "BLOCK"],
      tooltip = "OFF: не учитывать HTF. WARN: не блокировать, но понижать Grade. BLOCK: BUY блокируется при DOWN HTF, SELL при UP HTF.")
@@ -501,43 +505,35 @@ calibratedTradeStats(string figType, string side) =>
     float prob = figType == "flat" ? flatProb : dcProb
     int sampleN = 0
     string conf = "fallback"
-    string src = "input"
+    string src = "baseline|fallback"
     if figType == "flat" and side == "LONG"
         if tfKey == "1d"
-            prob := 75.0, sampleN := 16, conf := "low", src := "top20|flat|1d|long"
-        else if tfKey == "4h"
-            prob := 65.0, sampleN := 20, conf := "medium", src := "top20|flat|4h|long"
+            prob := 66.7, sampleN := 24, conf := "low", src := "baseline|flat|1d|long"
         else if tfKey == "1h"
-            prob := 66.7, sampleN := 90, conf := "high", src := "top20|flat|1h|long"
+            prob := 55.4, sampleN := 251, conf := "high", src := "baseline|flat|1h|long"
         else
-            prob := 56.4, sampleN := 275, conf := "high", src := "flat|long"
+            prob := 56.4, sampleN := 275, conf := "high", src := "baseline|flat|long"
     else if figType == "flat" and side == "SHORT"
         if tfKey == "1d"
-            prob := 50.0, sampleN := 9, conf := "avoid", src := "top20|flat|1d|short|avoid"
-        else if tfKey == "4h"
-            prob := 61.9, sampleN := 21, conf := "medium", src := "top20|flat|4h|short"
+            prob := 69.6, sampleN := 23, conf := "low", src := "baseline|flat|1d|short"
         else if tfKey == "1h"
-            prob := 44.6, sampleN := 92, conf := "avoid", src := "top20|flat|1h|short|avoid"
+            prob := 54.5, sampleN := 233, conf := "high", src := "baseline|flat|1h|short"
         else
-            prob := 55.9, sampleN := 256, conf := "high", src := "flat|short"
+            prob := 55.9, sampleN := 256, conf := "high", src := "baseline|flat|short"
     else if figType == "double_corr" and side == "LONG"
         if tfKey == "1d"
-            prob := 100.0, sampleN := 3, conf := "low", src := "double_corr|1d|long"
-        else if tfKey == "4h"
-            prob := 85.7, sampleN := 7, conf := "low", src := "top20|double_corr|4h|long"
+            prob := 100.0, sampleN := 3, conf := "low", src := "baseline|double_corr|1d|long"
         else if tfKey == "1h"
-            prob := 100.0, sampleN := 15, conf := "low", src := "top20|double_corr|1h|long"
+            prob := 78.6, sampleN := 14, conf := "low", src := "baseline|double_corr|1h|long"
         else
-            prob := 82.4, sampleN := 17, conf := "low", src := "double_corr|long"
+            prob := 82.4, sampleN := 17, conf := "low", src := "baseline|double_corr|long"
     else if figType == "double_corr" and side == "SHORT"
         if tfKey == "1d"
-            prob := 100.0, sampleN := 1, conf := "low", src := "double_corr|1d|short"
-        else if tfKey == "4h"
-            prob := 85.7, sampleN := 7, conf := "low", src := "top20|double_corr|4h|short"
+            prob := 100.0, sampleN := 1, conf := "low", src := "baseline|double_corr|1d|short"
         else if tfKey == "1h"
-            prob := 100.0, sampleN := 10, conf := "low", src := "top20|double_corr|1h|short"
+            prob := 86.7, sampleN := 15, conf := "low", src := "baseline|double_corr|1h|short"
         else
-            prob := 87.5, sampleN := 16, conf := "low", src := "double_corr|short"
+            prob := 87.5, sampleN := 16, conf := "low", src := "baseline|double_corr|short"
     [prob, sampleN, conf, src]
 
 signalGrade(string action, float prob, int sampleN, string conf, float rr) =>
@@ -984,16 +980,20 @@ revH = useATR ? hAtr * atrMult : hClose * pctRev / 100.0
 
 var ZZState zH = ZZState.new()
 var int htfBiasDir = 0
+var int htfPrevDir = 0
+var int htfLastDir = 0
 int   hTimeChg = ta.change(hTime)
 bool newHTF = not na(hTime) and hTimeChg != 0
 if newHTF and not na(hHigh)
     ZZResult rh = zH.step(hHigh, hLow, revH)
     if rh.confirmed
-        htfBiasDir := rh.dir
+        htfPrevDir := htfLastDir
+        htfLastDir := rh.dir
+        htfBiasDir := htfPrevDir != 0 and htfPrevDir == htfLastDir ? 2 * htfLastDir : htfLastDir
     if showH
         drawMono(rh, colCUp, colCDn, wH, true, colH, showLbl)
 
-string htfBias = htfBiasDir > 0 ? "UP" : htfBiasDir < 0 ? "DOWN" : "NEUTRAL"
+string htfBias = htfBiasDir > 1 ? "UP strong" : htfBiasDir > 0 ? "UP" : htfBiasDir < -1 ? "DOWN strong" : htfBiasDir < 0 ? "DOWN" : "NEUTRAL"
 
 bool supportedTradeSymbol = not stockOnlyMode or syminfo.type == "stock"
 string actionNow = "WAIT"
@@ -1034,6 +1034,8 @@ else
         actionReason := "PROB LOW " + str.tostring(lastTradeProb, "#.0") + "%"
     else if lastTradeConfidence == "avoid"
         actionReason := "NO EDGE " + lastTradeProbSource
+    else if lastTradeSampleN < minActionSample
+        actionReason := "SMALL N " + str.tostring(lastTradeSampleN) + "<" + str.tostring(minActionSample)
     else if htfActionMode == "BLOCK" and actionLong and htfBiasDir < 0
         actionReason := "HTF AGAINST " + htfBias
     else if htfActionMode == "BLOCK" and not actionLong and htfBiasDir > 0
@@ -1047,6 +1049,14 @@ bool actionSellSignal = actionNow == "SELL" and tradeShortSignal
 string signalGradeNow = signalGrade(actionNow, lastTradeProb, lastTradeSampleN, lastTradeConfidence, actionRR)
 if actionNow != "WAIT" and htfAgainstAction and htfActionMode == "WARN"
     signalGradeNow := signalGradeNow == "A" ? "B-HTF" : signalGradeNow == "B" ? "C-HTF" : signalGradeNow + "-HTF"
+
+string displayTradeSide = supportedTradeSymbol ? lastTradeSide : "UNSUPPORTED"
+string displayTradeType = supportedTradeSymbol ? lastTradeType : "stock calibration only"
+string displayTradeStatus = supportedTradeSymbol ? lastTradeStatus : "WAIT"
+string displayTradeProb = supportedTradeSymbol and not na(lastTradeProb) ? str.tostring(lastTradeProb, "#.0") + "%" : "—"
+string displaySampleConf = supportedTradeSymbol ? str.tostring(lastTradeSampleN) + " / " + lastTradeConfidence : "—"
+string displayEntryTp = supportedTradeSymbol and not na(lastTradeEntry) ? str.tostring(lastTradeEntry, format.mintick) + " / " + str.tostring(lastTradeTp, format.mintick) : "—"
+string displaySl = supportedTradeSymbol and not na(lastTradeSl) ? str.tostring(lastTradeSl, format.mintick) : "—"
 
 // ───────────────────── ТЕКУЩИЙ ТОРГОВЫЙ ПЛАН ─────────────────────
 var int drawnActionKey = na
@@ -1273,7 +1283,7 @@ alertcondition(actionBuySignal, "EWB Action BUY", "EWB Action now BUY on {{ticke
 alertcondition(actionSellSignal, "EWB Action SELL", "EWB Action now SELL on {{ticker}} {{interval}}")
 
 var table info = table.new(position.top_right, 2, 14, border_width = 1)
-if barstate.islast
+if showTradePanel and barstate.islast
     table.cell(info, 0, 0, "Action now", text_color = color.white, bgcolor = color.new(color.gray, 20))
     table.cell(info, 1, 0, actionNow, text_color = color.white, bgcolor = actionColor(actionNow))
     table.cell(info, 0, 1, "Reason", text_color = color.white, bgcolor = color.new(color.gray, 45))
@@ -1281,28 +1291,28 @@ if barstate.islast
     table.cell(info, 0, 2, "Слой",        text_color = color.white, bgcolor = color.new(color.gray, 30))
     table.cell(info, 1, 2, "Моноволн",    text_color = color.white, bgcolor = color.new(color.gray, 30))
     table.cell(info, 0, 3, "Trade", text_color = color.white, bgcolor = color.new(color.gray, 35))
-    table.cell(info, 1, 3, lastTradeSide, text_color = color.white,
-         bgcolor = tradeStatusColor(lastTradeStatus, lastTradeSide))
+    table.cell(info, 1, 3, displayTradeSide, text_color = color.white,
+         bgcolor = tradeStatusColor(displayTradeStatus, displayTradeSide))
     table.cell(info, 0, 4, "Фигура", text_color = color.white, bgcolor = color.new(color.gray, 50))
-    table.cell(info, 1, 4, lastTradeType, text_color = color.white, bgcolor = color.new(color.gray, 70))
+    table.cell(info, 1, 4, displayTradeType, text_color = color.white, bgcolor = color.new(color.gray, 70))
     table.cell(info, 0, 5, "Status", text_color = color.white, bgcolor = color.new(color.gray, 50))
-    table.cell(info, 1, 5, lastTradeStatus + (na(lastTradeAge) ? "" : " / " + str.tostring(lastTradeAge) + "b"),
-         text_color = color.white, bgcolor = tradeStatusColor(lastTradeStatus, lastTradeSide))
+    table.cell(info, 1, 5, displayTradeStatus + (supportedTradeSymbol and not na(lastTradeAge) ? " / " + str.tostring(lastTradeAge) + "b" : ""),
+         text_color = color.white, bgcolor = tradeStatusColor(displayTradeStatus, displayTradeSide))
     table.cell(info, 0, 6, "P≈", text_color = color.white, bgcolor = color.new(color.gray, 50))
-    table.cell(info, 1, 6, na(lastTradeProb) ? "—" : str.tostring(lastTradeProb, "#.0") + "%", text_color = color.white, bgcolor = color.new(color.gray, 70))
+    table.cell(info, 1, 6, displayTradeProb, text_color = color.white, bgcolor = color.new(color.gray, 70))
     table.cell(info, 0, 7, "Grade", text_color = color.white, bgcolor = color.new(color.gray, 50))
     table.cell(info, 1, 7, signalGradeNow, text_color = color.white, bgcolor = actionColor(actionNow))
     table.cell(info, 0, 8, "n / conf", text_color = color.white, bgcolor = color.new(color.gray, 50))
-    table.cell(info, 1, 8, str.tostring(lastTradeSampleN) + " / " + lastTradeConfidence, text_color = color.white, bgcolor = color.new(color.gray, 70))
+    table.cell(info, 1, 8, displaySampleConf, text_color = color.white, bgcolor = color.new(color.gray, 70))
     table.cell(info, 0, 9, "Entry / TP", text_color = color.white, bgcolor = color.new(color.gray, 50))
-    table.cell(info, 1, 9, na(lastTradeEntry) ? "—" : str.tostring(lastTradeEntry, format.mintick) + " / " + str.tostring(lastTradeTp, format.mintick), text_color = color.white, bgcolor = color.new(color.gray, 70))
+    table.cell(info, 1, 9, displayEntryTp, text_color = color.white, bgcolor = color.new(color.gray, 70))
     table.cell(info, 0, 10, "SL / invalid", text_color = color.white, bgcolor = color.new(color.gray, 50))
-    table.cell(info, 1, 10, na(lastTradeSl) ? "—" : str.tostring(lastTradeSl, format.mintick), text_color = color.white, bgcolor = color.new(color.gray, 70))
+    table.cell(info, 1, 10, displaySl, text_color = color.white, bgcolor = color.new(color.gray, 70))
     table.cell(info, 0, 11, "RR / progress", text_color = color.white, bgcolor = color.new(color.gray, 50))
     table.cell(info, 1, 11, (na(actionRR) ? "—" : str.tostring(actionRR, "#.00")) + " / " + (na(actionProgress) ? "—" : str.tostring(actionProgress * 100, "#") + "%"),
          text_color = color.white, bgcolor = color.new(color.gray, 70))
     table.cell(info, 0, 12, "HTF mode/bias", text_color = color.white, bgcolor = color.new(color.gray, 50))
     table.cell(info, 1, 12, htfActionMode + " / " + htfBias, text_color = color.white,
-         bgcolor = htfBias == "UP" ? color.new(color.lime, 45) : htfBias == "DOWN" ? color.new(color.red, 45) : color.new(color.gray, 70))
+         bgcolor = htfBiasDir > 0 ? color.new(color.lime, 45) : htfBiasDir < 0 ? color.new(color.red, 45) : color.new(color.gray, 70))
     table.cell(info, 0, 13, "Calib / TF", text_color = color.white, bgcolor = color.new(color.gray, 50))
     table.cell(info, 1, 13, lastTradeProbSource, text_color = color.white, bgcolor = color.new(color.gray, 70))

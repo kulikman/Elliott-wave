@@ -39,11 +39,22 @@ activeBars = input.int(50, "Signal active window, bars", group = grpRisk, minval
 minRemainingRR = input.float(0.50, "Min remaining R:R for Action now", group = grpRisk, minval = 0.0, maxval = 5.0, step = 0.05)
 minAmpAtr = input.float(0.5, "Min pattern amplitude, ATR", group = grpRisk, minval = 0.0, step = 0.1)
 atrLen = input.int(14, "ATR length", group = grpRisk, minval = 1)
+tp1Mult = input.float(0.50, "TP1 amplitude multiplier", group = grpRisk, minval = 0.10, maxval = 5.0, step = 0.05)
+tp2Mult = input.float(1.00, "TP2 amplitude multiplier", group = grpRisk, minval = 0.10, maxval = 5.0, step = 0.05)
+tp3Mult = input.float(1.618, "TP3 amplitude multiplier", group = grpRisk, minval = 0.10, maxval = 8.0, step = 0.001)
 
 grpMarket = "Market filter"
 marketMode = input.string("Stocks", "Market mode", group = grpMarket, options = ["Stocks", "Crypto", "Any"])
 
 grpView = "Display"
+enableActions = input.bool(true, "Enable Action/alerts", group = grpView,
+     tooltip = "Main trading overlay. Keep enabled for Anton's BUY/SELL/WAIT decision; Monowaves MTF is research-only by default.")
+showTradePlan = input.bool(true, "Show latest trade plan", group = grpView)
+showSignalIcon = input.bool(true, "Show buy/sell icon", group = grpView)
+showSignalWaves = input.bool(true, "Show signal waves", group = grpView)
+showTradeZones = input.bool(true, "Show risk/reward zones", group = grpView)
+showTpProb = input.bool(true, "Show TP probabilities", group = grpView)
+onlyLatestSignal = input.bool(true, "Only latest visual signal", group = grpView)
 showSignals = input.bool(false, "Show buy/sell labels", group = grpView)
 showRiskLines = input.bool(false, "Show stop/target lines", group = grpView)
 showPatternBoxes = input.bool(false, "Show pattern boxes", group = grpView)
@@ -65,9 +76,23 @@ var float lastEV = na
 var float lastEntry = na
 var float lastStop = na
 var float lastTarget = na
+var float lastTP1 = na
+var float lastTP2 = na
+var float lastTP3 = na
+var float lastTP1Prob = na
+var float lastTP2Prob = na
+var float lastTP3Prob = na
+var bool planSLHit = false
+var bool planTP1Hit = false
+var bool planTP2Hit = false
+var bool planTP3Hit = false
 var string lastConfidence = "—"
 var int lastSample = na
 var int lastSignalBar = na
+
+var array<line> planLines = array.new_line()
+var array<label> planLabels = array.new_label()
+var array<box> planBoxes = array.new_box()
 
 var bool buySignal = false
 var bool sellSignal = false
@@ -81,12 +106,18 @@ fmtPct(float value) =>
 fmtPx(float value) =>
     na(value) ? "—" : str.tostring(value, format.mintick)
 
+fmtTP(float value, float probability) =>
+    na(value) ? "—" : fmtPx(value) + (showTpProb and not na(probability) ? " / " + fmtPct(probability) : "")
+
 panelPosition(string value) =>
     switch value
         "Top right" => position.top_right
         "Top left" => position.top_left
         "Bottom left" => position.bottom_left
         => position.bottom_right
+
+marketSupported() =>
+    marketMode == "Any" or (marketMode == "Stocks" and syminfo.type == "stock") or (marketMode == "Crypto" and syminfo.type == "crypto")
 
 confidenceFromSample(int sample) =>
     string out = "low"
@@ -107,6 +138,95 @@ signalStrength(float pWin, float ev, string action, int sample) =>
     else if pWin >= 52.0 and ev > 0
         out := "B"
     out
+
+clearTradePlan() =>
+    while array.size(planLines) > 0
+        line.delete(array.pop(planLines))
+    while array.size(planLabels) > 0
+        label.delete(array.pop(planLabels))
+    while array.size(planBoxes) > 0
+        box.delete(array.pop(planBoxes))
+    true
+
+trackLine(line id) =>
+    array.push(planLines, id)
+    id
+
+trackLabel(label id) =>
+    array.push(planLabels, id)
+    id
+
+trackBox(box id) =>
+    array.push(planBoxes, id)
+    id
+
+tpLevel(float entry, float amp, bool isLong, float mult) =>
+    isLong ? entry + amp * mult : entry - amp * mult
+
+tpProbability(float pWin, int tier) =>
+    float out = pWin
+    if tier == 1
+        out := math.min(95.0, pWin + 12.0)
+    else if tier == 3
+        out := math.max(5.0, pWin - 18.0)
+    out
+
+tpText(string name, float probability) =>
+    showTpProb ? name + " " + fmtPct(probability) : name
+
+wavePointName(string pattern, int idx) =>
+    string out = str.tostring(idx)
+    if pattern == "flat"
+        out := idx == 0 ? "0" : idx == 1 ? "A" : idx == 2 ? "B" : "C"
+    else if pattern == "double_corr"
+        out := idx == 0 ? "0" : idx == 1 ? "W" : idx == 2 ? "X" : "Y"
+    out
+
+drawPlanLine(string title, float price, color c, int styleMode, int width) =>
+    line id = line.new(bar_index, price, bar_index + targetBars, price, xloc = xloc.bar_index,
+         color = c, width = width, style = styleMode == 0 ? line.style_solid : styleMode == 2 ? line.style_dashed : line.style_dotted)
+    trackLine(id)
+    label lid = label.new(bar_index + targetBars, price, title + " " + fmtPx(price),
+         xloc = xloc.bar_index, yloc = yloc.price,
+         style = label.style_label_left, color = color.new(c, 15),
+         textcolor = color.white, size = size.tiny)
+    trackLabel(lid)
+    true
+
+drawTradeZones(float entry, float stop, float tp3, bool isLong) =>
+    if showTradeZones
+        float rewardTop = math.max(entry, tp3)
+        float rewardBot = math.min(entry, tp3)
+        float riskTop = math.max(entry, stop)
+        float riskBot = math.min(entry, stop)
+        box rewardBox = box.new(bar_index, rewardTop, bar_index + targetBars, rewardBot,
+             xloc = xloc.bar_index, border_color = color.new(color.lime, 80),
+             border_width = 1, bgcolor = color.new(color.lime, 92))
+        box riskBox = box.new(bar_index, riskTop, bar_index + targetBars, riskBot,
+             xloc = xloc.bar_index, border_color = color.new(color.red, 80),
+             border_width = 1, bgcolor = color.new(color.red, 92))
+        trackBox(rewardBox)
+        trackBox(riskBox)
+    true
+
+drawSignalWaves(string pattern, int start, int count, color c) =>
+    if showSignalWaves
+        for i = 0 to count - 2
+            int idx0 = start + i
+            int idx1 = start + i + 1
+            line waveLine = line.new(array.get(pivotBars, idx0), array.get(pivotPrices, idx0),
+                 array.get(pivotBars, idx1), array.get(pivotPrices, idx1),
+                 xloc = xloc.bar_index, color = color.new(c, 0), width = 2)
+            trackLine(waveLine)
+        for i = 0 to count - 1
+            int idx = start + i
+            bool isHigh = array.get(pivotTypes, idx) == 1
+            label waveLabel = label.new(array.get(pivotBars, idx), array.get(pivotPrices, idx),
+                 wavePointName(pattern, i), xloc = xloc.bar_index, yloc = yloc.price,
+                 style = isHigh ? label.style_label_down : label.style_label_up, color = color.new(c, 10),
+                 textcolor = color.white, size = size.tiny)
+            trackLabel(waveLabel)
+    true
 
 pushPivot(int pBar, float pPrice, int pType) =>
     int n = array.size(pivotBars)
@@ -188,15 +308,19 @@ triangleOK(int start) =>
 
 drawBox(string title, int b0, int b1, float lo, float hi, color c) =>
     if showPatternBoxes
-        box.new(b0, hi, b1, lo, xloc = xloc.bar_index,
+        box patternBox = box.new(b0, hi, b1, lo, xloc = xloc.bar_index,
              border_color = color.new(c, 0), border_width = 1, bgcolor = color.new(c, 90))
-        label.new(int((b0 + b1) / 2), hi, title,
+        trackBox(patternBox)
+        label patternLabel = label.new(int((b0 + b1) / 2), hi, title,
              xloc = xloc.bar_index, yloc = yloc.price,
              style = label.style_label_down, color = color.new(c, 15),
              textcolor = color.white, size = size.tiny)
+        trackLabel(patternLabel)
     true
 
 drawTrade(string pattern, string dir, int start, int endPivotBar, float amp) =>
+    if onlyLatestSignal
+        clearTradePlan()
     bool isLong = dir == "down"
     string action = isLong ? "BUY" : "SELL"
     float pWin = pattern == "double_corr" ? isLong ? dcLongPWin : dcShortPWin : isLong ? longPWin : shortPWin
@@ -206,37 +330,45 @@ drawTrade(string pattern, string dir, int start, int endPivotBar, float amp) =>
     string strength = signalStrength(pWin, ev, action, sample)
     float entry = close
     float stop = isLong ? entry - amp : entry + amp
-    float target = isLong ? entry + amp : entry - amp
+    float tp1 = tpLevel(entry, amp, isLong, tp1Mult)
+    float tp2 = tpLevel(entry, amp, isLong, tp2Mult)
+    float tp3 = tpLevel(entry, amp, isLong, tp3Mult)
+    float tp1Prob = tpProbability(pWin, 1)
+    float tp2Prob = tpProbability(pWin, 2)
+    float tp3Prob = tpProbability(pWin, 3)
     color c = isLong ? color.lime : color.red
     [b0, b1, lo, hi] = patternBounds(start, 4)
-    drawBox(pattern + " " + action, b0, b1, lo, hi, c)
-    if showSignals
-        label.new(bar_index, entry,
-             strength + " " + action + "\n" + pattern + "\nP " + fmtPct(pWin) + " EV " + fmtPct(ev) + "\n" + confidence + " n=" + str.tostring(sample),
-             xloc = xloc.bar_index, yloc = yloc.price,
-             style = isLong ? label.style_label_up : label.style_label_down,
-             color = color.new(c, 0), textcolor = color.white, size = size.normal,
-             tooltip = "Probability Model v0: flat/double_corr fade. Signal is printed on pivot confirmation bar. Stop/target = pattern amplitude.")
-    if showRiskLines
-        line.new(bar_index, stop, bar_index + targetBars, stop, xloc = xloc.bar_index,
-             color = color.new(color.red, 25), width = 1, style = line.style_dotted)
-        line.new(bar_index, target, bar_index + targetBars, target, xloc = xloc.bar_index,
-             color = color.new(color.lime, 25), width = 1, style = line.style_dotted)
-        label.new(bar_index + targetBars, stop, "SL", xloc = xloc.bar_index, yloc = yloc.price,
-             style = label.style_label_left, color = color.new(color.red, 25),
-             textcolor = color.white, size = size.tiny)
-        label.new(bar_index + targetBars, target, "TP", xloc = xloc.bar_index, yloc = yloc.price,
-             style = label.style_label_left, color = color.new(color.lime, 25),
-             textcolor = color.white, size = size.tiny)
-    [isLong, pWin, ev, strength, entry, stop, target, confidence, sample, bar_index]
+    if marketSupported()
+        drawBox(pattern + " " + action, b0, b1, lo, hi, c)
+        if showSignalWaves
+            drawSignalWaves(pattern, start, 4, c)
+        if showSignalIcon or showSignals
+            label signalLabel = label.new(bar_index, entry,
+                 strength + " " + action + "\n" + pattern + "\nP " + fmtPct(pWin) + " EV " + fmtPct(ev) + "\n" + confidence + " n=" + str.tostring(sample),
+                 xloc = xloc.bar_index, yloc = yloc.price,
+                 style = isLong ? label.style_label_up : label.style_label_down,
+                 color = color.new(c, 0), textcolor = color.white, size = size.normal,
+                 tooltip = "Probability Model v0: flat/double_corr fade. Signal is printed on pivot confirmation bar. TP probabilities are heuristic tiers derived from P(win).")
+            trackLabel(signalLabel)
+        if showTradePlan or showRiskLines
+            drawTradeZones(entry, stop, tp3, isLong)
+            drawPlanLine("Entry", entry, color.new(color.white, 0), 0, 2)
+            drawPlanLine("SL", stop, color.new(color.red, 0), 1, 2)
+            drawPlanLine(tpText("TP1", tp1Prob), tp1, color.new(color.lime, 5), 1, 1)
+            drawPlanLine(tpText("TP2", tp2Prob), tp2, color.new(color.lime, 0), 2, 2)
+            drawPlanLine(tpText("TP3", tp3Prob), tp3, color.new(color.teal, 0), 1, 1)
+    [isLong, pWin, ev, strength, entry, stop, tp2, confidence, sample, bar_index]
 
 drawNoTrade(string pattern, int endPivotBar) =>
+    if onlyLatestSignal
+        clearTradePlan()
     if showNoTrade and lastSignalPivotBar != endPivotBar
-        label.new(bar_index, close, "Skip\n" + pattern,
+        label skipLabel = label.new(bar_index, close, "Skip\n" + pattern,
              xloc = xloc.bar_index, yloc = yloc.price,
              style = label.style_label_left, color = color.new(color.gray, 25),
              textcolor = color.white, size = size.tiny,
              tooltip = "Probability Model v0: no-trade pattern. Use as context, not as standalone entry.")
+        trackLabel(skipLabel)
     true
 
 // ───────────────────────────── PIVOTS ─────────────────────────────
@@ -268,10 +400,20 @@ if n >= 4
             lastEntry := flatEntry
             lastStop := flatStop
             lastTarget := flatTarget
+            lastTP1 := tpLevel(flatEntry, amp4, flatIsLong, tp1Mult)
+            lastTP2 := flatTarget
+            lastTP3 := tpLevel(flatEntry, amp4, flatIsLong, tp3Mult)
+            lastTP1Prob := tpProbability(flatPWin, 1)
+            lastTP2Prob := tpProbability(flatPWin, 2)
+            lastTP3Prob := tpProbability(flatPWin, 3)
             lastConfidence := flatConfidence
             lastSample := flatSample
             lastSignalPivotBar := endBar4
             lastSignalBar := flatSignalBar
+            planSLHit := false
+            planTP1Hit := false
+            planTP2Hit := false
+            planTP3Hit := false
             buySignal := flatIsLong
             sellSignal := not flatIsLong
         else if doubleCorrOK(s4)
@@ -284,10 +426,20 @@ if n >= 4
             lastEntry := dcEntry
             lastStop := dcStop
             lastTarget := dcTarget
+            lastTP1 := tpLevel(dcEntry, amp4, dcIsLong, tp1Mult)
+            lastTP2 := dcTarget
+            lastTP3 := tpLevel(dcEntry, amp4, dcIsLong, tp3Mult)
+            lastTP1Prob := tpProbability(dcPWinOut, 1)
+            lastTP2Prob := tpProbability(dcPWinOut, 2)
+            lastTP3Prob := tpProbability(dcPWinOut, 3)
             lastConfidence := dcConfidence
             lastSample := dcSample
             lastSignalPivotBar := endBar4
             lastSignalBar := dcSignalBar
+            planSLHit := false
+            planTP1Hit := false
+            planTP2Hit := false
+            planTP3Hit := false
             buySignal := dcIsLong
             sellSignal := not dcIsLong
         true
@@ -308,10 +460,20 @@ if n >= 6
             lastEntry := close
             lastStop := na
             lastTarget := na
+            lastTP1 := na
+            lastTP2 := na
+            lastTP3 := na
+            lastTP1Prob := na
+            lastTP2Prob := na
+            lastTP3Prob := na
             lastConfidence := "—"
             lastSample := na
             lastSignalPivotBar := endBar6
             lastSignalBar := bar_index
+            planSLHit := false
+            planTP1Hit := false
+            planTP2Hit := false
+            planTP3Hit := false
         else if triangleOK(s6)
             drawNoTrade("triangle", endBar6)
             lastAction := "SKIP"
@@ -322,10 +484,20 @@ if n >= 6
             lastEntry := close
             lastStop := na
             lastTarget := na
+            lastTP1 := na
+            lastTP2 := na
+            lastTP3 := na
+            lastTP1Prob := na
+            lastTP2Prob := na
+            lastTP3Prob := na
             lastConfidence := "—"
             lastSample := na
             lastSignalPivotBar := endBar6
             lastSignalBar := bar_index
+            planSLHit := false
+            planTP1Hit := false
+            planTP2Hit := false
+            planTP3Hit := false
         true
     true
 
@@ -334,31 +506,39 @@ signalAge = na(lastSignalBar) ? na : bar_index - lastSignalBar
 isBuyLast = lastAction == "BUY"
 isSellLast = lastAction == "SELL"
 isTradeLast = isBuyLast or isSellLast
-tpHit = isTradeLast and not na(lastTarget) and (isBuyLast ? high >= lastTarget : low <= lastTarget)
-slHit = isTradeLast and not na(lastStop) and (isBuyLast ? low <= lastStop : high >= lastStop)
+if isTradeLast and not na(lastSignalBar) and bar_index > lastSignalBar
+    planSLHit := planSLHit or (not na(lastStop) and (isBuyLast ? low <= lastStop : high >= lastStop))
+    planTP1Hit := planTP1Hit or (not na(lastTP1) and (isBuyLast ? high >= lastTP1 : low <= lastTP1))
+    planTP2Hit := planTP2Hit or (not na(lastTP2) and (isBuyLast ? high >= lastTP2 : low <= lastTP2))
+    planTP3Hit := planTP3Hit or (not na(lastTP3) and (isBuyLast ? high >= lastTP3 : low <= lastTP3))
+tp1Hit = planTP1Hit
+tp2Hit = planTP2Hit
+tp3Hit = planTP3Hit
+slHit = planSLHit
 isStale = not na(signalAge) and signalAge > activeBars
-tradeStatus = not isTradeLast ? lastAction : tpHit ? "TP passed" : slHit ? "SL hit" : isStale ? "STALE" : "ACTIVE"
-statusColor = tradeStatus == "ACTIVE" ? color.new(color.lime, 35) : tradeStatus == "TP passed" ? color.new(color.teal, 35) : tradeStatus == "SL hit" ? color.new(color.red, 35) : color.new(color.orange, 35)
+tradeStatus = not isTradeLast ? lastAction : slHit ? "SL hit" : tp3Hit ? "TP3 passed" : tp2Hit ? "TP2 passed" : tp1Hit ? "TP1 passed" : isStale ? "STALE" : "ACTIVE"
+statusColor = tradeStatus == "ACTIVE" ? color.new(color.lime, 35) : tradeStatus == "TP1 passed" or tradeStatus == "TP2 passed" or tradeStatus == "TP3 passed" ? color.new(color.teal, 35) : tradeStatus == "SL hit" ? color.new(color.red, 35) : color.new(color.orange, 35)
 
-remainingReward = isTradeLast and not na(lastTarget) ? isBuyLast ? lastTarget - close : close - lastTarget : na
+remainingReward = isTradeLast and not na(lastTP2) ? isBuyLast ? lastTP2 - close : close - lastTP2 : na
 currentRisk = isTradeLast and not na(lastStop) ? isBuyLast ? close - lastStop : lastStop - close : na
 remainingRR = not na(remainingReward) and not na(currentRisk) and currentRisk > 0 ? remainingReward / currentRisk : na
 isLateEntry = tradeStatus == "ACTIVE" and (na(remainingRR) or remainingRR < minRemainingRR)
-isMarketSupported = marketMode == "Any" or (marketMode == "Stocks" and syminfo.type == "stock") or (marketMode == "Crypto" and syminfo.type == "crypto")
+isMarketSupported = marketSupported()
 
-actionNow = tradeStatus == "ACTIVE" and not isLateEntry and isMarketSupported ? lastAction : "WAIT"
+actionNow = enableResearchActions and tradeStatus == "ACTIVE" and not isLateEntry and isMarketSupported ? lastAction : "WAIT"
 actionNowColor = actionNow == "BUY" ? color.new(color.lime, 35) : actionNow == "SELL" ? color.new(color.red, 35) : color.new(color.orange, 35)
-actionReason = not isMarketSupported ? "unsupported market" : not isTradeLast ? lastAction == "SKIP" ? "skip pattern" : "no trade signal" : tpHit ? "target passed" : slHit ? "stop hit" : isStale ? "signal stale" : isLateEntry ? "late entry" : "fresh active signal"
-alertBuyNow = buySignal and actionNow == "BUY"
-alertSellNow = sellSignal and actionNow == "SELL"
+actionReason = not enableResearchActions ? "research overlay disabled" : not isMarketSupported ? "unsupported market" : not isTradeLast ? lastAction == "SKIP" ? "skip pattern" : "no trade signal" : slHit ? "stop hit" : tp3Hit ? "tp3 passed" : tp2Hit ? "tp2 passed" : tp1Hit ? "tp1 passed / late" : isStale ? "signal stale" : isLateEntry ? "late entry" : "fresh active signal"
+alertBuyNow = enableActions and buySignal and actionNow == "BUY"
+alertSellNow = enableActions and sellSignal and actionNow == "SELL"
 
 alertcondition(alertBuyNow, "EWB Action BUY", "EWB Probability Overlay v0 fresh BUY on {{ticker}} {{interval}}")
 alertcondition(alertSellNow, "EWB Action SELL", "EWB Probability Overlay v0 fresh SELL on {{ticker}} {{interval}}")
 
-var table info = table.new(panelPosition(panelPositionInput), 2, 15, border_width = 1)
+var table info = table.new(panelPosition(panelPositionInput), 2, 17, border_width = 1)
 if showPanel and barstate.islast
     table.cell(info, 0, 0, "EWB Prob v0", text_color = color.white, bgcolor = color.new(color.gray, 25))
-    table.cell(info, 1, 0, tradeStatus, text_color = color.white, bgcolor = statusColor)
+    table.cell(info, 1, 0, enableResearchActions ? tradeStatus : "RESEARCH", text_color = color.white,
+         bgcolor = enableResearchActions ? statusColor : color.new(color.orange, 35))
     table.cell(info, 0, 1, "Current", text_color = color.white, bgcolor = color.new(color.gray, 55))
     table.cell(info, 1, 1, fmtPx(close), text_color = color.white, bgcolor = color.new(color.gray, 70))
     table.cell(info, 0, 2, "Action now", text_color = color.white, bgcolor = color.new(color.gray, 55))
@@ -389,5 +569,12 @@ if showPanel and barstate.islast
     table.cell(info, 1, 12, fmtPx(lastEntry), text_color = color.white, bgcolor = color.new(color.gray, 70))
     table.cell(info, 0, 13, "Stop", text_color = color.white, bgcolor = color.new(color.gray, 55))
     table.cell(info, 1, 13, fmtPx(lastStop), text_color = color.white, bgcolor = color.new(color.gray, 70))
-    table.cell(info, 0, 14, "Target", text_color = color.white, bgcolor = color.new(color.gray, 55))
-    table.cell(info, 1, 14, fmtPx(lastTarget), text_color = color.white, bgcolor = color.new(color.gray, 70))
+    table.cell(info, 0, 14, "TP1", text_color = color.white, bgcolor = color.new(color.gray, 55))
+    table.cell(info, 1, 14, fmtTP(lastTP1, lastTP1Prob), text_color = color.white,
+         bgcolor = tp1Hit ? color.new(color.teal, 35) : color.new(color.gray, 70))
+    table.cell(info, 0, 15, "TP2", text_color = color.white, bgcolor = color.new(color.gray, 55))
+    table.cell(info, 1, 15, fmtTP(lastTP2, lastTP2Prob), text_color = color.white,
+         bgcolor = tp2Hit ? color.new(color.teal, 35) : color.new(color.gray, 70))
+    table.cell(info, 0, 16, "TP3", text_color = color.white, bgcolor = color.new(color.gray, 55))
+    table.cell(info, 1, 16, fmtTP(lastTP3, lastTP3Prob), text_color = color.white,
+         bgcolor = tp3Hit ? color.new(color.teal, 35) : color.new(color.gray, 70))
