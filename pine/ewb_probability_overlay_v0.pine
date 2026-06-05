@@ -1,0 +1,384 @@
+//@version=6
+// =============================================================================
+// Elliott Wave Brain — Probability Overlay v0
+// Отдельный торговый слой для TradingView:
+// - ищет подтверждённые pivot-окна без look-ahead;
+// - торгует только flat / double_corr в fade-направлении;
+// - impulse / triangle показывает как no-trade контекст;
+// - вероятности и EV взяты из Probability Model v0 / daily calibration.
+//
+// Важно: это MVP overlay, а не полный Neely Core. Сигнал появляется на баре
+// подтверждения pivot (rightBars), а не на историческом экстремуме.
+// =============================================================================
+indicator("EWB — Probability Overlay v0", "EWBProbv0",
+     overlay = true, max_labels_count = 500, max_lines_count = 500, max_boxes_count = 200)
+
+// ───────────────────────────── ВВОД ─────────────────────────────
+grpPivot = "Pivot detection"
+leftBars = input.int(5, "Left bars", group = grpPivot, minval = 1, maxval = 50)
+rightBars = input.int(5, "Right bars (confirmation lag)", group = grpPivot, minval = 1, maxval = 50)
+maxPivots = input.int(80, "Pivot memory", group = grpPivot, minval = 20, maxval = 300)
+
+grpModel = "Probability Model v0"
+longPWin = input.float(55.4, "Flat long P(win), %", group = grpModel, minval = 0, maxval = 100, step = 0.1)
+longEV = input.float(0.41, "Flat long EV, %", group = grpModel, minval = -10, maxval = 20, step = 0.01)
+longSample = input.int(251, "Flat long sample size", group = grpModel, minval = 0)
+shortPWin = input.float(54.5, "Flat short P(win), %", group = grpModel, minval = 0, maxval = 100, step = 0.1)
+shortEV = input.float(0.33, "Flat short EV, %", group = grpModel, minval = -10, maxval = 20, step = 0.01)
+shortSample = input.int(233, "Flat short sample size", group = grpModel, minval = 0)
+dcLongPWin = input.float(78.6, "Double correction long P(win), %", group = grpModel, minval = 0, maxval = 100, step = 0.1)
+dcLongEV = input.float(0.83, "Double correction long EV, %", group = grpModel, minval = -10, maxval = 20, step = 0.01)
+dcLongSample = input.int(14, "Double correction long sample size", group = grpModel, minval = 0)
+dcShortPWin = input.float(86.7, "Double correction short P(win), %", group = grpModel, minval = 0, maxval = 100, step = 0.1)
+dcShortEV = input.float(1.83, "Double correction short EV, %", group = grpModel, minval = -10, maxval = 20, step = 0.01)
+dcShortSample = input.int(15, "Double correction short sample size", group = grpModel, minval = 0)
+
+grpRisk = "Risk box"
+targetBars = input.int(50, "Stop/target line length, bars", group = grpRisk, minval = 5, maxval = 300)
+activeBars = input.int(50, "Signal active window, bars", group = grpRisk, minval = 1, maxval = 500)
+minRemainingRR = input.float(0.50, "Min remaining R:R for Action now", group = grpRisk, minval = 0.0, maxval = 5.0, step = 0.05)
+minAmpAtr = input.float(0.5, "Min pattern amplitude, ATR", group = grpRisk, minval = 0.0, step = 0.1)
+atrLen = input.int(14, "ATR length", group = grpRisk, minval = 1)
+
+grpMarket = "Market filter"
+marketMode = input.string("Stocks", "Market mode", group = grpMarket, options = ["Stocks", "Crypto", "Any"])
+
+grpView = "Display"
+showSignals = input.bool(false, "Show buy/sell labels", group = grpView)
+showRiskLines = input.bool(false, "Show stop/target lines", group = grpView)
+showPatternBoxes = input.bool(false, "Show pattern boxes", group = grpView)
+showNoTrade = input.bool(false, "Show impulse/triangle no-trade context", group = grpView)
+showPanel = input.bool(true, "Show info panel", group = grpView)
+
+// ───────────────────────────── STATE ─────────────────────────────
+var array<int> pivotBars = array.new<int>()
+var array<float> pivotPrices = array.new<float>()
+var array<int> pivotTypes = array.new<int>()  // 1 = high, -1 = low
+var int lastSignalPivotBar = na
+var string lastAction = "—"
+var string lastPattern = "—"
+var string lastStrength = "—"
+var float lastPWin = na
+var float lastEV = na
+var float lastEntry = na
+var float lastStop = na
+var float lastTarget = na
+var string lastConfidence = "—"
+var int lastSample = na
+var int lastSignalBar = na
+
+var bool buySignal = false
+var bool sellSignal = false
+buySignal := false
+sellSignal := false
+
+// ───────────────────────────── HELPERS ─────────────────────────────
+fmtPct(float value) =>
+    str.tostring(value, "#.0") + "%"
+
+fmtPx(float value) =>
+    na(value) ? "—" : str.tostring(value, format.mintick)
+
+confidenceFromSample(int sample) =>
+    string out = "low"
+    if sample >= 500
+        out := "very_high"
+    else if sample >= 100
+        out := "high"
+    else if sample >= 50
+        out := "medium"
+    out
+
+signalStrength(float pWin, float ev, string action, int sample) =>
+    string out = "C"
+    if action == "skip"
+        out := "Skip"
+    else if sample >= 50 and pWin >= 55.0 and ev >= 0.30
+        out := "A"
+    else if pWin >= 52.0 and ev > 0
+        out := "B"
+    out
+
+pushPivot(int pBar, float pPrice, int pType) =>
+    int n = array.size(pivotBars)
+    if n == 0
+        array.push(pivotBars, pBar)
+        array.push(pivotPrices, pPrice)
+        array.push(pivotTypes, pType)
+    else
+        int lastType = array.get(pivotTypes, n - 1)
+        float lastPrice = array.get(pivotPrices, n - 1)
+        if pType == lastType
+            bool moreExtreme = pType == 1 ? pPrice > lastPrice : pPrice < lastPrice
+            if moreExtreme
+                array.set(pivotBars, n - 1, pBar)
+                array.set(pivotPrices, n - 1, pPrice)
+        else
+            array.push(pivotBars, pBar)
+            array.push(pivotPrices, pPrice)
+            array.push(pivotTypes, pType)
+    while array.size(pivotBars) > maxPivots
+        array.shift(pivotBars)
+        array.shift(pivotPrices)
+        array.shift(pivotTypes)
+    true
+
+alternateFrom(int start, int waves) =>
+    bool ok = true
+    for i = start + 1 to start + waves
+        if array.get(pivotTypes, i) == array.get(pivotTypes, i - 1)
+            ok := false
+    ok
+
+patternBounds(int start, int count) =>
+    int b0 = array.get(pivotBars, start)
+    int b1 = array.get(pivotBars, start + count - 1)
+    float hi = array.get(pivotPrices, start)
+    float lo = array.get(pivotPrices, start)
+    for i = start to start + count - 1
+        float px = array.get(pivotPrices, i)
+        hi := math.max(hi, px)
+        lo := math.min(lo, px)
+    [b0, b1, lo, hi]
+
+figDirection(int start) =>
+    array.get(pivotPrices, start + 1) > array.get(pivotPrices, start) ? "up" : "down"
+
+flatOK(int start) =>
+    float a = math.abs(array.get(pivotPrices, start + 1) - array.get(pivotPrices, start))
+    float b = math.abs(array.get(pivotPrices, start + 2) - array.get(pivotPrices, start + 1))
+    a > 0 and b / a >= 0.618
+
+doubleCorrOK(int start) =>
+    float w = math.abs(array.get(pivotPrices, start + 1) - array.get(pivotPrices, start))
+    float x = math.abs(array.get(pivotPrices, start + 2) - array.get(pivotPrices, start + 1))
+    float xr = w > 0 ? x / w : na
+    not na(xr) and xr > 0.1 and xr < 0.618
+
+impulseOK(int start) =>
+    float p0 = array.get(pivotPrices, start)
+    float p1 = array.get(pivotPrices, start + 1)
+    float p2 = array.get(pivotPrices, start + 2)
+    float p3 = array.get(pivotPrices, start + 3)
+    float p4 = array.get(pivotPrices, start + 4)
+    float w1 = math.abs(p1 - p0)
+    float w2 = math.abs(p2 - p1)
+    float w3 = math.abs(p3 - p2)
+    bool up = p1 > p0
+    bool w2NoStartBreak = up ? p2 > p0 : p2 < p0
+    bool w3NotShort = w3 >= w1
+    bool w2Shallow = w1 > 0 ? w2 / w1 <= 0.618 : false
+    w2NoStartBreak and w3NotShort and w2Shallow
+
+triangleOK(int start) =>
+    float w1 = math.abs(array.get(pivotPrices, start + 1) - array.get(pivotPrices, start))
+    float w2 = math.abs(array.get(pivotPrices, start + 2) - array.get(pivotPrices, start + 1))
+    float w3 = math.abs(array.get(pivotPrices, start + 3) - array.get(pivotPrices, start + 2))
+    float w4 = math.abs(array.get(pivotPrices, start + 4) - array.get(pivotPrices, start + 3))
+    w3 < w1 and w4 < w2
+
+drawBox(string title, int b0, int b1, float lo, float hi, color c) =>
+    if showPatternBoxes
+        box.new(b0, hi, b1, lo, xloc = xloc.bar_index,
+             border_color = color.new(c, 0), border_width = 1, bgcolor = color.new(c, 90))
+        label.new(int((b0 + b1) / 2), hi, title,
+             xloc = xloc.bar_index, yloc = yloc.price,
+             style = label.style_label_down, color = color.new(c, 15),
+             textcolor = color.white, size = size.tiny)
+    true
+
+drawTrade(string pattern, string dir, int start, int endPivotBar, float amp) =>
+    bool isLong = dir == "down"
+    string action = isLong ? "BUY" : "SELL"
+    float pWin = pattern == "double_corr" ? isLong ? dcLongPWin : dcShortPWin : isLong ? longPWin : shortPWin
+    float ev = pattern == "double_corr" ? isLong ? dcLongEV : dcShortEV : isLong ? longEV : shortEV
+    int sample = pattern == "double_corr" ? isLong ? dcLongSample : dcShortSample : isLong ? longSample : shortSample
+    string confidence = confidenceFromSample(sample)
+    string strength = signalStrength(pWin, ev, action, sample)
+    float entry = close
+    float stop = isLong ? entry - amp : entry + amp
+    float target = isLong ? entry + amp : entry - amp
+    color c = isLong ? color.lime : color.red
+    [b0, b1, lo, hi] = patternBounds(start, 4)
+    drawBox(pattern + " " + action, b0, b1, lo, hi, c)
+    if showSignals
+        label.new(bar_index, entry,
+             strength + " " + action + "\n" + pattern + "\nP " + fmtPct(pWin) + " EV " + fmtPct(ev) + "\n" + confidence + " n=" + str.tostring(sample),
+             xloc = xloc.bar_index, yloc = yloc.price,
+             style = isLong ? label.style_label_up : label.style_label_down,
+             color = color.new(c, 0), textcolor = color.white, size = size.normal,
+             tooltip = "Probability Model v0: flat/double_corr fade. Signal is printed on pivot confirmation bar. Stop/target = pattern amplitude.")
+    if showRiskLines
+        line.new(bar_index, stop, bar_index + targetBars, stop, xloc = xloc.bar_index,
+             color = color.new(color.red, 25), width = 1, style = line.style_dotted)
+        line.new(bar_index, target, bar_index + targetBars, target, xloc = xloc.bar_index,
+             color = color.new(color.lime, 25), width = 1, style = line.style_dotted)
+        label.new(bar_index + targetBars, stop, "SL", xloc = xloc.bar_index, yloc = yloc.price,
+             style = label.style_label_left, color = color.new(color.red, 25),
+             textcolor = color.white, size = size.tiny)
+        label.new(bar_index + targetBars, target, "TP", xloc = xloc.bar_index, yloc = yloc.price,
+             style = label.style_label_left, color = color.new(color.lime, 25),
+             textcolor = color.white, size = size.tiny)
+    [isLong, pWin, ev, strength, entry, stop, target, confidence, sample, bar_index]
+
+drawNoTrade(string pattern, int endPivotBar) =>
+    if showNoTrade and lastSignalPivotBar != endPivotBar
+        label.new(bar_index, close, "Skip\n" + pattern,
+             xloc = xloc.bar_index, yloc = yloc.price,
+             style = label.style_label_left, color = color.new(color.gray, 25),
+             textcolor = color.white, size = size.tiny,
+             tooltip = "Probability Model v0: no-trade pattern. Use as context, not as standalone entry.")
+    true
+
+// ───────────────────────────── PIVOTS ─────────────────────────────
+float ph = ta.pivothigh(high, leftBars, rightBars)
+float pl = ta.pivotlow(low, leftBars, rightBars)
+
+if not na(ph)
+    pushPivot(bar_index - rightBars, ph, 1)
+if not na(pl)
+    pushPivot(bar_index - rightBars, pl, -1)
+
+// ───────────────────────────── DETECTION ─────────────────────────────
+float minAmp = ta.atr(atrLen) * minAmpAtr
+int n = array.size(pivotBars)
+if n >= 4
+    int s4 = n - 4
+    int endBar4 = array.get(pivotBars, n - 1)
+    bool newWindow4 = na(lastSignalPivotBar) or endBar4 != lastSignalPivotBar
+    float amp4 = math.abs(array.get(pivotPrices, s4 + 3) - array.get(pivotPrices, s4))
+    if newWindow4 and alternateFrom(s4, 3) and amp4 >= minAmp
+        string dir4 = figDirection(s4)
+        if flatOK(s4)
+            [flatIsLong, flatPWin, flatEV, flatStrength, flatEntry, flatStop, flatTarget, flatConfidence, flatSample, flatSignalBar] = drawTrade("flat", dir4, s4, endBar4, amp4)
+            lastAction := flatIsLong ? "BUY" : "SELL"
+            lastPattern := "flat"
+            lastStrength := flatStrength
+            lastPWin := flatPWin
+            lastEV := flatEV
+            lastEntry := flatEntry
+            lastStop := flatStop
+            lastTarget := flatTarget
+            lastConfidence := flatConfidence
+            lastSample := flatSample
+            lastSignalPivotBar := endBar4
+            lastSignalBar := flatSignalBar
+            buySignal := flatIsLong
+            sellSignal := not flatIsLong
+        else if doubleCorrOK(s4)
+            [dcIsLong, dcPWinOut, dcEVOut, dcStrength, dcEntry, dcStop, dcTarget, dcConfidence, dcSample, dcSignalBar] = drawTrade("double_corr", dir4, s4, endBar4, amp4)
+            lastAction := dcIsLong ? "BUY" : "SELL"
+            lastPattern := "double_corr"
+            lastStrength := dcStrength
+            lastPWin := dcPWinOut
+            lastEV := dcEVOut
+            lastEntry := dcEntry
+            lastStop := dcStop
+            lastTarget := dcTarget
+            lastConfidence := dcConfidence
+            lastSample := dcSample
+            lastSignalPivotBar := endBar4
+            lastSignalBar := dcSignalBar
+            buySignal := dcIsLong
+            sellSignal := not dcIsLong
+        true
+    true
+
+if n >= 6
+    int s6 = n - 6
+    int endBar6 = array.get(pivotBars, n - 1)
+    bool newWindow6 = na(lastSignalPivotBar) or endBar6 != lastSignalPivotBar
+    if newWindow6 and alternateFrom(s6, 5)
+        if impulseOK(s6)
+            drawNoTrade("impulse", endBar6)
+            lastAction := "SKIP"
+            lastPattern := "impulse"
+            lastStrength := "Skip"
+            lastPWin := na
+            lastEV := na
+            lastEntry := close
+            lastStop := na
+            lastTarget := na
+            lastConfidence := "—"
+            lastSample := na
+            lastSignalPivotBar := endBar6
+            lastSignalBar := bar_index
+        else if triangleOK(s6)
+            drawNoTrade("triangle", endBar6)
+            lastAction := "SKIP"
+            lastPattern := "triangle"
+            lastStrength := "Skip"
+            lastPWin := na
+            lastEV := na
+            lastEntry := close
+            lastStop := na
+            lastTarget := na
+            lastConfidence := "—"
+            lastSample := na
+            lastSignalPivotBar := endBar6
+            lastSignalBar := bar_index
+        true
+    true
+
+// ───────────────────────────── ALERTS/PANEL ─────────────────────────────
+signalAge = na(lastSignalBar) ? na : bar_index - lastSignalBar
+isBuyLast = lastAction == "BUY"
+isSellLast = lastAction == "SELL"
+isTradeLast = isBuyLast or isSellLast
+tpHit = isTradeLast and not na(lastTarget) and (isBuyLast ? high >= lastTarget : low <= lastTarget)
+slHit = isTradeLast and not na(lastStop) and (isBuyLast ? low <= lastStop : high >= lastStop)
+isStale = not na(signalAge) and signalAge > activeBars
+tradeStatus = not isTradeLast ? lastAction : tpHit ? "TP passed" : slHit ? "SL hit" : isStale ? "STALE" : "ACTIVE"
+statusColor = tradeStatus == "ACTIVE" ? color.new(color.lime, 35) : tradeStatus == "TP passed" ? color.new(color.teal, 35) : tradeStatus == "SL hit" ? color.new(color.red, 35) : color.new(color.orange, 35)
+
+remainingReward = isTradeLast and not na(lastTarget) ? isBuyLast ? lastTarget - close : close - lastTarget : na
+currentRisk = isTradeLast and not na(lastStop) ? isBuyLast ? close - lastStop : lastStop - close : na
+remainingRR = not na(remainingReward) and not na(currentRisk) and currentRisk > 0 ? remainingReward / currentRisk : na
+isLateEntry = tradeStatus == "ACTIVE" and (na(remainingRR) or remainingRR < minRemainingRR)
+isMarketSupported = marketMode == "Any" or (marketMode == "Stocks" and syminfo.type == "stock") or (marketMode == "Crypto" and syminfo.type == "crypto")
+
+actionNow = tradeStatus == "ACTIVE" and not isLateEntry and isMarketSupported ? lastAction : "WAIT"
+actionNowColor = actionNow == "BUY" ? color.new(color.lime, 35) : actionNow == "SELL" ? color.new(color.red, 35) : color.new(color.orange, 35)
+actionReason = not isMarketSupported ? "unsupported market" : not isTradeLast ? lastAction == "SKIP" ? "skip pattern" : "no trade signal" : tpHit ? "target passed" : slHit ? "stop hit" : isStale ? "signal stale" : isLateEntry ? "late entry" : "fresh active signal"
+alertBuyNow = buySignal and actionNow == "BUY"
+alertSellNow = sellSignal and actionNow == "SELL"
+
+alertcondition(alertBuyNow, "EWB Action BUY", "EWB Probability Overlay v0 fresh BUY on {{ticker}} {{interval}}")
+alertcondition(alertSellNow, "EWB Action SELL", "EWB Probability Overlay v0 fresh SELL on {{ticker}} {{interval}}")
+
+var table info = table.new(position.top_right, 2, 15, border_width = 1)
+if showPanel and barstate.islast
+    table.cell(info, 0, 0, "EWB Prob v0", text_color = color.white, bgcolor = color.new(color.gray, 25))
+    table.cell(info, 1, 0, tradeStatus, text_color = color.white, bgcolor = statusColor)
+    table.cell(info, 0, 1, "Current", text_color = color.white, bgcolor = color.new(color.gray, 55))
+    table.cell(info, 1, 1, fmtPx(close), text_color = color.white, bgcolor = color.new(color.gray, 70))
+    table.cell(info, 0, 2, "Action now", text_color = color.white, bgcolor = color.new(color.gray, 55))
+    table.cell(info, 1, 2, actionNow, text_color = color.white, bgcolor = actionNowColor)
+    table.cell(info, 0, 3, "Reason", text_color = color.white, bgcolor = color.new(color.gray, 55))
+    table.cell(info, 1, 3, actionReason, text_color = color.white, bgcolor = color.new(color.gray, 70))
+    table.cell(info, 0, 4, "Last signal", text_color = color.white, bgcolor = color.new(color.gray, 55))
+    table.cell(info, 1, 4, lastAction, text_color = color.white,
+         bgcolor = lastAction == "BUY" ? color.new(color.lime, 35) : lastAction == "SELL" ? color.new(color.red, 35) : color.new(color.gray, 60))
+    table.cell(info, 0, 5, "Age bars", text_color = color.white, bgcolor = color.new(color.gray, 55))
+    table.cell(info, 1, 5, na(signalAge) ? "—" : str.tostring(signalAge), text_color = color.white, bgcolor = color.new(color.gray, 70))
+    table.cell(info, 0, 6, "Strength", text_color = color.white, bgcolor = color.new(color.gray, 55))
+    table.cell(info, 1, 6, lastStrength, text_color = color.white, bgcolor = color.new(color.gray, 70))
+    table.cell(info, 0, 7, "Pattern", text_color = color.white, bgcolor = color.new(color.gray, 55))
+    table.cell(info, 1, 7, lastPattern, text_color = color.white, bgcolor = color.new(color.gray, 70))
+    table.cell(info, 0, 8, "P / EV", text_color = color.white, bgcolor = color.new(color.gray, 55))
+    table.cell(info, 1, 8, na(lastPWin) ? "—" : fmtPct(lastPWin) + " / " + fmtPct(lastEV), text_color = color.white, bgcolor = color.new(color.gray, 70))
+    table.cell(info, 0, 9, "Conf / N", text_color = color.white, bgcolor = color.new(color.gray, 55))
+    table.cell(info, 1, 9, lastConfidence + " / " + (na(lastSample) ? "—" : str.tostring(lastSample)), text_color = color.white,
+         bgcolor = lastConfidence == "low" ? color.new(color.orange, 35) : color.new(color.gray, 70))
+    table.cell(info, 0, 10, "Market", text_color = color.white, bgcolor = color.new(color.gray, 55))
+    table.cell(info, 1, 10, syminfo.type, text_color = color.white,
+         bgcolor = isMarketSupported ? color.new(color.gray, 70) : color.new(color.orange, 35))
+    table.cell(info, 0, 11, "Remain R:R", text_color = color.white, bgcolor = color.new(color.gray, 55))
+    table.cell(info, 1, 11, na(remainingRR) ? "—" : str.tostring(remainingRR, "#.00"), text_color = color.white,
+         bgcolor = isLateEntry ? color.new(color.orange, 35) : color.new(color.gray, 70))
+    table.cell(info, 0, 12, "Entry", text_color = color.white, bgcolor = color.new(color.gray, 55))
+    table.cell(info, 1, 12, fmtPx(lastEntry), text_color = color.white, bgcolor = color.new(color.gray, 70))
+    table.cell(info, 0, 13, "Stop", text_color = color.white, bgcolor = color.new(color.gray, 55))
+    table.cell(info, 1, 13, fmtPx(lastStop), text_color = color.white, bgcolor = color.new(color.gray, 70))
+    table.cell(info, 0, 14, "Target", text_color = color.white, bgcolor = color.new(color.gray, 55))
+    table.cell(info, 1, 14, fmtPx(lastTarget), text_color = color.white, bgcolor = color.new(color.gray, 70))

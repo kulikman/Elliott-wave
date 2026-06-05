@@ -4,6 +4,19 @@ from .data import download_ohlc, normalize_ohlc
 from .dataset import figure_rows_from_matches
 from .logging import log_processing_error
 from .portfolio import portfolio_metrics
+from .probability import (
+    build_probability_signal,
+    build_probability_calibration,
+    calibration_rows,
+    confidence_for_n,
+    fade_side,
+    load_probability_calibration,
+    lookup_probability_row,
+    price_levels,
+    probability_signal_from_figure,
+    recommended_action,
+    side_probabilities,
+)
 from .schema import (
     REQUIRED_FIGURE_COLUMNS,
     REQUIRED_TRADE_COLUMNS,
@@ -27,7 +40,18 @@ __all__ = [
     "log_processing_error",
     "normalize_ohlc",
     "portfolio_metrics",
+    "build_probability_signal",
+    "build_probability_calibration",
+    "calibration_rows",
+    "confidence_for_n",
+    "fade_side",
+    "load_probability_calibration",
+    "lookup_probability_row",
+    "price_levels",
+    "probability_signal_from_figure",
     "stats_row",
+    "recommended_action",
+    "side_probabilities",
     "t_test",
     "trade_metrics",
     "REQUIRED_FIGURE_COLUMNS",

@@ -1,0 +1,29 @@
+tickers:
+  - AAPL
+  - MSFT
+  - NVDA
+  - AMZN
+  - GOOGL
+  - META
+  - TSLA
+  - AVGO
+  - AMD
+  - NFLX
+  - COST
+  - JPM
+  - WMT
+  - LLY
+  - ORCL
+  - CRM
+  - QCOM
+  - INTU
+  - NOW
+  - AMAT
+  - BKNG
+  - ISRG
+interval: 1h
+actions:
+  - buy
+  - sell
+fresh_hours: 48
+limit: 20

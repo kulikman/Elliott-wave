@@ -1,0 +1,55 @@
+{
+  "actions": [
+    "buy",
+    "sell"
+  ],
+  "fresh_days": null,
+  "fresh_hours": 48.0,
+  "freshness": "48h",
+  "generated_at": "2026-06-05T06:54:40+00:00",
+  "interval": "1h",
+  "limit": 10,
+  "model_version": "probability-calibration-v0",
+  "n_signals": 1,
+  "period": "730d",
+  "signals": [
+    {
+      "confidence": "high",
+      "confirmation_lag": 4,
+      "confirmed": true,
+      "direction": "down",
+      "end_idx": 5071,
+      "end_ts": "2026-06-03 12:30:00-04:00",
+      "entry_idx": 5075,
+      "entry_ts": "2026-06-04 09:30:00-04:00",
+      "entry_zone": "fade_after_confirmed_pattern",
+      "expected_net_return": 0.0041032195160533,
+      "interval": "1h",
+      "lookup_key": "flat|1h|long",
+      "lookup_level": "fig_type+interval+side",
+      "n_checks": 2,
+      "n_errors": 0,
+      "p_down": 0.4462151394422311,
+      "p_trade_win": 0.5537848605577689,
+      "p_up": 0.5537848605577689,
+      "pattern": "flat",
+      "recommended_action": "buy",
+      "risk_box": {
+        "amplitude": 19.230010986328125,
+        "entry_px": 430.1351013183594,
+        "stop_px": 410.90509033203125,
+        "target_px": 449.3651123046875
+      },
+      "sample_size": 251,
+      "side": "long",
+      "source_model_version": "probability-calibration-v0",
+      "stop": "figure_amplitude",
+      "target": "full_retrace",
+      "ticker": "MSFT"
+    }
+  ],
+  "tickers": [
+    "AAPL",
+    "MSFT"
+  ]
+}

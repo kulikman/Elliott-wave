@@ -3,6 +3,51 @@
 Индикаторы для TradingView, реализующие методологию Нили (NeoWave) уровень за уровнем.
 Каждый уровень опирается на правила из `brain-output/indicator-spec/spec_vN.json`.
 
+## Probability Overlay v0
+
+Файл: `pine/ewb_probability_overlay_v0.pine`
+
+Это отдельный MVP-слой для цели Антона: быстро видеть вероятность дальнейшего
+движения акции и торговое решение `BUY / SELL / SKIP` прямо на графике.
+
+**Что делает:**
+- строит подтверждённые pivot-окна без look-ahead: сигнал появляется только после
+  `rightBars` подтверждения;
+- ищет `flat` и `double_corr` как торговые паттерны v0;
+- показывает `Action now` (`BUY / SELL / WAIT`) отдельно от исторического `Last signal`;
+- показывает силу `A/B/C`, `P(win)`, `EV`, stop и target;
+- показывает `Conf / N`, чтобы отличать сильную вероятность на большой выборке от
+  сигнала с маленьким числом наблюдений;
+- калибрует `double_corr long` и `double_corr short` отдельно, потому их выборки и EV
+  отличаются;
+- считает остаточный `Remain R:R` от текущей цены и переводит поздний вход в `WAIT`;
+- по умолчанию работает в `Market mode = Stocks` и переводит crypto/unsupported symbols
+  в `WAIT`, потому калибровка v0 предназначена для акций;
+- показывает `impulse/triangle` как `Skip` / no-trade context;
+- переводит отработанные, выбитые или устаревшие сигналы в `WAIT`, чтобы старый
+  `Last signal` не выглядел как новая рекомендация;
+- использует калибровку Probability Model v0 из `brain-output/indicator-spec/probability-model-v0.md`
+  и `probability_calibration_v0.json`.
+
+**Честные ограничения v0:**
+- это overlay, а не полный Neely Core;
+- pivot-логика упрощена относительно Python `detect_monowaves + match_figures`;
+- вероятности заданы input-параметрами, а не динамически загружаются из JSON
+  (Pine не умеет читать локальные файлы);
+- `double_corr` в Pine v0 является приближённым detector-условием; даже при высоком
+  P(win) он получает низкую confidence, пока выборка маленькая.
+
+**Как запустить:**
+1. Открой TradingView → Pine Editor.
+2. Вставь содержимое `pine/ewb_probability_overlay_v0.pine`.
+3. Add to chart.
+4. Для 1h акций оставь дефолтные вероятности; для других ТФ сначала сверяй с Python daily report.
+
+**Как сверять с Python:**
+1. Обнови daily report: `python3 python/scripts/daily_report.py`.
+2. Сгенерируй checklist: `python3 python/scripts/pine_parity_checklist.py`.
+3. Открой `docs/pine_parity_checklist.md` и сравни значения Pine с Python по тикерам.
+
 ## Принцип построения
 
 Pine Script v6 **не имеет рекурсии** и имеет лимиты на циклы/массивы, поэтому
