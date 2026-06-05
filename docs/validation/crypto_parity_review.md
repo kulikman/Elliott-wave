@@ -72,6 +72,23 @@ Probability overlay:
 
 Do not enable crypto BUY/SELL yet.
 
+## TradingView Live Check
+
+Latest browser attempt after commit `78c297b`:
+
+- `BTCUSDT 1D` still ran an older saved `EWB Mono` instance.
+- The chart displayed `SHORT`, `Flat fade`, `P≈ 61.0%`, and numeric
+  `Entry / TP` plus `SL / invalid`.
+- Clicking `Add to chart` from the Pine Editor did not replace the live chart
+  instance.
+- Existing indicator settings still exposed the older
+  `Торговый слой Антона (RESEARCH: FLAT/DC FADE)` inputs.
+
+Decision:
+Treat TradingView crypto parity as blocked until Anton manually updates the
+saved TradingView script from `pine/ewb_monowaves_mtf.pine` and re-adds it to
+the chart. Local code is guarded; the live chart is not yet running it.
+
 Before promotion, run:
 
 1. Manual TradingView parity on BTCUSDT, ETHUSDT, SOLUSDT and TRXUSDT.

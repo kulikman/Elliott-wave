@@ -28,6 +28,37 @@ Result: `39 passed`.
 
 Current in-app browser URL: `https://www.tradingview.com/chart/`
 
+Follow-up observation after commit `78c297b` on `2026-06-05`:
+
+- Current chart: `BTCUSDT`, `1D`, Binance.
+- Visible indicator: `EWB Mono`.
+- Live chart still shows an old stock-style crypto signal:
+  - `Trade = SHORT`
+  - `Фигура = Flat fade`
+  - `P≈ = 61.0%`
+  - `Entry / TP` and `SL / invalid` are visible numeric levels.
+- Pine Editor contains the newer local code area around `Action now`, `Market`
+  and `Calib / TF`, but clicking `Add to chart` did not replace the live chart
+  instance.
+- Opening the existing indicator settings confirmed the chart instance is old:
+  - block name is still `Торговый слой Антона (RESEARCH: FLAT/DC FADE)`;
+  - visible probabilities are still `Flat = 61`, `Double Correction = 89`;
+  - the new `Mode = CRYPTO RESEARCH` panel contract is not active on the chart.
+
+Result:
+
+| Symbol | TF | Result | Reason |
+|---|---|---|---|
+| `BTCUSDT` | `1D` | FAIL / blocked | old saved `EWB Mono` still shows stock-style SHORT on crypto |
+| `ETHUSDT` | n/a | not executed | same stale-script blocker; BTC already fails the safety gate |
+| `SOLUSDT` | n/a | not executed | same stale-script blocker; BTC already fails the safety gate |
+| `TRXUSDT` | n/a | not executed | same stale-script blocker; BTC already fails the safety gate |
+| stock sanity check | n/a | not executed | must update TradingView Pine script first |
+
+Conclusion: live TradingView parity is still blocked until the saved TradingView
+script is manually updated from `pine/ewb_monowaves_mtf.pine` and re-added to the
+chart. Local static checks pass, but the live chart is not running that code.
+
 Follow-up observation on `2026-06-05`:
 
 - Chart title reported by TradingView: `SPCE 4.29 ... BTC USD`.
@@ -96,6 +127,8 @@ After the Pine update, validate one stock chart, for example `AAPL` or `MSFT`:
 ## Result
 
 Current validation result: `blocked until TradingView Pine script is updated`.
+The latest browser attempt after commit `78c297b` still showed the old saved
+indicator on BTCUSDT.
 
 ## Manual Update Package
 
