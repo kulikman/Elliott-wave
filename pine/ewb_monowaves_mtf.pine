@@ -59,6 +59,17 @@ showTrade = input.bool(true, "Показывать торговые сигнал
      tooltip = "Research-слой после Sprint 6: торгуются только подтверждённые Flat и Double Correction в fade-направлении. Impulse/Triangle не дают вход.")
 showTradeMarkers = input.bool(false, "Рисовать исторические trade-метки/зоны", group = grpTrade,
      tooltip = "Выключено по умолчанию, чтобы график не шумел. Таблица, статус и alerts продолжают работать.")
+showTradePlan = input.bool(true, "Show trade plan", group = grpTrade,
+     tooltip = "Показывает рабочий план только когда Action now = BUY/SELL. Для WAIT рисуется только компактная причина.")
+showActionWave = input.bool(true, "Show waves", group = grpTrade,
+     tooltip = "Подсвечивает 3-волновую структуру Flat/DC, которая дала текущий сигнал.")
+onlyLatestSignal = input.bool(true, "Only latest signal", group = grpTrade,
+     tooltip = "По умолчанию старые планы удаляются, чтобы на графике не было исторического мусора.")
+showTpProbabilities = input.bool(true, "Show TP probabilities", group = grpTrade,
+     tooltip = "TP1/TP2/TP3 показывают вероятностную лестницу от калиброванной P(win): conservative/base/aggressive.")
+maxHistoricalSignals = input.int(3, "Max historical signals", group = grpTrade, minval = 1, maxval = 10,
+     tooltip = "Используется только если выключить Only latest signal.")
+actionLevelBars = input.int(80, "Длина уровней Action, баров", group = grpTrade, minval = 10, maxval = 300)
 showNoise = input.bool(false, "Показывать Impulse/Triangle как NO TRADE", group = grpTrade)
 flatProb = input.float(61.0, "Вероятность Flat fade, %", group = grpTrade, minval = 0, maxval = 100, step = 0.1,
      tooltip = "Оценка из Sprint 6/all-TF: Flat fade около 60-63% hit-rate; это research, не гарантия.")
@@ -75,8 +86,11 @@ maxEntryProgress = input.float(0.35, "Поздно входить после % �
      tooltip = "Если цена уже прошла эту долю пути от Entry к TP, Action now станет WAIT/LATE.")
 minActionRR = input.float(1.0, "Минимальный текущий R:R", group = grpTrade, minval = 0.1, maxval = 10.0, step = 0.1,
      tooltip = "Если оставшаяся прибыль к риску меньше порога, Action now станет WAIT/RR BAD.")
-useHtfFilter = input.bool(true, "Использовать HTF-фильтр", group = grpTrade,
-     tooltip = "BUY блокируется при DOWN bias старшего ТФ, SELL блокируется при UP bias старшего ТФ.")
+minActionProb = input.float(55.0, "Минимальная P(win) для Action now, %", group = grpTrade, minval = 0, maxval = 100, step = 0.5,
+     tooltip = "Если калиброванная вероятность ниже порога, Action now станет WAIT/PROB LOW.")
+htfActionMode = input.string("WARN", "HTF режим для Action now", group = grpTrade,
+     options = ["OFF", "WARN", "BLOCK"],
+     tooltip = "OFF: не учитывать HTF. WARN: не блокировать, но понижать Grade. BLOCK: BUY блокируется при DOWN HTF, SELL при UP HTF.")
 
 // ───────────────────────────── ТИПЫ ─────────────────────────────
 // Состояние ZigZag-детектора моноволн (по reversal-порогу).
@@ -467,8 +481,18 @@ actionColor(string action) =>
      action == "SELL" ? color.new(color.red, 20) :
      color.new(color.gray, 45)
 
+clampPct(float value) =>
+    math.max(5.0, math.min(95.0, value))
+
+tpProbability(float baseProb, float offset) =>
+    clampPct((na(baseProb) ? 50.0 : baseProb) + offset)
+
+tpText(string title, float prob) =>
+    showTpProbabilities ? title + " " + str.tostring(prob, "#") + "%" : title
+
 tfCalibKey() =>
     timeframe.isdaily and timeframe.multiplier == 1 ? "1d" :
+     timeframe.isintraday and timeframe.multiplier == 240 ? "4h" :
      timeframe.isintraday and timeframe.multiplier == 60 ? "1h" :
      "fallback"
 
@@ -480,30 +504,38 @@ calibratedTradeStats(string figType, string side) =>
     string src = "input"
     if figType == "flat" and side == "LONG"
         if tfKey == "1d"
-            prob := 66.7, sampleN := 24, conf := "low", src := "flat|1d|long"
+            prob := 75.0, sampleN := 16, conf := "low", src := "top20|flat|1d|long"
+        else if tfKey == "4h"
+            prob := 65.0, sampleN := 20, conf := "medium", src := "top20|flat|4h|long"
         else if tfKey == "1h"
-            prob := 55.4, sampleN := 251, conf := "high", src := "flat|1h|long"
+            prob := 66.7, sampleN := 90, conf := "high", src := "top20|flat|1h|long"
         else
             prob := 56.4, sampleN := 275, conf := "high", src := "flat|long"
     else if figType == "flat" and side == "SHORT"
         if tfKey == "1d"
-            prob := 69.6, sampleN := 23, conf := "low", src := "flat|1d|short"
+            prob := 50.0, sampleN := 9, conf := "avoid", src := "top20|flat|1d|short|avoid"
+        else if tfKey == "4h"
+            prob := 61.9, sampleN := 21, conf := "medium", src := "top20|flat|4h|short"
         else if tfKey == "1h"
-            prob := 54.5, sampleN := 233, conf := "high", src := "flat|1h|short"
+            prob := 44.6, sampleN := 92, conf := "avoid", src := "top20|flat|1h|short|avoid"
         else
             prob := 55.9, sampleN := 256, conf := "high", src := "flat|short"
     else if figType == "double_corr" and side == "LONG"
         if tfKey == "1d"
             prob := 100.0, sampleN := 3, conf := "low", src := "double_corr|1d|long"
+        else if tfKey == "4h"
+            prob := 85.7, sampleN := 7, conf := "low", src := "top20|double_corr|4h|long"
         else if tfKey == "1h"
-            prob := 78.6, sampleN := 14, conf := "low", src := "double_corr|1h|long"
+            prob := 100.0, sampleN := 15, conf := "low", src := "top20|double_corr|1h|long"
         else
             prob := 82.4, sampleN := 17, conf := "low", src := "double_corr|long"
     else if figType == "double_corr" and side == "SHORT"
         if tfKey == "1d"
             prob := 100.0, sampleN := 1, conf := "low", src := "double_corr|1d|short"
+        else if tfKey == "4h"
+            prob := 85.7, sampleN := 7, conf := "low", src := "top20|double_corr|4h|short"
         else if tfKey == "1h"
-            prob := 86.7, sampleN := 15, conf := "low", src := "double_corr|1h|short"
+            prob := 100.0, sampleN := 10, conf := "low", src := "top20|double_corr|1h|short"
         else
             prob := 87.5, sampleN := 16, conf := "low", src := "double_corr|short"
     [prob, sampleN, conf, src]
@@ -511,6 +543,8 @@ calibratedTradeStats(string figType, string side) =>
 signalGrade(string action, float prob, int sampleN, string conf, float rr) =>
     if action != "BUY" and action != "SELL"
         "NO TRADE"
+    else if conf == "avoid" or prob < minActionProb
+        "NO EDGE"
     else if sampleN < 20 or conf == "low"
         "B-SMALL-N"
     else if prob >= 65 and not na(rr) and rr >= 1.5
@@ -794,6 +828,19 @@ var float lastTradeProb = na
 var float lastTradeEntry = na
 var float lastTradeTp = na
 var float lastTradeSl = na
+var float lastTradeAmp = na
+var int lastTradeB0 = na
+var int lastTradeB1 = na
+var float lastTradeLo = na
+var float lastTradeHi = na
+var int lastTradeWaveBar0 = na
+var int lastTradeWaveBar1 = na
+var int lastTradeWaveBar2 = na
+var int lastTradeWaveBar3 = na
+var float lastTradeWavePx0 = na
+var float lastTradeWavePx1 = na
+var float lastTradeWavePx2 = na
+var float lastTradeWavePx3 = na
 var string lastTradeStatus = "—"
 var int lastTradeAge = na
 var int lastTradeSampleN = 0
@@ -847,6 +894,19 @@ if showTrade and rc.confirmed and not na(rc.prevBar)
                 lastTradeEntry := entry4
                 lastTradeTp := isLongFlat ? entry4 + amp4 : entry4 - amp4
                 lastTradeSl := isLongFlat ? entry4 - amp4 : entry4 + amp4
+                lastTradeAmp := amp4
+                lastTradeB0 := b0h4
+                lastTradeB1 := b1h4
+                lastTradeLo := loh4
+                lastTradeHi := hih4
+                lastTradeWaveBar0 := array.get(hybBar, s4)
+                lastTradeWaveBar1 := array.get(hybBar, s4 + 1)
+                lastTradeWaveBar2 := array.get(hybBar, s4 + 2)
+                lastTradeWaveBar3 := array.get(hybBar, s4 + 3)
+                lastTradeWavePx0 := array.get(hybPx, s4)
+                lastTradeWavePx1 := array.get(hybPx, s4 + 1)
+                lastTradeWavePx2 := array.get(hybPx, s4 + 2)
+                lastTradeWavePx3 := array.get(hybPx, s4 + 3)
                 lastTradeStatus := "ACTIVE"
                 lastTradeAge := 0
                 lastTradeSampleN := nFlat
@@ -868,6 +928,19 @@ if showTrade and rc.confirmed and not na(rc.prevBar)
                 lastTradeEntry := entry4
                 lastTradeTp := isLongDc ? entry4 + amp4 : entry4 - amp4
                 lastTradeSl := isLongDc ? entry4 - amp4 : entry4 + amp4
+                lastTradeAmp := amp4
+                lastTradeB0 := b0h4
+                lastTradeB1 := b1h4
+                lastTradeLo := loh4
+                lastTradeHi := hih4
+                lastTradeWaveBar0 := array.get(hybBar, s4)
+                lastTradeWaveBar1 := array.get(hybBar, s4 + 1)
+                lastTradeWaveBar2 := array.get(hybBar, s4 + 2)
+                lastTradeWaveBar3 := array.get(hybBar, s4 + 3)
+                lastTradeWavePx0 := array.get(hybPx, s4)
+                lastTradeWavePx1 := array.get(hybPx, s4 + 1)
+                lastTradeWavePx2 := array.get(hybPx, s4 + 2)
+                lastTradeWavePx3 := array.get(hybPx, s4 + 3)
                 lastTradeStatus := "ACTIVE"
                 lastTradeAge := 0
                 lastTradeSampleN := nDc
@@ -927,6 +1000,7 @@ string actionNow = "WAIT"
 string actionReason = "NO SIGNAL"
 float actionRR = na
 float actionProgress = na
+bool htfAgainstAction = false
 
 if not supportedTradeSymbol
     actionReason := "UNSUPPORTED " + syminfo.type
@@ -939,6 +1013,7 @@ else if na(lastTradeEntry) or na(lastTradeTp) or na(lastTradeSl)
 else
     int actionAge = na(lastTradeAge) and not na(lastTradeConfBar) ? bar_index - lastTradeConfBar : lastTradeAge
     bool actionLong = lastTradeSide == "LONG"
+    htfAgainstAction := htfActionMode != "OFF" and ((actionLong and htfBiasDir < 0) or (not actionLong and htfBiasDir > 0))
     float rewardNow = actionLong ? lastTradeTp - close : close - lastTradeTp
     float riskNow = actionLong ? close - lastTradeSl : lastTradeSl - close
     float pathToTp = math.abs(lastTradeTp - lastTradeEntry)
@@ -955,17 +1030,243 @@ else
         actionReason := "LATE " + str.tostring(actionProgress * 100, "#") + "%"
     else if not na(actionRR) and actionRR < minActionRR
         actionReason := "RR BAD " + str.tostring(actionRR, "#.00")
-    else if useHtfFilter and actionLong and htfBiasDir < 0
+    else if not na(lastTradeProb) and lastTradeProb < minActionProb
+        actionReason := "PROB LOW " + str.tostring(lastTradeProb, "#.0") + "%"
+    else if lastTradeConfidence == "avoid"
+        actionReason := "NO EDGE " + lastTradeProbSource
+    else if htfActionMode == "BLOCK" and actionLong and htfBiasDir < 0
         actionReason := "HTF AGAINST " + htfBias
-    else if useHtfFilter and not actionLong and htfBiasDir > 0
+    else if htfActionMode == "BLOCK" and not actionLong and htfBiasDir > 0
         actionReason := "HTF AGAINST " + htfBias
     else
         actionNow := actionLong ? "BUY" : "SELL"
-        actionReason := "FRESH + RR OK"
+        actionReason := htfAgainstAction and htfActionMode == "WARN" ? "FRESH + RR OK / HTF WARN " + htfBias : "FRESH + RR OK"
 
 bool actionBuySignal = actionNow == "BUY" and tradeLongSignal
 bool actionSellSignal = actionNow == "SELL" and tradeShortSignal
 string signalGradeNow = signalGrade(actionNow, lastTradeProb, lastTradeSampleN, lastTradeConfidence, actionRR)
+if actionNow != "WAIT" and htfAgainstAction and htfActionMode == "WARN"
+    signalGradeNow := signalGradeNow == "A" ? "B-HTF" : signalGradeNow == "B" ? "C-HTF" : signalGradeNow + "-HTF"
+
+// ───────────────────── ТЕКУЩИЙ ТОРГОВЫЙ ПЛАН ─────────────────────
+var int drawnActionKey = na
+var line actionEntryLine = na
+var line actionSlLine = na
+var line actionTp1Line = na
+var line actionTp2Line = na
+var line actionTp3Line = na
+var label actionMainLabel = na
+var label actionEntryLabel = na
+var label actionSlLabel = na
+var label actionTp1Label = na
+var label actionTp2Label = na
+var label actionTp3Label = na
+var box actionWaveBox = na
+var line actionWaveLine1 = na
+var line actionWaveLine2 = na
+var line actionWaveLine3 = na
+var label actionWaveLabel0 = na
+var label actionWaveLabel1 = na
+var label actionWaveLabel2 = na
+var label actionWaveLabel3 = na
+var array<line> historicalPlanLines = array.new<line>()
+var array<label> historicalPlanLabels = array.new<label>()
+var array<box> historicalPlanBoxes = array.new<box>()
+
+bool canDrawActionPlan = showTradePlan and (actionNow == "BUY" or actionNow == "SELL") and not na(lastTradeConfBar) and not na(lastTradeEntry) and not na(lastTradeSl) and not na(lastTradeAmp) and lastTradeAmp > 0
+bool canDrawWaitNote = showTradePlan and actionNow == "WAIT" and supportedTradeSymbol and lastTradeSide != "—" and actionReason != "NO SIGNAL" and not na(lastTradeConfBar) and not na(lastTradeEntry)
+bool canDrawAnyAction = canDrawActionPlan or canDrawWaitNote
+int actionKey = canDrawActionPlan ? lastTradeConfBar * 10 + (actionNow == "BUY" ? 1 : 2) : canDrawWaitNote ? lastTradeConfBar * 10 + 3 : na
+bool redrawActionPlan = barstate.islast and (actionKey != drawnActionKey)
+if redrawActionPlan
+    bool deletePreviousPlan = onlyLatestSignal or not canDrawAnyAction
+    if deletePreviousPlan
+        if not na(actionEntryLine)
+            line.delete(actionEntryLine)
+        if not na(actionSlLine)
+            line.delete(actionSlLine)
+        if not na(actionTp1Line)
+            line.delete(actionTp1Line)
+        if not na(actionTp2Line)
+            line.delete(actionTp2Line)
+        if not na(actionTp3Line)
+            line.delete(actionTp3Line)
+        if not na(actionMainLabel)
+            label.delete(actionMainLabel)
+        if not na(actionEntryLabel)
+            label.delete(actionEntryLabel)
+        if not na(actionSlLabel)
+            label.delete(actionSlLabel)
+        if not na(actionTp1Label)
+            label.delete(actionTp1Label)
+        if not na(actionTp2Label)
+            label.delete(actionTp2Label)
+        if not na(actionTp3Label)
+            label.delete(actionTp3Label)
+        if not na(actionWaveBox)
+            box.delete(actionWaveBox)
+        if not na(actionWaveLine1)
+            line.delete(actionWaveLine1)
+        if not na(actionWaveLine2)
+            line.delete(actionWaveLine2)
+        if not na(actionWaveLine3)
+            line.delete(actionWaveLine3)
+        if not na(actionWaveLabel0)
+            label.delete(actionWaveLabel0)
+        if not na(actionWaveLabel1)
+            label.delete(actionWaveLabel1)
+        if not na(actionWaveLabel2)
+            label.delete(actionWaveLabel2)
+        if not na(actionWaveLabel3)
+            label.delete(actionWaveLabel3)
+
+    actionEntryLine := na
+    actionSlLine := na
+    actionTp1Line := na
+    actionTp2Line := na
+    actionTp3Line := na
+    actionMainLabel := na
+    actionEntryLabel := na
+    actionSlLabel := na
+    actionTp1Label := na
+    actionTp2Label := na
+    actionTp3Label := na
+    actionWaveBox := na
+    actionWaveLine1 := na
+    actionWaveLine2 := na
+    actionWaveLine3 := na
+    actionWaveLabel0 := na
+    actionWaveLabel1 := na
+    actionWaveLabel2 := na
+    actionWaveLabel3 := na
+    drawnActionKey := actionKey
+
+    if canDrawActionPlan
+        bool actionLongPlan = actionNow == "BUY"
+        int planDir = actionLongPlan ? 1 : -1
+        int x0Plan = lastTradeConfBar
+        int x1Plan = lastTradeConfBar + actionLevelBars
+        color planColor = actionLongPlan ? color.lime : color.red
+        float tp1 = lastTradeEntry + planDir * lastTradeAmp * 0.618
+        float tp2 = lastTradeEntry + planDir * lastTradeAmp
+        float tp3 = lastTradeEntry + planDir * lastTradeAmp * 1.618
+        float tp1Prob = tpProbability(lastTradeProb, 13.0)
+        float tp2Prob = tpProbability(lastTradeProb, 0.0)
+        float tp3Prob = tpProbability(lastTradeProb, -17.0)
+        string actionIcon = actionLongPlan ? "▲ BUY" : "▼ SELL"
+        string waveLabels = lastTradeType == "DoubleCorr fade" ? "0|W|X|Y" : "0|A|B|C"
+        array<string> wlbl = str.split(waveLabels, "|")
+
+        actionEntryLine := line.new(x0Plan, lastTradeEntry, x1Plan, lastTradeEntry,
+             xloc = xloc.bar_index, color = color.new(color.white, 10), width = 2, style = line.style_solid)
+        actionSlLine := line.new(x0Plan, lastTradeSl, x1Plan, lastTradeSl,
+             xloc = xloc.bar_index, color = color.new(color.red, 0), width = 2, style = line.style_solid)
+        actionTp1Line := line.new(x0Plan, tp1, x1Plan, tp1,
+             xloc = xloc.bar_index, color = color.new(color.lime, 35), width = 1, style = line.style_dotted)
+        actionTp2Line := line.new(x0Plan, tp2, x1Plan, tp2,
+             xloc = xloc.bar_index, color = color.new(color.lime, 15), width = 2, style = line.style_dashed)
+        actionTp3Line := line.new(x0Plan, tp3, x1Plan, tp3,
+             xloc = xloc.bar_index, color = color.new(color.aqua, 10), width = 2, style = line.style_dotted)
+
+        actionMainLabel := label.new(x0Plan, lastTradeEntry, actionIcon + "\n" + lastTradeType + "\nP≈" + str.tostring(lastTradeProb, "#.0") + "% / " + signalGradeNow,
+             xloc = xloc.bar_index, yloc = yloc.price,
+             style = actionLongPlan ? label.style_label_up : label.style_label_down,
+             color = color.new(planColor, 0), textcolor = color.white, size = size.normal,
+             tooltip = "Action now: свежий сигнал. Entry/SL/TP1-3 построены от амплитуды подтверждённой Flat/DC фигуры.")
+        actionEntryLabel := label.new(x1Plan, lastTradeEntry, "Entry",
+             xloc = xloc.bar_index, yloc = yloc.price, style = label.style_label_left,
+             color = color.new(color.white, 15), textcolor = color.black, size = size.tiny)
+        actionSlLabel := label.new(x1Plan, lastTradeSl, "Stop Loss",
+             xloc = xloc.bar_index, yloc = yloc.price, style = label.style_label_left,
+             color = color.new(color.red, 0), textcolor = color.white, size = size.tiny)
+        actionTp1Label := label.new(x1Plan, tp1, tpText("TP1 conservative", tp1Prob),
+             xloc = xloc.bar_index, yloc = yloc.price, style = label.style_label_left,
+             color = color.new(color.lime, 35), textcolor = color.white, size = size.tiny)
+        actionTp2Label := label.new(x1Plan, tp2, tpText("TP2 base", tp2Prob),
+             xloc = xloc.bar_index, yloc = yloc.price, style = label.style_label_left,
+             color = color.new(color.lime, 10), textcolor = color.white, size = size.tiny)
+        actionTp3Label := label.new(x1Plan, tp3, tpText("TP3 aggressive", tp3Prob),
+             xloc = xloc.bar_index, yloc = yloc.price, style = label.style_label_left,
+             color = color.new(color.aqua, 10), textcolor = color.white, size = size.tiny)
+
+        if showActionWave and not na(lastTradeWaveBar0) and not na(lastTradeWaveBar3)
+            actionWaveBox := box.new(lastTradeB0, lastTradeHi, lastTradeB1, lastTradeLo,
+                 xloc = xloc.bar_index, border_color = color.new(planColor, 15),
+                 border_width = 1, bgcolor = color.new(planColor, 92))
+            actionWaveLine1 := line.new(lastTradeWaveBar0, lastTradeWavePx0, lastTradeWaveBar1, lastTradeWavePx1,
+                 xloc = xloc.bar_index, color = color.new(planColor, 0), width = 2)
+            actionWaveLine2 := line.new(lastTradeWaveBar1, lastTradeWavePx1, lastTradeWaveBar2, lastTradeWavePx2,
+                 xloc = xloc.bar_index, color = color.new(planColor, 0), width = 2)
+            actionWaveLine3 := line.new(lastTradeWaveBar2, lastTradeWavePx2, lastTradeWaveBar3, lastTradeWavePx3,
+                 xloc = xloc.bar_index, color = color.new(planColor, 0), width = 2)
+            actionWaveLabel0 := label.new(lastTradeWaveBar0, lastTradeWavePx0, array.get(wlbl, 0),
+                 xloc = xloc.bar_index, yloc = yloc.price, style = label.style_label_center,
+                 color = color.new(planColor, 20), textcolor = color.white, size = size.tiny)
+            actionWaveLabel1 := label.new(lastTradeWaveBar1, lastTradeWavePx1, array.get(wlbl, 1),
+                 xloc = xloc.bar_index, yloc = yloc.price, style = label.style_label_center,
+                 color = color.new(planColor, 20), textcolor = color.white, size = size.tiny)
+            actionWaveLabel2 := label.new(lastTradeWaveBar2, lastTradeWavePx2, array.get(wlbl, 2),
+                 xloc = xloc.bar_index, yloc = yloc.price, style = label.style_label_center,
+                 color = color.new(planColor, 20), textcolor = color.white, size = size.tiny)
+            actionWaveLabel3 := label.new(lastTradeWaveBar3, lastTradeWavePx3, array.get(wlbl, 3),
+                 xloc = xloc.bar_index, yloc = yloc.price, style = label.style_label_center,
+                 color = color.new(planColor, 20), textcolor = color.white, size = size.tiny)
+
+    else if canDrawWaitNote
+        actionMainLabel := label.new(lastTradeConfBar, lastTradeEntry, "WAIT\n" + actionReason,
+             xloc = xloc.bar_index, yloc = yloc.price,
+             style = label.style_label_left,
+             color = color.new(color.yellow, 15), textcolor = color.black, size = size.small,
+             tooltip = "Нет рабочего входа: late, target passed, stale, weak probability, SL zone или другой фильтр Action now.")
+
+    if not onlyLatestSignal
+        if not na(actionEntryLine)
+            array.push(historicalPlanLines, actionEntryLine)
+        if not na(actionSlLine)
+            array.push(historicalPlanLines, actionSlLine)
+        if not na(actionTp1Line)
+            array.push(historicalPlanLines, actionTp1Line)
+        if not na(actionTp2Line)
+            array.push(historicalPlanLines, actionTp2Line)
+        if not na(actionTp3Line)
+            array.push(historicalPlanLines, actionTp3Line)
+        if not na(actionWaveLine1)
+            array.push(historicalPlanLines, actionWaveLine1)
+        if not na(actionWaveLine2)
+            array.push(historicalPlanLines, actionWaveLine2)
+        if not na(actionWaveLine3)
+            array.push(historicalPlanLines, actionWaveLine3)
+        if not na(actionMainLabel)
+            array.push(historicalPlanLabels, actionMainLabel)
+        if not na(actionEntryLabel)
+            array.push(historicalPlanLabels, actionEntryLabel)
+        if not na(actionSlLabel)
+            array.push(historicalPlanLabels, actionSlLabel)
+        if not na(actionTp1Label)
+            array.push(historicalPlanLabels, actionTp1Label)
+        if not na(actionTp2Label)
+            array.push(historicalPlanLabels, actionTp2Label)
+        if not na(actionTp3Label)
+            array.push(historicalPlanLabels, actionTp3Label)
+        if not na(actionWaveLabel0)
+            array.push(historicalPlanLabels, actionWaveLabel0)
+        if not na(actionWaveLabel1)
+            array.push(historicalPlanLabels, actionWaveLabel1)
+        if not na(actionWaveLabel2)
+            array.push(historicalPlanLabels, actionWaveLabel2)
+        if not na(actionWaveLabel3)
+            array.push(historicalPlanLabels, actionWaveLabel3)
+        if not na(actionWaveBox)
+            array.push(historicalPlanBoxes, actionWaveBox)
+        while array.size(historicalPlanLines) > maxHistoricalSignals * 8
+            line oldLine = array.shift(historicalPlanLines)
+            line.delete(oldLine)
+        while array.size(historicalPlanLabels) > maxHistoricalSignals * 10
+            label oldLabel = array.shift(historicalPlanLabels)
+            label.delete(oldLabel)
+        while array.size(historicalPlanBoxes) > maxHistoricalSignals
+            box oldBox = array.shift(historicalPlanBoxes)
+            box.delete(oldBox)
 
 // ──────────────────────── ИНФО-ПАНЕЛЬ ────────────────────────────
 alertcondition(actionBuySignal, "EWB Action BUY", "EWB Action now BUY on {{ticker}} {{interval}}")
@@ -1000,8 +1301,8 @@ if barstate.islast
     table.cell(info, 0, 11, "RR / progress", text_color = color.white, bgcolor = color.new(color.gray, 50))
     table.cell(info, 1, 11, (na(actionRR) ? "—" : str.tostring(actionRR, "#.00")) + " / " + (na(actionProgress) ? "—" : str.tostring(actionProgress * 100, "#") + "%"),
          text_color = color.white, bgcolor = color.new(color.gray, 70))
-    table.cell(info, 0, 12, "HTF bias", text_color = color.white, bgcolor = color.new(color.gray, 50))
-    table.cell(info, 1, 12, htfBias, text_color = color.white,
+    table.cell(info, 0, 12, "HTF mode/bias", text_color = color.white, bgcolor = color.new(color.gray, 50))
+    table.cell(info, 1, 12, htfActionMode + " / " + htfBias, text_color = color.white,
          bgcolor = htfBias == "UP" ? color.new(color.lime, 45) : htfBias == "DOWN" ? color.new(color.red, 45) : color.new(color.gray, 70))
     table.cell(info, 0, 13, "Calib / TF", text_color = color.white, bgcolor = color.new(color.gray, 50))
     table.cell(info, 1, 13, lastTradeProbSource, text_color = color.white, bgcolor = color.new(color.gray, 70))
