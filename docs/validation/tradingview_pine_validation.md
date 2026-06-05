@@ -19,12 +19,26 @@ Passed:
 - `python3 -m pytest python/tests -q`
 - Static guard check for `Market mode`, `CRYPTO RESEARCH ONLY`, and removed
   `stockOnlyMode`.
+- Static guard check that `Probability Overlay v0` no longer uses legacy
+  `Market mode = Any`.
 
-Result: `34 passed`.
+Result: `39 passed`.
 
 ## Browser Observation
 
 Current in-app browser URL: `https://www.tradingview.com/chart/`
+
+Follow-up observation on `2026-06-05`:
+
+- Chart title reported by TradingView: `SPCE 4.29 ... BTC USD`.
+- Pine Editor was open for `EWBProbv0`.
+- The editor still displayed an older saved overlay version:
+  - `Market mode` options still behaved like the legacy `Any` contract.
+  - The panel code displayed only `syminfo.type` in the Market row instead of
+    `syminfo.type + " / " + marketModel`.
+- Browser automation could read the editor but did not reliably replace the
+  Monaco editor contents, so the live TradingView script must be updated
+  manually from the local file.
 
 Observed chart:
 
@@ -101,6 +115,12 @@ Research-only overlay:
 - Indicator title: `EWB — Probability Overlay v0`
 - Short title: `EWBProbv0`
 - Keep actions/alerts disabled unless intentionally doing research parity.
+- Expected code checks:
+  - `Market mode` options are `Stocks`, `Crypto`, `Auto`, `Research any`
+  - no legacy `Any` option remains
+  - crypto charts show `crypto-v0 research`
+  - crypto/unsupported charts hide stock `P / EV`, `Conf / N`, `Entry`,
+    `Stop`, and `TP1-3` values in the overlay panel
 
 Manual validation after updating `EWB Mono`:
 

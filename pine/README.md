@@ -41,8 +41,9 @@
 - переводит вход в `WAIT`, если `TP1` уже был пройден после сигнала;
 - по умолчанию работает в `Market mode = Stocks` и переводит crypto/unsupported symbols
   в `WAIT`, потому калибровка v0 предназначена для акций;
-- не рисует trade-plan на неподдержанном рынке, чтобы старые stock-вероятности не
-  выглядели как crypto-сигнал;
+- не рисует trade-plan и скрывает `P/EV`, `Conf / N`, `Entry`, `Stop`, `TP1-3`
+  на неподдержанном рынке, чтобы старые stock-вероятности не выглядели как
+  crypto-сигнал;
 - даже при `Market mode = Crypto` остаётся research-only и не включает stock-calibrated
   Action/alerts;
 - показывает `impulse/triangle` как `Skip` / no-trade context;

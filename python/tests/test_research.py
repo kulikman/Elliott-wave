@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 import pandas as pd
 import pytest
 
@@ -59,6 +61,9 @@ from ewb.research import (
 )
 from ewb.research.universe import CRYPTO
 
+REPO = Path(__file__).resolve().parents[2]
+
+
 def test_cost_for_asset_classes():
     assert cost_for("AAPL") == 0.0008
     assert cost_for("SPY") == 0.0008
@@ -70,6 +75,22 @@ def test_cost_for_asset_classes():
 def test_crypto_universe_uses_trx_instead_of_legacy_matic():
     assert "TRX-USD" in CRYPTO
     assert "MATIC-USD" not in CRYPTO
+
+
+def test_pine_crypto_research_contract_is_static():
+    mono = (REPO / "pine" / "ewb_monowaves_mtf.pine").read_text(encoding="utf-8")
+    overlay = (REPO / "pine" / "ewb_probability_overlay_v0.pine").read_text(encoding="utf-8")
+
+    for source in (mono, overlay):
+        assert 'options = ["Stocks", "Crypto", "Auto", "Research any"]' in source
+        assert '"Any"' not in source
+        assert "crypto-v0 research" in source
+        assert "marketActionable" in source or "actionableTradeSymbol" in source
+
+    assert 'actionReason := "CRYPTO RESEARCH ONLY"' in mono
+    assert 'actionReason = not isMarketSupported ? "unsupported market" : isCryptoResearch ? "crypto research only"' in overlay
+    assert "displayPev = isMarketActionable" in overlay
+    assert "displayEntry = isMarketActionable" in overlay
 
 
 def test_historical_grid_checkpoint_helpers_clean_companions(tmp_path):
