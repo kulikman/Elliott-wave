@@ -130,6 +130,44 @@ Current validation result: `blocked until TradingView Pine script is updated`.
 The latest browser attempt after commit `78c297b` still showed the old saved
 indicator on BTCUSDT.
 
+## Browser Attempt After Commit `6eb40fe`
+
+Status: `partially mitigated / still blocked`.
+
+What was verified:
+
+- The local `pine/ewb_monowaves_mtf.pine` still contains the crypto guard:
+  `Market mode`, `CRYPTO RESEARCH ONLY`, and the `decisionMode` table row.
+- The TradingView Pine Editor accepted the current local script text and showed
+  the new info-panel code around `Action now`, `Reason`, `Mode`, `Market`, and
+  `Calib / TF`.
+- The old live BTCUSDT chart instance still displayed the stale
+  stock-calibrated panel before removal: `SHORT`, `Flat fade`, `P≈ 61.0%`,
+  numeric `Entry / TP`, and numeric `SL / invalid`.
+- The stale `EWB Mono` chart instance was removed from the BTCUSDT chart, so
+  the live chart no longer shows that misleading crypto SHORT overlay.
+
+Remaining blocker:
+
+- Clicking `Add to chart` from the TradingView Pine Editor did not add the new
+  `EWB Mono` instance back to the chart.
+- The Pine Editor stayed on `Untitled script` with a loading spinner and no
+  visible compile error in the browser text/logs.
+
+Current live TradingView state:
+
+- BTCUSDT chart has no stale `EWB Mono` indicator instance.
+- The updated local repository Pine code is not yet confirmed as live on the
+  chart.
+
+Minimal next manual step:
+
+1. In TradingView, reload the chart or reopen Pine Editor.
+2. Paste the full contents of `pine/ewb_monowaves_mtf.pine`.
+3. Save the script as a private TradingView script.
+4. Add the saved script to the chart.
+5. Confirm the BTCUSDT panel shows `WAIT / CRYPTO RESEARCH ONLY`.
+
 ## Manual Update Package
 
 Primary script for Anton's working indicator:

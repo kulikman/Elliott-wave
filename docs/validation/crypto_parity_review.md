@@ -89,6 +89,23 @@ Treat TradingView crypto parity as blocked until Anton manually updates the
 saved TradingView script from `pine/ewb_monowaves_mtf.pine` and re-adds it to
 the chart. Local code is guarded; the live chart is not yet running it.
 
+Follow-up browser attempt after commit `6eb40fe`:
+
+- The local current `pine/ewb_monowaves_mtf.pine` text was loaded into the
+  TradingView Pine Editor.
+- The editor showed the current info-panel code with `Action now`, `Reason`,
+  `Mode`, `Market`, and `Calib / TF`.
+- The stale live `EWB Mono` instance was removed from BTCUSDT, so the chart no
+  longer displays the misleading crypto `SHORT / Flat fade / P≈61.0%` panel.
+- Re-adding the new script from the editor remained blocked: `Add to chart`
+  left the editor on `Untitled script` with a loading spinner and did not create
+  a new `EWB Mono` instance.
+
+Updated decision:
+The immediate misleading crypto short has been removed from the live chart, but
+TradingView parity is still blocked until the current Pine script is saved and
+added manually as a live TradingView indicator.
+
 Before promotion, run:
 
 1. Manual TradingView parity on BTCUSDT, ETHUSDT, SOLUSDT and TRXUSDT.
