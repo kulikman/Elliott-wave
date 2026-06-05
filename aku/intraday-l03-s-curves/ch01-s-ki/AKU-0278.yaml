@@ -1,0 +1,39 @@
+id: AKU-0278
+type: heuristic
+strength: heuristic
+status: draft
+topic: trading-application
+subtopics:
+- retracement
+- wave-identification
+statement_ru: Знание структуры S-ки и вариантов её отката автор рассматривает как основу для более точного открытия сделок.
+statement_en: null
+source:
+  book_id: intraday-l03-s-curves
+  page: 60
+  chapter: 'Урок 3: S-ки'
+  section: Практическое применение S-ки
+  figure_id: null
+  verbatim_quote:
+    text: Знание структуры S-ки и вариантов её отката позволяет открывать сделки довольно точно..
+    language: ru
+formalization:
+  status: not_attempted
+  applies_when: null
+  constraint: null
+  formalization_notes: null
+aliases:
+- S-ка
+related_aku:
+- AKU-0248
+- AKU-0257
+- AKU-0258
+- AKU-0259
+- AKU-0260
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-04T21:17:00Z'
+review_notes: 'Sprint 3 pool 2: heuristics. Обобщающая торговая эвристика поверх уже извлечённых conditional_rules по откатам S-ки.'
+requires_review: true

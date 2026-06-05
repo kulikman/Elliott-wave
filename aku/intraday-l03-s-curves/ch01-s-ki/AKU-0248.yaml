@@ -1,0 +1,35 @@
+id: AKU-0248
+type: definition
+strength: heuristic
+status: draft
+topic: impulse-extension
+subtopics:
+- impulse
+- trading-application
+statement_ru: S-ка в этом источнике определяется как обрамление импульса с растянутой 3-й волной по Нили.
+statement_en: null
+source:
+  book_id: intraday-l03-s-curves
+  page: 33
+  chapter: 'Урок 3: S-ки'
+  section: Связь с импульсом Нили
+  figure_id: page-033
+  verbatim_quote:
+    text: S-ка является обрамлением Импульсов с Растянутой 3-й волной, рассмотренными Нили в книге "Мастерство анализа Воле Эллиотта".
+    language: ru
+formalization:
+  status: not_attempted
+  applies_when: null
+  constraint: null
+  formalization_notes: null
+aliases:
+- S-ка
+- S-кривая
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-04T17:46:43Z'
+review_notes: Первый definition-проход pool 2; формулировка опирается на текст и Vision page-033, требует проверки написания названия книги в источнике.
+requires_review: true

@@ -1,0 +1,33 @@
+id: AKU-0260
+type: rule
+strength: conditional
+status: draft
+topic: retracement
+subtopics:
+- trading-application
+statement_ru: Если S-ка встречается по ходу тренда, её откат может быть 50% и менее.
+statement_en: null
+source:
+  book_id: intraday-l03-s-curves
+  page: 15
+  chapter: 'Урок 3: S-ки'
+  section: S-ка по ходу тренда
+  figure_id: null
+  verbatim_quote:
+    text: Если S-ка встречается по ходу тренда, откат может быть 50% и менее...
+    language: ru
+formalization:
+  status: not_attempted
+  applies_when: null
+  constraint: null
+  formalization_notes: null
+aliases: []
+related_aku:
+- AKU-0248
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-04T17:59:40Z'
+review_notes: 'Sprint 2 pool 2: conditional_rules. Формулировка автора содержит "может", поэтому при review возможно перевести strength в heuristic.'
+requires_review: true

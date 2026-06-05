@@ -1,0 +1,35 @@
+id: AKU-0252
+type: definition
+strength: heuristic
+status: draft
+topic: time-projection
+subtopics:
+- price-projection
+statement_ru: PTV в этом источнике определяется как вектор Цена-Время, одновременно отражающий изменения цены и времени.
+statement_en: Price Time Vector
+source:
+  book_id: intraday-l09-growth-formulas
+  page: 1
+  chapter: 'Урок 9: Формулы Роста Фракталов'
+  section: PTV как мера перехода мерности
+  figure_id: null
+  verbatim_quote:
+    text: Вектор "Цена-Время" - Price Time Vector (PTV) придумал Брэдли Коуэн. PTV - отражает изменения Цены и Времени СРАЗУ следующим образом...
+    language: ru
+formalization:
+  status: not_attempted
+  applies_when: null
+  constraint: null
+  formalization_notes: null
+aliases:
+- PTV
+- Price Time Vector
+- Вектор Цена-Время
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-04T17:46:43Z'
+review_notes: Первый definition-проход pool 2; способ расчёта PTV не формализован и требует отдельного прохода.
+requires_review: false

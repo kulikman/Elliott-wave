@@ -1,0 +1,38 @@
+id: AKU-0298
+type: heuristic
+strength: heuristic
+status: draft
+topic: time-projection
+subtopics:
+- price-projection
+- trading-application
+statement_ru: Используя PTV-треугольник и формулы роста PTV, автор считает возможным довольно точно прогнозировать разворотную цену и время её достижения.
+statement_en: null
+source:
+  book_id: intraday-l09-growth-formulas
+  page: 75
+  chapter: 'Урок 9: Формулы Роста Фракталов'
+  section: Прогноз разворотной цены и времени
+  figure_id: null
+  verbatim_quote:
+    text: Используя PTV-треугольник и формулы роста PTV вы сможете довольно точно спрогнозировать разворотную Цену и Время её достижения!
+    language: ru
+formalization:
+  status: not_attempted
+  applies_when: null
+  constraint: null
+  formalization_notes: null
+aliases:
+- PTV-треугольник
+- формулы роста PTV
+related_aku:
+- AKU-0252
+- AKU-0296
+- AKU-0297
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-05T00:23:00Z'
+review_notes: 'Sprint 3 pool 2: heuristics. Итоговая прогнозная эвристика; конкретные расчёты страниц 56-75 остаются в Vision gap/human review.'
+requires_review: true

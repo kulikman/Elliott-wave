@@ -1,0 +1,37 @@
+id: AKU-0256
+type: definition
+strength: heuristic
+status: draft
+topic: wave-degree
+subtopics:
+- trading-application
+- time-projection
+statement_ru: Смена мерности фрактала определяется как завершение развития текущего фрактала, разворот и начало развития фрактала большей мерности.
+statement_en: null
+source:
+  book_id: intraday-l08-fractal-dimension-shift
+  page: 1
+  chapter: 'Урок 8: Смена Мерности Фрактала'
+  section: Смена мерности фрактала
+  figure_id: null
+  verbatim_quote:
+    text: |-
+      Смена мерности фрактала (то есть его смерть) это - завершение его развития, разворот и...
+      начало развития фрактала БОЛЬШЕЙ мерности...
+    language: ru
+formalization:
+  status: not_attempted
+  applies_when: null
+  constraint: null
+  formalization_notes: null
+aliases:
+- Смена Мерности Фрактала
+- смена мерности
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-04T17:56:57Z'
+review_notes: 'Sprint 1 pool 2: definitions, один источник intraday-l08-fractal-dimension-shift. Лучшее место входа в сделку из той же цитатной области не включено и должно идти отдельной heuristic.'
+requires_review: true

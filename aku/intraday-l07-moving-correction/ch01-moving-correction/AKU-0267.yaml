@@ -1,0 +1,34 @@
+id: AKU-0267
+type: rule
+strength: conditional
+status: draft
+topic: wave-identification
+subtopics:
+- flat
+- retracement
+statement_ru: Если волна C намного меньше 61.8% волны A, то B-волна, вероятно, ещё не завершена.
+statement_en: null
+source:
+  book_id: intraday-l07-moving-correction
+  page: 22
+  chapter: 'Урок 7: Подвижная Коррекция'
+  section: Ползущая коррекция
+  figure_id: page-022
+  verbatim_quote:
+    text: если она намного меньше этой величины, b-волна, вероятно, еще не завершена
+    language: ru
+formalization:
+  status: not_attempted
+  applies_when: null
+  constraint: null
+  formalization_notes: null
+aliases: []
+related_aku:
+- AKU-0266
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-04T20:32:24Z'
+review_notes: 'Sprint 2 pool 2: conditional_rules. "Эта величина" ссылается на 61.8% волны-a из AKU-0266; требуется human review по изображению.'
+requires_review: true

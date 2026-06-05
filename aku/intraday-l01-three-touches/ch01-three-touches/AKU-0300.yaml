@@ -1,0 +1,36 @@
+id: AKU-0300
+type: heuristic
+strength: heuristic
+status: draft
+topic: trading-application
+subtopics:
+- wave-identification
+- channeling
+statement_ru: Если третье касание происходит на линии прорыва, автор ожидает разворот вниз.
+statement_en: null
+source:
+  book_id: intraday-l01-three-touches
+  page: 1
+  chapter: 'Урок 1: Правило 3-х касаний'
+  section: Пример 3
+  figure_id: null
+  verbatim_quote:
+    text: 3-е касание случилось на Линии Прорыва... конечно здесь будет разворот вниз...
+    language: ru
+formalization:
+  status: not_attempted
+  applies_when: null
+  constraint: null
+  formalization_notes: null
+aliases:
+- Правило 3-х касаний
+- Линия Прорыва
+related_aku:
+- AKU-0299
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-05T00:36:00Z'
+review_notes: 'Sprint 3 pool 2: heuristics. Направление разворота взято из текстового примера; проверить по изображению перед верификацией.'
+requires_review: true

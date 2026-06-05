@@ -1,0 +1,36 @@
+id: AKU-0257
+type: rule
+strength: conditional
+status: draft
+topic: retracement
+subtopics:
+- flat
+- trading-application
+statement_ru: Если S-ка входит в состав флэта, откат S-ки составляет 100%.
+statement_en: null
+source:
+  book_id: intraday-l03-s-curves
+  page: 3
+  chapter: 'Урок 3: S-ки'
+  section: Частота S-ок и флэт
+  figure_id: null
+  verbatim_quote:
+    text: |-
+      Поиск S-к на реальных графиках показал что эта фигура встречается часто,
+      но 100% откат случается, если S-ка входит в состав флэта...
+    language: ru
+formalization:
+  status: not_attempted
+  applies_when: null
+  constraint: null
+  formalization_notes: null
+aliases: []
+related_aku:
+- AKU-0248
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-04T17:59:40Z'
+review_notes: 'Sprint 2 pool 2: conditional_rules, один источник intraday-l03-s-curves. Формализацию отката не выполнять до human review.'
+requires_review: true

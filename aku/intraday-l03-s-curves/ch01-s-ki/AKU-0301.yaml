@@ -1,0 +1,36 @@
+id: AKU-0301
+type: exception
+strength: conditional
+status: draft
+topic: retracement
+subtopics:
+- trading-application
+statement_ru: 'S-ка по ходу тренда является исключительным случаем относительно ожидания полного отката: её откат может быть 50% и менее.'
+statement_en: null
+source:
+  book_id: intraday-l03-s-curves
+  page: 15
+  chapter: 'Урок 3: S-ки'
+  section: S-ка по ходу тренда
+  figure_id: null
+  verbatim_quote:
+    text: Если S-ка встречается по ходу тренда, откат может быть 50% и менее...
+    language: ru
+formalization:
+  status: not_attempted
+  applies_when: null
+  constraint: null
+  formalization_notes: null
+aliases:
+- S-ка
+related_aku:
+- AKU-0248
+- AKU-0257
+- AKU-0260
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-05T00:50:00Z'
+review_notes: 'Sprint 4 pool 2: exceptions. Трактуется как исключение к полному/100% откату S-ки; contradicts_aku не заполнялось без human approval.'
+requires_review: true

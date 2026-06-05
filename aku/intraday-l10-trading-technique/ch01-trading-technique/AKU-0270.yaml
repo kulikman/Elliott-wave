@@ -1,0 +1,33 @@
+id: AKU-0270
+type: heuristic
+strength: heuristic
+status: draft
+topic: trading-application
+subtopics:
+- impulse
+- flat
+statement_ru: 'Для торговли новостей автор предлагает определить текущую и новостную волну: обычно до новости идёт флэт как волна II, а в момент новости ожидается импульсная волна III.'
+statement_en: null
+source:
+  book_id: intraday-l10-trading-technique
+  page: 30
+  chapter: 'Урок 10: Техника Торговли'
+  section: Торговля новостей
+  figure_id: null
+  verbatim_quote:
+    text: Прежде всего надо понять какая волна идет в данный момент и какая волна будет новостной...Обычно до новости идет флэт... это Волна II ...Значит в момент выхода новости будет импульсная Волна III.
+    language: ru
+formalization:
+  status: not_attempted
+  applies_when: null
+  constraint: null
+  formalization_notes: null
+aliases: []
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-04T20:37:36Z'
+review_notes: 'Sprint 3 pool 2: heuristics. Маркер "обычно" оставляет правило эвристическим, не mandatory.'
+requires_review: true

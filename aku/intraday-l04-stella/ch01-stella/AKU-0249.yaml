@@ -1,0 +1,33 @@
+id: AKU-0249
+type: definition
+strength: heuristic
+status: draft
+topic: impulse-extension
+subtopics:
+- impulse
+statement_ru: Стэлла в этом источнике определяется как импульс с растянутой 5-й волной по Нили.
+statement_en: null
+source:
+  book_id: intraday-l04-stella
+  page: 18
+  chapter: 'Урок 4: Стэлла'
+  section: Связь с импульсом Нили
+  figure_id: page-018
+  verbatim_quote:
+    text: Стэлла это в сущности Импульс с Растянутой 5-й волной, подробно рассмотренный Гленом Нили...
+    language: ru
+formalization:
+  status: not_attempted
+  applies_when: null
+  constraint: null
+  formalization_notes: null
+aliases:
+- Стэлла
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-04T17:46:43Z'
+review_notes: Первый definition-проход pool 2; числовые откаты Стэллы не включены, их нужно извлекать отдельным conditional/heuristic проходом.
+requires_review: false

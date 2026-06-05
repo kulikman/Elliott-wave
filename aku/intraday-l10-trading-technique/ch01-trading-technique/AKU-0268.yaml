@@ -1,0 +1,38 @@
+id: AKU-0268
+type: rule
+strength: conditional
+status: draft
+topic: trading-application
+subtopics:
+- wave-identification
+statement_ru: Если во время выхода новости цена делает ложное движение, стоп нужно ставить дальше обычного — на 8-10 пунктов от видимой волновой фигуры.
+statement_en: null
+source:
+  book_id: intraday-l10-trading-technique
+  page: 40
+  chapter: 'Урок 10: Техника Торговли'
+  section: Ложное движение на новости
+  figure_id: null
+  verbatim_quote:
+    text: |-
+      Бывает так что во время выхода новости цена делает ложное движение...Например, как здесь...
+
+
+
+      В этом случае надо ставить стоп дальше чем обычно... на 8-10 п. от видимой вами волновой фигуры...
+    language: ru
+formalization:
+  status: not_attempted
+  applies_when: null
+  constraint: null
+  formalization_notes: null
+aliases: []
+related_aku:
+- AKU-0253
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-04T20:36:12Z'
+review_notes: 'Sprint 2 pool 2: conditional_rules, один источник intraday-l10-trading-technique. Общий стоп 8-10 пунктов и новостную волну II/III вынести в Sprint 3 heuristics.'
+requires_review: true

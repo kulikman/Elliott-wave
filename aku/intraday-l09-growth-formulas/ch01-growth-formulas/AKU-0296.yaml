@@ -1,0 +1,36 @@
+id: AKU-0296
+type: heuristic
+strength: heuristic
+status: draft
+topic: time-projection
+subtopics:
+- price-projection
+- trading-application
+statement_ru: Автор описывает PTV-треугольник как прогностический инструмент для расчёта будущей цены и времени её достижения.
+statement_en: null
+source:
+  book_id: intraday-l09-growth-formulas
+  page: 45
+  chapter: 'Урок 9: Формулы Роста Фракталов'
+  section: PTV-треугольник
+  figure_id: null
+  verbatim_quote:
+    text: Такое открытие позволило воплотить в жизнь прогностический инструмент "PTV — треугольник", позволяющий рассчитать будущую Цену и Время её достижения!
+    language: ru
+formalization:
+  status: not_attempted
+  applies_when: null
+  constraint: null
+  formalization_notes: null
+aliases:
+- PTV-треугольник
+- Price Time Vector
+related_aku:
+- AKU-0252
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-05T00:21:00Z'
+review_notes: 'Sprint 3 pool 2: heuristics. Инструмент прогноза зафиксирован без формализации расчёта.'
+requires_review: true

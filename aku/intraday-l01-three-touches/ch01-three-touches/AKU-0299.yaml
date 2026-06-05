@@ -1,0 +1,36 @@
+id: AKU-0299
+type: heuristic
+strength: heuristic
+status: draft
+topic: trading-application
+subtopics:
+- wave-identification
+- channeling
+statement_ru: Авторское наблюдение по правилу 3-х касаний состоит в том, что завершение тренда чаще всего происходит на третьем касании дуги поддержки или сопротивления S-ки.
+statement_en: null
+source:
+  book_id: intraday-l01-three-touches
+  page: 1
+  chapter: 'Урок 1: Правило 3-х касаний'
+  section: Базовое наблюдение
+  figure_id: null
+  verbatim_quote:
+    text: "Если внимательно посмотреть на завершение тренда, то можно увидеть, что чаще всего\n\nон завершается на ТРЕТЬЕМ касании Дуги Поддержки (Сопротивления) **S-ки и Дуги**"
+    language: ru
+formalization:
+  status: not_attempted
+  applies_when: null
+  constraint: null
+  formalization_notes: null
+aliases:
+- Правило 3-х касаний
+- третье касание
+related_aku:
+- AKU-0248
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-05T00:35:00Z'
+review_notes: 'Sprint 3 pool 2: heuristics. Автор использует маркер "чаще всего"; правило не формализовано и требует Vision/human review по схемам.'
+requires_review: true

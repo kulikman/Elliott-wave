@@ -1,0 +1,39 @@
+id: AKU-0305
+type: exception
+strength: conditional
+status: draft
+topic: impulse-extension
+subtopics:
+- ending-diagonal
+- rule-of-overlap
+statement_ru: В терминальном импульсе с растянутой 1-й волной волны 2 и 4 перекрываются, что отличает терминальный вариант ВАЛа от обычного импульса.
+statement_en: null
+source:
+  book_id: intraday-l05-val
+  page: 51
+  chapter: 'Урок 5: ВАЛ'
+  section: Терминальный импульс с растянутой 1-й
+  figure_id: page-051
+  verbatim_quote:
+    text: Волны 2 и 4 перекрываются
+    language: ru
+formalization:
+  status: not_attempted
+  applies_when: null
+  constraint: null
+  formalization_notes: null
+aliases:
+- Терминальный импульс
+- ВАЛ
+- Вал
+related_aku:
+- AKU-0250
+- AKU-0262
+- AKU-0264
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-05T01:03:00Z'
+review_notes: 'Sprint 4 pool 2: exceptions. Основано на Vision-notes страницы 51; трактуется как отличие терминального импульса от обычного, требует human review.'
+requires_review: true

@@ -1,0 +1,36 @@
+id: AKU-0276
+type: heuristic
+strength: heuristic
+status: draft
+topic: trading-application
+subtopics:
+- impulse-extension
+- wave-identification
+statement_ru: Если S-ка расположена в середине тренда, автор предлагает открывать сделку на одной из её подволн по ходу тренда.
+statement_en: null
+source:
+  book_id: intraday-l03-s-curves
+  page: 18
+  chapter: 'Урок 3: S-ки'
+  section: S-ка в середине тренда
+  figure_id: null
+  verbatim_quote:
+    text: Если S-ка расположена в середине тренда, можно открыть сделку на одной из её подволн по ходу тренда...Волны в S-ке расположены в определенном порядке...
+    language: ru
+formalization:
+  status: not_attempted
+  applies_when: null
+  constraint: null
+  formalization_notes: null
+aliases:
+- S-ка
+related_aku:
+- AKU-0248
+- AKU-0260
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-04T21:15:00Z'
+review_notes: 'Sprint 3 pool 2: heuristics. Практическая рекомендация по входу внутри S-ки; не формализовать до human review.'
+requires_review: true

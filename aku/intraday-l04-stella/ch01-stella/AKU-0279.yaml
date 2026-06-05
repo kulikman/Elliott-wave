@@ -1,0 +1,36 @@
+id: AKU-0279
+type: heuristic
+strength: heuristic
+status: draft
+topic: trading-application
+subtopics:
+- impulse-extension
+- wave-identification
+statement_ru: Знание структуры волн в Стэлле автор рассматривает как способ открывать сделки в самом начале этой фигуры.
+statement_en: null
+source:
+  book_id: intraday-l04-stella
+  page: 34
+  chapter: 'Урок 4: Стэлла'
+  section: Точки входа
+  figure_id: null
+  verbatim_quote:
+    text: Знания структуры волн в Стэлле позволяет открывать сделки в самом её начале...
+    language: ru
+formalization:
+  status: not_attempted
+  applies_when: null
+  constraint: null
+  formalization_notes: null
+aliases:
+- Стэлла
+related_aku:
+- AKU-0249
+- AKU-0261
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-04T21:25:00Z'
+review_notes: 'Sprint 3 pool 2: heuristics. Конкретные схемы входа для растущей/падающей Стэллы находятся в изображениях и оставлены для Vision gap/human review.'
+requires_review: true

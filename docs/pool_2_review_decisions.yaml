@@ -1,0 +1,236 @@
+# Human decisions for wave_books_pool_2.
+# This file is intentionally separate from AKU YAML. Fill it manually, then apply
+# accepted decisions in a separate controlled pass.
+
+pool: wave_books_pool_2
+status: pending_human_review
+created_from:
+  - docs/pool_2_human_review_queue.md
+  - docs/pool_2_merge_candidates.md
+  - brain-output/indicator-spec/pool2-overlay-architecture.md
+  - brain-output/indicator-spec/pool2-overlay-backlog.md
+
+decision_values:
+  aku_review:
+    - accept
+    - revise
+    - reject
+    - merge_with_existing
+    - needs_more_vision
+  merge_review:
+    - accept_related
+    - reject
+    - keep_conceptual
+    - needs_more_review
+  implementation_gate:
+    - allowed_after_review
+    - blocked
+    - defer
+
+rules:
+  - Do not edit AKU status from this file automatically.
+  - Do not change related_aku, extends_aku, or contradicts_aku without explicit approval.
+  - Keep PTV and positive lock out of Neely Core unless separately approved.
+  - Pool 2 overlay may read Neely Core outputs but must not override core labels.
+
+aku_review:
+  intraday-l01-three-touches:
+    reviewer: Anton
+    decision: pending
+    items:
+      AKU-0299: { decision: pending, comment: "" }
+      AKU-0300: { decision: pending, comment: "" }
+
+  intraday-l02-positive-lock:
+    reviewer: Anton
+    decision: pending
+    items:
+      AKU-0272: { decision: pending, comment: "" }
+      AKU-0273: { decision: pending, comment: "" }
+      AKU-0274: { decision: pending, comment: "" }
+      AKU-0275: { decision: pending, comment: "" }
+
+  intraday-l03-s-curves:
+    reviewer: Anton
+    decision: pending
+    items:
+      AKU-0248: { decision: pending, comment: "" }
+      AKU-0257: { decision: pending, comment: "" }
+      AKU-0258: { decision: pending, comment: "" }
+      AKU-0259: { decision: pending, comment: "" }
+      AKU-0260: { decision: pending, comment: "" }
+      AKU-0276: { decision: pending, comment: "" }
+      AKU-0277: { decision: pending, comment: "" }
+      AKU-0278: { decision: pending, comment: "" }
+      AKU-0301: { decision: pending, comment: "" }
+      AKU-0302: { decision: pending, comment: "" }
+
+  intraday-l04-stella:
+    reviewer: Anton
+    decision: pending
+    items:
+      AKU-0261: { decision: pending, comment: "" }
+      AKU-0279: { decision: pending, comment: "" }
+      AKU-0304: { decision: pending, comment: "" }
+
+  intraday-l05-val:
+    reviewer: Anton
+    decision: pending
+    items:
+      AKU-0262: { decision: pending, comment: "" }
+      AKU-0263: { decision: pending, comment: "" }
+      AKU-0264: { decision: pending, comment: "" }
+      AKU-0280: { decision: pending, comment: "" }
+      AKU-0281: { decision: pending, comment: "" }
+      AKU-0305: { decision: pending, comment: "" }
+
+  intraday-l06-ellipses:
+    reviewer: Anton
+    decision: pending
+    items:
+      AKU-0255: { decision: pending, comment: "" }
+      AKU-0282: { decision: pending, comment: "" }
+      AKU-0283: { decision: pending, comment: "" }
+      AKU-0284: { decision: pending, comment: "" }
+      AKU-0285: { decision: pending, comment: "" }
+
+  intraday-l07-moving-correction:
+    reviewer: Anton
+    decision: pending
+    items:
+      AKU-0251: { decision: pending, comment: "" }
+      AKU-0265: { decision: pending, comment: "" }
+      AKU-0266: { decision: pending, comment: "" }
+      AKU-0267: { decision: pending, comment: "" }
+      AKU-0286: { decision: pending, comment: "" }
+      AKU-0287: { decision: pending, comment: "" }
+      AKU-0288: { decision: pending, comment: "" }
+      AKU-0289: { decision: pending, comment: "" }
+      AKU-0290: { decision: pending, comment: "" }
+      AKU-0291: { decision: pending, comment: "" }
+
+  intraday-l08-fractal-dimension-shift:
+    reviewer: Anton
+    decision: pending
+    items:
+      AKU-0256: { decision: pending, comment: "" }
+      AKU-0292: { decision: pending, comment: "" }
+      AKU-0293: { decision: pending, comment: "" }
+      AKU-0294: { decision: pending, comment: "" }
+
+  intraday-l09-growth-formulas:
+    reviewer: Anton
+    decision: pending
+    items:
+      AKU-0295: { decision: pending, comment: "" }
+      AKU-0296: { decision: pending, comment: "" }
+      AKU-0297: { decision: pending, comment: "" }
+      AKU-0298: { decision: pending, comment: "" }
+
+  intraday-l10-trading-technique:
+    reviewer: Anton
+    decision: pending
+    items:
+      AKU-0253: { decision: pending, comment: "" }
+      AKU-0268: { decision: pending, comment: "" }
+      AKU-0269: { decision: pending, comment: "" }
+      AKU-0270: { decision: pending, comment: "" }
+      AKU-0271: { decision: pending, comment: "" }
+      AKU-0303: { decision: pending, comment: "" }
+
+visual_only_review:
+  third_touch_geometry:
+    source: intraday-l01-three-touches
+    decision: pending
+    comment: ""
+  positive_lock_sequence:
+    source: intraday-l02-positive-lock
+    decision: pending
+    comment: ""
+  stella_retracement_61_81:
+    source: intraday-l04-stella
+    decision: pending
+    comment: ""
+  val_terminal_100_retrace:
+    source: intraday-l05-val
+    decision: pending
+    comment: ""
+  ellipse_construction:
+    source: intraday-l06-ellipses
+    decision: pending
+    comment: ""
+  fractal_dimension_page_30:
+    source: intraday-l08-fractal-dimension-shift
+    decision: pending
+    comment: ""
+  ptv_growth_pages_62_75:
+    source: intraday-l09-growth-formulas
+    decision: pending
+    comment: ""
+
+merge_review:
+  high_confidence:
+    s_curve_extended_3:
+      pool2_aku: [AKU-0248, AKU-0277]
+      first_pool_aku: [AKU-0200, AKU-0033]
+      decision: pending
+      relation_field_to_edit_later: related_aku
+      comment: ""
+    stella_extended_5_terminal:
+      pool2_aku: [AKU-0249, AKU-0304]
+      first_pool_aku: [AKU-0049, AKU-0201, AKU-0034, AKU-0219, AKU-0010, AKU-0163, AKU-0220]
+      decision: pending
+      relation_field_to_edit_later: related_aku
+      comment: ""
+    val_extended_1_terminal:
+      pool2_aku: [AKU-0250, AKU-0305]
+      first_pool_aku: [AKU-0048, AKU-0080, AKU-0087, AKU-0032, AKU-0010, AKU-0163, AKU-0220]
+      decision: pending
+      relation_field_to_edit_later: related_aku
+      comment: ""
+    moving_correction:
+      pool2_aku: [AKU-0251, AKU-0265, AKU-0266, AKU-0267]
+      first_pool_aku: [AKU-0095, AKU-0213, AKU-0217, AKU-0243, AKU-0025, AKU-0026]
+      decision: pending
+      relation_field_to_edit_later: related_aku
+      comment: ""
+    ellipse_zigzag:
+      pool2_aku: [AKU-0255, AKU-0282]
+      first_pool_aku: [AKU-0160, AKU-0014, AKU-0015, AKU-0016, AKU-0024, AKU-0166]
+      decision: pending
+      relation_field_to_edit_later: related_aku
+      comment: ""
+
+  keep_separate_by_default:
+    positive_lock:
+      pool2_aku: [AKU-0254, AKU-0272, AKU-0273, AKU-0274, AKU-0275]
+      decision: pending
+      recommended_decision: keep_conceptual
+      comment: ""
+    ptv_growth_formulas:
+      pool2_aku: [AKU-0252, AKU-0295, AKU-0296, AKU-0297, AKU-0298]
+      decision: pending
+      recommended_decision: keep_conceptual
+      comment: ""
+    trading_technique:
+      pool2_aku: [AKU-0253, AKU-0268, AKU-0269, AKU-0270, AKU-0271, AKU-0303]
+      decision: pending
+      recommended_decision: keep_conceptual
+      comment: ""
+
+implementation_gate:
+  pool2_signal_contract:
+    decision: blocked
+    unblock_when: "human review accepts at least one high-confidence structural group"
+  python_research_overlay:
+    decision: blocked
+    unblock_when: "pool2_signal_contract is allowed_after_review"
+  pine_overlay:
+    decision: blocked
+    unblock_when: "python research overlay has tests and stable fixture output"
+  ptv_experimental_mode:
+    decision: defer
+    unblock_when: "PTV pages 62-75 reviewed as experimental only"
+  trade_management_overlay:
+    decision: defer
+    unblock_when: "structural overlay is stable and trade hints remain advisory"

@@ -1,0 +1,33 @@
+id: AKU-0262
+type: rule
+strength: conditional
+status: draft
+topic: wave-identification
+subtopics:
+- trading-application
+statement_ru: В 90% случаев к ВАЛу применимо правило 3-х касаний дуги сопротивления или поддержки.
+statement_en: null
+source:
+  book_id: intraday-l05-val
+  page: 6
+  chapter: 'Урок 5: ВАЛ'
+  section: Правило 3-х касаний для ВАЛа
+  figure_id: null
+  verbatim_quote:
+    text: В 90% случаев к Валу применимо Правило 3-х касаний Дуги Сопротивления (Поддержки)
+    language: ru
+formalization:
+  status: not_attempted
+  applies_when: null
+  constraint: null
+  formalization_notes: null
+aliases: []
+related_aku:
+- AKU-0250
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-04T20:21:43Z'
+review_notes: 'Sprint 2 pool 2: conditional_rules, один источник intraday-l05-val. Процент 90% делает правило вероятностным; при human review можно перевести strength в heuristic.'
+requires_review: true

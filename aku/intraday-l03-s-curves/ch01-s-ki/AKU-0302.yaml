@@ -1,0 +1,39 @@
+id: AKU-0302
+type: exception
+strength: conditional
+status: draft
+topic: retracement
+subtopics:
+- trading-application
+statement_ru: Вариант S-ки в конце тренда, названный "Чёрным Лебедем", является исключительным сценарием с откатом более 100%.
+statement_en: null
+source:
+  book_id: intraday-l03-s-curves
+  page: 13
+  chapter: 'Урок 3: S-ки'
+  section: S-ка в конце тренда и Черный Лебедь
+  figure_id: null
+  verbatim_quote:
+    text: |-
+      S-ка может располагаться в конце тренда. В этом случае её откат составляет более 100% !
+      Брэдли Коуэн в одном своем посте назвал такую S-ку "Черным Лебедем" .)
+    language: ru
+formalization:
+  status: not_attempted
+  applies_when: null
+  constraint: null
+  formalization_notes: null
+aliases:
+- Черный Лебедь
+- S-ка
+related_aku:
+- AKU-0248
+- AKU-0257
+- AKU-0259
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-05T00:51:00Z'
+review_notes: 'Sprint 4 pool 2: exceptions. Трактуется как исключительный сценарий отката S-ки; связь с базовым 100% откатом требует human review.'
+requires_review: true

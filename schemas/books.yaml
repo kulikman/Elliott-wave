@@ -109,6 +109,456 @@ books:
   # ----------------------------------------------------------
   # PLACEHOLDER — для будущих книг
   # ----------------------------------------------------------
+  - id: intraday-l01-three-touches
+    full_title: "Торговля Внутри Дня. Урок 1. Правило 3-х касаний"
+    title_ru: "Торговля Внутри Дня. Урок 1. Правило 3-х касаний"
+    author: null
+    author_short: null
+    year: null
+    language_original: ru
+    language_available: [ru]
+    school: other
+    priority: 4
+    methodology: mixed
+    pool: wave_books_pool_2
+
+    files:
+      - filename: "Торговля Внутри Дня Урок 1 Правило 3-х касаний.docx"
+        format: docx
+        language: ru
+        note: "Основной источник текста для pool 2"
+        quality: high
+        has_images: true
+
+      - filename: "Торговля Внутри Дня Урок 1 Правило 3-х касаний.pdf"
+        format: pdf
+        language: ru
+        note: "Визуальный источник: страницы, диаграммы и расположение изображений"
+        quality: high
+        has_images: true
+
+    extraction_strategy:
+      primary_source: "Торговля Внутри Дня Урок 1 Правило 3-х касаний.docx"
+      primary_reason: "DOCX даёт чистый текст и встроенные изображения без OLE-артефактов."
+      image_source: "docx_media_and_pdf"
+      image_reason: "DOCX содержит исходные изображения, PDF сохраняет контекст страниц."
+      figure_naming: "intraday-l01-fig-{number}"
+
+    known_structure:
+      total_chapters: 1
+      chapters:
+        - number: 1
+          title: "Правило 3-х касаний"
+
+    notes: |
+      Второй пул источников wave_books_pool_2.
+      Не объединять с primary pool без отдельного подтверждения.
+
+  - id: intraday-l02-positive-lock
+    full_title: "Торговля Внутри Дня. Урок 2. Положительный Замок"
+    title_ru: "Торговля Внутри Дня. Урок 2. Положительный Замок"
+    author: null
+    author_short: null
+    year: null
+    language_original: ru
+    language_available: [ru]
+    school: other
+    priority: 4
+    methodology: mixed
+    pool: wave_books_pool_2
+
+    files:
+      - filename: "Торговля Внутри Дня Урок 2 Положительный Замок.docx"
+        format: docx
+        language: ru
+        note: "Основной источник текста для pool 2"
+        quality: high
+        has_images: true
+
+      - filename: "Торговля Внутри Дня Урок 2 Положительный Замок.pdf"
+        format: pdf
+        language: ru
+        note: "Визуальный источник: страницы, диаграммы и расположение изображений"
+        quality: high
+        has_images: true
+
+    extraction_strategy:
+      primary_source: "Торговля Внутри Дня Урок 2 Положительный Замок.docx"
+      primary_reason: "DOCX даёт чистый текст и встроенные изображения без OLE-артефактов."
+      image_source: "docx_media_and_pdf"
+      image_reason: "DOCX содержит исходные изображения, PDF сохраняет контекст страниц."
+      figure_naming: "intraday-l02-fig-{number}"
+
+    known_structure:
+      total_chapters: 1
+      chapters:
+        - number: 1
+          title: "Положительный Замок"
+
+    notes: |
+      Второй пул источников wave_books_pool_2.
+      Не объединять с primary pool без отдельного подтверждения.
+
+  - id: intraday-l03-s-curves
+    full_title: "Торговля Внутри Дня. Урок 3. S-ки"
+    title_ru: "Торговля Внутри Дня. Урок 3. S-ки"
+    author: null
+    author_short: null
+    year: null
+    language_original: ru
+    language_available: [ru]
+    school: other
+    priority: 4
+    methodology: mixed
+    pool: wave_books_pool_2
+
+    files:
+      - filename: "Торговля Внутри Дня Урок 3 S-ки.doc"
+        format: doc
+        language: ru
+        note: "Основной источник текста для pool 2"
+        quality: high
+        has_images: true
+
+      - filename: "Торговля Внутри Дня Урок 3 S-ки.pdf"
+        format: pdf
+        language: ru
+        note: "Визуальный источник: страницы, диаграммы и расположение изображений"
+        quality: high
+        has_images: true
+
+    extraction_strategy:
+      primary_source: "Торговля Внутри Дня Урок 3 S-ки.doc"
+      primary_reason: "DOC через antiword даёт чистый русский текст; старый DOC плохо отдаёт картинки с контекстом."
+      image_source: "pdf_pages"
+      image_reason: "PDF сохраняет контекст страниц, схемы S-ок, дуги и подписи."
+      figure_naming: "intraday-l03-page-{number}"
+
+    known_structure:
+      total_chapters: 1
+      chapters:
+        - number: 1
+          title: "S-ки"
+
+    notes: |
+      Второй пул источников wave_books_pool_2.
+      Не объединять с primary pool без отдельного подтверждения.
+
+  - id: intraday-l04-stella
+    full_title: "Торговля Внутри Дня. Урок 4. Стэлла"
+    title_ru: "Торговля Внутри Дня. Урок 4. Стэлла"
+    author: null
+    author_short: null
+    year: null
+    language_original: ru
+    language_available: [ru]
+    school: other
+    priority: 4
+    methodology: mixed
+    pool: wave_books_pool_2
+
+    files:
+      - filename: "Торговля Внутри Дня. Урок 4. Стэлла.doc"
+        format: doc
+        language: ru
+        note: "Основной источник текста для pool 2"
+        quality: high
+        has_images: true
+
+      - filename: "Торговля Внутри Дня. Урок 4. Стэлла.pdf"
+        format: pdf
+        language: ru
+        note: "Визуальный источник: страницы, диаграммы и расположение изображений"
+        quality: high
+        has_images: true
+
+    extraction_strategy:
+      primary_source: "Торговля Внутри Дня. Урок 4. Стэлла.doc"
+      primary_reason: "DOC через antiword даёт чистый русский текст; старый DOC плохо отдаёт картинки с контекстом."
+      image_source: "pdf_pages"
+      image_reason: "PDF сохраняет контекст страниц, схемы Стэллы и подписи."
+      figure_naming: "intraday-l04-page-{number}"
+
+    known_structure:
+      total_chapters: 1
+      chapters:
+        - number: 1
+          title: "Стэлла"
+
+    notes: |
+      Второй пул источников wave_books_pool_2.
+      Не объединять с primary pool без отдельного подтверждения.
+
+  - id: intraday-l05-val
+    full_title: "Торговля Внутри Дня. Урок 5. ВАЛ"
+    title_ru: "Торговля Внутри Дня. Урок 5. ВАЛ"
+    author: null
+    author_short: null
+    year: null
+    language_original: ru
+    language_available: [ru]
+    school: other
+    priority: 4
+    methodology: mixed
+    pool: wave_books_pool_2
+
+    files:
+      - filename: "Торговля Внутри Дня Урок 5 ВАЛ.doc"
+        format: doc
+        language: ru
+        note: "Основной источник текста для pool 2"
+        quality: high
+        has_images: true
+
+      - filename: "Торговля Внутри Дня Урок 5 ВАЛ.pdf"
+        format: pdf
+        language: ru
+        note: "Визуальный источник: страницы, диаграммы и расположение изображений"
+        quality: high
+        has_images: true
+
+    extraction_strategy:
+      primary_source: "Торговля Внутри Дня Урок 5 ВАЛ.doc"
+      primary_reason: "DOC через antiword даёт чистый русский текст; старый DOC плохо отдаёт картинки с контекстом."
+      image_source: "pdf_pages"
+      image_reason: "PDF сохраняет контекст страниц, схемы и подписи."
+      figure_naming: "intraday-l05-page-{number}"
+
+    known_structure:
+      total_chapters: 1
+      chapters:
+        - number: 1
+          title: "ВАЛ"
+
+    notes: |
+      Второй пул источников wave_books_pool_2.
+      Не объединять с primary pool без отдельного подтверждения.
+
+  - id: intraday-l06-ellipses
+    full_title: "Торговля Внутри Дня. Урок 6. Эллипсы"
+    title_ru: "Торговля Внутри Дня. Урок 6. Эллипсы"
+    author: null
+    author_short: null
+    year: null
+    language_original: ru
+    language_available: [ru]
+    school: other
+    priority: 4
+    methodology: mixed
+    pool: wave_books_pool_2
+
+    files:
+      - filename: "Торговля Внутри Дня Урок 6 Эллипсы.doc"
+        format: doc
+        language: ru
+        note: "Основной источник текста для pool 2"
+        quality: high
+        has_images: true
+
+      - filename: "Торговля Внутри Дня Урок 6 Эллипсы.pdf"
+        format: pdf
+        language: ru
+        note: "Визуальный источник: страницы, диаграммы и расположение изображений"
+        quality: high
+        has_images: true
+
+    extraction_strategy:
+      primary_source: "Торговля Внутри Дня Урок 6 Эллипсы.doc"
+      primary_reason: "DOC через antiword даёт чистый русский текст; старый DOC плохо отдаёт картинки с контекстом."
+      image_source: "pdf_pages"
+      image_reason: "PDF сохраняет контекст страниц, эллипсы, схемы и подписи."
+      figure_naming: "intraday-l06-page-{number}"
+
+    known_structure:
+      total_chapters: 1
+      chapters:
+        - number: 1
+          title: "Эллипсы"
+
+    notes: |
+      Второй пул источников wave_books_pool_2.
+      Не объединять с primary pool без отдельного подтверждения.
+
+  - id: intraday-l07-moving-correction
+    full_title: "Торговля Внутри Дня. Урок 7. Подвижная Коррекция"
+    title_ru: "Торговля Внутри Дня. Урок 7. Подвижная Коррекция"
+    author: null
+    author_short: null
+    year: null
+    language_original: ru
+    language_available: [ru]
+    school: other
+    priority: 4
+    methodology: mixed
+    pool: wave_books_pool_2
+
+    files:
+      - filename: "Торговля Внутри Дня Урок 7 Подвижная Коррекция.doc"
+        format: doc
+        language: ru
+        note: "Основной источник текста для pool 2"
+        quality: high
+        has_images: true
+
+      - filename: "Торговля Внутри Дня Урок 7 Подвижная Коррекция.pdf"
+        format: pdf
+        language: ru
+        note: "Визуальный источник: страницы, диаграммы и расположение изображений"
+        quality: high
+        has_images: true
+
+    extraction_strategy:
+      primary_source: "Торговля Внутри Дня Урок 7 Подвижная Коррекция.doc"
+      primary_reason: "DOC через antiword даёт чистый русский текст; старый DOC плохо отдаёт картинки с контекстом."
+      image_source: "pdf_pages"
+      image_reason: "PDF сохраняет контекст страниц, схемы подвижной коррекции и подписи."
+      figure_naming: "intraday-l07-page-{number}"
+
+    known_structure:
+      total_chapters: 1
+      chapters:
+        - number: 1
+          title: "Подвижная Коррекция"
+
+    notes: |
+      Второй пул источников wave_books_pool_2.
+      Не объединять с primary pool без отдельного подтверждения.
+
+  - id: intraday-l08-fractal-dimension-shift
+    full_title: "Торговля Внутри Дня. Урок 8. Смена Мерности Фрактала"
+    title_ru: "Торговля Внутри Дня. Урок 8. Смена Мерности Фрактала"
+    author: null
+    author_short: null
+    year: null
+    language_original: ru
+    language_available: [ru]
+    school: other
+    priority: 4
+    methodology: mixed
+    pool: wave_books_pool_2
+
+    files:
+      - filename: "Торговля Внутри Дня. Урок 8. Смена Мерности Фрактала.doc"
+        format: doc
+        language: ru
+        note: "Основной источник текста для pool 2"
+        quality: high
+        has_images: true
+
+      - filename: "Торговля Внутри Дня. Урок 8. Смена Мерности Фрактала.pdf"
+        format: pdf
+        language: ru
+        note: "Визуальный источник: страницы, диаграммы и расположение изображений"
+        quality: high
+        has_images: true
+
+    extraction_strategy:
+      primary_source: "Торговля Внутри Дня. Урок 8. Смена Мерности Фрактала.doc"
+      primary_reason: "DOC через antiword даёт чистый русский текст; старый DOC плохо отдаёт картинки с контекстом."
+      image_source: "pdf_pages"
+      image_reason: "PDF сохраняет контекст страниц, фрактальные схемы и подписи."
+      figure_naming: "intraday-l08-page-{number}"
+
+    known_structure:
+      total_chapters: 1
+      chapters:
+        - number: 1
+          title: "Смена Мерности Фрактала"
+
+    notes: |
+      Второй пул источников wave_books_pool_2.
+      Не объединять с primary pool без отдельного подтверждения.
+
+  - id: intraday-l09-growth-formulas
+    full_title: "Торговля Внутри Дня. Урок 9. Формулы Роста"
+    title_ru: "Торговля Внутри Дня. Урок 9. Формулы Роста"
+    author: null
+    author_short: null
+    year: null
+    language_original: ru
+    language_available: [ru]
+    school: other
+    priority: 4
+    methodology: mixed
+    pool: wave_books_pool_2
+
+    files:
+      - filename: "Торговля Внутри Дня. Урок 9. Формулы Роста.doc"
+        format: doc
+        language: ru
+        note: "Основной источник текста для pool 2"
+        quality: high
+        has_images: true
+
+      - filename: "Торговля Внутри Дня. Урок 9. Формулы Роста.pdf"
+        format: pdf
+        language: ru
+        note: "Визуальный источник: страницы, диаграммы и расположение изображений"
+        quality: high
+        has_images: true
+
+    extraction_strategy:
+      primary_source: "Торговля Внутри Дня. Урок 9. Формулы Роста.doc"
+      primary_reason: "DOC через antiword даёт чистый русский текст; старый DOC плохо отдаёт картинки с контекстом."
+      image_source: "pdf_pages"
+      image_reason: "PDF сохраняет контекст страниц, PTV-схемы, формулы роста и подписи."
+      figure_naming: "intraday-l09-page-{number}"
+
+    known_structure:
+      total_chapters: 1
+      chapters:
+        - number: 1
+          title: "Формулы Роста"
+
+    notes: |
+      Второй пул источников wave_books_pool_2.
+      Не объединять с primary pool без отдельного подтверждения.
+
+  - id: intraday-l10-trading-technique
+    full_title: "Торговля Внутри Дня. Урок 10. Техника Торговли"
+    title_ru: "Торговля Внутри Дня. Урок 10. Техника Торговли"
+    author: null
+    author_short: null
+    year: null
+    language_original: ru
+    language_available: [ru]
+    school: other
+    priority: 4
+    methodology: mixed
+    pool: wave_books_pool_2
+
+    files:
+      - filename: "Торговля Внутри Дня. Урок 10. Техника Торговли.doc"
+        format: doc
+        language: ru
+        note: "Основной источник текста для pool 2"
+        quality: high
+        has_images: true
+
+      - filename: "Торговля Внутри Дня. Урок 10. Техника Торговли.pdf"
+        format: pdf
+        language: ru
+        note: "Визуальный источник: страницы, диаграммы и расположение изображений"
+        quality: high
+        has_images: true
+
+    extraction_strategy:
+      primary_source: "Торговля Внутри Дня. Урок 10. Техника Торговли.doc"
+      primary_reason: "DOC через antiword даёт чистый русский текст; старый DOC плохо отдаёт картинки с контекстом."
+      image_source: "pdf_pages"
+      image_reason: "PDF сохраняет контекст страниц, торговые схемы и подписи."
+      figure_naming: "intraday-l10-page-{number}"
+
+    known_structure:
+      total_chapters: 1
+      chapters:
+        - number: 1
+          title: "Техника Торговли"
+
+    notes: |
+      Второй пул источников wave_books_pool_2.
+      Не объединять с primary pool без отдельного подтверждения.
+
   # - id: prechter-frost-ewp
   #   full_title: "Elliott Wave Principle"
   #   author: "Robert Prechter, A.J. Frost"

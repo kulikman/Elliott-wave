@@ -1,0 +1,42 @@
+id: AKU-0303
+type: exception
+strength: conditional
+status: draft
+topic: trading-application
+subtopics:
+- wave-identification
+statement_ru: 'Ложное движение во время выхода новости является исключительным случаем, в котором стоп предлагается ставить дальше обычного: на 8-10 пунктов от видимой волновой фигуры.'
+statement_en: null
+source:
+  book_id: intraday-l10-trading-technique
+  page: 40
+  chapter: 'Урок 10: Техника Торговли'
+  section: Ложное движение на новости
+  figure_id: null
+  verbatim_quote:
+    text: |-
+      Бывает так что во время выхода новости цена делает ложное движение...Например, как здесь...
+
+
+
+      В этом случае надо ставить стоп дальше чем обычно... на 8-10 п. от видимой вами волновой фигуры...
+    language: ru
+formalization:
+  status: not_attempted
+  applies_when: null
+  constraint: null
+  formalization_notes: null
+aliases:
+- ложное движение
+- новость
+related_aku:
+- AKU-0268
+- AKU-0269
+- AKU-0270
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-05T00:52:00Z'
+review_notes: 'Sprint 4 pool 2: exceptions. Это исключительный сценарий исполнения стопа при новостном ложном движении; не заменяет общий стоп от фрактала/фигуры ВА.'
+requires_review: true

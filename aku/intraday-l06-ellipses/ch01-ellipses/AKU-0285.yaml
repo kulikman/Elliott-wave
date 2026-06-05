@@ -1,0 +1,35 @@
+id: AKU-0285
+type: heuristic
+strength: heuristic
+status: draft
+topic: wave-identification
+subtopics:
+- trading-application
+statement_ru: Используя фрактальный подход к эллипсам, автор считает возможным увидеть движение графика на 2-3 шага вперёд.
+statement_en: null
+source:
+  book_id: intraday-l06-ellipses
+  page: 68
+  chapter: 'Урок 6: Эллипсы'
+  section: Фрактальный характер Эллипса
+  figure_id: null
+  verbatim_quote:
+    text: Используя фрактальный подход, можно "увидеть" движение графика на 2-3 шага вперед...
+    language: ru
+formalization:
+  status: not_attempted
+  applies_when: null
+  constraint: null
+  formalization_notes: null
+aliases:
+- Эллипс
+- фрактальный подход
+related_aku:
+- AKU-0255
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-04T21:47:00Z'
+review_notes: 'Sprint 3 pool 2: heuristics. Потенциально полезно для MTF/фрактального анализа, но пока без формализации и без автоматического объединения.'
+requires_review: true

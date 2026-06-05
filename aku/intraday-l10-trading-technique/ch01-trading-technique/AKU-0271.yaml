@@ -1,0 +1,35 @@
+id: AKU-0271
+type: heuristic
+strength: heuristic
+status: draft
+topic: trading-application
+subtopics:
+- wave-degree
+- wave-identification
+statement_ru: Поскольку каждая волна принадлежит какому-либо фракталу, а фракталы вложены друг в друга, автор предлагает видеть эти фракталы и торговать каждую волну.
+statement_en: null
+source:
+  book_id: intraday-l10-trading-technique
+  page: 45
+  chapter: 'Урок 10: Техника Торговли'
+  section: Краткосрочная или долгосрочная торговля
+  figure_id: null
+  verbatim_quote:
+    text: Каждая волна принадлежит какому нибудь фракталу...Фракталы вложены друг в друга....Увидьте эти фракталы и вы сможете  торговать каждую волну! Эта техника похожа на СЕРФИНГ
+    language: ru
+formalization:
+  status: not_attempted
+  applies_when: null
+  constraint: null
+  formalization_notes: null
+aliases:
+- СЕРФИНГ
+related_aku:
+- AKU-0256
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-04T20:37:36Z'
+review_notes: 'Sprint 3 pool 2: heuristics. Это торговая рекомендация, не правило распознавания волновой структуры.'
+requires_review: true

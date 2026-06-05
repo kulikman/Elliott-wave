@@ -1,0 +1,34 @@
+id: AKU-0251
+type: definition
+strength: heuristic
+status: draft
+topic: flat
+subtopics:
+- trading-application
+statement_ru: Подвижная, или ползущая, коррекция в этом источнике определяется как более вытянутая по тренду коррекция, после которой тренд продолжается с большей силой.
+statement_en: null
+source:
+  book_id: intraday-l07-moving-correction
+  page: 22
+  chapter: 'Урок 7: Подвижная Коррекция'
+  section: Ползущая коррекция
+  figure_id: page-022
+  verbatim_quote:
+    text: Более вытянутую по тренду коррекцию Нили назвал Подвижной коррекцией...  Но, точнее её будет назвать Ползущей коррекцией .)) После этой коррекции тренд продолжает двигаться дальше с ещё большей силой, чем до коррекции...
+    language: ru
+formalization:
+  status: not_attempted
+  applies_when: null
+  constraint: null
+  formalization_notes: null
+aliases:
+- Подвижная коррекция
+- Ползущая коррекция
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-04T17:46:43Z'
+review_notes: Первый definition-проход pool 2; числовые условия 161.8% и 61.8% вынести в conditional_rules.
+requires_review: true

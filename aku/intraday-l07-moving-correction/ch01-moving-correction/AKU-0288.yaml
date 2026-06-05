@@ -1,0 +1,38 @@
+id: AKU-0288
+type: heuristic
+strength: heuristic
+status: draft
+topic: trading-application
+subtopics:
+- flat
+- wave-identification
+statement_ru: Если сделка не открыта на самом развороте, автор предлагает искать точку входа в волну C плоской коррекции.
+statement_en: null
+source:
+  book_id: intraday-l07-moving-correction
+  page: 9
+  chapter: 'Урок 7: Подвижная Коррекция'
+  section: Волна C плоской коррекции
+  figure_id: null
+  verbatim_quote:
+    text: Таким образом, если вы не успели открыть сделку на самом развороте, ищите точку входа в Волну-С Плоской коррекции...Рассмотрим теперь подвижную спускающуюся коррекцию...
+    language: ru
+formalization:
+  status: not_attempted
+  applies_when: null
+  constraint: null
+  formalization_notes: null
+aliases:
+- Волна-С
+- Плоская коррекция
+related_aku:
+- AKU-0251
+- AKU-0266
+- AKU-0267
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2026-06-04T22:02:00Z'
+review_notes: 'Sprint 3 pool 2: heuristics. Связано с волной C плоской коррекции; числовые условия остаются в Sprint 2 AKU.'
+requires_review: true
