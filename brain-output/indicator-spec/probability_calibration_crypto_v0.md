@@ -1,11 +1,11 @@
 # Probability Calibration v0 — crypto
 
-Generated: `2026-06-05T14:57:26+00:00`
+Generated: `2026-06-05T15:19:06+00:00`
 
 Purpose: machine-readable calibration for indicator output fields `p_up`, `p_down`, `p_trade_win`, `expected_net_return`, `confidence` and `recommended_action`.
 
 Asset class: `crypto`.
-Source: `/Users/DEV/Elliott-wave/python/data/trades_sprint6.parquet`.
+Source: `python/data/historical_signal_grid_crypto_trades.parquet`.
 
 Important: do not mix this calibration with another asset class inside Pine.
 
@@ -20,54 +20,59 @@ Lookup priority:
 
 | key | n | action | P(win) | P(up) | P(down) | EV | confidence |
 |---|---:|---|---:|---:|---:|---:|---|
-| `double_corr|1d|long` | 3 | buy | 100.0% | 100.0% | 0.0% | +8.78% | low |
-| `double_corr|1d|short` | 1 | sell | 100.0% | 0.0% | 100.0% | +6.83% | low |
-| `double_corr|1h|long` | 14 | buy | 78.6% | 78.6% | 21.4% | +0.83% | low |
-| `double_corr|1h|short` | 15 | sell | 86.7% | 13.3% | 86.7% | +1.83% | low |
-| `flat|1d|long` | 24 | buy | 66.7% | 66.7% | 33.3% | +2.19% | low |
-| `flat|1d|short` | 23 | sell | 69.6% | 30.4% | 69.6% | +4.51% | low |
-| `flat|1h|long` | 251 | buy | 55.4% | 55.4% | 44.6% | +0.41% | high |
-| `flat|1h|short` | 233 | sell | 54.5% | 45.5% | 54.5% | +0.33% | high |
-| `impulse|1d|long` | 5 | skip | 40.0% | 40.0% | 60.0% | -0.60% | low |
-| `impulse|1d|short` | 31 | skip | 32.3% | 67.7% | 32.3% | -5.71% | low |
-| `impulse|1h|long` | 202 | skip | 48.0% | 48.0% | 52.0% | +0.22% | high |
-| `impulse|1h|short` | 217 | skip | 50.2% | 49.8% | 50.2% | -0.17% | high |
-| `triangle|1d|long` | 160 | skip | 51.2% | 51.2% | 48.8% | +0.70% | high |
-| `triangle|1d|short` | 159 | skip | 43.4% | 56.6% | 43.4% | -0.39% | high |
-| `triangle|1h|long` | 1559 | skip | 40.0% | 40.0% | 60.0% | -0.18% | very_high |
-| `triangle|1h|short` | 1385 | skip | 40.0% | 60.0% | 40.0% | -0.16% | very_high |
+| `double_corr|15m|long` | 28 | buy | 78.6% | 78.6% | 21.4% | +1.18% | low |
+| `double_corr|15m|short` | 33 | sell | 90.9% | 9.1% | 90.9% | +2.34% | low |
+| `double_corr|1d|long` | 6 | buy | 100.0% | 100.0% | 0.0% | +37.91% | low |
+| `double_corr|1d|short` | 4 | sell | 100.0% | 0.0% | 100.0% | +27.20% | low |
+| `double_corr|1h|long` | 20 | buy | 85.0% | 85.0% | 15.0% | +5.70% | low |
+| `double_corr|1h|short` | 28 | sell | 96.4% | 3.6% | 96.4% | +5.66% | low |
+| `double_corr|1w|short` | 1 | sell | 100.0% | 0.0% | 100.0% | +75.54% | low |
+| `double_corr|30m|long` | 26 | buy | 88.5% | 88.5% | 11.5% | +3.42% | low |
+| `double_corr|30m|short` | 33 | sell | 84.8% | 15.2% | 84.8% | +2.86% | low |
+| `double_corr|4h|long` | 12 | buy | 91.7% | 91.7% | 8.3% | +11.02% | low |
+| `double_corr|4h|short` | 10 | sell | 90.0% | 10.0% | 90.0% | +9.87% | low |
+| `flat|15m|long` | 218 | buy | 49.5% | 49.5% | 50.5% | +0.07% | high |
+| `flat|15m|short` | 262 | sell | 53.1% | 46.9% | 53.1% | +0.08% | high |
+| `flat|1d|long` | 26 | buy | 53.8% | 53.8% | 46.2% | +3.59% | low |
+| `flat|1d|short` | 27 | sell | 66.7% | 33.3% | 66.7% | +3.38% | low |
+| `flat|1h|long` | 226 | buy | 54.0% | 54.0% | 46.0% | +0.24% | high |
+| `flat|1h|short` | 269 | sell | 60.2% | 39.8% | 60.2% | +0.31% | high |
+| `flat|1w|long` | 7 | buy | 57.1% | 57.1% | 42.9% | +28.76% | low |
+| `flat|1w|short` | 10 | sell | 60.0% | 40.0% | 60.0% | -0.54% | low |
+| `flat|30m|long` | 250 | buy | 54.8% | 54.8% | 45.2% | +0.21% | high |
+| `flat|30m|short` | 245 | sell | 56.3% | 43.7% | 56.3% | +0.44% | high |
+| `flat|4h|long` | 111 | buy | 59.5% | 59.5% | 40.5% | +1.76% | medium |
+| `flat|4h|short` | 131 | sell | 69.5% | 30.5% | 69.5% | +1.31% | medium |
 
 ## fig_type+interval
 
 | key | n | action | P(win) | P(up) | P(down) | EV | confidence |
 |---|---:|---|---:|---:|---:|---:|---|
-| `double_corr|1d` | 4 | wait | 100.0% | n/a | n/a | +8.30% | low |
-| `double_corr|1h` | 29 | wait | 82.8% | n/a | n/a | +1.35% | low |
-| `flat|1d` | 47 | wait | 68.1% | n/a | n/a | +3.33% | low |
-| `flat|1h` | 484 | wait | 55.0% | n/a | n/a | +0.37% | very_high |
-| `impulse|1d` | 36 | skip | 33.3% | n/a | n/a | -5.00% | low |
-| `impulse|1h` | 419 | skip | 49.2% | n/a | n/a | +0.02% | very_high |
-| `triangle|1d` | 319 | skip | 47.3% | n/a | n/a | +0.15% | high |
-| `triangle|1h` | 2944 | skip | 40.0% | n/a | n/a | -0.17% | very_high |
+| `double_corr|15m` | 61 | wait | 85.2% | n/a | n/a | +1.81% | medium |
+| `double_corr|1d` | 10 | wait | 100.0% | n/a | n/a | +33.63% | low |
+| `double_corr|1h` | 48 | wait | 91.7% | n/a | n/a | +5.68% | low |
+| `double_corr|1w` | 1 | wait | 100.0% | n/a | n/a | +75.54% | low |
+| `double_corr|30m` | 59 | wait | 86.4% | n/a | n/a | +3.11% | medium |
+| `double_corr|4h` | 22 | wait | 90.9% | n/a | n/a | +10.50% | low |
+| `flat|15m` | 480 | wait | 51.5% | n/a | n/a | +0.07% | very_high |
+| `flat|1d` | 53 | wait | 60.4% | n/a | n/a | +3.49% | medium |
+| `flat|1h` | 495 | wait | 57.4% | n/a | n/a | +0.28% | very_high |
+| `flat|1w` | 17 | wait | 58.8% | n/a | n/a | +11.53% | low |
+| `flat|30m` | 495 | wait | 55.6% | n/a | n/a | +0.33% | very_high |
+| `flat|4h` | 242 | wait | 64.9% | n/a | n/a | +1.52% | high |
 
 ## fig_type+side
 
 | key | n | action | P(win) | P(up) | P(down) | EV | confidence |
 |---|---:|---|---:|---:|---:|---:|---|
-| `double_corr|long` | 17 | buy | 82.4% | 82.4% | 17.6% | +2.23% | low |
-| `double_corr|short` | 16 | sell | 87.5% | 12.5% | 87.5% | +2.15% | low |
-| `flat|long` | 275 | buy | 56.4% | 56.4% | 43.6% | +0.57% | high |
-| `flat|short` | 256 | sell | 55.9% | 44.1% | 55.9% | +0.70% | high |
-| `impulse|long` | 207 | skip | 47.8% | 47.8% | 52.2% | +0.21% | high |
-| `impulse|short` | 248 | skip | 48.0% | 52.0% | 48.0% | -0.86% | high |
-| `triangle|long` | 1719 | skip | 41.0% | 41.0% | 59.0% | -0.10% | very_high |
-| `triangle|short` | 1544 | skip | 40.3% | 59.7% | 40.3% | -0.18% | very_high |
+| `double_corr|long` | 92 | buy | 85.9% | 85.9% | 14.1% | +6.47% | medium |
+| `double_corr|short` | 109 | sell | 90.8% | 9.2% | 90.8% | +5.62% | medium |
+| `flat|long` | 838 | buy | 53.8% | 53.8% | 46.2% | +0.73% | very_high |
+| `flat|short` | 944 | sell | 58.7% | 41.3% | 58.7% | +0.50% | very_high |
 
 ## fig_type
 
 | key | n | action | P(win) | P(up) | P(down) | EV | confidence |
 |---|---:|---|---:|---:|---:|---:|---|
-| `double_corr` | 33 | wait | 84.8% | n/a | n/a | +2.19% | low |
-| `flat` | 531 | wait | 56.1% | n/a | n/a | +0.63% | very_high |
-| `impulse` | 455 | skip | 47.9% | n/a | n/a | -0.38% | very_high |
-| `triangle` | 3263 | skip | 40.7% | n/a | n/a | -0.14% | very_high |
+| `double_corr` | 201 | wait | 88.6% | n/a | n/a | +6.01% | high |
+| `flat` | 1782 | wait | 56.4% | n/a | n/a | +0.61% | very_high |

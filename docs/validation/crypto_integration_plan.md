@@ -31,9 +31,8 @@ perpetual futures, and other exchanges can have different bar boundaries,
 spreads, and liquidity.
 
 Migrated or poor-history tickers should stay out of production defaults. The
-current research artifact still includes legacy `MATIC-USD`, so Polygon
-migration history must be treated as a data-quality finding before crypto
-defaults are promoted.
+current top20 research universe uses `TRX-USD` instead of legacy `MATIC-USD`
+so Polygon migration history does not leak into crypto defaults.
 
 ## Risk Notes
 

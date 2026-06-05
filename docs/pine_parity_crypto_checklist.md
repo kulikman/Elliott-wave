@@ -1,7 +1,7 @@
 # Pine crypto parity checklist
 
 Источник: `/Users/DEV/Elliott-wave/python/data/historical_signal_grid_crypto_trades.parquet`
-Последняя строка Python: `2026-06-05 13:45:00+00:00`
+Последняя строка Python: `2026-06-05 14:30:00+00:00`
 Модель: `probability-calibration-crypto-v0` / research-only
 
 Цель: вручную проверить, что Pine на crypto-графиках не использует stock-калибровку
@@ -20,30 +20,30 @@
 
 | Тикер | TF | Python entry_ts | Pattern | Python side | Ожидаемый Action now | P/EV | Entry | Stop | Target | Проверка |
 |---|---|---|---|---|---|---:|---:|---:|---:|---|
-| ATOM-USD | 15m | 2026-06-05 13:45:00+00:00 | flat | SELL | WAIT / crypto research | 100.0% / +1.64% | 1.69 | 1.72 | 1.66 | Pine не должен превращать это в рабочий BUY/SELL |
-| AVAX-USD | 15m | 2026-06-05 13:45:00+00:00 | flat | SELL | WAIT / crypto research | 100.0% / +1.64% | 6.97 | 7.19 | 6.76 | Pine не должен превращать это в рабочий BUY/SELL |
-| BNB-USD | 15m | 2026-06-05 13:45:00+00:00 | flat | SELL | WAIT / crypto research | 100.0% / +1.64% | 581.02 | 586.62 | 575.42 | Pine не должен превращать это в рабочий BUY/SELL |
-| DOT-USD | 15m | 2026-06-05 13:45:00+00:00 | triangle | SELL | WAIT / crypto research | n/a / n/a | 0.96 | 0.97 | 0.96 | Pine не должен превращать это в рабочий BUY/SELL |
-| ETC-USD | 15m | 2026-06-05 13:45:00+00:00 | double_corr | SELL | WAIT / crypto research | 100.0% / +2.46% | 6.81 | 7.13 | 6.49 | Pine не должен превращать это в рабочий BUY/SELL |
-| FIL-USD | 15m | 2026-06-05 13:45:00+00:00 | flat | SELL | WAIT / crypto research | 100.0% / +1.64% | 0.76 | 0.80 | 0.73 | Pine не должен превращать это в рабочий BUY/SELL |
-| LTC-USD | 15m | 2026-06-05 13:45:00+00:00 | double_corr | SELL | WAIT / crypto research | 100.0% / +2.46% | 43.24 | 45.15 | 41.33 | Pine не должен превращать это в рабочий BUY/SELL |
-| ARB-USD | 15m | 2026-06-05 13:15:00+00:00 | impulse | SELL | WAIT / crypto research | n/a / n/a | 0.08 | 0.10 | 0.07 | Pine не должен превращать это в рабочий BUY/SELL |
-| DOGE-USD | 15m | 2026-06-05 13:15:00+00:00 | impulse | SELL | WAIT / crypto research | n/a / n/a | 0.08 | 0.09 | 0.08 | Pine не должен превращать это в рабочий BUY/SELL |
-| XRP-USD | 15m | 2026-06-05 13:15:00+00:00 | impulse | SELL | WAIT / crypto research | n/a / n/a | 1.13 | 1.21 | 1.06 | Pine не должен превращать это в рабочий BUY/SELL |
-| APT-USD | 30m | 2026-06-05 12:30:00+00:00 | flat | SELL | WAIT / crypto research | 75.0% / +1.26% | 0.69 | 0.71 | 0.68 | Pine не должен превращать это в рабочий BUY/SELL |
-| BTC-USD | 30m | 2026-06-05 12:00:00+00:00 | triangle | SELL | WAIT / crypto research | n/a / n/a | 62219.04 | 63273.94 | 61164.14 | Pine не должен превращать это в рабочий BUY/SELL |
-| OP-USD | 30m | 2026-06-05 12:00:00+00:00 | flat | SELL | WAIT / crypto research | 75.0% / +1.26% | 0.10 | 0.11 | 0.10 | Pine не должен превращать это в рабочий BUY/SELL |
-| ATOM-USD | 30m | 2026-06-05 11:30:00+00:00 | triangle | SELL | WAIT / crypto research | n/a / n/a | 1.70 | 1.74 | 1.66 | Pine не должен превращать это в рабочий BUY/SELL |
-| BCH-USD | 30m | 2026-06-05 11:30:00+00:00 | flat | SELL | WAIT / crypto research | 75.0% / +1.26% | 223.00 | 237.20 | 208.80 | Pine не должен превращать это в рабочий BUY/SELL |
-| BTC-USD | 15m | 2026-06-05 11:00:00+00:00 | flat | SELL | WAIT / crypto research | 100.0% / +1.64% | 62326.53 | 63247.43 | 61405.63 | Pine не должен превращать это в рабочий BUY/SELL |
-| OP-USD | 15m | 2026-06-05 11:00:00+00:00 | triangle | SELL | WAIT / crypto research | n/a / n/a | 0.10 | 0.11 | 0.10 | Pine не должен превращать это в рабочий BUY/SELL |
-| ADA-USD | 15m | 2026-06-05 10:30:00+00:00 | impulse | SELL | WAIT / crypto research | n/a / n/a | 0.17 | 0.21 | 0.12 | Pine не должен превращать это в рабочий BUY/SELL |
-| FIL-USD | 15m | 2026-06-05 10:00:00+00:00 | impulse | SELL | WAIT / crypto research | n/a / n/a | 0.80 | 0.90 | 0.69 | Pine не должен превращать это в рабочий BUY/SELL |
-| BCH-USD | 15m | 2026-06-05 09:15:00+00:00 | impulse | SELL | WAIT / crypto research | n/a / n/a | 227.10 | 259.20 | 195.00 | Pine не должен превращать это в рабочий BUY/SELL |
-| LTC-USD | 30m | 2026-06-05 09:00:00+00:00 | impulse | SELL | WAIT / crypto research | n/a / n/a | 44.47 | 48.76 | 40.18 | Pine не должен превращать это в рабочий BUY/SELL |
-| AVAX-USD | 15m | 2026-06-05 07:30:00+00:00 | impulse | SELL | WAIT / crypto research | n/a / n/a | 7.28 | 8.12 | 6.44 | Pine не должен превращать это в рабочий BUY/SELL |
-| BNB-USD | 30m | 2026-06-05 07:30:00+00:00 | double_corr | BUY | WAIT / crypto research | n/a / -2.37% | 593.26 | 553.52 | 633.00 | Pine не должен превращать это в рабочий BUY/SELL |
-| LTC-USD | 15m | 2026-06-05 07:30:00+00:00 | impulse | SELL | WAIT / crypto research | n/a / n/a | 44.03 | 48.32 | 39.74 | Pine не должен превращать это в рабочий BUY/SELL |
+| OP-USD | 15m | 2026-06-05 14:30:00+00:00 | double_corr | BUY | WAIT / crypto research | 82.4% / +2.23% | 0.10 | 0.09 | 0.11 | Pine не должен превращать это в рабочий BUY/SELL |
+| ETH-USD | 15m | 2026-06-05 14:00:00+00:00 | flat | SELL | WAIT / crypto research | 55.9% / +0.70% | 1615.77 | 1647.06 | 1584.48 | Pine не должен превращать это в рабочий BUY/SELL |
+| SOL-USD | 30m | 2026-06-05 14:00:00+00:00 | triangle | SELL | WAIT / crypto research | 40.3% / -0.18% | 64.87 | 64.90 | 64.84 | Pine не должен превращать это в рабочий BUY/SELL |
+| ATOM-USD | 15m | 2026-06-05 13:45:00+00:00 | flat | SELL | WAIT / crypto research | 55.9% / +0.70% | 1.69 | 1.72 | 1.66 | Pine не должен превращать это в рабочий BUY/SELL |
+| AVAX-USD | 15m | 2026-06-05 13:45:00+00:00 | flat | SELL | WAIT / crypto research | 55.9% / +0.70% | 6.97 | 7.19 | 6.76 | Pine не должен превращать это в рабочий BUY/SELL |
+| BNB-USD | 15m | 2026-06-05 13:45:00+00:00 | flat | SELL | WAIT / crypto research | 55.9% / +0.70% | 581.02 | 586.62 | 575.42 | Pine не должен превращать это в рабочий BUY/SELL |
+| DOT-USD | 15m | 2026-06-05 13:45:00+00:00 | triangle | SELL | WAIT / crypto research | 40.3% / -0.18% | 0.96 | 0.97 | 0.96 | Pine не должен превращать это в рабочий BUY/SELL |
+| ETC-USD | 15m | 2026-06-05 13:45:00+00:00 | double_corr | SELL | WAIT / crypto research | 87.5% / +2.15% | 6.81 | 7.13 | 6.49 | Pine не должен превращать это в рабочий BUY/SELL |
+| FIL-USD | 15m | 2026-06-05 13:45:00+00:00 | flat | SELL | WAIT / crypto research | 55.9% / +0.70% | 0.76 | 0.80 | 0.73 | Pine не должен превращать это в рабочий BUY/SELL |
+| LTC-USD | 15m | 2026-06-05 13:45:00+00:00 | double_corr | SELL | WAIT / crypto research | 87.5% / +2.15% | 43.24 | 45.15 | 41.33 | Pine не должен превращать это в рабочий BUY/SELL |
+| ETH-USD | 30m | 2026-06-05 13:30:00+00:00 | flat | SELL | WAIT / crypto research | 55.9% / +0.70% | 1615.04 | 1623.82 | 1606.26 | Pine не должен превращать это в рабочий BUY/SELL |
+| LINK-USD | 30m | 2026-06-05 13:30:00+00:00 | flat | SELL | WAIT / crypto research | 55.9% / +0.70% | 7.38 | 7.51 | 7.25 | Pine не должен превращать это в рабочий BUY/SELL |
+| ARB-USD | 15m | 2026-06-05 13:15:00+00:00 | impulse | SELL | WAIT / crypto research | 48.0% / -0.86% | 0.08 | 0.10 | 0.07 | Pine не должен превращать это в рабочий BUY/SELL |
+| DOGE-USD | 15m | 2026-06-05 13:15:00+00:00 | impulse | SELL | WAIT / crypto research | 48.0% / -0.86% | 0.08 | 0.09 | 0.08 | Pine не должен превращать это в рабочий BUY/SELL |
+| XRP-USD | 15m | 2026-06-05 13:15:00+00:00 | impulse | SELL | WAIT / crypto research | 48.0% / -0.86% | 1.13 | 1.21 | 1.06 | Pine не должен превращать это в рабочий BUY/SELL |
+| APT-USD | 30m | 2026-06-05 12:30:00+00:00 | flat | SELL | WAIT / crypto research | 55.9% / +0.70% | 0.69 | 0.71 | 0.68 | Pine не должен превращать это в рабочий BUY/SELL |
+| BTC-USD | 30m | 2026-06-05 12:00:00+00:00 | triangle | SELL | WAIT / crypto research | 40.3% / -0.18% | 62219.04 | 63273.94 | 61164.14 | Pine не должен превращать это в рабочий BUY/SELL |
+| OP-USD | 30m | 2026-06-05 12:00:00+00:00 | flat | SELL | WAIT / crypto research | 55.9% / +0.70% | 0.10 | 0.11 | 0.10 | Pine не должен превращать это в рабочий BUY/SELL |
+| ATOM-USD | 30m | 2026-06-05 11:30:00+00:00 | triangle | SELL | WAIT / crypto research | 40.3% / -0.18% | 1.70 | 1.74 | 1.66 | Pine не должен превращать это в рабочий BUY/SELL |
+| BCH-USD | 30m | 2026-06-05 11:30:00+00:00 | flat | SELL | WAIT / crypto research | 55.9% / +0.70% | 223.00 | 237.20 | 208.80 | Pine не должен превращать это в рабочий BUY/SELL |
+| BTC-USD | 15m | 2026-06-05 11:00:00+00:00 | flat | SELL | WAIT / crypto research | 55.9% / +0.70% | 62326.53 | 63247.43 | 61405.63 | Pine не должен превращать это в рабочий BUY/SELL |
+| OP-USD | 15m | 2026-06-05 11:00:00+00:00 | triangle | SELL | WAIT / crypto research | 40.3% / -0.18% | 0.10 | 0.11 | 0.10 | Pine не должен превращать это в рабочий BUY/SELL |
+| ADA-USD | 15m | 2026-06-05 10:30:00+00:00 | impulse | SELL | WAIT / crypto research | 48.0% / -0.86% | 0.17 | 0.21 | 0.12 | Pine не должен превращать это в рабочий BUY/SELL |
+| TRX-USD | 15m | 2026-06-05 10:30:00+00:00 | flat | BUY | WAIT / crypto research | 56.4% / +0.57% | 0.33 | 0.32 | 0.33 | Pine не должен превращать это в рабочий BUY/SELL |
 
 ## Критерии прохождения
 

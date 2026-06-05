@@ -11,7 +11,7 @@ ETFS = ["SPY", "QQQ", "IWM", "DIA", "GLD", "SLV", "USO", "TLT", "XLF", "XLE"]
 CRYPTO = [
     "BTC-USD", "ETH-USD", "SOL-USD", "BNB-USD", "XRP-USD",
     "ADA-USD", "AVAX-USD", "DOGE-USD", "LINK-USD", "DOT-USD",
-    "MATIC-USD", "LTC-USD", "BCH-USD", "UNI-USD", "ATOM-USD",
+    "TRX-USD", "LTC-USD", "BCH-USD", "UNI-USD", "ATOM-USD",
     "ETC-USD", "FIL-USD", "APT-USD", "ARB-USD", "OP-USD",
 ]
 FOREX = ["EURUSD=X", "GBPUSD=X", "USDJPY=X", "AUDUSD=X", "USDCAD=X"]

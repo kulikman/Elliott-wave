@@ -18,6 +18,13 @@ from scripts.daily_report import (
 )
 from scripts.crypto_research_report import build_payload as build_crypto_research_payload
 from scripts.crypto_research_report import markdown_report as crypto_research_markdown
+from scripts.historical_signal_grid import (
+    checkpoint_csv_path_for,
+    checkpoint_path_for,
+    read_checkpoint_frame,
+    remove_checkpoint_files,
+    write_trades_frame,
+)
 from scripts.pine_parity_checklist import build_crypto_markdown, representative_crypto_rows
 from scripts.scan_probability_signals import (
     build_payload,
@@ -50,6 +57,7 @@ from ewb.research import (
     validate_figure_rows,
     validate_trade_records,
 )
+from ewb.research.universe import CRYPTO
 
 def test_cost_for_asset_classes():
     assert cost_for("AAPL") == 0.0008
@@ -57,6 +65,32 @@ def test_cost_for_asset_classes():
     assert cost_for("BTC-USD") == 0.0015
     assert cost_for("EURUSD=X") == 0.0013
     assert cost_for("GC=F") == 0.0013
+
+
+def test_crypto_universe_uses_trx_instead_of_legacy_matic():
+    assert "TRX-USD" in CRYPTO
+    assert "MATIC-USD" not in CRYPTO
+
+
+def test_historical_grid_checkpoint_helpers_clean_companions(tmp_path):
+    trades_path = tmp_path / "historical_signal_grid_crypto_trades.parquet"
+    checkpoint_path = checkpoint_path_for(str(trades_path))
+    checkpoint_csv_path = checkpoint_csv_path_for(str(trades_path))
+    df = pd.DataFrame([{"ticker": "BTC-USD", "interval": "1h", "value": 1.0}])
+
+    written = write_trades_frame(df, checkpoint_path)
+    assert written in {checkpoint_path, checkpoint_csv_path}
+    loaded = read_checkpoint_frame(str(trades_path))
+    assert loaded is not None
+    assert loaded["ticker"].tolist() == ["BTC-USD"]
+
+    pd.DataFrame([{"ticker": "TRX-USD", "interval": "1h", "value": 2.0}]).to_csv(
+        checkpoint_csv_path,
+        index=False,
+    )
+    remove_checkpoint_files(str(trades_path))
+    assert not (tmp_path / "historical_signal_grid_crypto_trades_checkpoint.parquet").exists()
+    assert not (tmp_path / "historical_signal_grid_crypto_trades_checkpoint.csv").exists()
 
 
 def test_normalize_ohlc_lowercases_and_filters_columns():

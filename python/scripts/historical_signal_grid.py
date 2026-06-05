@@ -170,15 +170,44 @@ def checkpoint_path_for(trades_path: str) -> str:
     return trades_path.replace(".parquet", "_checkpoint.parquet")
 
 
+def checkpoint_csv_path_for(trades_path: str) -> str:
+    return trades_path.replace(".parquet", "_checkpoint.csv")
+
+
+def remove_checkpoint_files(trades_path: str) -> None:
+    for path in (
+        checkpoint_path_for(trades_path),
+        checkpoint_csv_path_for(trades_path),
+        checkpoint_path_for(trades_path).replace(".parquet", "_tmp.parquet"),
+    ):
+        if os.path.exists(path):
+            os.remove(path)
+
+
 def write_trades_frame(df: pd.DataFrame, path: str) -> str:
     os.makedirs(os.path.dirname(path), exist_ok=True)
     try:
-        df.to_parquet(path, index=False)
+        tmp_path = path.replace(".parquet", "_tmp.parquet")
+        df.to_parquet(tmp_path, index=False)
+        os.replace(tmp_path, path)
+        csv_path = path.replace(".parquet", ".csv")
+        if os.path.exists(csv_path):
+            os.remove(csv_path)
         return path
     except Exception:
         csv_path = path.replace(".parquet", ".csv")
         df.to_csv(csv_path, index=False)
         return csv_path
+
+
+def read_checkpoint_frame(trades_path: str) -> pd.DataFrame | None:
+    parquet_path = checkpoint_path_for(trades_path)
+    csv_path = checkpoint_csv_path_for(trades_path)
+    if os.path.exists(parquet_path):
+        return pd.read_parquet(parquet_path)
+    if os.path.exists(csv_path):
+        return pd.read_csv(csv_path)
+    return None
 
 
 def calibration_for_asset_class(asset_class: str) -> tuple[str, dict]:
@@ -983,8 +1012,8 @@ def main() -> None:
         calibration_path, calibration = calibration_for_asset_class(args.asset_class)
         all_rows: list[dict] = []
         processed_pairs: set[tuple[str, str]] = set()
-        if args.resume_checkpoint and os.path.exists(checkpoint_path):
-            checkpoint = pd.read_parquet(checkpoint_path)
+        checkpoint = read_checkpoint_frame(OUT_TRADES) if args.resume_checkpoint else None
+        if checkpoint is not None:
             all_rows = checkpoint.to_dict("records")
             processed_pairs = set(zip(checkpoint["ticker"], checkpoint["interval"]))
             ok_tickers = set(checkpoint["ticker"].dropna().unique())
@@ -997,39 +1026,45 @@ def main() -> None:
         start = time.time()
         total = len(tickers) * len(args.intervals)
         done = 0
-        for ticker in tickers:
-            for label in args.intervals:
-                done += 1
-                if (ticker, label) in processed_pairs:
-                    print(f"[{done:03}/{total}] {ticker:6} {label:3} skipped checkpoint", flush=True)
-                    continue
-                try:
-                    df = load_frame(ticker, label, cache_1h)
-                    if df is None or len(df) < 100:
-                        failures.append({"ticker": ticker, "interval": label, "error": "not_enough_data"})
+        try:
+            for ticker in tickers:
+                for label in args.intervals:
+                    done += 1
+                    if (ticker, label) in processed_pairs:
+                        print(f"[{done:03}/{total}] {ticker:6} {label:3} skipped checkpoint", flush=True)
                         continue
-                    rows = build_trades_for_frame(ticker, label, df, calibration)
-                    all_rows.extend(rows)
-                    ok_tickers.add(ticker)
-                    elapsed = time.time() - start
-                    eta = elapsed / max(done, 1) * (total - done)
-                    print(
-                        f"[{done:03}/{total}] {ticker:6} {label:3} rows={len(rows):5} "
-                        f"total={len(all_rows):7} elapsed={elapsed:.0f}s eta={eta:.0f}s",
-                        flush=True,
-                    )
-                    write_trades_frame(pd.DataFrame(all_rows), checkpoint_path)
-                except Exception as exc:
-                    failures.append({"ticker": ticker, "interval": label, "error": repr(exc)})
-                    print(f"[{done:03}/{total}] {ticker:6} {label:3} ERROR {exc!r}", flush=True)
+                    try:
+                        df = load_frame(ticker, label, cache_1h)
+                        if df is None or len(df) < 100:
+                            failures.append({"ticker": ticker, "interval": label, "error": "not_enough_data"})
+                            continue
+                        rows = build_trades_for_frame(ticker, label, df, calibration)
+                        all_rows.extend(rows)
+                        ok_tickers.add(ticker)
+                        write_trades_frame(pd.DataFrame(all_rows), checkpoint_path)
+                        elapsed = time.time() - start
+                        eta = elapsed / max(done, 1) * (total - done)
+                        print(
+                            f"[{done:03}/{total}] {ticker:6} {label:3} rows={len(rows):5} "
+                            f"total={len(all_rows):7} elapsed={elapsed:.0f}s eta={eta:.0f}s "
+                            f"checkpoint={os.path.basename(checkpoint_path)}",
+                            flush=True,
+                        )
+                    except Exception as exc:
+                        failures.append({"ticker": ticker, "interval": label, "error": repr(exc)})
+                        print(f"[{done:03}/{total}] {ticker:6} {label:3} ERROR {exc!r}", flush=True)
+        except KeyboardInterrupt:
+            if all_rows:
+                written = write_trades_frame(pd.DataFrame(all_rows), checkpoint_path)
+                print(f"Interrupted. Checkpoint saved: {written} rows={len(all_rows)}", flush=True)
+            raise
 
         if not all_rows:
             raise SystemExit("No trades generated.")
 
         trades = pd.DataFrame(all_rows)
         write_trades_frame(trades, OUT_TRADES)
-        if os.path.exists(checkpoint_path):
-            os.remove(checkpoint_path)
+        remove_checkpoint_files(OUT_TRADES)
 
     trades["entry_ts"] = pd.to_datetime(trades["entry_ts"], utc=True)
     trades["exit_ts"] = pd.to_datetime(trades["exit_ts"], utc=True)
