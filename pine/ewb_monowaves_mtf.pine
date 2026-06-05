@@ -73,6 +73,10 @@ maxHistoricalSignals = input.int(3, "Max historical signals", group = grpTrade, 
      tooltip = "Используется только если выключить Only latest signal.")
 actionLevelBars = input.int(80, "Длина уровней Action, баров", group = grpTrade, minval = 10, maxval = 300)
 showNoise = input.bool(false, "Показывать Impulse/Triangle как NO TRADE", group = grpTrade)
+actionTargetMult = input.float(1.618, "Action TP multiplier", group = grpTrade, minval = 0.1, maxval = 8.0, step = 0.001,
+     tooltip = "Исторический grid: лучший практичный flat 1h long использует TP 1.618 амплитуды.")
+actionStopMult = input.float(1.0, "Action SL multiplier", group = grpTrade, minval = 0.25, maxval = 3.0, step = 0.05,
+     tooltip = "Исторический grid: основной flat 1h long использует SL 1.0 амплитуды. Для double_corr 0.75 может быть research-улучшением.")
 flatProb = input.float(56.1, "Fallback Flat fade P(win), %", group = grpTrade, minval = 0, maxval = 100, step = 0.1,
      tooltip = "Fallback из baseline Probability Model v0. Для 1h/1d используются side-specific baseline значения.")
 dcProb = input.float(84.8, "Fallback Double Correction P(win), %", group = grpTrade, minval = 0, maxval = 100, step = 0.1,
@@ -80,8 +84,9 @@ dcProb = input.float(84.8, "Fallback Double Correction P(win), %", group = grpTr
 maxHybridPivots = input.int(40, "Память hybrid-пивотов", group = grpTrade, minval = 10, maxval = 200)
 tradeMaxAgeBars = input.int(80, "Срок актуальности сигнала, баров", group = grpTrade, minval = 1, maxval = 500,
      tooltip = "После этого количества баров сигнал помечается EXPIRED, если TP/SL ещё не достигнуты.")
-stockOnlyMode = input.bool(true, "Только акции: crypto = UNSUPPORTED", group = grpTrade,
-     tooltip = "Probability calibration v0 построена по акциям. Для crypto Action now будет WAIT/UNSUPPORTED.")
+marketMode = input.string("Stocks", "Market mode", group = grpTrade,
+     options = ["Stocks", "Crypto", "Any"],
+     tooltip = "Stocks: рабочий Action только для акций. Crypto: пока research-only до Pine/Python parity crypto calibration. Any: не блокирует рынок, но crypto остаётся WAIT/research.")
 actionFreshBars = input.int(3, "Свежий вход: максимум баров", group = grpTrade, minval = 0, maxval = 50,
      tooltip = "BUY/SELL разрешён только пока сигнал свежий. Позже таблица покажет WAIT/STALE.")
 maxEntryProgress = input.float(0.35, "Поздно входить после % пути к TP", group = grpTrade, minval = 0.05, maxval = 0.95, step = 0.05,
@@ -92,7 +97,9 @@ minActionProb = input.float(55.0, "Минимальная P(win) для Action n
      tooltip = "Если калиброванная вероятность ниже порога, Action now станет WAIT/PROB LOW.")
 minActionSample = input.int(20, "Минимальная выборка для Action now", group = grpTrade, minval = 0, maxval = 500,
      tooltip = "Если исторических наблюдений меньше порога, Action now станет WAIT/SMALL N. Это защищает от слишком уверенных low-sample сигналов.")
-htfActionMode = input.string("WARN", "HTF режим для Action now", group = grpTrade,
+allowSmallSampleDC = input.bool(true, "Разрешать small-sample DoubleCorr", group = grpTrade,
+     tooltip = "DoubleCorr long показал сильный edge в historical grid, но baseline n мал. При включении сигнал разрешён, но Grade остаётся sample-aware.")
+htfActionMode = input.string("BLOCK", "HTF режим для Action now", group = grpTrade,
      options = ["OFF", "WARN", "BLOCK"],
      tooltip = "OFF: не учитывать HTF. WARN: не блокировать, но понижать Grade. BLOCK: BUY блокируется при DOWN HTF, SELL при UP HTF.")
 
@@ -510,14 +517,14 @@ calibratedTradeStats(string figType, string side) =>
         if tfKey == "1d"
             prob := 66.7, sampleN := 24, conf := "low", src := "baseline|flat|1d|long"
         else if tfKey == "1h"
-            prob := 55.4, sampleN := 251, conf := "high", src := "baseline|flat|1h|long"
+            prob := 64.4, sampleN := 59, conf := "grid_high", src := "grid_v0|flat|1h|long|htf_not_against"
         else
             prob := 56.4, sampleN := 275, conf := "high", src := "baseline|flat|long"
     else if figType == "flat" and side == "SHORT"
         if tfKey == "1d"
-            prob := 69.6, sampleN := 23, conf := "low", src := "baseline|flat|1d|short"
+            prob := 69.6, sampleN := 23, conf := "avoid", src := "grid_v0|avoid|flat|1d|short"
         else if tfKey == "1h"
-            prob := 54.5, sampleN := 233, conf := "high", src := "baseline|flat|1h|short"
+            prob := 54.5, sampleN := 233, conf := "avoid", src := "grid_v0|avoid|flat|1h|short"
         else
             prob := 55.9, sampleN := 256, conf := "high", src := "baseline|flat|short"
     else if figType == "double_corr" and side == "LONG"
@@ -543,6 +550,8 @@ signalGrade(string action, float prob, int sampleN, string conf, float rr) =>
         "NO EDGE"
     else if sampleN < 20 or conf == "low"
         "B-SMALL-N"
+    else if conf == "grid_high" and not na(rr) and rr >= 1.0
+        "A"
     else if prob >= 65 and not na(rr) and rr >= 1.5
         "A"
     else if prob >= 55 and not na(rr) and rr >= 1.0
@@ -888,8 +897,8 @@ if showTrade and rc.confirmed and not na(rc.prevBar)
                 lastTradeType := "Flat fade"
                 lastTradeProb := probFlat
                 lastTradeEntry := entry4
-                lastTradeTp := isLongFlat ? entry4 + amp4 : entry4 - amp4
-                lastTradeSl := isLongFlat ? entry4 - amp4 : entry4 + amp4
+                lastTradeTp := isLongFlat ? entry4 + amp4 * actionTargetMult : entry4 - amp4 * actionTargetMult
+                lastTradeSl := isLongFlat ? entry4 - amp4 * actionStopMult : entry4 + amp4 * actionStopMult
                 lastTradeAmp := amp4
                 lastTradeB0 := b0h4
                 lastTradeB1 := b1h4
@@ -922,8 +931,8 @@ if showTrade and rc.confirmed and not na(rc.prevBar)
                 lastTradeType := "DoubleCorr fade"
                 lastTradeProb := probDc
                 lastTradeEntry := entry4
-                lastTradeTp := isLongDc ? entry4 + amp4 : entry4 - amp4
-                lastTradeSl := isLongDc ? entry4 - amp4 : entry4 + amp4
+                lastTradeTp := isLongDc ? entry4 + amp4 * actionTargetMult : entry4 - amp4 * actionTargetMult
+                lastTradeSl := isLongDc ? entry4 - amp4 * actionStopMult : entry4 + amp4 * actionStopMult
                 lastTradeAmp := amp4
                 lastTradeB0 := b0h4
                 lastTradeB1 := b1h4
@@ -995,15 +1004,24 @@ if newHTF and not na(hHigh)
 
 string htfBias = htfBiasDir > 1 ? "UP strong" : htfBiasDir > 0 ? "UP" : htfBiasDir < -1 ? "DOWN strong" : htfBiasDir < 0 ? "DOWN" : "NEUTRAL"
 
-bool supportedTradeSymbol = not stockOnlyMode or syminfo.type == "stock"
+bool chartIsStock = syminfo.type == "stock"
+bool chartIsCrypto = syminfo.type == "crypto"
+bool marketModeAllowsChart = marketMode == "Any" or (marketMode == "Stocks" and chartIsStock) or (marketMode == "Crypto" and chartIsCrypto)
+bool cryptoResearchMarket = chartIsCrypto and (marketMode == "Crypto" or marketMode == "Any")
+bool actionableTradeSymbol = chartIsStock and marketModeAllowsChart
+string marketModel = actionableTradeSymbol ? "stocks-v0" : cryptoResearchMarket ? "crypto-v0 research" : "unsupported"
 string actionNow = "WAIT"
 string actionReason = "NO SIGNAL"
 float actionRR = na
 float actionProgress = na
 bool htfAgainstAction = false
 
-if not supportedTradeSymbol
+if not marketModeAllowsChart
     actionReason := "UNSUPPORTED " + syminfo.type
+else if cryptoResearchMarket
+    actionReason := "CRYPTO RESEARCH ONLY"
+else if not actionableTradeSymbol
+    actionReason := "NO " + syminfo.type + " CALIBRATION"
 else if lastTradeSide != "LONG" and lastTradeSide != "SHORT"
     actionReason := "NO SIGNAL"
 else if lastTradeStatus != "ACTIVE"
@@ -1020,6 +1038,7 @@ else
     float movedToTp = actionLong ? close - lastTradeEntry : lastTradeEntry - close
     actionProgress := pathToTp > 0 ? movedToTp / pathToTp : na
     actionRR := riskNow > 0 ? rewardNow / riskNow : na
+    bool smallSampleBlocked = lastTradeSampleN < minActionSample and not (allowSmallSampleDC and lastTradeType == "DoubleCorr fade")
     if actionAge > actionFreshBars
         actionReason := "STALE " + str.tostring(actionAge) + "b"
     else if rewardNow <= 0
@@ -1034,7 +1053,7 @@ else
         actionReason := "PROB LOW " + str.tostring(lastTradeProb, "#.0") + "%"
     else if lastTradeConfidence == "avoid"
         actionReason := "NO EDGE " + lastTradeProbSource
-    else if lastTradeSampleN < minActionSample
+    else if smallSampleBlocked
         actionReason := "SMALL N " + str.tostring(lastTradeSampleN) + "<" + str.tostring(minActionSample)
     else if htfActionMode == "BLOCK" and actionLong and htfBiasDir < 0
         actionReason := "HTF AGAINST " + htfBias
@@ -1050,13 +1069,13 @@ string signalGradeNow = signalGrade(actionNow, lastTradeProb, lastTradeSampleN, 
 if actionNow != "WAIT" and htfAgainstAction and htfActionMode == "WARN"
     signalGradeNow := signalGradeNow == "A" ? "B-HTF" : signalGradeNow == "B" ? "C-HTF" : signalGradeNow + "-HTF"
 
-string displayTradeSide = supportedTradeSymbol ? lastTradeSide : "UNSUPPORTED"
-string displayTradeType = supportedTradeSymbol ? lastTradeType : "stock calibration only"
-string displayTradeStatus = supportedTradeSymbol ? lastTradeStatus : "WAIT"
-string displayTradeProb = supportedTradeSymbol and not na(lastTradeProb) ? str.tostring(lastTradeProb, "#.0") + "%" : "—"
-string displaySampleConf = supportedTradeSymbol ? str.tostring(lastTradeSampleN) + " / " + lastTradeConfidence : "—"
-string displayEntryTp = supportedTradeSymbol and not na(lastTradeEntry) ? str.tostring(lastTradeEntry, format.mintick) + " / " + str.tostring(lastTradeTp, format.mintick) : "—"
-string displaySl = supportedTradeSymbol and not na(lastTradeSl) ? str.tostring(lastTradeSl, format.mintick) : "—"
+string displayTradeSide = actionableTradeSymbol ? lastTradeSide : "WAIT"
+string displayTradeType = actionableTradeSymbol ? lastTradeType : marketModel
+string displayTradeStatus = actionableTradeSymbol ? lastTradeStatus : "WAIT"
+string displayTradeProb = actionableTradeSymbol and not na(lastTradeProb) ? str.tostring(lastTradeProb, "#.0") + "%" : "—"
+string displaySampleConf = actionableTradeSymbol ? str.tostring(lastTradeSampleN) + " / " + lastTradeConfidence : "—"
+string displayEntryTp = actionableTradeSymbol and not na(lastTradeEntry) ? str.tostring(lastTradeEntry, format.mintick) + " / " + str.tostring(lastTradeTp, format.mintick) : "—"
+string displaySl = actionableTradeSymbol and not na(lastTradeSl) ? str.tostring(lastTradeSl, format.mintick) : "—"
 
 // ───────────────────── ТЕКУЩИЙ ТОРГОВЫЙ ПЛАН ─────────────────────
 var int drawnActionKey = na
@@ -1084,7 +1103,7 @@ var array<label> historicalPlanLabels = array.new<label>()
 var array<box> historicalPlanBoxes = array.new<box>()
 
 bool canDrawActionPlan = showTradePlan and (actionNow == "BUY" or actionNow == "SELL") and not na(lastTradeConfBar) and not na(lastTradeEntry) and not na(lastTradeSl) and not na(lastTradeAmp) and lastTradeAmp > 0
-bool canDrawWaitNote = showTradePlan and actionNow == "WAIT" and supportedTradeSymbol and lastTradeSide != "—" and actionReason != "NO SIGNAL" and not na(lastTradeConfBar) and not na(lastTradeEntry)
+bool canDrawWaitNote = showTradePlan and actionNow == "WAIT" and actionableTradeSymbol and lastTradeSide != "—" and actionReason != "NO SIGNAL" and not na(lastTradeConfBar) and not na(lastTradeEntry)
 bool canDrawAnyAction = canDrawActionPlan or canDrawWaitNote
 int actionKey = canDrawActionPlan ? lastTradeConfBar * 10 + (actionNow == "BUY" ? 1 : 2) : canDrawWaitNote ? lastTradeConfBar * 10 + 3 : na
 bool redrawActionPlan = barstate.islast and (actionKey != drawnActionKey)
@@ -1282,7 +1301,7 @@ if redrawActionPlan
 alertcondition(actionBuySignal, "EWB Action BUY", "EWB Action now BUY on {{ticker}} {{interval}}")
 alertcondition(actionSellSignal, "EWB Action SELL", "EWB Action now SELL on {{ticker}} {{interval}}")
 
-var table info = table.new(position.top_right, 2, 14, border_width = 1)
+var table info = table.new(position.top_right, 2, 15, border_width = 1)
 if showTradePanel and barstate.islast
     table.cell(info, 0, 0, "Action now", text_color = color.white, bgcolor = color.new(color.gray, 20))
     table.cell(info, 1, 0, actionNow, text_color = color.white, bgcolor = actionColor(actionNow))
@@ -1296,7 +1315,7 @@ if showTradePanel and barstate.islast
     table.cell(info, 0, 4, "Фигура", text_color = color.white, bgcolor = color.new(color.gray, 50))
     table.cell(info, 1, 4, displayTradeType, text_color = color.white, bgcolor = color.new(color.gray, 70))
     table.cell(info, 0, 5, "Status", text_color = color.white, bgcolor = color.new(color.gray, 50))
-    table.cell(info, 1, 5, displayTradeStatus + (supportedTradeSymbol and not na(lastTradeAge) ? " / " + str.tostring(lastTradeAge) + "b" : ""),
+    table.cell(info, 1, 5, displayTradeStatus + (actionableTradeSymbol and not na(lastTradeAge) ? " / " + str.tostring(lastTradeAge) + "b" : ""),
          text_color = color.white, bgcolor = tradeStatusColor(displayTradeStatus, displayTradeSide))
     table.cell(info, 0, 6, "P≈", text_color = color.white, bgcolor = color.new(color.gray, 50))
     table.cell(info, 1, 6, displayTradeProb, text_color = color.white, bgcolor = color.new(color.gray, 70))
@@ -1314,5 +1333,8 @@ if showTradePanel and barstate.islast
     table.cell(info, 0, 12, "HTF mode/bias", text_color = color.white, bgcolor = color.new(color.gray, 50))
     table.cell(info, 1, 12, htfActionMode + " / " + htfBias, text_color = color.white,
          bgcolor = htfBiasDir > 0 ? color.new(color.lime, 45) : htfBiasDir < 0 ? color.new(color.red, 45) : color.new(color.gray, 70))
-    table.cell(info, 0, 13, "Calib / TF", text_color = color.white, bgcolor = color.new(color.gray, 50))
-    table.cell(info, 1, 13, lastTradeProbSource, text_color = color.white, bgcolor = color.new(color.gray, 70))
+    table.cell(info, 0, 13, "Market", text_color = color.white, bgcolor = color.new(color.gray, 50))
+    table.cell(info, 1, 13, marketMode + " / " + marketModel, text_color = color.white,
+         bgcolor = actionableTradeSymbol ? color.new(color.lime, 55) : cryptoResearchMarket ? color.new(color.orange, 35) : color.new(color.gray, 70))
+    table.cell(info, 0, 14, "Calib / TF", text_color = color.white, bgcolor = color.new(color.gray, 50))
+    table.cell(info, 1, 14, actionableTradeSymbol ? lastTradeProbSource : marketModel, text_color = color.white, bgcolor = color.new(color.gray, 70))

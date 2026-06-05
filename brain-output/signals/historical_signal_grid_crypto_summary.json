@@ -1,0 +1,49 @@
+{
+  "generated_at": "2026-06-05T14:07:58.102130+00:00",
+  "asset_class": "crypto",
+  "calibration_path": "/Users/DEV/Elliott-wave/brain-output/indicator-spec/probability_calibration_crypto_v0.json",
+  "max_universe_rank": 20,
+  "tickers_requested": 20,
+  "tickers_ok": 20,
+  "tickers": [
+    "BTC-USD",
+    "ETH-USD",
+    "SOL-USD",
+    "BNB-USD",
+    "XRP-USD",
+    "ADA-USD",
+    "AVAX-USD",
+    "DOGE-USD",
+    "LINK-USD",
+    "DOT-USD",
+    "MATIC-USD",
+    "LTC-USD",
+    "BCH-USD",
+    "UNI-USD",
+    "ATOM-USD",
+    "ETC-USD",
+    "FIL-USD",
+    "APT-USD",
+    "ARB-USD",
+    "OP-USD"
+  ],
+  "intervals": [
+    "15m",
+    "30m",
+    "1h",
+    "4h",
+    "1d",
+    "1w"
+  ],
+  "trade_rows": 19824,
+  "setup_rows": 1374,
+  "probability_filter_rows": 24350,
+  "failures": [],
+  "outputs": {
+    "markdown": "/Users/DEV/Elliott-wave/docs/validation/historical_signal_grid_crypto_report.md",
+    "json": "/Users/DEV/Elliott-wave/brain-output/signals/historical_signal_grid_crypto_summary.json",
+    "trades": "/Users/DEV/Elliott-wave/python/data/historical_signal_grid_crypto_trades.parquet"
+  },
+  "best_balanced": [],
+  "best_winrate": []
+}

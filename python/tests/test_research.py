@@ -16,6 +16,9 @@ from scripts.daily_report import (
     signal_strength,
     sort_daily_signals,
 )
+from scripts.crypto_research_report import build_payload as build_crypto_research_payload
+from scripts.crypto_research_report import markdown_report as crypto_research_markdown
+from scripts.pine_parity_checklist import build_crypto_markdown, representative_crypto_rows
 from scripts.scan_probability_signals import (
     build_payload,
     filter_fresh_signals,
@@ -52,7 +55,7 @@ from ewb.research import (
 def test_cost_for_asset_classes():
     assert cost_for("AAPL") == 0.0008
     assert cost_for("SPY") == 0.0008
-    assert cost_for("BTC-USD") == 0.0013
+    assert cost_for("BTC-USD") == 0.0015
     assert cost_for("EURUSD=X") == 0.0013
     assert cost_for("GC=F") == 0.0013
 
@@ -222,6 +225,37 @@ def test_probability_calibration_rows_build_indicator_contract():
     assert payload["model_version"] == "probability-calibration-v0"
     assert payload["lookup_priority"][0] == "fig_type+interval+side"
     assert len(payload["rows"]) > len(rows)
+
+
+def test_probability_calibration_script_deduplicates_grid_variants():
+    from scripts.build_probability_calibration import canonical_trade_records
+
+    trades = pd.DataFrame({
+        "ticker": ["BTC-USD", "BTC-USD", "BTC-USD", "ETH-USD"],
+        "interval": ["1h", "1h", "1h", "1h"],
+        "fig_type": ["flat", "flat", "flat", "flat"],
+        "side": ["long", "long", "long", "long"],
+        "confirm_idx": [10, 10, 10, 20],
+        "entry_ts": pd.to_datetime([
+            "2026-01-01 00:00:00+00:00",
+            "2026-01-01 00:00:00+00:00",
+            "2026-01-01 00:00:00+00:00",
+            "2026-01-02 00:00:00+00:00",
+        ]),
+        "entry_variant": ["next_bar_open", "next_bar_open", "confirm_close", "next_bar_open"],
+        "mtf_policy": ["none", "none", "none", "none"],
+        "tp_mult": [1.0, 1.618, 1.0, 1.0],
+        "sl_mult": [1.0, 1.0, 1.0, 1.0],
+        "exit_plan": ["full", "full", "full", "full"],
+        "net_ret": [0.02, 0.03, 0.01, -0.01],
+        "win": [True, True, True, False],
+        "exit_reason": ["tp", "tp", "tp", "sl"],
+    })
+    canonical, meta = canonical_trade_records(trades, "crypto")
+    assert meta["source_rows"] == 4
+    assert meta["canonical_rows"] == 2
+    assert len(canonical) == 2
+    assert set(canonical["ticker"]) == {"BTC-USD", "ETH-USD"}
 
 
 def test_probability_signal_uses_lookup_priority_and_risk_box():
@@ -544,6 +578,112 @@ def test_daily_report_empty_message():
     }
     report = russian_daily_report(payload)
     assert "Свежих торговых сигналов нет." in report
+
+
+def test_crypto_pine_parity_checklist_is_research_only():
+    trades = pd.DataFrame([
+        {
+            "ticker": "BTC-USD",
+            "asset_class": "crypto",
+            "interval": "1h",
+            "fig_type": "flat",
+            "side": "short",
+            "entry_variant": "confirm_close",
+            "mtf_policy": "none",
+            "tp_mult": 1.0,
+            "sl_mult": 1.0,
+            "exit_plan": "full",
+            "entry_ts": "2026-06-05 12:00:00+00:00",
+            "entry_px": 100.0,
+            "amp_pct": 0.10,
+            "p_win_model": 73.0,
+            "model_ev": 0.008,
+        },
+        {
+            "ticker": "AAPL",
+            "asset_class": "stocks",
+            "interval": "1h",
+            "fig_type": "flat",
+            "side": "long",
+            "entry_variant": "confirm_close",
+            "mtf_policy": "none",
+            "tp_mult": 1.0,
+            "sl_mult": 1.0,
+            "exit_plan": "full",
+            "entry_ts": "2026-06-05 12:00:00+00:00",
+            "entry_px": 100.0,
+            "amp_pct": 0.10,
+            "p_win_model": 0.55,
+            "model_ev": 0.003,
+        },
+    ])
+    rows = representative_crypto_rows(trades, limit=10)
+    assert rows["ticker"].tolist() == ["BTC-USD"]
+
+    markdown = build_crypto_markdown(trades, limit=10, source_path="crypto.parquet")
+    assert "WAIT / crypto research" in markdown
+    assert "crypto-v0 research" in markdown
+    assert "73.0%" in markdown
+    assert "BTC-USD" in markdown
+    assert "AAPL" not in markdown
+
+
+def test_crypto_research_report_keeps_wait_contract():
+    trades = pd.DataFrame([
+        {
+            "ticker": "BTC-USD",
+            "asset_class": "crypto",
+            "interval": "1h",
+            "fig_type": "flat",
+            "side": "short",
+            "entry_variant": "confirm_close",
+            "mtf_policy": "none",
+            "tp_mult": 1.0,
+            "sl_mult": 1.0,
+            "exit_plan": "full",
+            "entry_ts": "2026-06-05 12:00:00+00:00",
+            "entry_px": 100.0,
+            "amp_pct": 0.10,
+            "p_win_model": 73.0,
+            "model_ev": 0.008,
+            "confidence": "high",
+            "sample_size": 120,
+            "exit_reason": "tp",
+            "net_ret": 0.02,
+        },
+        {
+            "ticker": "AAPL",
+            "asset_class": "stocks",
+            "interval": "1h",
+            "fig_type": "flat",
+            "side": "long",
+            "entry_variant": "confirm_close",
+            "mtf_policy": "none",
+            "tp_mult": 1.0,
+            "sl_mult": 1.0,
+            "exit_plan": "full",
+            "entry_ts": "2026-06-05 12:00:00+00:00",
+            "entry_px": 100.0,
+            "amp_pct": 0.10,
+            "p_win_model": 55.0,
+            "model_ev": 0.003,
+            "confidence": "high",
+            "sample_size": 200,
+            "exit_reason": "tp",
+            "net_ret": 0.01,
+        },
+    ])
+    payload = build_crypto_research_payload(trades, limit=10)
+    assert payload["asset_class"] == "crypto"
+    assert payload["mode"] == "research-only"
+    assert payload["rows"][0]["ticker"] == "BTC-USD"
+    assert payload["rows"][0]["action_now"] == "WAIT"
+    assert payload["rows"][0]["reason"] == "CRYPTO_RESEARCH_ONLY"
+
+    markdown = crypto_research_markdown(payload)
+    assert "BTC-USD" in markdown
+    assert "AAPL" not in markdown
+    assert "Action now` is always `WAIT`" in markdown
 
 
 

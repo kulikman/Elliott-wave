@@ -10,6 +10,9 @@
   `probability_calibration_v0`, поэтому его panel, trade-plan и alerts выключены по умолчанию.
 - Если оба индикатора добавлены на один график, рабочим источником `Action now` считать только
   `Elliott Wave Brain — Monowaves MTF`.
+- Crypto пока является отдельным research-направлением: Pine не должен использовать
+  stock-калибровку как crypto BUY/SELL. На crypto-графиках рабочий результат — `WAIT /
+  crypto research`, пока `probability_calibration_crypto_v0` не пройдёт отдельную parity-проверку.
 
 ## Probability Overlay v0
 
@@ -40,6 +43,8 @@
   в `WAIT`, потому калибровка v0 предназначена для акций;
 - не рисует trade-plan на неподдержанном рынке, чтобы старые stock-вероятности не
   выглядели как crypto-сигнал;
+- даже при `Market mode = Crypto` остаётся research-only и не включает stock-calibrated
+  Action/alerts;
 - показывает `impulse/triangle` как `Skip` / no-trade context;
 - переводит отработанные, выбитые или устаревшие сигналы в `WAIT`, чтобы старый
   `Last signal` не выглядел как новая рекомендация;
@@ -74,6 +79,10 @@
 
 Research-вероятности top20/watchlist убраны из рабочего Action: используются baseline
 значения Probability Model v0.
+
+`Market mode = Stocks` является рабочим режимом по умолчанию. `Market mode = Crypto`
+показывает crypto как отдельный research-контур и не разрешает BUY/SELL, чтобы Антон
+не видел stock P(win) как пригодную crypto-рекомендацию.
 
 **Как сверять с Python:**
 1. Обнови daily report: `python3 python/scripts/daily_report.py`.

@@ -119,6 +119,12 @@ panelPosition(string value) =>
 marketSupported() =>
     marketMode == "Any" or (marketMode == "Stocks" and syminfo.type == "stock") or (marketMode == "Crypto" and syminfo.type == "crypto")
 
+marketActionable() =>
+    syminfo.type == "stock" and (marketMode == "Stocks" or marketMode == "Any")
+
+marketModelLabel() =>
+    marketActionable() ? "stocks-v0" : syminfo.type == "crypto" and (marketMode == "Crypto" or marketMode == "Any") ? "crypto-v0 research" : "unsupported"
+
 confidenceFromSample(int sample) =>
     string out = "low"
     if sample >= 500
@@ -338,7 +344,7 @@ drawTrade(string pattern, string dir, int start, int endPivotBar, float amp) =>
     float tp3Prob = tpProbability(pWin, 3)
     color c = isLong ? color.lime : color.red
     [b0, b1, lo, hi] = patternBounds(start, 4)
-    if marketSupported()
+    if marketActionable()
         drawBox(pattern + " " + action, b0, b1, lo, hi, c)
         if showSignalWaves
             drawSignalWaves(pattern, start, 4, c)
@@ -524,10 +530,13 @@ currentRisk = isTradeLast and not na(lastStop) ? isBuyLast ? close - lastStop : 
 remainingRR = not na(remainingReward) and not na(currentRisk) and currentRisk > 0 ? remainingReward / currentRisk : na
 isLateEntry = tradeStatus == "ACTIVE" and (na(remainingRR) or remainingRR < minRemainingRR)
 isMarketSupported = marketSupported()
+isMarketActionable = marketActionable()
+isCryptoResearch = syminfo.type == "crypto" and isMarketSupported
+marketModel = marketModelLabel()
 
-actionNow = enableActions and tradeStatus == "ACTIVE" and not isLateEntry and isMarketSupported ? lastAction : "WAIT"
+actionNow = enableActions and tradeStatus == "ACTIVE" and not isLateEntry and isMarketActionable ? lastAction : "WAIT"
 actionNowColor = actionNow == "BUY" ? color.new(color.lime, 35) : actionNow == "SELL" ? color.new(color.red, 35) : color.new(color.orange, 35)
-actionReason = not enableActions ? "actions disabled" : not isMarketSupported ? "unsupported market" : not isTradeLast ? lastAction == "SKIP" ? "skip pattern" : "no trade signal" : slHit ? "stop hit" : tp3Hit ? "tp3 passed" : tp2Hit ? "tp2 passed" : tp1Hit ? "tp1 passed / late" : isStale ? "signal stale" : isLateEntry ? "late entry" : "fresh active signal"
+actionReason = not enableActions ? "actions disabled" : not isMarketSupported ? "unsupported market" : isCryptoResearch ? "crypto research only" : not isMarketActionable ? "no market calibration" : not isTradeLast ? lastAction == "SKIP" ? "skip pattern" : "no trade signal" : slHit ? "stop hit" : tp3Hit ? "tp3 passed" : tp2Hit ? "tp2 passed" : tp1Hit ? "tp1 passed / late" : isStale ? "signal stale" : isLateEntry ? "late entry" : "fresh active signal"
 alertBuyNow = enableActions and buySignal and actionNow == "BUY"
 alertSellNow = enableActions and sellSignal and actionNow == "SELL"
 
@@ -560,8 +569,8 @@ if showPanel and barstate.islast
     table.cell(info, 1, 9, lastConfidence + " / " + (na(lastSample) ? "—" : str.tostring(lastSample)), text_color = color.white,
          bgcolor = lastConfidence == "low" ? color.new(color.orange, 35) : color.new(color.gray, 70))
     table.cell(info, 0, 10, "Market", text_color = color.white, bgcolor = color.new(color.gray, 55))
-    table.cell(info, 1, 10, syminfo.type, text_color = color.white,
-         bgcolor = isMarketSupported ? color.new(color.gray, 70) : color.new(color.orange, 35))
+    table.cell(info, 1, 10, syminfo.type + " / " + marketModel, text_color = color.white,
+         bgcolor = isMarketActionable ? color.new(color.lime, 55) : isCryptoResearch ? color.new(color.orange, 35) : color.new(color.gray, 70))
     table.cell(info, 0, 11, "Remain R:R", text_color = color.white, bgcolor = color.new(color.gray, 55))
     table.cell(info, 1, 11, na(remainingRR) ? "—" : str.tostring(remainingRR, "#.00"), text_color = color.white,
          bgcolor = isLateEntry ? color.new(color.orange, 35) : color.new(color.gray, 70))
