@@ -37,6 +37,11 @@ Observed chart:
   - `Entry / TP`: visible numeric trade plan
   - `SL / invalid`: visible numeric level
 
+Pine Editor was opened in split-view and the current repository code was
+visible there, including the new `Market` row. However, browser automation did
+not successfully add/update the chart instance: the left chart continued to
+show the old saved `EWB Mono` output.
+
 ## Finding
 
 Status: `High`
@@ -78,3 +83,37 @@ After the Pine update, validate one stock chart, for example `AAPL` or `MSFT`:
 
 Current validation result: `blocked until TradingView Pine script is updated`.
 
+## Manual Update Package
+
+Primary script for Anton's working indicator:
+
+- `pine/ewb_monowaves_mtf.pine`
+- Indicator title: `Elliott Wave Brain — Monowaves MTF`
+- Short title: `EWB Mono`
+- Expected code checks:
+  - contains `Market mode`
+  - contains `CRYPTO RESEARCH ONLY`
+  - table has `Market` and `Calib / TF` rows
+
+Research-only overlay:
+
+- `pine/ewb_probability_overlay_v0.pine`
+- Indicator title: `EWB — Probability Overlay v0`
+- Short title: `EWBProbv0`
+- Keep actions/alerts disabled unless intentionally doing research parity.
+
+Manual validation after updating `EWB Mono`:
+
+1. Open `BTCUSDT` on TradingView.
+2. Add/update `Elliott Wave Brain — Monowaves MTF`.
+3. Open indicator settings and set `Market mode = Crypto`.
+4. Expected:
+   - `Action now = WAIT`
+   - `Reason = CRYPTO RESEARCH ONLY`
+   - `Market = Crypto / crypto-v0 research`
+   - no BUY/SELL alert is available as a fresh crypto action
+5. Open a stock, for example `AAPL` or `MSFT`.
+6. Set `Market mode = Stocks`.
+7. Expected:
+   - `Market = Stocks / stocks-v0`
+   - `Action now` may be `BUY`, `SELL`, or `WAIT` depending on active filters.
