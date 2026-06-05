@@ -49,6 +49,8 @@ showRiskLines = input.bool(false, "Show stop/target lines", group = grpView)
 showPatternBoxes = input.bool(false, "Show pattern boxes", group = grpView)
 showNoTrade = input.bool(false, "Show impulse/triangle no-trade context", group = grpView)
 showPanel = input.bool(true, "Show info panel", group = grpView)
+panelPositionInput = input.string("Bottom right", "Panel position", group = grpView,
+     options = ["Top right", "Top left", "Bottom right", "Bottom left"])
 
 // ───────────────────────────── STATE ─────────────────────────────
 var array<int> pivotBars = array.new<int>()
@@ -78,6 +80,13 @@ fmtPct(float value) =>
 
 fmtPx(float value) =>
     na(value) ? "—" : str.tostring(value, format.mintick)
+
+panelPosition(string value) =>
+    switch value
+        "Top right" => position.top_right
+        "Top left" => position.top_left
+        "Bottom left" => position.bottom_left
+        => position.bottom_right
 
 confidenceFromSample(int sample) =>
     string out = "low"
@@ -346,7 +355,7 @@ alertSellNow = sellSignal and actionNow == "SELL"
 alertcondition(alertBuyNow, "EWB Action BUY", "EWB Probability Overlay v0 fresh BUY on {{ticker}} {{interval}}")
 alertcondition(alertSellNow, "EWB Action SELL", "EWB Probability Overlay v0 fresh SELL on {{ticker}} {{interval}}")
 
-var table info = table.new(position.top_right, 2, 15, border_width = 1)
+var table info = table.new(panelPosition(panelPositionInput), 2, 15, border_width = 1)
 if showPanel and barstate.islast
     table.cell(info, 0, 0, "EWB Prob v0", text_color = color.white, bgcolor = color.new(color.gray, 25))
     table.cell(info, 1, 0, tradeStatus, text_color = color.white, bgcolor = statusColor)
