@@ -66,18 +66,27 @@ showTrade = input.bool(true, "Показывать торговые сигнал
      tooltip = "Главный торговый слой: моноволны и MTF ближе к Python runtime. Торгуются только подтверждённые Flat и Double Correction в fade-направлении.")
 showTradePanel = input.bool(true, "Показывать панель Action now", group = grpTrade,
      tooltip = "Главная панель рабочего решения BUY/SELL/WAIT. Probability Overlay v0 использовать только как research-сверку baseline.")
-showTradeMarkers = input.bool(false, "Рисовать исторические trade-метки/зоны", group = grpTrade,
-     tooltip = "Выключено по умолчанию, чтобы график не шумел. Таблица, статус и alerts продолжают работать.")
+simpleAntonPanel = input.bool(true, "Anton simple panel", group = grpTrade,
+     tooltip = "Упрощает таблицу до минимума: решение, уровни, вероятность и причина. Детальная диагностика скрывается.")
+panelPositionInput = input.string("Middle right", "Panel position", group = grpTrade,
+     options = ["Top right", "Middle right", "Bottom right"],
+     tooltip = "Если панель перекрывает toolbar TradingView, поставьте Middle right или Bottom right.")
+showTradeMarkers = input.bool(false, "Show previous entries/exits", group = grpTrade,
+     tooltip = "OFF по умолчанию для чистого графика. Включайте только для разбора истории: покажет предыдущие входы, TP/SL уровни и EXIT TP/SL метки.")
 showTradePlan = input.bool(true, "Show trade plan", group = grpTrade,
      tooltip = "Показывает рабочий план только когда Action now = BUY/SELL. Для WAIT рисуется только компактная причина.")
 showActionWave = input.bool(true, "Show waves", group = grpTrade,
      tooltip = "Подсвечивает 3-волновую структуру Flat/DC, которая дала текущий сигнал.")
+showNeelyWaveNumbers = input.bool(true, "Number latest structure", group = grpTrade,
+     tooltip = "Подписывает только последнюю структуру: Flat = A/B/C, DoubleCorr = W/X/Y, Core = 0-1-2-3-4-5 или 0-a-b-c-d-e.")
+showLatestPivotNumbers = input.bool(false, "Show last pivot points", group = grpTrade,
+     tooltip = "OFF по умолчанию: P0..P5 являются pivot-точками моноволн Нили, не структурными 1-5/A-B-C. Для торговли важнее live-гипотеза A/B/C, W/X/Y, 1-5 или a-e.")
 onlyLatestSignal = input.bool(true, "Only latest signal", group = grpTrade,
-     tooltip = "По умолчанию старые планы удаляются, чтобы на графике не было исторического мусора.")
+     tooltip = "ON по умолчанию: на графике остается только последний рабочий план, чтобы не терялась текущая волна.")
 showTpProbabilities = input.bool(true, "Show TP probabilities", group = grpTrade,
      tooltip = "TP1/TP2/TP3 показывают вероятностную лестницу от калиброванной P(win): conservative/base/aggressive.")
 showMarketBanner = input.bool(true, "Show market safety banner", group = grpTrade,
-     tooltip = "Крупная метка справа: STOCK LIVE для акций, CRYPTO RESEARCH ONLY для крипты, UNSUPPORTED для остальных рынков.")
+     tooltip = "Крупная метка справа: STOCK LIVE, CRYPTO LIVE или UNSUPPORTED.")
 maxHistoricalSignals = input.int(3, "Max historical signals", group = grpTrade, minval = 1, maxval = 10,
      tooltip = "Используется только если выключить Only latest signal.")
 actionLevelBars = input.int(80, "Длина уровней Action, баров", group = grpTrade, minval = 10, maxval = 300)
@@ -93,9 +102,11 @@ dcProb = input.float(84.8, "Fallback Double Correction P(win), %", group = grpTr
 maxHybridPivots = input.int(40, "Память hybrid-пивотов", group = grpTrade, minval = 10, maxval = 200)
 tradeMaxAgeBars = input.int(80, "Срок актуальности сигнала, баров", group = grpTrade, minval = 1, maxval = 500,
      tooltip = "После этого количества баров сигнал помечается EXPIRED, если TP/SL ещё не достигнуты.")
-marketMode = input.string("Stocks", "Market mode", group = grpTrade,
+marketMode = input.string("Auto", "Market mode", group = grpTrade,
      options = ["Stocks", "Crypto", "Auto", "Research any"],
-     tooltip = "Stocks: рабочий Action только для акций. Crypto/Auto на crypto-графике: WAIT / crypto-v0 research. Research any: ручная сверка, crypto остаётся WAIT/research.")
+     tooltip = "Stocks: Action для акций. Crypto/Auto: Action для crypto включается отдельным переключателем Enable crypto Action.")
+enableCryptoActions = input.bool(true, "Enable crypto Action BUY/SELL", group = grpTrade,
+     tooltip = "Включает crypto как рабочий рынок по crypto-v0 калибровке. Используйте только после обновления Pine и проверки alert на нужном тикере/ТФ.")
 actionFreshBars = input.int(3, "Свежий вход: максимум баров", group = grpTrade, minval = 0, maxval = 50,
      tooltip = "BUY/SELL разрешён только пока сигнал свежий. Позже таблица покажет WAIT/STALE.")
 maxEntryProgress = input.float(0.35, "Поздно входить после % пути к TP", group = grpTrade, minval = 0.05, maxval = 0.95, step = 0.05,
@@ -119,11 +130,37 @@ showCoreMarkers = input.bool(true, "Рисовать Core-маркер и уро
      tooltip = "Показывает последний книжный сигнал, ожидаемый уровень и invalidation/контрольный уровень.")
 coreLevelBars = input.int(80, "Длина Core-уровней, баров", group = grpCore, minval = 10, maxval = 300)
 
+grpHyp = "Live structure hypothesis"
+showLiveHypothesis = input.bool(true, "Show current structure hypothesis", group = grpHyp,
+     tooltip = "Главный forward-looking слой: оценивает незавершенную структуру на последнем баре, а не только уже подтвержденную историю.")
+showHypothesisLevels = input.bool(true, "Show hypothesis entry/target/invalid levels", group = grpHyp,
+     tooltip = "Рисует зону раннего входа, invalidation/stop и вероятные цели для текущей гипотезы.")
+showHypothesisWaveLabels = input.bool(true, "Label live structure pivots", group = grpHyp,
+     tooltip = "Подписывает текущую гипотезу на вершинах/впадинах: A/B/C?, W/X/Y?, 1-5? или a-e?.")
+hypothesisLevelBars = input.int(120, "Hypothesis level length, bars", group = grpHyp, minval = 20, maxval = 500)
+minHypothesisProb = input.float(60.0, "Min live hypothesis probability, %", group = grpHyp, minval = 0, maxval = 100, step = 0.5,
+     tooltip = "Ниже этого порога гипотеза остается в таблице как WAIT, но уровни не считаются рабочими.")
+readyHypothesisProb = input.float(70.0, "Ready early-entry probability, %", group = grpHyp, minval = 0, maxval = 100, step = 0.5,
+     tooltip = "Порог для EARLY LONG/SHORT. Для долгосрока лучше оставить выше 70%.")
+preferLongTermTF = input.bool(true, "Prefer 1D/4H scoring", group = grpHyp,
+     tooltip = "Дает бонус гипотезам на 1D и 4H. 15m/30m/1h остаются полезны для робота и точного входа.")
+
+grpHtfW3 = "HTF Wave-3 pullback mode"
+showHtfWave3Bias = input.bool(true, "Show HTF possible Wave 3 bias", group = grpHtfW3,
+     tooltip = "Определяет возможную волну 3 на старшем ТФ: W1 подтверждена, W2 откатила, текущая HTF-волна идет в сторону W3.")
+htfWave3PullbackOnly = input.bool(true, "When HTF W3 active: trade LTF pullbacks only", group = grpHtfW3,
+     tooltip = "Если возможная HTF W3 вверх — блокировать short-сценарии младшего ТФ и искать только long на откатах. Для W3 вниз наоборот.")
+minHtfWave3Prob = input.float(65.0, "Min HTF W3 probability, %", group = grpHtfW3, minval = 0, maxval = 100, step = 0.5,
+     tooltip = "Минимальная вероятность, при которой HTF W3 становится рабочим bias для младшего ТФ.")
+htfWave3LevelBars = input.int(160, "HTF W3 level length, bars", group = grpHtfW3, minval = 20, maxval = 500)
+
 grpAlerts = "Alerts / звук"
 enableActionSoundAlerts = input.bool(true, "Sound alert: Action BUY/SELL", group = grpAlerts,
      tooltip = "Для звука в TradingView создайте Alert: Condition = Any alert() function call, затем выберите Sound в настройках alert.")
 enableCoreSoundAlerts = input.bool(false, "Sound alert: Neely Core research", group = grpAlerts,
      tooltip = "Core-сигналы являются research-контекстом. Включайте звук только если хотите получать уведомления по структурам волн.")
+enableHypothesisSoundAlerts = input.bool(false, "Sound alert: live hypothesis ready", group = grpAlerts,
+     tooltip = "Звук для EARLY LONG/SHORT по незавершенной структуре. Это гипотеза, поэтому по умолчанию выключено.")
 soundAlertsOnClose = input.bool(true, "Только на закрытии бара", group = grpAlerts,
      tooltip = "Включено: alert() срабатывает один раз на закрытии бара. Выключено: один раз на бар.")
 
@@ -572,13 +609,47 @@ tfCalibKey() =>
      timeframe.isintraday and timeframe.multiplier == 60 ? "1h" :
      "fallback"
 
-calibratedTradeStats(string figType, string side) =>
+calibratedTradeStats(string figType, string side, bool isCryptoModel) =>
     string tfKey = tfCalibKey()
     float prob = figType == "flat" ? flatProb : dcProb
     int sampleN = 0
     string conf = "fallback"
     string src = "baseline|fallback"
-    if figType == "flat" and side == "LONG"
+    if isCryptoModel and figType == "flat" and side == "LONG"
+        if tfKey == "4h"
+            prob := 58.9, sampleN := 112, conf := "crypto_high", src := "crypto_v0|flat|4h|long"
+        else if tfKey == "1d"
+            prob := 55.6, sampleN := 27, conf := "crypto_low", src := "crypto_v0|flat|1d|long"
+        else if tfKey == "1h"
+            prob := 54.0, sampleN := 226, conf := "crypto_ok", src := "crypto_v0|flat|1h|long"
+        else
+            prob := 52.3, sampleN := 218, conf := "crypto_ok", src := "crypto_v0|flat|long"
+    else if isCryptoModel and figType == "flat" and side == "SHORT"
+        if tfKey == "4h"
+            prob := 69.7, sampleN := 132, conf := "crypto_high", src := "crypto_v0|flat|4h|short"
+        else if tfKey == "1d"
+            prob := 69.2, sampleN := 26, conf := "crypto_low", src := "crypto_v0|flat|1d|short"
+        else if tfKey == "1h"
+            prob := 58.8, sampleN := 267, conf := "crypto_ok", src := "crypto_v0|flat|1h|short"
+        else
+            prob := 55.7, sampleN := 255, conf := "crypto_ok", src := "crypto_v0|flat|short"
+    else if isCryptoModel and figType == "double_corr" and side == "LONG"
+        if tfKey == "1d"
+            prob := 100.0, sampleN := 6, conf := "crypto_low", src := "crypto_v0|double_corr|1d|long"
+        else if tfKey == "4h"
+            prob := 91.7, sampleN := 12, conf := "crypto_low", src := "crypto_v0|double_corr|4h|long"
+        else if tfKey == "1h"
+            prob := 90.0, sampleN := 20, conf := "crypto_high", src := "crypto_v0|double_corr|1h|long"
+        else
+            prob := 82.1, sampleN := 28, conf := "crypto_ok", src := "crypto_v0|double_corr|long"
+    else if isCryptoModel and figType == "double_corr" and side == "SHORT"
+        if tfKey == "4h"
+            prob := 90.9, sampleN := 11, conf := "crypto_low", src := "crypto_v0|double_corr|4h|short"
+        else if tfKey == "1h"
+            prob := 96.4, sampleN := 28, conf := "crypto_high", src := "crypto_v0|double_corr|1h|short"
+        else
+            prob := 87.9, sampleN := 33, conf := "crypto_ok", src := "crypto_v0|double_corr|short"
+    else if figType == "flat" and side == "LONG"
         if tfKey == "1d"
             prob := 66.7, sampleN := 24, conf := "low", src := "baseline|flat|1d|long"
         else if tfKey == "1h"
@@ -623,6 +694,90 @@ signalGrade(string action, float prob, int sampleN, string conf, float rr) =>
         "B"
     else
         "C"
+
+scoreNear(float value, float target, float tolerancePct) =>
+    not na(value) and target != 0 ? math.max(0.0, 1.0 - math.abs(value - target) / (math.abs(target) * tolerancePct)) : 0.0
+
+scoreBand(float value, float lo, float hi) =>
+    float out = 0.0
+    if not na(value)
+        if value >= lo and value <= hi
+            out := 1.0
+        else if value < lo and lo != 0
+            out := math.max(0.0, 1.0 - (lo - value) / lo)
+        else if hi != 0
+            out := math.max(0.0, 1.0 - (value - hi) / hi)
+    out
+
+fibClusterScore(float ratio) =>
+    float s618 = scoreNear(ratio, 0.618, 0.18)
+    float s100 = scoreNear(ratio, 1.000, 0.18)
+    float s138 = scoreNear(ratio, 1.382, 0.14)
+    float s161 = scoreNear(ratio, 1.618, 0.14)
+    math.max(s618, math.max(s100, math.max(s138, s161)))
+
+tfFocusScore() =>
+    bool is4h = timeframe.isintraday and timeframe.multiplier == 240
+    bool is1h = timeframe.isintraday and timeframe.multiplier == 60
+    bool is1d = timeframe.isdaily and timeframe.multiplier == 1
+    bool is1w = timeframe.isweekly and timeframe.multiplier == 1
+    preferLongTermTF ? is1d ? 1.0 : is4h ? 0.95 : is1w ? 0.85 : is1h ? 0.65 : 0.45 : 0.65
+
+htfFocusScore() =>
+    bool isHtf4h = htf == "240" or htf == "4H" or htf == "4h"
+    bool isHtf1h = htf == "60" or htf == "1H" or htf == "1h"
+    bool isHtf1d = htf == "D" or htf == "1D" or htf == "1d"
+    bool isHtf1w = htf == "W" or htf == "1W" or htf == "1w"
+    preferLongTermTF ? isHtf1d ? 1.0 : isHtf4h ? 0.95 : isHtf1w ? 0.85 : isHtf1h ? 0.65 : 0.45 : 0.65
+
+dirAlignScore(int wantedDir, int biasDir) =>
+    biasDir == 0 ? 0.55 : wantedDir * biasDir > 0 ? 1.0 : 0.25
+
+followMomentumScore(int dir, float closePx, float emaFast, float emaSlow, float rsiValue, float volValue, float volAvg) =>
+    float emaScore = dir > 0 ? closePx > emaFast and emaFast > emaSlow ? 1.0 : closePx > emaFast ? 0.70 : 0.35 :
+         closePx < emaFast and emaFast < emaSlow ? 1.0 : closePx < emaFast ? 0.70 : 0.35
+    float rsiScore = dir > 0 ? rsiValue >= 55 ? 1.0 : rsiValue >= 50 ? 0.75 : rsiValue >= 45 ? 0.45 : 0.20 :
+         rsiValue <= 45 ? 1.0 : rsiValue <= 50 ? 0.75 : rsiValue <= 55 ? 0.45 : 0.20
+    float volScore = na(volAvg) or volAvg == 0 ? 0.50 : volValue > volAvg ? 0.75 : 0.50
+    emaScore * 0.45 + rsiScore * 0.35 + volScore * 0.20
+
+reversalExhaustionScore(int fadeDir, float rsiValue, float completionRatio) =>
+    float rsiScore = fadeDir > 0 ? rsiValue <= 35 ? 1.0 : rsiValue <= 45 ? 0.75 : rsiValue <= 55 ? 0.45 : 0.20 :
+         rsiValue >= 65 ? 1.0 : rsiValue >= 55 ? 0.75 : rsiValue >= 45 ? 0.45 : 0.20
+    math.min(1.0, rsiScore * 0.65 + fibClusterScore(completionRatio) * 0.35)
+
+rrFor(int dir, float entry, float stop, float target) =>
+    float reward = dir > 0 ? target - entry : entry - target
+    float risk = dir > 0 ? entry - stop : stop - entry
+    risk > 0 ? reward / risk : na
+
+rrScore(float rr) =>
+    na(rr) ? 0.0 : rr >= 2.0 ? 1.0 : rr >= 1.5 ? 0.85 : rr >= 1.0 ? 0.65 : rr >= 0.7 ? 0.35 : 0.10
+
+probFromScores(float patternScore, float fibScore, float htfScore, float momentumScore, float locationScore, float rrQuality, float tfScore) =>
+    clampPct(28.0 + patternScore * 18.0 + fibScore * 17.0 + htfScore * 14.0 + momentumScore * 12.0 + locationScore * 12.0 + rrQuality * 5.0 + tfScore * 6.0)
+
+hypothesisGrade(float prob, float rr, bool ready) =>
+    ready and prob >= 78 and not na(rr) and rr >= 1.5 ? "A live" :
+     ready and prob >= 70 and not na(rr) and rr >= 1.0 ? "B live" :
+     prob >= minHypothesisProb ? "WATCH" : "WAIT"
+
+waitNoEntryReason(string reason) =>
+    reason == "NO SIGNAL" or reason == "INCOMPLETE" or
+     str.contains(reason, "UNSUPPORTED") or str.contains(reason, "CALIBRATION") or str.contains(reason, "ACTION DISABLED") or
+     str.contains(reason, "STALE") or str.contains(reason, "LATE") or str.contains(reason, "RR BAD") or
+     str.contains(reason, "PROB LOW") or str.contains(reason, "NO EDGE") or str.contains(reason, "SMALL N") or
+     str.contains(reason, "HTF W3 ONLY") or str.contains(reason, "HTF AGAINST")
+
+hypColor(float prob, int dir, bool ready) =>
+    ready ? dir > 0 ? color.new(color.lime, 0) : color.new(color.red, 0) :
+     prob >= minHypothesisProb ? color.new(color.yellow, 5) : color.new(color.gray, 45)
+
+hypSideText(int dir) =>
+    dir > 0 ? "LONG" : dir < 0 ? "SHORT" : "WAIT"
+
+hypDirText(int dir) =>
+    dir > 0 ? "UP" : dir < 0 ? "DOWN" : "NEUTRAL"
 
 // ─── Рейтинг Энергии (AKU-0213, Гл.10 стр.10-2) ─────────────────────────────
 // Возвращает рейтинг энергии и макс. откат следующей волны для подтверждённой фигуры.
@@ -846,9 +1001,21 @@ revC = useATR ? ta.atr(atrLen) * atrMult : close * pctRev / 100.0
 var ZZState zC = ZZState.new()
 var line activeCLine = na
 var label activeCLabel = na
+var array<int> latestPivotBars = array.new<int>()
+var array<float> latestPivotPrices = array.new<float>()
+var array<label> latestPivotLabels = array.new<label>()
 ZZResult rc = zC.step(high, low, revC)
 if showC
     drawMono(rc, colCUp, colCDn, wC, false, colH, showLbl)
+if rc.confirmed and not na(rc.prevBar)
+    if array.size(latestPivotBars) == 0
+        array.push(latestPivotBars, rc.prevBar)
+        array.push(latestPivotPrices, rc.prevPrice)
+    array.push(latestPivotBars, rc.bar)
+    array.push(latestPivotPrices, rc.price)
+    while array.size(latestPivotBars) > 6
+        array.shift(latestPivotBars)
+        array.shift(latestPivotPrices)
 // Маркер смены Порядка: смежные моноволны НЕ подобны (AKU-0003) → нужно сжатие
 if showC and showSim and rc.simChecked and not rc.similar
     label.new(rc.prevBar, rc.prevPrice, "≠",
@@ -870,20 +1037,33 @@ if showC and showClass and rc.ruleNo > 0
 
 float activeCAmp = not na(zC.pivotPrice) ? math.abs(close - zC.pivotPrice) : na
 string activeCDir = waveDirText(zC.dir)
-string activeCInfo = not na(zC.pivotBar) and not na(zC.pivotPrice) ? activeCDir + " / " + waveAtrText(activeCAmp, ta.atr(atrLen)) : "—"
+string activeCInfo = not na(zC.pivotBar) and not na(zC.pivotPrice) ? "m" + str.tostring(zC.count) + " " + activeCDir + " / " + waveAtrText(activeCAmp, ta.atr(atrLen)) : "—"
 if barstate.islast
     if not na(activeCLine)
         line.delete(activeCLine)
     if not na(activeCLabel)
         label.delete(activeCLabel)
+    while array.size(latestPivotLabels) > 0
+        label oldPivotLabel = array.pop(latestPivotLabels)
+        label.delete(oldPivotLabel)
     activeCLine := na
     activeCLabel := na
+    if showLatestPivotNumbers and showC and array.size(latestPivotBars) > 0
+        for lp = 0 to array.size(latestPivotBars) - 1
+            int pivotX = array.get(latestPivotBars, lp)
+            float pivotY = array.get(latestPivotPrices, lp)
+            string pivotName = "P" + str.tostring(lp)
+            label pivotLabel = label.new(pivotX, pivotY, pivotName,
+                 xloc = xloc.bar_index, yloc = yloc.price, style = label.style_label_center,
+                 color = color.new(color.black, 0), textcolor = color.white, size = size.small,
+                 tooltip = "Pivot-точка моноволны Нили. Структурные метки Elliott/Neely рисуются отдельно: A/B/C, W/X/Y, 1-5 или a-e.")
+            array.push(latestPivotLabels, pivotLabel)
     if showActiveWave and showC and not na(zC.pivotBar) and not na(zC.pivotPrice)
         color activeCColor = zC.dir > 0 ? colCUp : zC.dir < 0 ? colCDn : color.gray
         activeCLine := line.new(zC.pivotBar, zC.pivotPrice, bar_index, close,
              xloc = xloc.bar_index, color = color.new(activeCColor, 0),
              width = activeWaveWidth, style = line.style_dotted)
-        activeCLabel := label.new(bar_index, close, "Active CTF\n" + activeCInfo,
+        activeCLabel := label.new(bar_index, close, "LAST BAR WAVE\n" + activeCInfo,
              xloc = xloc.bar_index, yloc = yloc.price, style = label.style_label_left,
              color = color.new(activeCColor, 10), textcolor = color.white, size = size.tiny,
              tooltip = "Активная незавершённая моноволна текущего ТФ: от последнего подтверждённого pivot до последнего бара.")
@@ -947,6 +1127,19 @@ var float lastCoreTarget = na
 var float lastCoreInvalid = na
 var int lastCoreAge = na
 var int lastCoreDir = 0
+var int lastCoreWaveCount = 0
+var int lastCoreWaveBar0 = na
+var int lastCoreWaveBar1 = na
+var int lastCoreWaveBar2 = na
+var int lastCoreWaveBar3 = na
+var int lastCoreWaveBar4 = na
+var int lastCoreWaveBar5 = na
+var float lastCoreWavePx0 = na
+var float lastCoreWavePx1 = na
+var float lastCoreWavePx2 = na
+var float lastCoreWavePx3 = na
+var float lastCoreWavePx4 = na
+var float lastCoreWavePx5 = na
 var bool tradeLongSignal = false
 var bool tradeShortSignal = false
 var bool coreSignalEvent = false
@@ -962,7 +1155,7 @@ coreTriangleEvent := false
 coreZigzagEvent := false
 coreMovingCorrEvent := false
 
-if (showTrade or showCoreSignals or showNoise) and rc.confirmed and not na(rc.prevBar)
+if (showTrade or showCoreSignals or showNoise or showLiveHypothesis) and rc.confirmed and not na(rc.prevBar)
     if not hybInit
         array.push(hybBar, rc.prevBar)
         array.push(hybPx, rc.prevPrice)
@@ -997,7 +1190,7 @@ if (showTrade or showCoreSignals or showNoise) and rc.confirmed and not na(rc.pr
                 tradeLongSignal := isLongFlat
                 tradeShortSignal := not isLongFlat
                 string sideFlat = isLongFlat ? "LONG" : "SHORT"
-                [probFlat, nFlat, confFlat, srcFlat] = calibratedTradeStats("flat", sideFlat)
+                [probFlat, nFlat, confFlat, srcFlat] = calibratedTradeStats("flat", sideFlat, syminfo.type == "crypto")
                 lastTradeConfBar := confBar4
                 lastTradeSide := sideFlat
                 lastTradeType := "Flat fade"
@@ -1031,7 +1224,7 @@ if (showTrade or showCoreSignals or showNoise) and rc.confirmed and not na(rc.pr
                 tradeLongSignal := isLongDc
                 tradeShortSignal := not isLongDc
                 string sideDc = isLongDc ? "LONG" : "SHORT"
-                [probDc, nDc, confDc, srcDc] = calibratedTradeStats("double_corr", sideDc)
+                [probDc, nDc, confDc, srcDc] = calibratedTradeStats("double_corr", sideDc, syminfo.type == "crypto")
                 lastTradeConfBar := confBar4
                 lastTradeSide := sideDc
                 lastTradeType := "DoubleCorr fade"
@@ -1095,6 +1288,19 @@ if (showTrade or showCoreSignals or showNoise) and rc.confirmed and not na(rc.pr
                     lastCoreInvalid := p0c6
                     lastCoreAge := 0
                     lastCoreDir := postDir
+                    lastCoreWaveCount := 6
+                    lastCoreWaveBar0 := array.get(hybBar, c6)
+                    lastCoreWaveBar1 := array.get(hybBar, c6 + 1)
+                    lastCoreWaveBar2 := array.get(hybBar, c6 + 2)
+                    lastCoreWaveBar3 := array.get(hybBar, c6 + 3)
+                    lastCoreWaveBar4 := array.get(hybBar, c6 + 4)
+                    lastCoreWaveBar5 := array.get(hybBar, c6 + 5)
+                    lastCoreWavePx0 := p0c6
+                    lastCoreWavePx1 := p1c6
+                    lastCoreWavePx2 := p2c6
+                    lastCoreWavePx3 := p3c6
+                    lastCoreWavePx4 := p4c6
+                    lastCoreWavePx5 := p5c6
                     coreSignalEvent := true
                     coreImpulseEvent := true
                     matchedCore := true
@@ -1115,6 +1321,19 @@ if (showTrade or showCoreSignals or showNoise) and rc.confirmed and not na(rc.pr
                     lastCoreInvalid := p5c6 - thrustDir * widest * 0.382
                     lastCoreAge := 0
                     lastCoreDir := thrustDir
+                    lastCoreWaveCount := 6
+                    lastCoreWaveBar0 := array.get(hybBar, c6)
+                    lastCoreWaveBar1 := array.get(hybBar, c6 + 1)
+                    lastCoreWaveBar2 := array.get(hybBar, c6 + 2)
+                    lastCoreWaveBar3 := array.get(hybBar, c6 + 3)
+                    lastCoreWaveBar4 := array.get(hybBar, c6 + 4)
+                    lastCoreWaveBar5 := array.get(hybBar, c6 + 5)
+                    lastCoreWavePx0 := p0c6
+                    lastCoreWavePx1 := p1c6
+                    lastCoreWavePx2 := p2c6
+                    lastCoreWavePx3 := p3c6
+                    lastCoreWavePx4 := p4c6
+                    lastCoreWavePx5 := p5c6
                     coreSignalEvent := true
                     coreTriangleEvent := true
                     matchedCore := true
@@ -1144,6 +1363,19 @@ if (showTrade or showCoreSignals or showNoise) and rc.confirmed and not na(rc.pr
                     lastCoreInvalid := p3c4 - followDir * aLenCore * 0.382
                     lastCoreAge := 0
                     lastCoreDir := followDir
+                    lastCoreWaveCount := 4
+                    lastCoreWaveBar0 := array.get(hybBar, c4)
+                    lastCoreWaveBar1 := array.get(hybBar, c4 + 1)
+                    lastCoreWaveBar2 := array.get(hybBar, c4 + 2)
+                    lastCoreWaveBar3 := array.get(hybBar, c4 + 3)
+                    lastCoreWaveBar4 := na
+                    lastCoreWaveBar5 := na
+                    lastCoreWavePx0 := p0c4
+                    lastCoreWavePx1 := p1c4
+                    lastCoreWavePx2 := p2c4
+                    lastCoreWavePx3 := p3c4
+                    lastCoreWavePx4 := na
+                    lastCoreWavePx5 := na
                     coreSignalEvent := true
                     coreMovingCorrEvent := true
                 else if hybridZigzagOK(hybPx, c4)
@@ -1158,6 +1390,19 @@ if (showTrade or showCoreSignals or showNoise) and rc.confirmed and not na(rc.pr
                     lastCoreInvalid := cAtOneToOne ? cTarget161 : p2c4
                     lastCoreAge := 0
                     lastCoreDir := zigzagDir
+                    lastCoreWaveCount := 4
+                    lastCoreWaveBar0 := array.get(hybBar, c4)
+                    lastCoreWaveBar1 := array.get(hybBar, c4 + 1)
+                    lastCoreWaveBar2 := array.get(hybBar, c4 + 2)
+                    lastCoreWaveBar3 := array.get(hybBar, c4 + 3)
+                    lastCoreWaveBar4 := na
+                    lastCoreWaveBar5 := na
+                    lastCoreWavePx0 := p0c4
+                    lastCoreWavePx1 := p1c4
+                    lastCoreWavePx2 := p2c4
+                    lastCoreWavePx3 := p3c4
+                    lastCoreWavePx4 := na
+                    lastCoreWavePx5 := na
                     coreSignalEvent := true
                     coreZigzagEvent := true
 
@@ -1169,10 +1414,28 @@ if lastTradeStatus == "ACTIVE" and not na(lastTradeConfBar) and bar_index > last
     if slHit
         // Консервативно: если TP и SL достигнуты в одном баре, считаем риск первым.
         lastTradeStatus := "SL HIT"
+        if showTradeMarkers
+            label.new(bar_index, lastTradeSl, "EXIT SL",
+                 xloc = xloc.bar_index, yloc = yloc.price,
+                 style = label.style_label_left, color = color.new(color.red, 0),
+                 textcolor = color.white, size = size.tiny,
+                 tooltip = "Фактический выход по Stop Loss последнего Flat/DC плана.")
     else if tpHit
         lastTradeStatus := "TP HIT"
+        if showTradeMarkers
+            label.new(bar_index, lastTradeTp, "EXIT TP",
+                 xloc = xloc.bar_index, yloc = yloc.price,
+                 style = label.style_label_left, color = color.new(color.lime, 0),
+                 textcolor = color.white, size = size.tiny,
+                 tooltip = "Фактический выход по Take Profit последнего Flat/DC плана.")
     else if lastTradeAge > tradeMaxAgeBars
         lastTradeStatus := "EXPIRED"
+        if showTradeMarkers
+            label.new(bar_index, close, "EXIT TIME",
+                 xloc = xloc.bar_index, yloc = yloc.price,
+                 style = label.style_label_left, color = color.new(color.orange, 0),
+                 textcolor = color.white, size = size.tiny,
+                 tooltip = "Выход по времени: план устарел до TP/SL.")
 
 if not na(lastCoreConfBar)
     lastCoreAge := bar_index - lastCoreConfBar
@@ -1185,6 +1448,11 @@ float hLow   = request.security(syminfo.tickerid, htf, low,           lookahead 
 float hClose = request.security(syminfo.tickerid, htf, close,         lookahead = barmerge.lookahead_off)
 int   hTime  = request.security(syminfo.tickerid, htf, time,          lookahead = barmerge.lookahead_off)
 float hAtr   = request.security(syminfo.tickerid, htf, ta.atr(atrLen), lookahead = barmerge.lookahead_off)
+float hEmaFast = request.security(syminfo.tickerid, htf, ta.ema(close, 34), lookahead = barmerge.lookahead_off)
+float hEmaSlow = request.security(syminfo.tickerid, htf, ta.ema(close, 89), lookahead = barmerge.lookahead_off)
+float hRsi = request.security(syminfo.tickerid, htf, ta.rsi(close, 14), lookahead = barmerge.lookahead_off)
+float hVol = request.security(syminfo.tickerid, htf, volume, lookahead = barmerge.lookahead_off)
+float hVolAvg = request.security(syminfo.tickerid, htf, ta.sma(volume, 20), lookahead = barmerge.lookahead_off)
 
 revH = useATR ? hAtr * atrMult : hClose * pctRev / 100.0
 
@@ -1194,6 +1462,8 @@ var label activeHLabel = na
 var int htfBiasDir = 0
 var int htfPrevDir = 0
 var int htfLastDir = 0
+var array<int> htfPivotBars = array.new<int>()
+var array<float> htfPivotPrices = array.new<float>()
 int   hTimeChg = ta.change(hTime)
 bool newHTF = not na(hTime) and hTimeChg != 0
 if newHTF and not na(hHigh)
@@ -1202,6 +1472,14 @@ if newHTF and not na(hHigh)
         htfPrevDir := htfLastDir
         htfLastDir := rh.dir
         htfBiasDir := htfPrevDir != 0 and htfPrevDir == htfLastDir ? 2 * htfLastDir : htfLastDir
+        if array.size(htfPivotBars) == 0
+            array.push(htfPivotBars, rh.prevBar)
+            array.push(htfPivotPrices, rh.prevPrice)
+        array.push(htfPivotBars, rh.bar)
+        array.push(htfPivotPrices, rh.price)
+        while array.size(htfPivotBars) > 8
+            array.shift(htfPivotBars)
+            array.shift(htfPivotPrices)
     if showH
         drawMono(rh, colCUp, colCDn, wH, true, colH, showLbl)
 
@@ -1226,14 +1504,369 @@ if barstate.islast
              color = color.new(colH, 5), textcolor = color.white, size = size.tiny,
              tooltip = "Активная незавершённая HTF-моноволна: от последнего подтверждённого HTF pivot до текущего HTF close.")
 
+int htfPivotN = array.size(htfPivotBars)
+string htfWave3Name = "HTF no W3 bias"
+string htfWave3Plan = "HTF no W3 bias"
+string htfWave3Reason = "Need W1/W2 pivots"
+float htfWave3Prob = na
+float htfWave3Invalid = na
+float htfWave3Target1 = na
+float htfWave3Target2 = na
+float htfWave3W2Ratio = na
+float htfWave3ActiveRatio = na
+int htfWave3Dir = 0
+bool htfWave3Breakout = false
+bool htfWave3Candidate = false
+bool htfWave3BiasActive = false
+
+if showHtfWave3Bias and htfPivotN >= 3
+    int hw0 = htfPivotN - 3
+    int hw1 = htfPivotN - 2
+    int hw2 = htfPivotN - 1
+    float hp0 = array.get(htfPivotPrices, hw0)
+    float hp1 = array.get(htfPivotPrices, hw1)
+    float hp2 = array.get(htfPivotPrices, hw2)
+    int w3Dir = hp1 > hp0 ? 1 : -1
+    float w1Len = math.abs(hp1 - hp0)
+    float w2Len = math.abs(hp2 - hp1)
+    float activeMove = w3Dir > 0 ? activeHPrice - hp2 : hp2 - activeHPrice
+    htfWave3W2Ratio := w1Len > 0 ? w2Len / w1Len : na
+    htfWave3ActiveRatio := w1Len > 0 ? math.max(0.0, activeMove) / w1Len : na
+    bool w2Valid = w1Len > 0 and not na(htfWave3W2Ratio) and htfWave3W2Ratio > 0.10 and htfWave3W2Ratio < 1.00 and (w3Dir > 0 ? hp2 > hp0 : hp2 < hp0)
+    bool w3Moves = activeMove > (na(hAtr) ? w1Len * 0.05 : hAtr * 0.20)
+    htfWave3Breakout := w3Dir > 0 ? activeHPrice > hp1 : activeHPrice < hp1
+    htfWave3Candidate := w2Valid and w3Moves
+    if htfWave3Candidate
+        float w2Score = math.max(scoreBand(htfWave3W2Ratio, 0.382, 0.786), scoreNear(htfWave3W2Ratio, 0.618, 0.20))
+        float activeScore = htfWave3Breakout ? 1.0 : htfWave3ActiveRatio >= 0.382 ? 0.75 : htfWave3ActiveRatio >= 0.20 ? 0.55 : 0.35
+        float htfMomentumScore = followMomentumScore(w3Dir, activeHPrice, hEmaFast, hEmaSlow, hRsi, hVol, hVolAvg)
+        float htfTrendScore = dirAlignScore(w3Dir, htfBiasDir)
+        float htfRRScore = htfWave3Breakout ? 0.80 : 1.0
+        htfWave3Prob := probFromScores(0.82, w2Score, htfTrendScore, htfMomentumScore, activeScore, htfRRScore, htfFocusScore())
+        htfWave3BiasActive := htfWave3Prob >= minHtfWave3Prob
+        htfWave3Dir := w3Dir
+        htfWave3Name := htfWave3Dir > 0 ? "HTF possible W3 UP" : "HTF possible W3 DOWN"
+        htfWave3Plan := htfWave3BiasActive ? (htfWave3Dir > 0 ? "HTF W3 UP -> buy LTF pullbacks" : "HTF W3 DOWN -> sell LTF pullbacks") : "HTF W3 watch only"
+        htfWave3Reason := "W2/W1 " + str.tostring(htfWave3W2Ratio, "#.00") + ", W3/W1 " + str.tostring(htfWave3ActiveRatio, "#.00") + (htfWave3Breakout ? ", W1 break" : ", pre-break")
+        float htfBuffer = na(hAtr) ? w1Len * 0.05 : hAtr * 0.25
+        htfWave3Invalid := hp2 - htfWave3Dir * htfBuffer
+        htfWave3Target1 := hp2 + htfWave3Dir * w1Len * 1.618
+        htfWave3Target2 := hp2 + htfWave3Dir * w1Len * 2.618
+
 bool chartIsStock = syminfo.type == "stock"
 bool chartIsCrypto = syminfo.type == "crypto"
 bool marketModeAllowsChart = marketMode == "Research any" or (marketMode == "Stocks" and chartIsStock) or (marketMode == "Crypto" and chartIsCrypto) or (marketMode == "Auto" and (chartIsStock or chartIsCrypto))
-bool cryptoResearchMarket = chartIsCrypto and (marketMode == "Crypto" or marketMode == "Auto" or marketMode == "Research any")
-bool actionableTradeSymbol = chartIsStock and (marketMode == "Stocks" or marketMode == "Auto" or marketMode == "Research any")
-string marketModel = actionableTradeSymbol ? "stocks-v0" : cryptoResearchMarket ? "crypto-v0 research" : "unsupported"
+bool cryptoModeAllowed = chartIsCrypto and (marketMode == "Crypto" or marketMode == "Auto" or marketMode == "Research any")
+bool actionableCryptoSymbol = cryptoModeAllowed and enableCryptoActions
+bool cryptoResearchMarket = cryptoModeAllowed and not enableCryptoActions
+bool actionableTradeSymbol = (chartIsStock and (marketMode == "Stocks" or marketMode == "Auto" or marketMode == "Research any")) or actionableCryptoSymbol
+string marketModel = chartIsStock and actionableTradeSymbol ? "stocks-v0" : actionableCryptoSymbol ? "crypto-v0" : cryptoResearchMarket ? "crypto-v0 research" : "unsupported"
 string assetClassLabel = chartIsStock ? "STOCK" : chartIsCrypto ? "CRYPTO" : syminfo.type
-string canTradeLabel = actionableTradeSymbol ? "YES - STOCK MODEL" : cryptoResearchMarket ? "NO - CRYPTO RESEARCH" : "NO - UNSUPPORTED"
+string canTradeLabel = chartIsStock and actionableTradeSymbol ? "YES - STOCK MODEL" : actionableCryptoSymbol ? "YES - CRYPTO MODEL" : cryptoResearchMarket ? "NO - CRYPTO RESEARCH" : "NO - UNSUPPORTED"
+
+// ───────────────────── LIVE STRUCTURE HYPOTHESIS ─────────────────────
+// Forward-looking слой: последняя точка = текущий close, поэтому метки заканчиваются на C?/Y?/5?/e?.
+int hybN = array.size(hybBar)
+float hypAtr = ta.atr(atrLen)
+float hypEmaFast = ta.ema(close, 34)
+float hypEmaSlow = ta.ema(close, 89)
+float hypRsi = ta.rsi(close, 14)
+float hypVolAvg = ta.sma(volume, 20)
+float hypVol = na(volume) ? 0.0 : volume
+float hypTfScore = tfFocusScore()
+
+string liveHypothesisName = "No live hypothesis"
+string liveHypothesisState = "WAIT"
+string liveHypothesisReason = "Need more confirmed pivots"
+string liveHypothesisLevels = "—"
+string liveHypothesisSource = "book+price"
+string liveHypothesisLabels = ""
+float liveHypothesisProb = na
+float liveHypothesisRR = na
+float liveHypothesisEntry = na
+float liveHypothesisTp1 = na
+float liveHypothesisTp2 = na
+float liveHypothesisTp3 = na
+float liveHypothesisInvalid = na
+int liveHypothesisTradeDir = 0
+int liveHypothesisMoveDir = 0
+int liveHypothesisWaveCount = 0
+int liveHypWaveBar0 = na
+int liveHypWaveBar1 = na
+int liveHypWaveBar2 = na
+int liveHypWaveBar3 = na
+int liveHypWaveBar4 = na
+int liveHypWaveBar5 = na
+float liveHypWavePx0 = na
+float liveHypWavePx1 = na
+float liveHypWavePx2 = na
+float liveHypWavePx3 = na
+float liveHypWavePx4 = na
+float liveHypWavePx5 = na
+bool liveHypothesisReady = false
+float bestHypRank = -1.0
+string hypSideForStats = "LONG"
+
+if showLiveHypothesis and hybN >= 3
+    int h3 = hybN - 3
+    int b0h = array.get(hybBar, h3)
+    int b1h = array.get(hybBar, h3 + 1)
+    int b2h = array.get(hybBar, h3 + 2)
+    float p0h = array.get(hybPx, h3)
+    float p1h = array.get(hybPx, h3 + 1)
+    float p2h = array.get(hybPx, h3 + 2)
+    float aLenH = math.abs(p1h - p0h)
+    float bLenH = math.abs(p2h - p1h)
+    int cDirH = p1h > p0h ? 1 : -1
+    int fadeDirH = -cDirH
+    float cMoveH = cDirH > 0 ? close - p2h : p2h - close
+    float cLenH = math.max(0.0, cMoveH)
+    float bRatioH = aLenH > 0 ? bLenH / aLenH : na
+    float cRatioH = aLenH > 0 ? cLenH / aLenH : na
+    bool cIsDeveloping = aLenH > 0 and cMoveH > (na(hypAtr) ? 0.0 : hypAtr * 0.15)
+    float c100H = p2h + cDirH * aLenH
+    float c138H = p2h + cDirH * aLenH * 1.382
+    float c161H = p2h + cDirH * aLenH * 1.618
+    float zoneLoH = math.min(c100H, c138H)
+    float zoneHiH = math.max(c100H, c138H)
+    float hypBuffer = na(hypAtr) ? aLenH * 0.05 : hypAtr * 0.25
+    hypSideForStats := fadeDirH > 0 ? "LONG" : "SHORT"
+
+    bool flatCandidate = cIsDeveloping and not na(bRatioH) and bRatioH >= 0.50 and bRatioH < 1.75
+    if flatCandidate
+        float flatPatternScore = bRatioH >= 0.618 and bRatioH <= 1.382 ? 1.0 : bRatioH < 1.618 ? 0.80 : 0.55
+        float flatFibScore = math.max(fibClusterScore(cRatioH), scoreBand(cRatioH, 0.382, 1.382) * 0.65)
+        float flatLocationScore = cRatioH >= 0.85 and cRatioH <= 1.45 ? 1.0 : cRatioH >= 0.382 and cRatioH < 0.85 ? 0.55 : cRatioH > 1.45 and cRatioH <= 1.618 ? 0.45 : 0.15
+        bool flatAgainstHtfW3 = htfWave3BiasActive and fadeDirH != htfWave3Dir
+        float flatHtfScore = htfWave3BiasActive ? (flatAgainstHtfW3 ? 0.05 : math.max(dirAlignScore(fadeDirH, htfBiasDir), htfWave3Prob / 100.0)) : dirAlignScore(fadeDirH, htfBiasDir)
+        float flatMomScore = reversalExhaustionScore(fadeDirH, hypRsi, cRatioH)
+        float flatEntry = flatLocationScore >= 0.65 ? close : c100H
+        float flatStop = c161H - fadeDirH * hypBuffer
+        float flatTp1 = p2h
+        float flatTp2 = p2h + fadeDirH * aLenH * 0.618
+        float flatTp3 = p2h + fadeDirH * aLenH
+        float flatRR = rrFor(fadeDirH, flatEntry, flatStop, flatTp1)
+        [flatCalP, flatCalN, flatCalConf, flatCalSrc] = calibratedTradeStats("flat", hypSideForStats, chartIsCrypto)
+        float flatRawProb = probFromScores(flatPatternScore, flatFibScore, flatHtfScore, flatMomScore, flatLocationScore, rrScore(flatRR), hypTfScore)
+        float flatW3Bonus = htfWave3BiasActive ? (flatAgainstHtfW3 ? -12.0 : 6.0) : 0.0
+        float flatProbLive = clampPct(flatRawProb * 0.70 + flatCalP * 0.30 - (flatCalConf == "avoid" ? 10.0 : 0.0) + flatW3Bonus)
+        bool flatBlockedByHtf = (htfActionMode == "BLOCK" and fadeDirH * htfBiasDir < 0) or (htfWave3PullbackOnly and flatAgainstHtfW3)
+        bool flatReady = flatProbLive >= readyHypothesisProb and flatLocationScore >= 0.65 and not na(flatRR) and flatRR >= minActionRR and not flatBlockedByHtf
+        float flatRank = flatProbLive + (flatReady ? 5.0 : 0.0)
+        if flatRank > bestHypRank
+            bestHypRank := flatRank
+            liveHypothesisName := "Dev Flat C"
+            liveHypothesisState := flatReady ? "EARLY " + hypSideText(fadeDirH) : "WATCH " + hypSideText(fadeDirH)
+            liveHypothesisReason := "B/A " + str.tostring(bRatioH, "#.00") + ", C/A " + str.tostring(cRatioH, "#.00") + ", " + (htfWave3BiasActive ? htfWave3Plan : "HTF " + htfBias)
+            liveHypothesisLevels := "Zone " + str.tostring(zoneLoH, format.mintick) + "-" + str.tostring(zoneHiH, format.mintick) + " | SL " + str.tostring(flatStop, format.mintick) + " | TP " + str.tostring(flatTp1, format.mintick)
+            liveHypothesisSource := flatCalSrc
+            liveHypothesisLabels := "0|A|B|C?"
+            liveHypothesisProb := flatProbLive
+            liveHypothesisRR := flatRR
+            liveHypothesisEntry := flatEntry
+            liveHypothesisTp1 := flatTp1
+            liveHypothesisTp2 := flatTp2
+            liveHypothesisTp3 := flatTp3
+            liveHypothesisInvalid := flatStop
+            liveHypothesisTradeDir := fadeDirH
+            liveHypothesisMoveDir := cDirH
+            liveHypothesisWaveCount := 4
+            liveHypWaveBar0 := b0h
+            liveHypWaveBar1 := b1h
+            liveHypWaveBar2 := b2h
+            liveHypWaveBar3 := bar_index
+            liveHypWavePx0 := p0h
+            liveHypWavePx1 := p1h
+            liveHypWavePx2 := p2h
+            liveHypWavePx3 := close
+            liveHypothesisReady := flatReady
+
+    bool dcCandidate = cIsDeveloping and not na(bRatioH) and bRatioH > 0.10 and bRatioH < 0.618
+    if dcCandidate
+        float dcPatternScore = math.min(scoreBand(bRatioH, 0.10, 0.618), cRatioH >= 0.382 ? 1.0 : 0.55)
+        float dcFibScore = math.max(fibClusterScore(cRatioH), scoreBand(cRatioH, 0.618, 1.618) * 0.70)
+        float dcLocationScore = cRatioH >= 0.75 and cRatioH <= 1.65 ? 1.0 : cRatioH >= 0.382 ? 0.55 : 0.20
+        bool dcAgainstHtfW3 = htfWave3BiasActive and fadeDirH != htfWave3Dir
+        float dcHtfScore = htfWave3BiasActive ? (dcAgainstHtfW3 ? 0.05 : math.max(dirAlignScore(fadeDirH, htfBiasDir), htfWave3Prob / 100.0)) : dirAlignScore(fadeDirH, htfBiasDir)
+        float dcMomScore = reversalExhaustionScore(fadeDirH, hypRsi, cRatioH)
+        float dcEntry = dcLocationScore >= 0.65 ? close : c100H
+        float dcStop = c161H - fadeDirH * hypBuffer
+        float dcTp1 = p2h
+        float dcTp2 = p2h + fadeDirH * aLenH * 0.618
+        float dcTp3 = p2h + fadeDirH * aLenH
+        float dcRR = rrFor(fadeDirH, dcEntry, dcStop, dcTp1)
+        [dcCalP, dcCalN, dcCalConf, dcCalSrc] = calibratedTradeStats("double_corr", hypSideForStats, chartIsCrypto)
+        float dcRawProb = probFromScores(dcPatternScore, dcFibScore, dcHtfScore, dcMomScore, dcLocationScore, rrScore(dcRR), hypTfScore)
+        float dcW3Bonus = htfWave3BiasActive ? (dcAgainstHtfW3 ? -12.0 : 6.0) : 0.0
+        float dcProbLive = clampPct(dcRawProb * 0.65 + dcCalP * 0.35 - (dcCalN < minActionSample and not allowSmallSampleDC ? 5.0 : 0.0) + dcW3Bonus)
+        bool dcBlockedByHtf = (htfActionMode == "BLOCK" and fadeDirH * htfBiasDir < 0) or (htfWave3PullbackOnly and dcAgainstHtfW3)
+        bool dcReady = dcProbLive >= readyHypothesisProb and dcLocationScore >= 0.65 and not na(dcRR) and dcRR >= minActionRR and not dcBlockedByHtf and (dcCalN >= minActionSample or allowSmallSampleDC)
+        float dcRank = dcProbLive + (dcReady ? 5.0 : 0.0)
+        if dcRank > bestHypRank
+            bestHypRank := dcRank
+            liveHypothesisName := "Dev WXY / Zigzag C"
+            liveHypothesisState := dcReady ? "EARLY " + hypSideText(fadeDirH) : "WATCH " + hypSideText(fadeDirH)
+            liveHypothesisReason := "X/B " + str.tostring(bRatioH, "#.00") + ", Y/C " + str.tostring(cRatioH, "#.00") + ", " + (htfWave3BiasActive ? htfWave3Plan : "HTF " + htfBias)
+            liveHypothesisLevels := "Zone " + str.tostring(zoneLoH, format.mintick) + "-" + str.tostring(zoneHiH, format.mintick) + " | SL " + str.tostring(dcStop, format.mintick) + " | TP " + str.tostring(dcTp1, format.mintick)
+            liveHypothesisSource := dcCalSrc
+            liveHypothesisLabels := "0|W/A|X/B|Y/C?"
+            liveHypothesisProb := dcProbLive
+            liveHypothesisRR := dcRR
+            liveHypothesisEntry := dcEntry
+            liveHypothesisTp1 := dcTp1
+            liveHypothesisTp2 := dcTp2
+            liveHypothesisTp3 := dcTp3
+            liveHypothesisInvalid := dcStop
+            liveHypothesisTradeDir := fadeDirH
+            liveHypothesisMoveDir := cDirH
+            liveHypothesisWaveCount := 4
+            liveHypWaveBar0 := b0h
+            liveHypWaveBar1 := b1h
+            liveHypWaveBar2 := b2h
+            liveHypWaveBar3 := bar_index
+            liveHypWavePx0 := p0h
+            liveHypWavePx1 := p1h
+            liveHypWavePx2 := p2h
+            liveHypWavePx3 := close
+            liveHypothesisReady := dcReady
+
+if showLiveHypothesis and hybN >= 5
+    int h5 = hybN - 5
+    int b0i = array.get(hybBar, h5)
+    int b1i = array.get(hybBar, h5 + 1)
+    int b2i = array.get(hybBar, h5 + 2)
+    int b3i = array.get(hybBar, h5 + 3)
+    int b4i = array.get(hybBar, h5 + 4)
+    float p0i = array.get(hybPx, h5)
+    float p1i = array.get(hybPx, h5 + 1)
+    float p2i = array.get(hybPx, h5 + 2)
+    float p3i = array.get(hybPx, h5 + 3)
+    float p4i = array.get(hybPx, h5 + 4)
+    int impDir = p1i > p0i ? 1 : -1
+    float w1i = math.abs(p1i - p0i)
+    float w2i = math.abs(p2i - p1i)
+    float w3i = math.abs(p3i - p2i)
+    float w4i = math.abs(p4i - p3i)
+    float w5Live = impDir > 0 ? close - p4i : p4i - close
+    float w5Ratio = w1i > 0 ? math.max(0.0, w5Live) / w1i : na
+    bool impR1 = impDir > 0 ? p2i > p0i : p2i < p0i
+    bool impR2 = impDir > 0 ? p4i > p2i : p4i < p2i
+    bool impR3 = w3i >= w1i
+    bool impR4 = w1i > 0 ? w2i / w1i <= 0.786 : false
+    bool impActive = w5Live > (na(hypAtr) ? 0.0 : hypAtr * 0.15)
+    float impPatternScore = (impR1 ? 0.22 : 0.0) + (impR2 ? 0.20 : 0.0) + (impR3 ? 0.24 : 0.0) + (impR4 ? 0.16 : 0.0) + (impActive ? 0.18 : 0.0)
+    if impPatternScore >= 0.62 and impActive
+        float impFibScore = math.max(scoreNear(w5Ratio, 0.618, 0.25), math.max(scoreNear(w5Ratio, 1.000, 0.25), scoreNear(w5Ratio, 1.618, 0.20)))
+        float impLocationScore = w5Ratio <= 1.618 ? scoreBand(w5Ratio, 0.15, 1.30) : 0.25
+        bool impAgainstHtfW3 = htfWave3BiasActive and impDir != htfWave3Dir
+        float impHtfScore = htfWave3BiasActive ? (impAgainstHtfW3 ? 0.05 : math.max(dirAlignScore(impDir, htfBiasDir), htfWave3Prob / 100.0)) : dirAlignScore(impDir, htfBiasDir)
+        float impMomScore = followMomentumScore(impDir, close, hypEmaFast, hypEmaSlow, hypRsi, hypVol, hypVolAvg)
+        float impEntry = close
+        float impStop = p4i - impDir * (na(hypAtr) ? w1i * 0.05 : hypAtr * 0.25)
+        float impTp1 = p4i + impDir * w1i
+        float impTp2 = p4i + impDir * w1i * 1.618
+        float impTp3 = p4i + impDir * math.min(w1i + w3i, w3i * 1.618)
+        float impRR = rrFor(impDir, impEntry, impStop, impTp1)
+        float impW3Bonus = htfWave3BiasActive ? (impAgainstHtfW3 ? -12.0 : 5.0) : 0.0
+        float impProbLive = clampPct(probFromScores(impPatternScore, impFibScore, impHtfScore, impMomScore, impLocationScore, rrScore(impRR), hypTfScore) + impW3Bonus)
+        bool impBlockedByHtf = (htfActionMode == "BLOCK" and impDir * htfBiasDir < 0) or (htfWave3PullbackOnly and impAgainstHtfW3)
+        bool impReady = impProbLive >= readyHypothesisProb and not na(impRR) and impRR >= minActionRR and not impBlockedByHtf
+        float impRank = impProbLive + (impReady ? 5.0 : 0.0)
+        if impRank > bestHypRank
+            bestHypRank := impRank
+            liveHypothesisName := "Dev Impulse W5"
+            liveHypothesisState := impReady ? "EARLY " + hypSideText(impDir) : "WATCH " + hypSideText(impDir)
+            liveHypothesisReason := "W5/W1 " + str.tostring(w5Ratio, "#.00") + ", momentum " + hypDirText(impDir) + ", " + (htfWave3BiasActive ? htfWave3Plan : "HTF " + htfBias)
+            liveHypothesisLevels := "Entry " + str.tostring(impEntry, format.mintick) + " | SL " + str.tostring(impStop, format.mintick) + " | TP " + str.tostring(impTp1, format.mintick)
+            liveHypothesisSource := "book|impulse-w5"
+            liveHypothesisLabels := "0|1|2|3|4|5?"
+            liveHypothesisProb := impProbLive
+            liveHypothesisRR := impRR
+            liveHypothesisEntry := impEntry
+            liveHypothesisTp1 := impTp1
+            liveHypothesisTp2 := impTp2
+            liveHypothesisTp3 := impTp3
+            liveHypothesisInvalid := impStop
+            liveHypothesisTradeDir := impDir
+            liveHypothesisMoveDir := impDir
+            liveHypothesisWaveCount := 6
+            liveHypWaveBar0 := b0i
+            liveHypWaveBar1 := b1i
+            liveHypWaveBar2 := b2i
+            liveHypWaveBar3 := b3i
+            liveHypWaveBar4 := b4i
+            liveHypWaveBar5 := bar_index
+            liveHypWavePx0 := p0i
+            liveHypWavePx1 := p1i
+            liveHypWavePx2 := p2i
+            liveHypWavePx3 := p3i
+            liveHypWavePx4 := p4i
+            liveHypWavePx5 := close
+            liveHypothesisReady := impReady
+
+    float triE = math.abs(close - p4i)
+    int triEDir = close > p4i ? 1 : -1
+    int triThrustDir = -triEDir
+    float triRangeLo = math.min(p0i, math.min(p1i, math.min(p2i, math.min(p3i, p4i))))
+    float triRangeHi = math.max(p0i, math.max(p1i, math.max(p2i, math.max(p3i, p4i))))
+    bool triContracting = w3i < w1i and w4i < w2i
+    bool triInside = close >= triRangeLo and close <= triRangeHi
+    float triWidest = math.max(w1i, math.max(w2i, math.max(w3i, w4i)))
+    float triERatio = w3i > 0 ? triE / w3i : na
+    if triContracting and triInside and triE > (na(hypAtr) ? 0.0 : hypAtr * 0.10)
+        float triPatternScore = 0.85
+        float triFibScore = math.max(fibClusterScore(triERatio), fibClusterScore(w3i / math.max(w1i, 0.0000001)) * 0.50)
+        bool triAgainstHtfW3 = htfWave3BiasActive and triThrustDir != htfWave3Dir
+        float triHtfScore = htfWave3BiasActive ? (triAgainstHtfW3 ? 0.05 : math.max(dirAlignScore(triThrustDir, htfBiasDir), htfWave3Prob / 100.0)) : dirAlignScore(triThrustDir, htfBiasDir)
+        float triMomScore = followMomentumScore(triThrustDir, close, hypEmaFast, hypEmaSlow, hypRsi, hypVol, hypVolAvg) * 0.70
+        float triEntry = close
+        float triStop = close - triThrustDir * triWidest * 0.382
+        float triTp1 = close + triThrustDir * triWidest
+        float triTp2 = close + triThrustDir * triWidest * 1.618
+        float triRR = rrFor(triThrustDir, triEntry, triStop, triTp1)
+        float triW3Bonus = htfWave3BiasActive ? (triAgainstHtfW3 ? -12.0 : 5.0) : 0.0
+        float triProbLive = clampPct(probFromScores(triPatternScore, triFibScore, triHtfScore, triMomScore, 0.55, rrScore(triRR), hypTfScore) + triW3Bonus)
+        bool triBlockedByHtf = (htfActionMode == "BLOCK" and triThrustDir * htfBiasDir < 0) or (htfWave3PullbackOnly and triAgainstHtfW3)
+        bool triReady = false
+        float triRank = triProbLive + (triReady ? 5.0 : 0.0)
+        if triRank > bestHypRank
+            bestHypRank := triRank
+            liveHypothesisName := "Dev Triangle e"
+            liveHypothesisState := "WATCH " + hypSideText(triThrustDir)
+            liveHypothesisReason := "e forming; wait B-D break, " + (htfWave3BiasActive ? htfWave3Plan : "HTF " + htfBias)
+            liveHypothesisLevels := "Breakout watch | Invalid " + str.tostring(triStop, format.mintick) + " | TP " + str.tostring(triTp1, format.mintick)
+            liveHypothesisSource := "book|triangle-thrust"
+            liveHypothesisLabels := "0|a|b|c|d|e?"
+            liveHypothesisProb := triProbLive
+            liveHypothesisRR := triRR
+            liveHypothesisEntry := triEntry
+            liveHypothesisTp1 := triTp1
+            liveHypothesisTp2 := triTp2
+            liveHypothesisTp3 := na
+            liveHypothesisInvalid := triStop
+            liveHypothesisTradeDir := triThrustDir
+            liveHypothesisMoveDir := triEDir
+            liveHypothesisWaveCount := 6
+            liveHypWaveBar0 := b0i
+            liveHypWaveBar1 := b1i
+            liveHypWaveBar2 := b2i
+            liveHypWaveBar3 := b3i
+            liveHypWaveBar4 := b4i
+            liveHypWaveBar5 := bar_index
+            liveHypWavePx0 := p0i
+            liveHypWavePx1 := p1i
+            liveHypWavePx2 := p2i
+            liveHypWavePx3 := p3i
+            liveHypWavePx4 := p4i
+            liveHypWavePx5 := close
+            liveHypothesisReady := triReady
+
+bool hasLiveHypothesis = showLiveHypothesis and not na(liveHypothesisProb) and liveHypothesisProb >= minHypothesisProb and liveHypothesisTradeDir != 0
+string liveHypothesisGrade = hasLiveHypothesis ? hypothesisGrade(liveHypothesisProb, liveHypothesisRR, liveHypothesisReady) : "WAIT"
+string liveHypothesisDisplay = hasLiveHypothesis ? liveHypothesisName + " | " + liveHypothesisState : "No live setup"
+string liveHypothesisProbabilityText = hasLiveHypothesis ? "Hyp P " + str.tostring(liveHypothesisProb, "#.0") + "% | " + liveHypothesisGrade : "—"
+string liveHypothesisTfText = preferLongTermTF ? "Primary 1D/4H; current " + timeframe.period + " | HTF " + htf : timeframe.period + " entry | HTF " + htf
+
 string actionNow = "WAIT"
 string actionReason = "NO SIGNAL"
 float actionRR = na
@@ -1243,7 +1876,7 @@ bool htfAgainstAction = false
 if not marketModeAllowsChart
     actionReason := "UNSUPPORTED " + syminfo.type
 else if cryptoResearchMarket
-    actionReason := "CRYPTO RESEARCH ONLY - NO TRADE"
+    actionReason := "CRYPTO ACTION DISABLED"
 else if not actionableTradeSymbol
     actionReason := "NO " + syminfo.type + " CALIBRATION"
 else if lastTradeSide != "LONG" and lastTradeSide != "SHORT"
@@ -1279,6 +1912,8 @@ else
         actionReason := "NO EDGE " + lastTradeProbSource
     else if smallSampleBlocked
         actionReason := "SMALL N " + str.tostring(lastTradeSampleN) + "<" + str.tostring(minActionSample)
+    else if htfWave3PullbackOnly and htfWave3BiasActive and (actionLong ? 1 : -1) != htfWave3Dir
+        actionReason := "HTF W3 ONLY " + hypSideText(htfWave3Dir)
     else if htfActionMode == "BLOCK" and actionLong and htfBiasDir < 0
         actionReason := "HTF AGAINST " + htfBias
     else if htfActionMode == "BLOCK" and not actionLong and htfBiasDir > 0
@@ -1289,13 +1924,16 @@ else
 
 bool actionBuySignal = actionableTradeSymbol and actionNow == "BUY" and tradeLongSignal
 bool actionSellSignal = actionableTradeSymbol and actionNow == "SELL" and tradeShortSignal
+bool liveHypothesisReadySignal = hasLiveHypothesis and liveHypothesisReady
+bool liveHypothesisWasReady = bar_index > 0 ? liveHypothesisReadySignal[1] : false
+bool liveHypothesisReadyEvent = liveHypothesisReadySignal and not liveHypothesisWasReady
 string signalGradeNow = signalGrade(actionNow, lastTradeProb, lastTradeSampleN, lastTradeConfidence, actionRR)
 if actionNow != "WAIT" and htfAgainstAction and htfActionMode == "WARN"
     signalGradeNow := signalGradeNow == "A" ? "B-HTF" : signalGradeNow == "B" ? "C-HTF" : signalGradeNow + "-HTF"
 
-string decisionMode = actionableTradeSymbol ? "STOCK LIVE" : cryptoResearchMarket ? "CRYPTO RESEARCH" : "UNSUPPORTED"
+string decisionMode = chartIsStock and actionableTradeSymbol ? "STOCK LIVE" : actionableCryptoSymbol ? "CRYPTO LIVE" : cryptoResearchMarket ? "CRYPTO RESEARCH" : "UNSUPPORTED"
 color decisionModeColor = actionableTradeSymbol ? color.new(color.lime, 50) : cryptoResearchMarket ? color.new(color.orange, 20) : color.new(color.red, 45)
-string marketBannerText = actionableTradeSymbol ? "STOCK LIVE\nBUY/SELL ENABLED" : cryptoResearchMarket ? "CRYPTO RESEARCH ONLY\nNO BUY/SELL ALERTS" : "UNSUPPORTED MARKET\nWAIT ONLY"
+string marketBannerText = chartIsStock and actionableTradeSymbol ? "STOCK LIVE\nBUY/SELL ENABLED" : actionableCryptoSymbol ? "CRYPTO LIVE\nBUY/SELL ENABLED" : cryptoResearchMarket ? "CRYPTO RESEARCH\nACTIONS DISABLED" : "UNSUPPORTED MARKET\nWAIT ONLY"
 color marketBannerColor = actionableTradeSymbol ? color.new(color.lime, 10) : cryptoResearchMarket ? color.new(color.orange, 10) : color.new(color.red, 20)
 string displayTradeSide = actionableTradeSymbol ? lastTradeSide : "WAIT"
 string displayTradeType = actionableTradeSymbol ? lastTradeType : marketModel
@@ -1309,8 +1947,24 @@ string displayRrProgress = actionableTradeSymbol ? (na(actionRR) ? "—" : str.t
 string displayMarket = marketMode + " / " + marketModel
 string displayCalibration = actionableTradeSymbol ? lastTradeProbSource : marketModel
 string displayCoreSignal = showCoreSignals ? lastCoreSignal : "OFF"
-string displayCoreSide = showCoreSignals ? lastCoreSide : "—"
-string displayCoreLevels = showCoreSignals and not na(lastCoreTarget) ? "T " + str.tostring(lastCoreTarget, format.mintick) + " / I " + str.tostring(lastCoreInvalid, format.mintick) : "—"
+string displayHtfWave3 = htfWave3BiasActive ? htfWave3Name + " | P " + str.tostring(htfWave3Prob, "#.0") + "%" : "No HTF W3 bias"
+string displayHtfWave3Levels = htfWave3BiasActive ? "Invalid " + str.tostring(htfWave3Invalid, format.mintick) + " | TP1 " + str.tostring(htfWave3Target1, format.mintick) : "—"
+string displayHtfWave3Prob = htfWave3BiasActive ? "HTF W3 P " + str.tostring(htfWave3Prob, "#.0") + "%" : "—"
+string displayConfirmedPattern = displayTradeType != "—" and displayTradeType != marketModel ? displayTradeType : displayCoreSignal != "—" and displayCoreSignal != "OFF" ? displayCoreSignal : "No confirmed pattern"
+string displayPatternNow = hasLiveHypothesis ? liveHypothesisDisplay : htfWave3BiasActive ? displayHtfWave3 : displayConfirmedPattern
+bool shouldExitPosition = lastTradeStatus == "TP HIT" or lastTradeStatus == "SL HIT" or actionReason == "TP PASSED" or actionReason == "SL ZONE"
+bool actionWaitNoEntry = actionNow == "WAIT" and waitNoEntryReason(actionReason)
+bool shouldHoldPosition = lastTradeStatus == "ACTIVE" and actionNow == "WAIT" and not shouldExitPosition and not actionWaitNoEntry
+bool useLiveHypothesisDecision = hasLiveHypothesis and actionNow == "WAIT" and not shouldExitPosition and not shouldHoldPosition
+bool useHtfWave3WaitDecision = htfWave3BiasActive and actionNow == "WAIT" and not shouldExitPosition and not shouldHoldPosition and not useLiveHypothesisDecision
+bool liveAgainstHtfWave3 = useLiveHypothesisDecision and htfWave3BiasActive and liveHypothesisTradeDir != htfWave3Dir
+string antonDecision = actionNow == "BUY" ? "ENTER LONG" : actionNow == "SELL" ? "ENTER SHORT" : shouldExitPosition ? "EXIT" : shouldHoldPosition ? "HOLD / MANAGE" : liveAgainstHtfWave3 and htfWave3PullbackOnly ? "WAIT / NO COUNTER" : useLiveHypothesisDecision and liveHypothesisReady ? "EARLY " + hypSideText(liveHypothesisTradeDir) : useLiveHypothesisDecision ? "WATCH " + hypSideText(liveHypothesisTradeDir) : useHtfWave3WaitDecision ? "WAIT PULLBACK " + hypSideText(htfWave3Dir) : "WAIT / NO ENTRY"
+string antonRule = actionNow == "BUY" or actionNow == "SELL" ? "Enter near Entry; risk only to SL" : shouldExitPosition ? actionReason : shouldHoldPosition ? "Do not add; trail or wait" : liveAgainstHtfWave3 and htfWave3PullbackOnly ? "Countertrend blocked by HTF W3" : useLiveHypothesisDecision and liveHypothesisReady ? (htfWave3BiasActive ? "HTF W3 aligned; early setup in zone" : "Early setup in zone; invalid = SL") : useLiveHypothesisDecision ? (htfWave3BiasActive ? "Wait LTF pullback trigger with HTF W3" : "Wait for zone/breakout; no chase") : useHtfWave3WaitDecision ? "HTF W3 active; wait LTF ABC/Flat/WXY pullback" : actionReason
+string displayLevels = liveAgainstHtfWave3 and htfWave3PullbackOnly ? displayHtfWave3Levels : useLiveHypothesisDecision ? liveHypothesisLevels : useHtfWave3WaitDecision ? displayHtfWave3Levels : actionableTradeSymbol and not na(lastTradeEntry) ? "E " + str.tostring(lastTradeEntry, format.mintick) + " | SL " + str.tostring(lastTradeSl, format.mintick) + " | TP " + str.tostring(lastTradeTp, format.mintick) : "—"
+string displayProbabilityState = shouldExitPosition ? "EXIT" : shouldHoldPosition ? "MANAGE" : displaySignalGrade
+string displayProbabilityMove = liveAgainstHtfWave3 and htfWave3PullbackOnly ? displayHtfWave3Prob : useLiveHypothesisDecision ? liveHypothesisProbabilityText : useHtfWave3WaitDecision ? displayHtfWave3Prob : actionableTradeSymbol and not na(lastTradeProb) ? "P " + str.tostring(lastTradeProb, "#.0") + "% | " + displayProbabilityState : cryptoResearchMarket ? "research only" : "—"
+string tfPlanText = htfWave3BiasActive ? htfWave3Plan : useLiveHypothesisDecision ? liveHypothesisTfText : timeframe.period + " entry | HTF " + htf + " filter"
+string displayLiveContextLevels = hasLiveHypothesis ? liveHypothesisLevels : htfWave3BiasActive ? displayHtfWave3Levels : "—"
 
 // ───────────────────── ТЕКУЩИЙ ТОРГОВЫЙ ПЛАН ─────────────────────
 var int drawnActionKey = na
@@ -1331,6 +1985,34 @@ var label actionTp3Label = na
 var label coreMainLabel = na
 var label coreTargetLabel = na
 var label coreInvalidLabel = na
+var label coreWaveLabel0 = na
+var label coreWaveLabel1 = na
+var label coreWaveLabel2 = na
+var label coreWaveLabel3 = na
+var label coreWaveLabel4 = na
+var label coreWaveLabel5 = na
+var line hypEntryLine = na
+var line hypStopLine = na
+var line hypTp1Line = na
+var line hypTp2Line = na
+var label hypMainLabel = na
+var label hypEntryLabel = na
+var label hypStopLabel = na
+var label hypTp1Label = na
+var label hypTp2Label = na
+var label hypWaveLabel0 = na
+var label hypWaveLabel1 = na
+var label hypWaveLabel2 = na
+var label hypWaveLabel3 = na
+var label hypWaveLabel4 = na
+var label hypWaveLabel5 = na
+var line htfW3InvalidLine = na
+var line htfW3Target1Line = na
+var line htfW3Target2Line = na
+var label htfW3MainLabel = na
+var label htfW3InvalidLabel = na
+var label htfW3Target1Label = na
+var label htfW3Target2Label = na
 var box actionWaveBox = na
 var line actionWaveLine1 = na
 var line actionWaveLine2 = na
@@ -1344,8 +2026,8 @@ var array<line> historicalPlanLines = array.new<line>()
 var array<label> historicalPlanLabels = array.new<label>()
 var array<box> historicalPlanBoxes = array.new<box>()
 
-bool canDrawActionPlan = showTradePlan and (actionNow == "BUY" or actionNow == "SELL") and not na(lastTradeConfBar) and not na(lastTradeEntry) and not na(lastTradeSl) and not na(lastTradeAmp) and lastTradeAmp > 0
-bool canDrawWaitNote = showTradePlan and actionNow == "WAIT" and actionableTradeSymbol and lastTradeSide != "—" and actionReason != "NO SIGNAL" and not na(lastTradeConfBar) and not na(lastTradeEntry)
+bool canDrawActionPlan = showTradePlan and actionableTradeSymbol and (lastTradeSide == "LONG" or lastTradeSide == "SHORT") and not na(lastTradeConfBar) and not na(lastTradeEntry) and not na(lastTradeSl) and not na(lastTradeAmp) and lastTradeAmp > 0
+bool canDrawWaitNote = showTradePlan and not canDrawActionPlan and actionNow == "WAIT" and actionableTradeSymbol and lastTradeSide != "—" and actionReason != "NO SIGNAL" and not na(lastTradeConfBar) and not na(lastTradeEntry)
 if barstate.islast
     if not na(marketBannerLabel)
         label.delete(marketBannerLabel)
@@ -1354,13 +2036,15 @@ if barstate.islast
         marketBannerLabel := label.new(bar_index + 2, bannerY, marketBannerText,
              xloc = xloc.bar_index, yloc = yloc.price, style = label.style_label_left,
              color = marketBannerColor, textcolor = color.white, size = size.normal,
-             tooltip = actionableTradeSymbol ? "Акции: рабочая stock-калибровка. BUY/SELL и alerts разрешены фильтрами Action now." :
-                  cryptoResearchMarket ? "Крипта: отдельный research-контур. Торговые BUY/SELL, Entry/TP/SL и alerts отключены до crypto production-калибровки." :
+             tooltip = chartIsStock and actionableTradeSymbol ? "Акции: рабочая stock-калибровка. BUY/SELL и alerts разрешены фильтрами Action now." :
+                  actionableCryptoSymbol ? "Крипта: рабочая crypto-v0 калибровка. BUY/SELL и alerts разрешены фильтрами Action now." :
+                  cryptoResearchMarket ? "Крипта: research-контур. Включите Enable crypto Action BUY/SELL для рабочих crypto-сигналов." :
                   "Этот тип рынка не поддержан текущей калибровкой. Action now всегда WAIT.")
     else
         marketBannerLabel := na
 bool canDrawAnyAction = canDrawActionPlan or canDrawWaitNote
-int actionKey = canDrawActionPlan ? lastTradeConfBar * 10 + (actionNow == "BUY" ? 1 : 2) : canDrawWaitNote ? lastTradeConfBar * 10 + 3 : na
+int actionStateKey = actionNow == "BUY" ? 1 : actionNow == "SELL" ? 2 : shouldExitPosition ? 4 : shouldHoldPosition ? 5 : 3
+int actionKey = canDrawActionPlan ? lastTradeConfBar * 10 + actionStateKey : canDrawWaitNote ? lastTradeConfBar * 10 + 3 : na
 bool redrawActionPlan = barstate.islast and (actionKey != drawnActionKey)
 if redrawActionPlan
     bool deletePreviousPlan = onlyLatestSignal or not canDrawAnyAction
@@ -1426,7 +2110,7 @@ if redrawActionPlan
     drawnActionKey := actionKey
 
     if canDrawActionPlan
-        bool actionLongPlan = actionNow == "BUY"
+        bool actionLongPlan = lastTradeSide == "LONG"
         int planDir = actionLongPlan ? 1 : -1
         int x0Plan = lastTradeConfBar
         int x1Plan = lastTradeConfBar + actionLevelBars
@@ -1437,7 +2121,7 @@ if redrawActionPlan
         float tp1Prob = tpProbability(lastTradeProb, 13.0)
         float tp2Prob = tpProbability(lastTradeProb, 0.0)
         float tp3Prob = tpProbability(lastTradeProb, -17.0)
-        string actionIcon = actionLongPlan ? "▲ BUY" : "▼ SELL"
+        string actionIcon = actionNow == "BUY" ? "▲ BUY" : actionNow == "SELL" ? "▼ SELL" : shouldExitPosition ? "EXIT" : shouldHoldPosition ? "HOLD" : "WAIT"
         string waveLabels = lastTradeType == "DoubleCorr fade" ? "0|W|X|Y" : "0|A|B|C"
         array<string> wlbl = str.split(waveLabels, "|")
 
@@ -1452,24 +2136,24 @@ if redrawActionPlan
         actionTp3Line := line.new(x0Plan, tp3, x1Plan, tp3,
              xloc = xloc.bar_index, color = color.new(color.aqua, 10), width = 2, style = line.style_dotted)
 
-        actionMainLabel := label.new(x0Plan, lastTradeEntry, actionIcon + "\n" + lastTradeType + "\nP≈" + str.tostring(lastTradeProb, "#.0") + "% / " + signalGradeNow,
+        actionMainLabel := label.new(x0Plan, lastTradeEntry, actionIcon + "\n" + lastTradeType + "\nP≈" + str.tostring(lastTradeProb, "#.0") + "% / " + displayProbabilityState,
              xloc = xloc.bar_index, yloc = yloc.price,
              style = actionLongPlan ? label.style_label_up : label.style_label_down,
              color = color.new(planColor, 0), textcolor = color.white, size = size.normal,
-             tooltip = "Action now: свежий сигнал. Entry/SL/TP1-3 построены от амплитуды подтверждённой Flat/DC фигуры.")
+             tooltip = "Last plan: Entry/SL/MOVE levels remain visible while the trade is ENTER, HOLD or EXIT.")
         actionEntryLabel := label.new(x1Plan, lastTradeEntry, "Entry",
              xloc = xloc.bar_index, yloc = yloc.price, style = label.style_label_left,
              color = color.new(color.white, 15), textcolor = color.black, size = size.tiny)
         actionSlLabel := label.new(x1Plan, lastTradeSl, "Stop Loss",
              xloc = xloc.bar_index, yloc = yloc.price, style = label.style_label_left,
              color = color.new(color.red, 0), textcolor = color.white, size = size.tiny)
-        actionTp1Label := label.new(x1Plan, tp1, tpText("TP1 conservative", tp1Prob),
+        actionTp1Label := label.new(x1Plan, tp1, tpText("MOVE 0.618", tp1Prob),
              xloc = xloc.bar_index, yloc = yloc.price, style = label.style_label_left,
              color = color.new(color.lime, 35), textcolor = color.white, size = size.tiny)
-        actionTp2Label := label.new(x1Plan, tp2, tpText("TP2 base", tp2Prob),
+        actionTp2Label := label.new(x1Plan, tp2, tpText("MOVE 1.000", tp2Prob),
              xloc = xloc.bar_index, yloc = yloc.price, style = label.style_label_left,
              color = color.new(color.lime, 10), textcolor = color.white, size = size.tiny)
-        actionTp3Label := label.new(x1Plan, tp3, tpText("TP3 aggressive", tp3Prob),
+        actionTp3Label := label.new(x1Plan, tp3, tpText("MOVE 1.618", tp3Prob),
              xloc = xloc.bar_index, yloc = yloc.price, style = label.style_label_left,
              color = color.new(color.aqua, 10), textcolor = color.white, size = size.tiny)
 
@@ -1567,22 +2251,62 @@ if redrawCoreSignal
         label.delete(coreTargetLabel)
     if not na(coreInvalidLabel)
         label.delete(coreInvalidLabel)
+    if not na(coreWaveLabel0)
+        label.delete(coreWaveLabel0)
+    if not na(coreWaveLabel1)
+        label.delete(coreWaveLabel1)
+    if not na(coreWaveLabel2)
+        label.delete(coreWaveLabel2)
+    if not na(coreWaveLabel3)
+        label.delete(coreWaveLabel3)
+    if not na(coreWaveLabel4)
+        label.delete(coreWaveLabel4)
+    if not na(coreWaveLabel5)
+        label.delete(coreWaveLabel5)
     coreTargetLine := na
     coreInvalidLine := na
     coreMainLabel := na
     coreTargetLabel := na
     coreInvalidLabel := na
+    coreWaveLabel0 := na
+    coreWaveLabel1 := na
+    coreWaveLabel2 := na
+    coreWaveLabel3 := na
+    coreWaveLabel4 := na
+    coreWaveLabel5 := na
     drawnCoreKey := coreKey
 
     if canDrawCoreSignal
         color coreCol = coreSignalColor(lastCoreSignal, lastCoreDir)
         int coreX0 = lastCoreConfBar
         int coreX1 = lastCoreConfBar + coreLevelBars
+        string coreWaveLabels = lastCoreSignal == "TRIANGLE THRUST" ? "0|a|b|c|d|e" : lastCoreWaveCount == 6 ? "0|1|2|3|4|5" : "0|A|B|C"
+        array<string> coreLbls = str.split(coreWaveLabels, "|")
         coreMainLabel := label.new(coreX0, lastCoreEntry, "CORE\n" + lastCoreSignal + "\n" + lastCoreSide,
              xloc = xloc.bar_index, yloc = yloc.price,
              style = lastCoreDir >= 0 ? label.style_label_up : label.style_label_down,
              color = color.new(coreCol, 0), textcolor = color.white, size = size.small,
              tooltip = lastCoreReason + ". Research context: does not override Action now.")
+        if showNeelyWaveNumbers and lastCoreWaveCount >= 4
+            coreWaveLabel0 := label.new(lastCoreWaveBar0, lastCoreWavePx0, array.get(coreLbls, 0),
+                 xloc = xloc.bar_index, yloc = yloc.price, style = label.style_label_center,
+                 color = color.new(coreCol, 10), textcolor = color.white, size = size.tiny)
+            coreWaveLabel1 := label.new(lastCoreWaveBar1, lastCoreWavePx1, array.get(coreLbls, 1),
+                 xloc = xloc.bar_index, yloc = yloc.price, style = label.style_label_center,
+                 color = color.new(coreCol, 10), textcolor = color.white, size = size.tiny)
+            coreWaveLabel2 := label.new(lastCoreWaveBar2, lastCoreWavePx2, array.get(coreLbls, 2),
+                 xloc = xloc.bar_index, yloc = yloc.price, style = label.style_label_center,
+                 color = color.new(coreCol, 10), textcolor = color.white, size = size.tiny)
+            coreWaveLabel3 := label.new(lastCoreWaveBar3, lastCoreWavePx3, array.get(coreLbls, 3),
+                 xloc = xloc.bar_index, yloc = yloc.price, style = label.style_label_center,
+                 color = color.new(coreCol, 10), textcolor = color.white, size = size.tiny)
+            if lastCoreWaveCount >= 6
+                coreWaveLabel4 := label.new(lastCoreWaveBar4, lastCoreWavePx4, array.get(coreLbls, 4),
+                     xloc = xloc.bar_index, yloc = yloc.price, style = label.style_label_center,
+                     color = color.new(coreCol, 10), textcolor = color.white, size = size.tiny)
+                coreWaveLabel5 := label.new(lastCoreWaveBar5, lastCoreWavePx5, array.get(coreLbls, 5),
+                     xloc = xloc.bar_index, yloc = yloc.price, style = label.style_label_center,
+                     color = color.new(coreCol, 10), textcolor = color.white, size = size.tiny)
         if not na(lastCoreTarget)
             coreTargetLine := line.new(coreX0, lastCoreTarget, coreX1, lastCoreTarget,
                  xloc = xloc.bar_index, color = color.new(coreCol, 10),
@@ -1591,14 +2315,174 @@ if redrawCoreSignal
                  xloc = xloc.bar_index, yloc = yloc.price,
                  style = label.style_label_left, color = color.new(coreCol, 10),
                  textcolor = color.white, size = size.tiny)
-        if not na(lastCoreInvalid)
-            coreInvalidLine := line.new(coreX0, lastCoreInvalid, coreX1, lastCoreInvalid,
-                 xloc = xloc.bar_index, color = color.new(color.yellow, 20),
-                 width = 1, style = line.style_dotted)
-            coreInvalidLabel := label.new(coreX1, lastCoreInvalid, "Core invalid",
+            if not na(lastCoreInvalid)
+                coreInvalidLine := line.new(coreX0, lastCoreInvalid, coreX1, lastCoreInvalid,
+                     xloc = xloc.bar_index, color = color.new(color.yellow, 20),
+                     width = 1, style = line.style_dotted)
+                coreInvalidLabel := label.new(coreX1, lastCoreInvalid, "Core invalid",
+                     xloc = xloc.bar_index, yloc = yloc.price,
+                     style = label.style_label_left, color = color.new(color.yellow, 20),
+                     textcolor = color.black, size = size.tiny)
+
+// ───────────────────── LIVE HYPOTHESIS LAYER ─────────────────────
+if barstate.islast
+    if not na(hypEntryLine)
+        line.delete(hypEntryLine)
+    if not na(hypStopLine)
+        line.delete(hypStopLine)
+    if not na(hypTp1Line)
+        line.delete(hypTp1Line)
+    if not na(hypTp2Line)
+        line.delete(hypTp2Line)
+    if not na(hypMainLabel)
+        label.delete(hypMainLabel)
+    if not na(hypEntryLabel)
+        label.delete(hypEntryLabel)
+    if not na(hypStopLabel)
+        label.delete(hypStopLabel)
+    if not na(hypTp1Label)
+        label.delete(hypTp1Label)
+    if not na(hypTp2Label)
+        label.delete(hypTp2Label)
+    if not na(hypWaveLabel0)
+        label.delete(hypWaveLabel0)
+    if not na(hypWaveLabel1)
+        label.delete(hypWaveLabel1)
+    if not na(hypWaveLabel2)
+        label.delete(hypWaveLabel2)
+    if not na(hypWaveLabel3)
+        label.delete(hypWaveLabel3)
+    if not na(hypWaveLabel4)
+        label.delete(hypWaveLabel4)
+    if not na(hypWaveLabel5)
+        label.delete(hypWaveLabel5)
+    hypEntryLine := na
+    hypStopLine := na
+    hypTp1Line := na
+    hypTp2Line := na
+    hypMainLabel := na
+    hypEntryLabel := na
+    hypStopLabel := na
+    hypTp1Label := na
+    hypTp2Label := na
+    hypWaveLabel0 := na
+    hypWaveLabel1 := na
+    hypWaveLabel2 := na
+    hypWaveLabel3 := na
+    hypWaveLabel4 := na
+    hypWaveLabel5 := na
+
+    if showLiveHypothesis and hasLiveHypothesis
+        color hypColNow = hypColor(liveHypothesisProb, liveHypothesisTradeDir, liveHypothesisReady)
+        int hypX0 = bar_index
+        int hypX1 = bar_index + hypothesisLevelBars
+        string hypTip = "Live hypothesis, not confirmed. Current wave moves " + hypDirText(liveHypothesisMoveDir) +
+             "; expected trade is " + hypSideText(liveHypothesisTradeDir) + ". " + liveHypothesisReason +
+             ". Source: " + liveHypothesisSource
+        if showHypothesisLevels and not na(liveHypothesisEntry)
+            hypEntryLine := line.new(hypX0, liveHypothesisEntry, hypX1, liveHypothesisEntry,
+                 xloc = xloc.bar_index, color = color.new(hypColNow, 0), width = 2, style = line.style_dashed)
+            hypMainLabel := label.new(hypX0, liveHypothesisEntry,
+                 "LIVE\n" + liveHypothesisName + "\n" + liveHypothesisState + "\nP≈" + str.tostring(liveHypothesisProb, "#.0") + "% / " + liveHypothesisGrade,
                  xloc = xloc.bar_index, yloc = yloc.price,
-                 style = label.style_label_left, color = color.new(color.yellow, 20),
-                 textcolor = color.black, size = size.tiny)
+                 style = liveHypothesisTradeDir >= 0 ? label.style_label_up : label.style_label_down,
+                 color = hypColNow, textcolor = liveHypothesisReady ? color.white : color.black, size = size.small,
+                 tooltip = hypTip)
+            hypEntryLabel := label.new(hypX1, liveHypothesisEntry, liveHypothesisReady ? "Hyp entry" : "Hyp zone",
+                 xloc = xloc.bar_index, yloc = yloc.price, style = label.style_label_left,
+                 color = color.new(hypColNow, 10), textcolor = liveHypothesisReady ? color.white : color.black, size = size.tiny)
+        if showHypothesisLevels and not na(liveHypothesisInvalid)
+            hypStopLine := line.new(hypX0, liveHypothesisInvalid, hypX1, liveHypothesisInvalid,
+                 xloc = xloc.bar_index, color = color.new(color.yellow, 0), width = 2, style = line.style_solid)
+            hypStopLabel := label.new(hypX1, liveHypothesisInvalid, "Hyp invalid / SL",
+                 xloc = xloc.bar_index, yloc = yloc.price, style = label.style_label_left,
+                 color = color.new(color.yellow, 0), textcolor = color.black, size = size.tiny)
+        if showHypothesisLevels and not na(liveHypothesisTp1)
+            hypTp1Line := line.new(hypX0, liveHypothesisTp1, hypX1, liveHypothesisTp1,
+                 xloc = xloc.bar_index, color = color.new(color.lime, 15), width = 2, style = line.style_dotted)
+            hypTp1Label := label.new(hypX1, liveHypothesisTp1, "Hyp TP1",
+                 xloc = xloc.bar_index, yloc = yloc.price, style = label.style_label_left,
+                 color = color.new(color.lime, 15), textcolor = color.white, size = size.tiny)
+        if showHypothesisLevels and not na(liveHypothesisTp2)
+            hypTp2Line := line.new(hypX0, liveHypothesisTp2, hypX1, liveHypothesisTp2,
+                 xloc = xloc.bar_index, color = color.new(color.aqua, 20), width = 1, style = line.style_dotted)
+            hypTp2Label := label.new(hypX1, liveHypothesisTp2, "Hyp TP2",
+                 xloc = xloc.bar_index, yloc = yloc.price, style = label.style_label_left,
+                 color = color.new(color.aqua, 20), textcolor = color.white, size = size.tiny)
+        if showHypothesisWaveLabels and liveHypothesisWaveCount >= 4 and liveHypothesisLabels != ""
+            array<string> hypLbls = str.split(liveHypothesisLabels, "|")
+            hypWaveLabel0 := label.new(liveHypWaveBar0, liveHypWavePx0, array.get(hypLbls, 0),
+                 xloc = xloc.bar_index, yloc = yloc.price, style = label.style_label_center,
+                 color = color.new(hypColNow, 0), textcolor = liveHypothesisReady ? color.white : color.black, size = size.small)
+            hypWaveLabel1 := label.new(liveHypWaveBar1, liveHypWavePx1, array.get(hypLbls, 1),
+                 xloc = xloc.bar_index, yloc = yloc.price, style = label.style_label_center,
+                 color = color.new(hypColNow, 0), textcolor = liveHypothesisReady ? color.white : color.black, size = size.small)
+            hypWaveLabel2 := label.new(liveHypWaveBar2, liveHypWavePx2, array.get(hypLbls, 2),
+                 xloc = xloc.bar_index, yloc = yloc.price, style = label.style_label_center,
+                 color = color.new(hypColNow, 0), textcolor = liveHypothesisReady ? color.white : color.black, size = size.small)
+            hypWaveLabel3 := label.new(liveHypWaveBar3, liveHypWavePx3, array.get(hypLbls, 3),
+                 xloc = xloc.bar_index, yloc = yloc.price, style = label.style_label_center,
+                 color = color.new(hypColNow, 0), textcolor = liveHypothesisReady ? color.white : color.black, size = size.small)
+            if liveHypothesisWaveCount >= 6 and array.size(hypLbls) >= 6
+                hypWaveLabel4 := label.new(liveHypWaveBar4, liveHypWavePx4, array.get(hypLbls, 4),
+                     xloc = xloc.bar_index, yloc = yloc.price, style = label.style_label_center,
+                     color = color.new(hypColNow, 0), textcolor = liveHypothesisReady ? color.white : color.black, size = size.small)
+                hypWaveLabel5 := label.new(liveHypWaveBar5, liveHypWavePx5, array.get(hypLbls, 5),
+                     xloc = xloc.bar_index, yloc = yloc.price, style = label.style_label_center,
+                     color = color.new(hypColNow, 0), textcolor = liveHypothesisReady ? color.white : color.black, size = size.small)
+
+// ───────────────────── HTF WAVE-3 BIAS LAYER ─────────────────────
+if barstate.islast
+    if not na(htfW3InvalidLine)
+        line.delete(htfW3InvalidLine)
+    if not na(htfW3Target1Line)
+        line.delete(htfW3Target1Line)
+    if not na(htfW3Target2Line)
+        line.delete(htfW3Target2Line)
+    if not na(htfW3MainLabel)
+        label.delete(htfW3MainLabel)
+    if not na(htfW3InvalidLabel)
+        label.delete(htfW3InvalidLabel)
+    if not na(htfW3Target1Label)
+        label.delete(htfW3Target1Label)
+    if not na(htfW3Target2Label)
+        label.delete(htfW3Target2Label)
+    htfW3InvalidLine := na
+    htfW3Target1Line := na
+    htfW3Target2Line := na
+    htfW3MainLabel := na
+    htfW3InvalidLabel := na
+    htfW3Target1Label := na
+    htfW3Target2Label := na
+
+    if showHtfWave3Bias and htfWave3BiasActive
+        color w3Col = htfWave3Dir > 0 ? color.new(color.lime, 0) : color.new(color.red, 0)
+        int w3X0 = bar_index
+        int w3X1 = bar_index + htfWave3LevelBars
+        htfW3MainLabel := label.new(w3X0, activeHPrice,
+             "HTF W3\n" + (htfWave3Dir > 0 ? "BUY PULLBACKS" : "SELL PULLBACKS") + "\nP≈" + str.tostring(htfWave3Prob, "#.0") + "%",
+             xloc = xloc.bar_index, yloc = yloc.price,
+             style = htfWave3Dir > 0 ? label.style_label_up : label.style_label_down,
+             color = w3Col, textcolor = color.white, size = size.small,
+             tooltip = htfWave3Reason + ". LTF rule: trade pullbacks only in HTF W3 direction.")
+        if not na(htfWave3Invalid)
+            htfW3InvalidLine := line.new(w3X0, htfWave3Invalid, w3X1, htfWave3Invalid,
+                 xloc = xloc.bar_index, color = color.new(color.yellow, 0), width = 2, style = line.style_solid)
+            htfW3InvalidLabel := label.new(w3X1, htfWave3Invalid, "HTF W2 invalid",
+                 xloc = xloc.bar_index, yloc = yloc.price, style = label.style_label_left,
+                 color = color.new(color.yellow, 0), textcolor = color.black, size = size.tiny)
+        if not na(htfWave3Target1)
+            htfW3Target1Line := line.new(w3X0, htfWave3Target1, w3X1, htfWave3Target1,
+                 xloc = xloc.bar_index, color = color.new(w3Col, 15), width = 2, style = line.style_dashed)
+            htfW3Target1Label := label.new(w3X1, htfWave3Target1, "HTF W3 TP1 1.618",
+                 xloc = xloc.bar_index, yloc = yloc.price, style = label.style_label_left,
+                 color = color.new(w3Col, 15), textcolor = color.white, size = size.tiny)
+        if not na(htfWave3Target2)
+            htfW3Target2Line := line.new(w3X0, htfWave3Target2, w3X1, htfWave3Target2,
+                 xloc = xloc.bar_index, color = color.new(w3Col, 35), width = 1, style = line.style_dotted)
+            htfW3Target2Label := label.new(w3X1, htfWave3Target2, "HTF W3 TP2 2.618",
+                 xloc = xloc.bar_index, yloc = yloc.price, style = label.style_label_left,
+                 color = color.new(w3Col, 35), textcolor = color.white, size = size.tiny)
 
 // ──────────────────────── ИНФО-ПАНЕЛЬ ────────────────────────────
 alertcondition(actionBuySignal, "EWB Action BUY", "EWB Action now BUY on {{ticker}} {{interval}}")
@@ -1608,6 +2492,7 @@ alertcondition(coreImpulseEvent, "EWB Core IMPULSE POST", "EWB Neely Core impuls
 alertcondition(coreTriangleEvent, "EWB Core TRIANGLE THRUST", "EWB Neely Core triangle thrust on {{ticker}} {{interval}}")
 alertcondition(coreZigzagEvent, "EWB Core ZIGZAG REVERSAL", "EWB Neely Core zigzag reversal context on {{ticker}} {{interval}}")
 alertcondition(coreMovingCorrEvent, "EWB Core MOVING CORR", "EWB Neely Core moving correction research signal on {{ticker}} {{interval}}")
+alertcondition(liveHypothesisReadyEvent, "EWB Live Hypothesis Ready", "EWB live structure hypothesis is ready on {{ticker}} {{interval}}")
 
 string actionAlertMessage = "EWB " + actionNow + " | " + syminfo.ticker + " " + timeframe.period +
      " | " + lastTradeType + " | Grade " + signalGradeNow +
@@ -1623,64 +2508,96 @@ string coreAlertMessage = "EWB CORE | " + syminfo.ticker + " " + timeframe.perio
      " | Target " + (na(lastCoreTarget) ? "n/a" : str.tostring(lastCoreTarget, format.mintick)) +
      " | Invalid " + (na(lastCoreInvalid) ? "n/a" : str.tostring(lastCoreInvalid, format.mintick)) +
      " | " + lastCoreReason
+string hypothesisAlertMessage = "EWB LIVE HYPOTHESIS | " + syminfo.ticker + " " + timeframe.period +
+     " | " + liveHypothesisName + " | " + liveHypothesisState +
+     " | P " + (na(liveHypothesisProb) ? "n/a" : str.tostring(liveHypothesisProb, "#.0") + "%") +
+     " | Entry " + (na(liveHypothesisEntry) ? "n/a" : str.tostring(liveHypothesisEntry, format.mintick)) +
+     " | Invalid " + (na(liveHypothesisInvalid) ? "n/a" : str.tostring(liveHypothesisInvalid, format.mintick)) +
+     " | TP1 " + (na(liveHypothesisTp1) ? "n/a" : str.tostring(liveHypothesisTp1, format.mintick)) +
+     " | " + liveHypothesisReason
 bool soundAlertBarOK = soundAlertsOnClose ? barstate.isconfirmed : true
 if enableActionSoundAlerts and soundAlertBarOK and (actionBuySignal or actionSellSignal)
     alert(actionAlertMessage, soundAlertsOnClose ? alert.freq_once_per_bar_close : alert.freq_once_per_bar)
 if enableCoreSoundAlerts and soundAlertBarOK and coreSignalEvent
     alert(coreAlertMessage, soundAlertsOnClose ? alert.freq_once_per_bar_close : alert.freq_once_per_bar)
+if enableHypothesisSoundAlerts and soundAlertBarOK and liveHypothesisReadyEvent
+    alert(hypothesisAlertMessage, soundAlertsOnClose ? alert.freq_once_per_bar_close : alert.freq_once_per_bar)
 
-var table info = table.new(position.top_right, 2, 22, border_width = 1)
+panelPosition = panelPositionInput == "Top right" ? position.top_right : panelPositionInput == "Bottom right" ? position.bottom_right : position.middle_right
+var table info = table.new(panelPosition, 2, 22, border_width = 1)
 if showTradePanel and barstate.islast
-    table.cell(info, 0, 0, "EWB Market", text_color = color.white, bgcolor = color.new(color.gray, 10))
-    table.cell(info, 1, 0, marketBannerText, text_color = color.white, bgcolor = marketBannerColor)
-    table.cell(info, 0, 1, "Can trade?", text_color = color.white, bgcolor = color.new(color.gray, 20))
-    table.cell(info, 1, 1, canTradeLabel, text_color = color.white,
-         bgcolor = actionableTradeSymbol ? color.new(color.lime, 40) : color.new(color.orange, 20))
-    table.cell(info, 0, 2, "Action now", text_color = color.white, bgcolor = color.new(color.gray, 20))
-    table.cell(info, 1, 2, actionNow, text_color = color.white, bgcolor = actionColor(actionNow))
-    table.cell(info, 0, 3, "Reason", text_color = color.white, bgcolor = color.new(color.gray, 45))
-    table.cell(info, 1, 3, actionReason, text_color = color.white, bgcolor = actionColor(actionNow))
-    table.cell(info, 0, 4, "Mode", text_color = color.white, bgcolor = color.new(color.gray, 30))
-    table.cell(info, 1, 4, decisionMode, text_color = color.white, bgcolor = decisionModeColor)
-    table.cell(info, 0, 5, "Trade", text_color = color.white, bgcolor = color.new(color.gray, 35))
-    table.cell(info, 1, 5, displayTradeSide, text_color = color.white,
-         bgcolor = tradeStatusColor(displayTradeStatus, displayTradeSide))
-    table.cell(info, 0, 6, "Фигура", text_color = color.white, bgcolor = color.new(color.gray, 50))
-    table.cell(info, 1, 6, displayTradeType, text_color = color.white, bgcolor = color.new(color.gray, 70))
-    table.cell(info, 0, 7, "Status", text_color = color.white, bgcolor = color.new(color.gray, 50))
-    table.cell(info, 1, 7, displayTradeStatus + (actionableTradeSymbol and not na(lastTradeAge) ? " / " + str.tostring(lastTradeAge) + "b" : ""),
-         text_color = color.white, bgcolor = tradeStatusColor(displayTradeStatus, displayTradeSide))
-    table.cell(info, 0, 8, "P≈", text_color = color.white, bgcolor = color.new(color.gray, 50))
-    table.cell(info, 1, 8, displayTradeProb, text_color = color.white, bgcolor = color.new(color.gray, 70))
-    table.cell(info, 0, 9, "Grade", text_color = color.white, bgcolor = color.new(color.gray, 50))
-    table.cell(info, 1, 9, displaySignalGrade, text_color = color.white, bgcolor = actionableTradeSymbol ? actionColor(actionNow) : decisionModeColor)
-    table.cell(info, 0, 10, "n / conf", text_color = color.white, bgcolor = color.new(color.gray, 50))
-    table.cell(info, 1, 10, displaySampleConf, text_color = color.white, bgcolor = color.new(color.gray, 70))
-    table.cell(info, 0, 11, "Entry / TP", text_color = color.white, bgcolor = color.new(color.gray, 50))
-    table.cell(info, 1, 11, displayEntryTp, text_color = color.white, bgcolor = color.new(color.gray, 70))
-    table.cell(info, 0, 12, "SL / invalid", text_color = color.white, bgcolor = color.new(color.gray, 50))
-    table.cell(info, 1, 12, displaySl, text_color = color.white, bgcolor = color.new(color.gray, 70))
-    table.cell(info, 0, 13, "RR / progress", text_color = color.white, bgcolor = color.new(color.gray, 50))
-    table.cell(info, 1, 13, displayRrProgress, text_color = color.white, bgcolor = color.new(color.gray, 70))
-    table.cell(info, 0, 14, "HTF mode/bias", text_color = color.white, bgcolor = color.new(color.gray, 50))
-    table.cell(info, 1, 14, htfActionMode + " / " + htfBias, text_color = color.white,
-         bgcolor = htfBiasDir > 0 ? color.new(color.lime, 45) : htfBiasDir < 0 ? color.new(color.red, 45) : color.new(color.gray, 70))
-    table.cell(info, 0, 15, "Asset / Market", text_color = color.white, bgcolor = color.new(color.gray, 50))
-    table.cell(info, 1, 15, assetClassLabel + " / " + displayMarket, text_color = color.white,
-         bgcolor = actionableTradeSymbol ? color.new(color.lime, 55) : cryptoResearchMarket ? color.new(color.orange, 35) : color.new(color.gray, 70))
-    table.cell(info, 0, 16, "Calib / TF", text_color = color.white, bgcolor = color.new(color.gray, 50))
-    table.cell(info, 1, 16, displayCalibration, text_color = color.white, bgcolor = color.new(color.gray, 70))
-    table.cell(info, 0, 17, "Neely Core", text_color = color.white, bgcolor = color.new(color.gray, 50))
-    table.cell(info, 1, 17, displayCoreSignal, text_color = color.white,
-         bgcolor = coreSignalColor(lastCoreSignal, lastCoreDir))
-    table.cell(info, 0, 18, "Core side/age", text_color = color.white, bgcolor = color.new(color.gray, 50))
-    table.cell(info, 1, 18, displayCoreSide + (showCoreSignals and not na(lastCoreAge) ? " / " + str.tostring(lastCoreAge) + "b" : ""),
-         text_color = color.white, bgcolor = color.new(color.gray, 70))
-    table.cell(info, 0, 19, "Core target/invalid", text_color = color.white, bgcolor = color.new(color.gray, 50))
-    table.cell(info, 1, 19, displayCoreLevels, text_color = color.white, bgcolor = color.new(color.gray, 70))
-    table.cell(info, 0, 20, "Active CTF wave", text_color = color.white, bgcolor = color.new(color.gray, 50))
-    table.cell(info, 1, 20, activeCInfo, text_color = color.white,
-         bgcolor = zC.dir > 0 ? color.new(colCUp, 55) : zC.dir < 0 ? color.new(colCDn, 55) : color.new(color.gray, 70))
-    table.cell(info, 0, 21, "Active HTF wave", text_color = color.white, bgcolor = color.new(color.gray, 50))
-    table.cell(info, 1, 21, activeHInfo, text_color = color.white,
-         bgcolor = htfBiasDir > 0 ? color.new(color.lime, 55) : htfBiasDir < 0 ? color.new(color.red, 55) : color.new(color.gray, 70))
+    if simpleAntonPanel
+        table.cell(info, 0, 0, "Anton decision", text_color = color.white, bgcolor = color.new(color.gray, 10))
+        table.cell(info, 1, 0, antonDecision, text_color = color.white,
+             bgcolor = antonDecision == "ENTER LONG" or antonDecision == "EARLY LONG" or antonDecision == "WAIT PULLBACK LONG" ? color.new(color.lime, 20) : antonDecision == "ENTER SHORT" or antonDecision == "EARLY SHORT" or antonDecision == "WAIT PULLBACK SHORT" ? color.new(color.red, 20) : antonDecision == "WATCH LONG" or antonDecision == "WATCH SHORT" or antonDecision == "WAIT / NO COUNTER" ? color.new(color.yellow, 15) : antonDecision == "EXIT" ? color.new(color.orange, 15) : color.new(color.gray, 45))
+        table.cell(info, 0, 1, "Levels", text_color = color.white, bgcolor = color.new(color.gray, 35))
+        table.cell(info, 1, 1, displayLevels, text_color = color.white, bgcolor = color.new(color.gray, 70))
+        table.cell(info, 0, 2, "Probability", text_color = color.white, bgcolor = color.new(color.gray, 35))
+        table.cell(info, 1, 2, displayProbabilityMove, text_color = color.white, bgcolor = useLiveHypothesisDecision ? hypColor(liveHypothesisProb, liveHypothesisTradeDir, liveHypothesisReady) : useHtfWave3WaitDecision ? coreSignalColor("IMPULSE POST", htfWave3Dir) : actionableTradeSymbol ? actionColor(actionNow) : decisionModeColor)
+        table.cell(info, 0, 3, "Reason", text_color = color.white, bgcolor = color.new(color.gray, 35))
+        table.cell(info, 1, 3, antonRule, text_color = useLiveHypothesisDecision and not liveHypothesisReady ? color.black : color.white, bgcolor = useLiveHypothesisDecision ? hypColor(liveHypothesisProb, liveHypothesisTradeDir, liveHypothesisReady) : useHtfWave3WaitDecision ? coreSignalColor("IMPULSE POST", htfWave3Dir) : actionColor(actionNow))
+        table.cell(info, 0, 4, "Last bar wave", text_color = color.white, bgcolor = color.new(color.gray, 35))
+        table.cell(info, 1, 4, activeCInfo, text_color = color.white,
+             bgcolor = zC.dir > 0 ? color.new(colCUp, 55) : zC.dir < 0 ? color.new(colCDn, 55) : color.new(color.gray, 70))
+        table.cell(info, 0, 5, "Live hypothesis", text_color = color.white, bgcolor = color.new(color.gray, 35))
+        table.cell(info, 1, 5, displayPatternNow, text_color = useLiveHypothesisDecision and not liveHypothesisReady ? color.black : color.white, bgcolor = hasLiveHypothesis ? hypColor(liveHypothesisProb, liveHypothesisTradeDir, liveHypothesisReady) : htfWave3BiasActive ? coreSignalColor("IMPULSE POST", htfWave3Dir) : color.new(color.gray, 70))
+        table.cell(info, 0, 6, "TF plan", text_color = color.white, bgcolor = color.new(color.gray, 35))
+        table.cell(info, 1, 6, tfPlanText, text_color = color.white, bgcolor = color.new(color.gray, 70))
+        for clearRow = 7 to 21
+            table.cell(info, 0, clearRow, "", bgcolor = color.new(color.black, 100))
+            table.cell(info, 1, clearRow, "", bgcolor = color.new(color.black, 100))
+    else
+        table.cell(info, 0, 0, "EWB Market", text_color = color.white, bgcolor = color.new(color.gray, 10))
+        table.cell(info, 1, 0, marketBannerText, text_color = color.white, bgcolor = marketBannerColor)
+        table.cell(info, 0, 1, "Can trade?", text_color = color.white, bgcolor = color.new(color.gray, 20))
+        table.cell(info, 1, 1, canTradeLabel, text_color = color.white,
+             bgcolor = actionableTradeSymbol ? color.new(color.lime, 40) : color.new(color.orange, 20))
+        table.cell(info, 0, 2, "Action now", text_color = color.white, bgcolor = color.new(color.gray, 20))
+        table.cell(info, 1, 2, actionNow, text_color = color.white, bgcolor = actionColor(actionNow))
+        table.cell(info, 0, 3, "Reason", text_color = color.white, bgcolor = color.new(color.gray, 45))
+        table.cell(info, 1, 3, actionReason, text_color = color.white, bgcolor = actionColor(actionNow))
+        table.cell(info, 0, 4, "Mode", text_color = color.white, bgcolor = color.new(color.gray, 30))
+        table.cell(info, 1, 4, decisionMode, text_color = color.white, bgcolor = decisionModeColor)
+        table.cell(info, 0, 5, "Trade", text_color = color.white, bgcolor = color.new(color.gray, 35))
+        table.cell(info, 1, 5, displayTradeSide, text_color = color.white,
+             bgcolor = tradeStatusColor(displayTradeStatus, displayTradeSide))
+        table.cell(info, 0, 6, "Фигура", text_color = color.white, bgcolor = color.new(color.gray, 50))
+        table.cell(info, 1, 6, displayTradeType, text_color = color.white, bgcolor = color.new(color.gray, 70))
+        table.cell(info, 0, 7, "Status", text_color = color.white, bgcolor = color.new(color.gray, 50))
+        table.cell(info, 1, 7, displayTradeStatus + (actionableTradeSymbol and not na(lastTradeAge) ? " / " + str.tostring(lastTradeAge) + "b" : ""),
+             text_color = color.white, bgcolor = tradeStatusColor(displayTradeStatus, displayTradeSide))
+        table.cell(info, 0, 8, "P≈", text_color = color.white, bgcolor = color.new(color.gray, 50))
+        table.cell(info, 1, 8, displayTradeProb, text_color = color.white, bgcolor = color.new(color.gray, 70))
+        table.cell(info, 0, 9, "Grade", text_color = color.white, bgcolor = color.new(color.gray, 50))
+        table.cell(info, 1, 9, displaySignalGrade, text_color = color.white, bgcolor = actionableTradeSymbol ? actionColor(actionNow) : decisionModeColor)
+        table.cell(info, 0, 10, "n / conf", text_color = color.white, bgcolor = color.new(color.gray, 50))
+        table.cell(info, 1, 10, displaySampleConf, text_color = color.white, bgcolor = color.new(color.gray, 70))
+        table.cell(info, 0, 11, "Entry / TP", text_color = color.white, bgcolor = color.new(color.gray, 50))
+        table.cell(info, 1, 11, displayEntryTp, text_color = color.white, bgcolor = color.new(color.gray, 70))
+        table.cell(info, 0, 12, "SL / invalid", text_color = color.white, bgcolor = color.new(color.gray, 50))
+        table.cell(info, 1, 12, displaySl, text_color = color.white, bgcolor = color.new(color.gray, 70))
+        table.cell(info, 0, 13, "RR / progress", text_color = color.white, bgcolor = color.new(color.gray, 50))
+        table.cell(info, 1, 13, displayRrProgress, text_color = color.white, bgcolor = color.new(color.gray, 70))
+        table.cell(info, 0, 14, "HTF bias/W3", text_color = color.white, bgcolor = color.new(color.gray, 50))
+        table.cell(info, 1, 14, htfWave3BiasActive ? displayHtfWave3 : htfActionMode + " / " + htfBias, text_color = color.white,
+             bgcolor = htfWave3BiasActive ? coreSignalColor("IMPULSE POST", htfWave3Dir) : htfBiasDir > 0 ? color.new(color.lime, 45) : htfBiasDir < 0 ? color.new(color.red, 45) : color.new(color.gray, 70))
+        table.cell(info, 0, 15, "Asset / Market", text_color = color.white, bgcolor = color.new(color.gray, 50))
+        table.cell(info, 1, 15, assetClassLabel + " / " + displayMarket, text_color = color.white,
+             bgcolor = actionableTradeSymbol ? color.new(color.lime, 55) : cryptoResearchMarket ? color.new(color.orange, 35) : color.new(color.gray, 70))
+        table.cell(info, 0, 16, "Calib / TF", text_color = color.white, bgcolor = color.new(color.gray, 50))
+        table.cell(info, 1, 16, displayCalibration, text_color = color.white, bgcolor = color.new(color.gray, 70))
+        table.cell(info, 0, 17, "Live hypothesis", text_color = color.white, bgcolor = color.new(color.gray, 50))
+        table.cell(info, 1, 17, displayPatternNow, text_color = hasLiveHypothesis and not liveHypothesisReady ? color.black : color.white,
+             bgcolor = hasLiveHypothesis ? hypColor(liveHypothesisProb, liveHypothesisTradeDir, liveHypothesisReady) : htfWave3BiasActive ? coreSignalColor("IMPULSE POST", htfWave3Dir) : color.new(color.gray, 70))
+        table.cell(info, 0, 18, "Hyp levels", text_color = color.white, bgcolor = color.new(color.gray, 50))
+        table.cell(info, 1, 18, displayLiveContextLevels,
+             text_color = color.white, bgcolor = color.new(color.gray, 70))
+        table.cell(info, 0, 19, "Neely Core", text_color = color.white, bgcolor = color.new(color.gray, 50))
+        table.cell(info, 1, 19, displayCoreSignal + (showCoreSignals and not na(lastCoreAge) ? " / " + str.tostring(lastCoreAge) + "b" : ""), text_color = color.white,
+             bgcolor = coreSignalColor(lastCoreSignal, lastCoreDir))
+        table.cell(info, 0, 20, "Active CTF wave", text_color = color.white, bgcolor = color.new(color.gray, 50))
+        table.cell(info, 1, 20, activeCInfo, text_color = color.white,
+             bgcolor = zC.dir > 0 ? color.new(colCUp, 55) : zC.dir < 0 ? color.new(colCDn, 55) : color.new(color.gray, 70))
+        table.cell(info, 0, 21, "Active HTF wave", text_color = color.white, bgcolor = color.new(color.gray, 50))
+        table.cell(info, 1, 21, activeHInfo, text_color = color.white,
+             bgcolor = htfBiasDir > 0 ? color.new(color.lime, 55) : htfBiasDir < 0 ? color.new(color.red, 55) : color.new(color.gray, 70))

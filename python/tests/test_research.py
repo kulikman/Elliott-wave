@@ -87,8 +87,12 @@ def test_pine_crypto_research_contract_is_static():
         assert "crypto-v0 research" in source
         assert "marketActionable" in source or "actionableTradeSymbol" in source
 
-    assert 'actionReason := "CRYPTO RESEARCH ONLY - NO TRADE"' in mono
-    assert "CRYPTO RESEARCH ONLY\\nNO BUY/SELL ALERTS" in mono
+    assert "enableCryptoActions" in mono
+    assert "actionableCryptoSymbol" in mono
+    assert 'marketMode = input.string("Auto", "Market mode"' in mono
+    assert "CRYPTO LIVE\\nBUY/SELL ENABLED" in mono
+    assert "crypto_v0|flat|4h|short" in mono
+    assert "crypto_v0|double_corr|1h|short" in mono
     assert 'actionReason = not isMarketSupported ? "unsupported market" : isCryptoResearch ? "crypto research only - no trade"' in overlay
     assert "CRYPTO RESEARCH ONLY\\nNO BUY/SELL ALERTS" in overlay
     assert "displayPev = isMarketActionable" in overlay
@@ -114,7 +118,79 @@ def test_pine_neely_core_signal_contract():
     assert "coreAlertMessage" in mono
     assert "alert(actionAlertMessage" in mono
     assert "alert(coreAlertMessage" in mono
-    assert 'table.cell(info, 0, 17, "Neely Core"' in mono
+    assert "simpleAntonPanel" in mono
+    assert "panelPositionInput" in mono
+    assert 'showTradeMarkers = input.bool(false, "Show previous entries/exits"' in mono
+    assert 'onlyLatestSignal = input.bool(true, "Only latest signal"' in mono
+    assert "EXIT TP" in mono
+    assert "EXIT SL" in mono
+    assert "showNeelyWaveNumbers" in mono
+    assert "showLatestPivotNumbers" in mono
+    assert 'showLatestPivotNumbers = input.bool(false, "Show last pivot points"' in mono
+    assert "latestPivotLabels" in mono
+    assert '"P" + str.tostring(lp)' in mono
+    assert 'grpHyp = "Live structure hypothesis"' in mono
+    assert "showLiveHypothesis" in mono
+    assert "showHypothesisLevels" in mono
+    assert "readyHypothesisProb" in mono
+    assert "preferLongTermTF" in mono
+    assert 'grpHtfW3 = "HTF Wave-3 pullback mode"' in mono
+    assert "showHtfWave3Bias" in mono
+    assert "htfWave3PullbackOnly" in mono
+    assert "minHtfWave3Prob" in mono
+    assert "htfWave3BiasActive" in mono
+    assert "htfPivotBars" in mono
+    assert "htfWave3Prob := probFromScores" in mono
+    assert "htfFocusScore()" in mono
+    assert "htfRRScore, htfFocusScore())" in mono
+    assert "htfWave3Plan" in mono
+    assert "HTF W3 UP -> buy LTF pullbacks" in mono
+    assert "HTF W3 DOWN -> sell LTF pullbacks" in mono
+    assert "HTF W3 ONLY" in mono
+    assert "waitNoEntryReason" in mono
+    assert "WAIT PULLBACK" in mono
+    assert "WAIT / NO COUNTER" in mono
+    assert "displayHtfWave3" in mono
+    assert "displayLiveContextLevels" in mono
+    assert "displayLevels = liveAgainstHtfWave3 and htfWave3PullbackOnly ? displayHtfWave3Levels" in mono
+    assert "displayProbabilityMove = liveAgainstHtfWave3 and htfWave3PullbackOnly ? displayHtfWave3Prob" in mono
+    assert "HTF W2 invalid" in mono
+    assert "HTF W3 TP1 1.618" in mono
+    assert "HTF W3 TP2 2.618" in mono
+    assert "scoreNear" in mono
+    assert "probFromScores" in mono
+    assert 'liveHypothesisName := "Dev Flat C"' in mono
+    assert 'liveHypothesisName := "Dev WXY / Zigzag C"' in mono
+    assert 'liveHypothesisName := "Dev Impulse W5"' in mono
+    assert 'liveHypothesisName := "Dev Triangle e"' in mono
+    assert 'liveHypothesisLabels := "0|A|B|C?"' in mono
+    assert 'liveHypothesisLabels := "0|1|2|3|4|5?"' in mono
+    assert "liveHypothesisReadyEvent" in mono
+    assert 'alertcondition(liveHypothesisReadyEvent, "EWB Live Hypothesis Ready"' in mono
+    assert "enableHypothesisSoundAlerts" in mono
+    assert "displayPatternNow" in mono
+    assert "Anton decision" in mono
+    assert "ENTER LONG" in mono
+    assert "EARLY LONG" in mono
+    assert "WATCH LONG" in mono
+    assert "HOLD / MANAGE" in mono
+    assert "displayProbabilityState" in mono
+    assert "Last plan: Entry/SL/MOVE levels remain visible" in mono
+    assert "actionStateKey" in mono
+    assert 'table.cell(info, 0, 3, "Reason"' in mono
+    assert "LAST BAR WAVE" in mono
+    assert 'table.cell(info, 0, 4, "Last bar wave"' in mono
+    assert 'table.cell(info, 0, 5, "Live hypothesis"' in mono
+    assert 'table.cell(info, 0, 6, "TF plan"' in mono
+    assert 'table.cell(info, 0, 14, "HTF bias/W3"' in mono
+    assert "tfPlanText" in mono
+    assert "bestHypProb" not in mono
+    assert "htfBlocksHyp" not in mono
+    assert "for clearRow = 7 to 21" in mono
+    assert "MOVE 1.618" in mono
+    assert "coreWaveLabel5" in mono
+    assert 'table.cell(info, 0, 17, "Live hypothesis"' in mono
+    assert 'table.cell(info, 0, 19, "Neely Core"' in mono
 
 
 def test_neely_core_ab_backtest_contract():
