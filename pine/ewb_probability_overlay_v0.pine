@@ -57,11 +57,14 @@ showSignalWaves = input.bool(false, "Show signal waves", group = grpView)
 showTradeZones = input.bool(false, "Show risk/reward zones", group = grpView)
 showTpProb = input.bool(true, "Show TP probabilities", group = grpView)
 onlyLatestSignal = input.bool(true, "Only latest visual signal", group = grpView)
+showMarketBanner = input.bool(true, "Show market safety banner", group = grpView,
+     tooltip = "Separates STOCK LIVE checks from CRYPTO RESEARCH ONLY. Crypto never shows actionable BUY/SELL in this overlay.")
 showSignals = input.bool(false, "Show buy/sell labels", group = grpView)
 showRiskLines = input.bool(false, "Show stop/target lines", group = grpView)
 showPatternBoxes = input.bool(false, "Show pattern boxes", group = grpView)
 showNoTrade = input.bool(false, "Show impulse/triangle no-trade context", group = grpView)
-showPanel = input.bool(false, "Show info panel", group = grpView)
+showPanel = input.bool(true, "Show info panel", group = grpView,
+     tooltip = "Keep enabled so the overlay is visibly loaded. It shows WAIT/research status even when labels and trade zones are disabled.")
 panelPositionInput = input.string("Bottom right", "Panel position", group = grpView,
      options = ["Top right", "Top left", "Bottom right", "Bottom left"])
 
@@ -535,10 +538,14 @@ isMarketSupported = marketSupported()
 isMarketActionable = marketActionable()
 isCryptoResearch = syminfo.type == "crypto" and isMarketSupported
 marketModel = marketModelLabel()
+assetClassLabel = syminfo.type == "stock" ? "STOCK" : syminfo.type == "crypto" ? "CRYPTO" : syminfo.type
+canTradeLabel = isMarketActionable and enableActions ? "YES - RESEARCH ACTIONS" : isCryptoResearch ? "NO - CRYPTO RESEARCH" : isMarketActionable ? "NO - ACTIONS DISABLED" : "NO - UNSUPPORTED"
+marketBannerText = isMarketActionable and enableActions ? "STOCK RESEARCH ACTIONS\nOVERLAY ONLY" : isCryptoResearch ? "CRYPTO RESEARCH ONLY\nNO BUY/SELL ALERTS" : isMarketActionable ? "STOCK RESEARCH OVERLAY\nACTIONS DISABLED" : "UNSUPPORTED MARKET\nWAIT ONLY"
+marketBannerColor = isMarketActionable and enableActions ? color.new(color.lime, 10) : isCryptoResearch ? color.new(color.orange, 10) : color.new(color.gray, 35)
 
 actionNow = enableActions and tradeStatus == "ACTIVE" and not isLateEntry and isMarketActionable ? lastAction : "WAIT"
 actionNowColor = actionNow == "BUY" ? color.new(color.lime, 35) : actionNow == "SELL" ? color.new(color.red, 35) : color.new(color.orange, 35)
-actionReason = not isMarketSupported ? "unsupported market" : isCryptoResearch ? "crypto research only" : not enableActions ? "actions disabled" : not isMarketActionable ? "no market calibration" : not isTradeLast ? lastAction == "SKIP" ? "skip pattern" : "no trade signal" : slHit ? "stop hit" : tp3Hit ? "tp3 passed" : tp2Hit ? "tp2 passed" : tp1Hit ? "tp1 passed / late" : isStale ? "signal stale" : isLateEntry ? "late entry" : "fresh active signal"
+actionReason = not isMarketSupported ? "unsupported market" : isCryptoResearch ? "crypto research only - no trade" : not enableActions ? "actions disabled" : not isMarketActionable ? "no market calibration" : not isTradeLast ? lastAction == "SKIP" ? "skip pattern" : "no trade signal" : slHit ? "stop hit" : tp3Hit ? "tp3 passed" : tp2Hit ? "tp2 passed" : tp1Hit ? "tp1 passed / late" : isStale ? "signal stale" : isLateEntry ? "late entry" : "fresh active signal"
 alertBuyNow = enableActions and buySignal and actionNow == "BUY"
 alertSellNow = enableActions and sellSignal and actionNow == "SELL"
 
@@ -556,47 +563,65 @@ displayTP3 = isMarketActionable ? fmtTP(lastTP3, lastTP3Prob) : "—"
 alertcondition(alertBuyNow, "EWB Action BUY", "EWB Probability Overlay v0 fresh BUY on {{ticker}} {{interval}}")
 alertcondition(alertSellNow, "EWB Action SELL", "EWB Probability Overlay v0 fresh SELL on {{ticker}} {{interval}}")
 
-var table info = table.new(panelPosition(panelPositionInput), 2, 17, border_width = 1)
+var label marketBannerLabel = na
+if barstate.islast
+    if not na(marketBannerLabel)
+        label.delete(marketBannerLabel)
+    if showPanel and showMarketBanner
+        marketBannerLabel := label.new(bar_index + 2, high + ta.atr(atrLen) * 2.0, marketBannerText,
+             xloc = xloc.bar_index, yloc = yloc.price, style = label.style_label_left,
+             color = marketBannerColor, textcolor = color.white, size = size.normal,
+             tooltip = isCryptoResearch ? "Crypto remains research-only in Probability Overlay v0. Use no BUY/SELL alerts here." :
+                  isMarketActionable ? "Overlay is for research parity. Main trading source is Monowaves MTF." :
+                  "Unsupported market for this calibration.")
+    else
+        marketBannerLabel := na
+
+var table info = table.new(panelPosition(panelPositionInput), 2, 19, border_width = 1)
 if showPanel and barstate.islast
     table.cell(info, 0, 0, "EWB Prob v0", text_color = color.white, bgcolor = color.new(color.gray, 25))
-    table.cell(info, 1, 0, enableActions ? tradeStatus : "DISABLED", text_color = color.white,
-         bgcolor = enableActions ? statusColor : color.new(color.orange, 35))
-    table.cell(info, 0, 1, "Current", text_color = color.white, bgcolor = color.new(color.gray, 55))
-    table.cell(info, 1, 1, fmtPx(close), text_color = color.white, bgcolor = color.new(color.gray, 70))
-    table.cell(info, 0, 2, "Action now", text_color = color.white, bgcolor = color.new(color.gray, 55))
-    table.cell(info, 1, 2, actionNow, text_color = color.white, bgcolor = actionNowColor)
-    table.cell(info, 0, 3, "Reason", text_color = color.white, bgcolor = color.new(color.gray, 55))
-    table.cell(info, 1, 3, actionReason, text_color = color.white, bgcolor = color.new(color.gray, 70))
-    table.cell(info, 0, 4, "Last signal", text_color = color.white, bgcolor = color.new(color.gray, 55))
-    table.cell(info, 1, 4, displayLastAction, text_color = color.white,
+    table.cell(info, 1, 0, marketBannerText, text_color = color.white, bgcolor = marketBannerColor)
+    table.cell(info, 0, 1, "Can trade?", text_color = color.white, bgcolor = color.new(color.gray, 45))
+    table.cell(info, 1, 1, canTradeLabel, text_color = color.white,
+         bgcolor = isMarketActionable and enableActions ? color.new(color.lime, 45) : color.new(color.orange, 25))
+    table.cell(info, 0, 2, "Current", text_color = color.white, bgcolor = color.new(color.gray, 55))
+    table.cell(info, 1, 2, fmtPx(close), text_color = color.white, bgcolor = color.new(color.gray, 70))
+    table.cell(info, 0, 3, "Action now", text_color = color.white, bgcolor = color.new(color.gray, 55))
+    table.cell(info, 1, 3, actionNow, text_color = color.white, bgcolor = actionNowColor)
+    table.cell(info, 0, 4, "Reason", text_color = color.white, bgcolor = color.new(color.gray, 55))
+    table.cell(info, 1, 4, actionReason, text_color = color.white, bgcolor = color.new(color.gray, 70))
+    table.cell(info, 0, 5, "Last signal", text_color = color.white, bgcolor = color.new(color.gray, 55))
+    table.cell(info, 1, 5, displayLastAction, text_color = color.white,
          bgcolor = displayLastAction == "BUY" ? color.new(color.lime, 35) : displayLastAction == "SELL" ? color.new(color.red, 35) : color.new(color.gray, 60))
-    table.cell(info, 0, 5, "Age bars", text_color = color.white, bgcolor = color.new(color.gray, 55))
-    table.cell(info, 1, 5, na(signalAge) ? "—" : str.tostring(signalAge), text_color = color.white, bgcolor = color.new(color.gray, 70))
-    table.cell(info, 0, 6, "Strength", text_color = color.white, bgcolor = color.new(color.gray, 55))
-    table.cell(info, 1, 6, displayLastStrength, text_color = color.white, bgcolor = color.new(color.gray, 70))
-    table.cell(info, 0, 7, "Pattern", text_color = color.white, bgcolor = color.new(color.gray, 55))
-    table.cell(info, 1, 7, lastPattern, text_color = color.white, bgcolor = color.new(color.gray, 70))
-    table.cell(info, 0, 8, "P / EV", text_color = color.white, bgcolor = color.new(color.gray, 55))
-    table.cell(info, 1, 8, displayPev, text_color = color.white, bgcolor = color.new(color.gray, 70))
-    table.cell(info, 0, 9, "Conf / N", text_color = color.white, bgcolor = color.new(color.gray, 55))
-    table.cell(info, 1, 9, displayConfSample, text_color = color.white,
+    table.cell(info, 0, 6, "Age bars", text_color = color.white, bgcolor = color.new(color.gray, 55))
+    table.cell(info, 1, 6, na(signalAge) ? "—" : str.tostring(signalAge), text_color = color.white, bgcolor = color.new(color.gray, 70))
+    table.cell(info, 0, 7, "Strength", text_color = color.white, bgcolor = color.new(color.gray, 55))
+    table.cell(info, 1, 7, displayLastStrength, text_color = color.white, bgcolor = color.new(color.gray, 70))
+    table.cell(info, 0, 8, "Pattern", text_color = color.white, bgcolor = color.new(color.gray, 55))
+    table.cell(info, 1, 8, lastPattern, text_color = color.white, bgcolor = color.new(color.gray, 70))
+    table.cell(info, 0, 9, "P / EV", text_color = color.white, bgcolor = color.new(color.gray, 55))
+    table.cell(info, 1, 9, displayPev, text_color = color.white, bgcolor = color.new(color.gray, 70))
+    table.cell(info, 0, 10, "Conf / N", text_color = color.white, bgcolor = color.new(color.gray, 55))
+    table.cell(info, 1, 10, displayConfSample, text_color = color.white,
          bgcolor = isMarketActionable and lastConfidence == "low" ? color.new(color.orange, 35) : color.new(color.gray, 70))
-    table.cell(info, 0, 10, "Market", text_color = color.white, bgcolor = color.new(color.gray, 55))
-    table.cell(info, 1, 10, syminfo.type + " / " + marketModel, text_color = color.white,
+    table.cell(info, 0, 11, "Asset / Market", text_color = color.white, bgcolor = color.new(color.gray, 55))
+    table.cell(info, 1, 11, assetClassLabel + " / " + syminfo.type + " / " + marketModel, text_color = color.white,
          bgcolor = isMarketActionable ? color.new(color.lime, 55) : isCryptoResearch ? color.new(color.orange, 35) : color.new(color.gray, 70))
-    table.cell(info, 0, 11, "Remain R:R", text_color = color.white, bgcolor = color.new(color.gray, 55))
-    table.cell(info, 1, 11, displayRemainingRR, text_color = color.white,
+    table.cell(info, 0, 12, "Remain R:R", text_color = color.white, bgcolor = color.new(color.gray, 55))
+    table.cell(info, 1, 12, displayRemainingRR, text_color = color.white,
          bgcolor = isMarketActionable and isLateEntry ? color.new(color.orange, 35) : color.new(color.gray, 70))
-    table.cell(info, 0, 12, "Entry", text_color = color.white, bgcolor = color.new(color.gray, 55))
-    table.cell(info, 1, 12, displayEntry, text_color = color.white, bgcolor = color.new(color.gray, 70))
-    table.cell(info, 0, 13, "Stop", text_color = color.white, bgcolor = color.new(color.gray, 55))
-    table.cell(info, 1, 13, displayStop, text_color = color.white, bgcolor = color.new(color.gray, 70))
-    table.cell(info, 0, 14, "TP1", text_color = color.white, bgcolor = color.new(color.gray, 55))
-    table.cell(info, 1, 14, displayTP1, text_color = color.white,
+    table.cell(info, 0, 13, "Entry", text_color = color.white, bgcolor = color.new(color.gray, 55))
+    table.cell(info, 1, 13, displayEntry, text_color = color.white, bgcolor = color.new(color.gray, 70))
+    table.cell(info, 0, 14, "Stop", text_color = color.white, bgcolor = color.new(color.gray, 55))
+    table.cell(info, 1, 14, displayStop, text_color = color.white, bgcolor = color.new(color.gray, 70))
+    table.cell(info, 0, 15, "TP1", text_color = color.white, bgcolor = color.new(color.gray, 55))
+    table.cell(info, 1, 15, displayTP1, text_color = color.white,
          bgcolor = isMarketActionable and tp1Hit ? color.new(color.teal, 35) : color.new(color.gray, 70))
-    table.cell(info, 0, 15, "TP2", text_color = color.white, bgcolor = color.new(color.gray, 55))
-    table.cell(info, 1, 15, displayTP2, text_color = color.white,
+    table.cell(info, 0, 16, "TP2", text_color = color.white, bgcolor = color.new(color.gray, 55))
+    table.cell(info, 1, 16, displayTP2, text_color = color.white,
          bgcolor = isMarketActionable and tp2Hit ? color.new(color.teal, 35) : color.new(color.gray, 70))
-    table.cell(info, 0, 16, "TP3", text_color = color.white, bgcolor = color.new(color.gray, 55))
-    table.cell(info, 1, 16, displayTP3, text_color = color.white,
+    table.cell(info, 0, 17, "TP3", text_color = color.white, bgcolor = color.new(color.gray, 55))
+    table.cell(info, 1, 17, displayTP3, text_color = color.white,
          bgcolor = isMarketActionable and tp3Hit ? color.new(color.teal, 35) : color.new(color.gray, 70))
+    table.cell(info, 0, 18, "Source", text_color = color.white, bgcolor = color.new(color.gray, 55))
+    table.cell(info, 1, 18, "Research overlay", text_color = color.white, bgcolor = color.new(color.gray, 70))

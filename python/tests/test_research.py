@@ -87,10 +87,62 @@ def test_pine_crypto_research_contract_is_static():
         assert "crypto-v0 research" in source
         assert "marketActionable" in source or "actionableTradeSymbol" in source
 
-    assert 'actionReason := "CRYPTO RESEARCH ONLY"' in mono
-    assert 'actionReason = not isMarketSupported ? "unsupported market" : isCryptoResearch ? "crypto research only"' in overlay
+    assert 'actionReason := "CRYPTO RESEARCH ONLY - NO TRADE"' in mono
+    assert "CRYPTO RESEARCH ONLY\\nNO BUY/SELL ALERTS" in mono
+    assert 'actionReason = not isMarketSupported ? "unsupported market" : isCryptoResearch ? "crypto research only - no trade"' in overlay
+    assert "CRYPTO RESEARCH ONLY\\nNO BUY/SELL ALERTS" in overlay
     assert "displayPev = isMarketActionable" in overlay
     assert "displayEntry = isMarketActionable" in overlay
+
+
+def test_pine_neely_core_signal_contract():
+    mono = (REPO / "pine" / "ewb_monowaves_mtf.pine").read_text(encoding="utf-8")
+
+    assert 'grpCore = "Neely Core signals (book-derived)"' in mono
+    assert "hybridZigzagOK" in mono
+    assert "hybridMovingFlatOK" in mono
+    assert 'lastCoreSignal := "IMPULSE POST"' in mono
+    assert 'lastCoreSignal := "TRIANGLE THRUST"' in mono
+    assert 'lastCoreSignal := "ZIGZAG REVERSAL"' in mono
+    assert 'lastCoreSignal := "MOVING CORR"' in mono
+    assert 'alertcondition(coreSignalEvent, "EWB Neely Core Signal"' in mono
+    assert 'alertcondition(coreTriangleEvent, "EWB Core TRIANGLE THRUST"' in mono
+    assert 'grpAlerts = "Alerts / звук"' in mono
+    assert "enableActionSoundAlerts" in mono
+    assert "enableCoreSoundAlerts" in mono
+    assert "actionAlertMessage" in mono
+    assert "coreAlertMessage" in mono
+    assert "alert(actionAlertMessage" in mono
+    assert "alert(coreAlertMessage" in mono
+    assert 'table.cell(info, 0, 17, "Neely Core"' in mono
+
+
+def test_neely_core_ab_backtest_contract():
+    script = (REPO / "python" / "scripts" / "neely_core_ab_backtest.py").read_text(encoding="utf-8")
+
+    assert "core_impulse_post_w4" in script
+    assert "core_triangle_thrust" in script
+    assert "core_zigzag_reversal_c_eq_a" in script
+    assert "core_moving_correction_follow" in script
+    assert "fib_primary_bucket" in script
+    assert "baseline_flat_fade" in script
+    assert "baseline_double_corr_fade" in script
+    assert "--stock-provider" in script
+    assert "tiingo-cache" in script
+    assert "Data Coverage" in script
+    assert "neely_core_ab_backtest_report.md" in script
+
+
+def test_anton_winrate_optimizer_contract():
+    script = (REPO / "python" / "scripts" / "anton_winrate_optimizer.py").read_text(encoding="utf-8")
+
+    assert "Anton Winrate Optimizer" in script
+    assert "breakeven_winrate" in script
+    assert "wilson_lower_bound" in script
+    assert "edge_over_breakeven" in script
+    assert "fib_primary_near" in script
+    assert "test_profit_factor" in script
+    assert "anton_winrate_optimizer_report.md" in script
 
 
 def test_historical_grid_checkpoint_helpers_clean_companions(tmp_path):

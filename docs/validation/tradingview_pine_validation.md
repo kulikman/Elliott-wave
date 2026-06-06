@@ -111,7 +111,7 @@ Minimal fix:
 5. Set `Market mode = Crypto`.
 6. Confirm:
    - `Action now = WAIT`
-   - `Reason = CRYPTO RESEARCH ONLY`
+   - `Reason = CRYPTO RESEARCH ONLY - NO TRADE`
    - `Market = Crypto / crypto-v0 research`
    - BUY/SELL alerts do not fire on crypto
 
@@ -166,7 +166,7 @@ Minimal next manual step:
 2. Paste the full contents of `pine/ewb_monowaves_mtf.pine`.
 3. Save the script as a private TradingView script.
 4. Add the saved script to the chart.
-5. Confirm the BTCUSDT panel shows `WAIT / CRYPTO RESEARCH ONLY`.
+5. Confirm the BTCUSDT panel shows `WAIT / CRYPTO RESEARCH ONLY - NO TRADE`.
 
 ## Manual Update Package
 
@@ -177,7 +177,7 @@ Primary script for Anton's working indicator:
 - Short title: `EWB Mono`
 - Expected code checks:
   - contains `Market mode`
-  - contains `CRYPTO RESEARCH ONLY`
+  - contains `CRYPTO RESEARCH ONLY - NO TRADE` and `NO BUY/SELL ALERTS`
   - table has `Market` and `Calib / TF` rows
 
 Research-only overlay:
@@ -200,7 +200,7 @@ Manual validation after updating `EWB Mono`:
 3. Open indicator settings and set `Market mode = Crypto`.
 4. Expected:
    - `Action now = WAIT`
-   - `Reason = CRYPTO RESEARCH ONLY`
+   - `Reason = CRYPTO RESEARCH ONLY - NO TRADE`
    - `Market = Crypto / crypto-v0 research`
    - no BUY/SELL alert is available as a fresh crypto action
 5. Open a stock, for example `AAPL` or `MSFT`.

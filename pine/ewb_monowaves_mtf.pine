@@ -32,6 +32,13 @@ htf     = input.timeframe("240", "Старший таймфрейм", group = gr
 colH    = input.color(color.orange, "Цвет старшего ТФ", group = grpH)
 wH      = input.int(3, "Толщина линий", group = grpH, minval = 1, maxval = 5)
 
+grpActive = "Активная волна последнего бара"
+showActiveWave = input.bool(true, "Показывать активную волну текущего ТФ", group = grpActive,
+     tooltip = "Показывает незавершённую моноволну от последнего подтверждённого pivot до последнего бара. Это live-контекст, не подтверждённая фигура.")
+showActiveHTFWave = input.bool(true, "Показывать активную волну старшего ТФ", group = grpActive,
+     tooltip = "Показывает HTF-контекст последнего бара от последнего подтверждённого HTF pivot до текущего HTF close.")
+activeWaveWidth = input.int(2, "Толщина активной волны", group = grpActive, minval = 1, maxval = 5)
+
 grpL    = "Метки"
 showLbl = input.bool(false, "Нумеровать моноволны (m0, m1, ...)", group = grpL)
 
@@ -69,6 +76,8 @@ onlyLatestSignal = input.bool(true, "Only latest signal", group = grpTrade,
      tooltip = "По умолчанию старые планы удаляются, чтобы на графике не было исторического мусора.")
 showTpProbabilities = input.bool(true, "Show TP probabilities", group = grpTrade,
      tooltip = "TP1/TP2/TP3 показывают вероятностную лестницу от калиброванной P(win): conservative/base/aggressive.")
+showMarketBanner = input.bool(true, "Show market safety banner", group = grpTrade,
+     tooltip = "Крупная метка справа: STOCK LIVE для акций, CRYPTO RESEARCH ONLY для крипты, UNSUPPORTED для остальных рынков.")
 maxHistoricalSignals = input.int(3, "Max historical signals", group = grpTrade, minval = 1, maxval = 10,
      tooltip = "Используется только если выключить Only latest signal.")
 actionLevelBars = input.int(80, "Длина уровней Action, баров", group = grpTrade, minval = 10, maxval = 300)
@@ -102,6 +111,21 @@ allowSmallSampleDC = input.bool(true, "Разрешать small-sample DoubleCor
 htfActionMode = input.string("BLOCK", "HTF режим для Action now", group = grpTrade,
      options = ["OFF", "WARN", "BLOCK"],
      tooltip = "OFF: не учитывать HTF. WARN: не блокировать, но понижать Grade. BLOCK: BUY блокируется при DOWN HTF, SELL при UP HTF.")
+
+grpCore = "Neely Core signals (book-derived)"
+showCoreSignals = input.bool(true, "Показывать книжные Core-сигналы", group = grpCore,
+     tooltip = "Отдельный диагностический слой по книгам Нили: post-pattern, thrust, zigzag C=A, moving correction. Не меняет BUY/SELL без тестов.")
+showCoreMarkers = input.bool(true, "Рисовать Core-маркер и уровни", group = grpCore,
+     tooltip = "Показывает последний книжный сигнал, ожидаемый уровень и invalidation/контрольный уровень.")
+coreLevelBars = input.int(80, "Длина Core-уровней, баров", group = grpCore, minval = 10, maxval = 300)
+
+grpAlerts = "Alerts / звук"
+enableActionSoundAlerts = input.bool(true, "Sound alert: Action BUY/SELL", group = grpAlerts,
+     tooltip = "Для звука в TradingView создайте Alert: Condition = Any alert() function call, затем выберите Sound в настройках alert.")
+enableCoreSoundAlerts = input.bool(false, "Sound alert: Neely Core research", group = grpAlerts,
+     tooltip = "Core-сигналы являются research-контекстом. Включайте звук только если хотите получать уведомления по структурам волн.")
+soundAlertsOnClose = input.bool(true, "Только на закрытии бара", group = grpAlerts,
+     tooltip = "Включено: alert() срабатывает один раз на закрытии бара. Выключено: один раз на бар.")
 
 // ───────────────────────────── ТИПЫ ─────────────────────────────
 // Состояние ZigZag-детектора моноволн (по reversal-порогу).
@@ -275,6 +299,12 @@ drawMono(ZZResult r, color cUp, color cDn, int width, bool isHTF, color cHTF, bo
                  color = isHTF ? cHTF : (r.dir > 0 ? cUp : cDn),
                  textcolor = color.white, size = isHTF ? size.normal : size.small)
 
+waveDirText(int dir) =>
+    dir > 0 ? "UP" : dir < 0 ? "DOWN" : "NEUTRAL"
+
+waveAtrText(float amp, float atrValue) =>
+    not na(amp) and not na(atrValue) and atrValue > 0 ? str.tostring(amp / atrValue, "#.00") + " ATR" : "n/a ATR"
+
 // ──────────── РАСПОЗНАВАНИЕ ФИГУР (Уровень 3, Структурные Серии A-E) ──────────
 // Рисует рамку фигуры + метку с названием.
 drawFig(string nm, int b0, int b1, float lo, float hi, color c) =>
@@ -431,6 +461,31 @@ hybridFlatOK(array<float> pxs, int i0) =>
     float b = math.abs(array.get(pxs, i0 + 2) - array.get(pxs, i0 + 1))
     a > 0 and b / a >= 0.618
 
+hybridZigzagOK(array<float> pxs, int i0) =>
+    float p0 = array.get(pxs, i0)
+    float p1 = array.get(pxs, i0 + 1)
+    float p2 = array.get(pxs, i0 + 2)
+    float p3 = array.get(pxs, i0 + 3)
+    float a = math.abs(p1 - p0)
+    float b = math.abs(p2 - p1)
+    float c = math.abs(p3 - p2)
+    string dir = figDirection(p0, p1)
+    bool cBeyondA = dir == "up" ? p3 > p1 : p3 < p1
+    a > 0 and b / a < 0.618 and c / a >= 0.618 and cBeyondA
+
+hybridMovingFlatOK(array<float> pxs, int i0) =>
+    float p0 = array.get(pxs, i0)
+    float p1 = array.get(pxs, i0 + 1)
+    float p2 = array.get(pxs, i0 + 2)
+    float p3 = array.get(pxs, i0 + 3)
+    float a = math.abs(p1 - p0)
+    float b = math.abs(p2 - p1)
+    float c = math.abs(p3 - p2)
+    string dir = figDirection(p0, p1)
+    bool bBeyondStart = dir == "up" ? p2 < p0 : p2 > p0
+    bool cFailsAEnd = dir == "up" ? p3 < p1 : p3 > p1
+    a > 0 and b / a >= 1.0 and c / a >= 0.618 and cFailsAEnd and bBeyondStart
+
 hybridDoubleCorrOK(array<float> pxs, int i0) =>
     float w = math.abs(array.get(pxs, i0 + 1) - array.get(pxs, i0))
     float x = math.abs(array.get(pxs, i0 + 2) - array.get(pxs, i0 + 1))
@@ -445,6 +500,16 @@ hybridImpulseOK(array<float> pxs, int i0) =>
 hybridTriangleOK(array<float> pxs, int i0) =>
     [ok, msg] = confirmTriangle(pxs, i0)
     ok
+
+coreSignalColor(string signalType, int dir) =>
+    signalType == "TRIANGLE THRUST" ? color.new(color.purple, 0) :
+     signalType == "IMPULSE POST" ? color.new(color.blue, 0) :
+     signalType == "ZIGZAG REVERSAL" ? color.new(color.aqua, 0) :
+     signalType == "MOVING CORR" ? color.new(color.orange, 0) :
+     dir > 0 ? color.new(color.lime, 0) : dir < 0 ? color.new(color.red, 0) : color.new(color.gray, 0)
+
+coreDirText(int dir) =>
+    dir > 0 ? "LONG/UP" : dir < 0 ? "SHORT/DOWN" : "WAIT"
 
 drawTradeSignal(string figType, string figDir, int confBar, float entryPx,
                 int b0, int b1, float lo, float hi, float amp) =>
@@ -779,6 +844,8 @@ revC = useATR ? ta.atr(atrLen) * atrMult : close * pctRev / 100.0
 
 // ──────────────────── ТЕКУЩИЙ ТАЙМФРЕЙМ ──────────────────────────
 var ZZState zC = ZZState.new()
+var line activeCLine = na
+var label activeCLabel = na
 ZZResult rc = zC.step(high, low, revC)
 if showC
     drawMono(rc, colCUp, colCDn, wC, false, colH, showLbl)
@@ -800,6 +867,26 @@ if showC and showClass and rc.ruleNo > 0
          tooltip = "Определитель Правил: m2/m1 -> Правило " + str.tostring(rc.ruleNo) +
          ", m0/m1 -> Условие '" + rc.condLetter + "'. Вероятная структура m1: " +
          ruleToStructure(rc.ruleNo) + " (Нили, Гл.3)")
+
+float activeCAmp = not na(zC.pivotPrice) ? math.abs(close - zC.pivotPrice) : na
+string activeCDir = waveDirText(zC.dir)
+string activeCInfo = not na(zC.pivotBar) and not na(zC.pivotPrice) ? activeCDir + " / " + waveAtrText(activeCAmp, ta.atr(atrLen)) : "—"
+if barstate.islast
+    if not na(activeCLine)
+        line.delete(activeCLine)
+    if not na(activeCLabel)
+        label.delete(activeCLabel)
+    activeCLine := na
+    activeCLabel := na
+    if showActiveWave and showC and not na(zC.pivotBar) and not na(zC.pivotPrice)
+        color activeCColor = zC.dir > 0 ? colCUp : zC.dir < 0 ? colCDn : color.gray
+        activeCLine := line.new(zC.pivotBar, zC.pivotPrice, bar_index, close,
+             xloc = xloc.bar_index, color = color.new(activeCColor, 0),
+             width = activeWaveWidth, style = line.style_dotted)
+        activeCLabel := label.new(bar_index, close, "Active CTF\n" + activeCInfo,
+             xloc = xloc.bar_index, yloc = yloc.price, style = label.style_label_left,
+             color = color.new(activeCColor, 10), textcolor = color.white, size = size.tiny,
+             tooltip = "Активная незавершённая моноволна текущего ТФ: от последнего подтверждённого pivot до последнего бара.")
 
 // ── Накопление базовых структур и распознавание фигур (Уровень 3) ──
 // Окно ограничено 10 элементами — достаточно для 5-эл. шаблона + контекст.
@@ -851,12 +938,31 @@ var int lastTradeAge = na
 var int lastTradeSampleN = 0
 var string lastTradeConfidence = "—"
 var string lastTradeProbSource = "—"
+var int lastCoreConfBar = na
+var string lastCoreSignal = "—"
+var string lastCoreSide = "—"
+var string lastCoreReason = "—"
+var float lastCoreEntry = na
+var float lastCoreTarget = na
+var float lastCoreInvalid = na
+var int lastCoreAge = na
+var int lastCoreDir = 0
 var bool tradeLongSignal = false
 var bool tradeShortSignal = false
+var bool coreSignalEvent = false
+var bool coreImpulseEvent = false
+var bool coreTriangleEvent = false
+var bool coreZigzagEvent = false
+var bool coreMovingCorrEvent = false
 tradeLongSignal := false
 tradeShortSignal := false
+coreSignalEvent := false
+coreImpulseEvent := false
+coreTriangleEvent := false
+coreZigzagEvent := false
+coreMovingCorrEvent := false
 
-if showTrade and rc.confirmed and not na(rc.prevBar)
+if (showTrade or showCoreSignals or showNoise) and rc.confirmed and not na(rc.prevBar)
     if not hybInit
         array.push(hybBar, rc.prevBar)
         array.push(hybPx, rc.prevPrice)
@@ -875,7 +981,7 @@ if showTrade and rc.confirmed and not na(rc.prevBar)
 
     int hn = array.size(hybBar)
     bool matchedTrade = false
-    if hn >= 4
+    if showTrade and hn >= 4
         int s4 = hn - 4
         bool alt4 = hybridAlternate(hybDir, s4, 3)
         if alt4
@@ -963,6 +1069,98 @@ if showTrade and rc.confirmed and not na(rc.prevBar)
             else if hybridTriangleOK(hybPx, s6)
                 drawNoTrade("Triangle", confBar6, entry6)
 
+    if showCoreSignals
+        bool matchedCore = false
+        if hn >= 6
+            int c6 = hn - 6
+            bool altCore6 = hybridAlternate(hybDir, c6, 5)
+            if altCore6
+                int confBarCore6 = array.get(hybConf, hn - 1)
+                float entryCore6 = close
+                float p0c6 = array.get(hybPx, c6)
+                float p1c6 = array.get(hybPx, c6 + 1)
+                float p2c6 = array.get(hybPx, c6 + 2)
+                float p3c6 = array.get(hybPx, c6 + 3)
+                float p4c6 = array.get(hybPx, c6 + 4)
+                float p5c6 = array.get(hybPx, c6 + 5)
+                if hybridImpulseOK(hybPx, c6)
+                    string impDir = figDirection(p0c6, p1c6)
+                    int postDir = impDir == "up" ? -1 : 1
+                    lastCoreConfBar := confBarCore6
+                    lastCoreSignal := "IMPULSE POST"
+                    lastCoreSide := "WAIT / pullback " + coreDirText(postDir)
+                    lastCoreReason := "Post-pattern: watch W4 zone, not raw chase"
+                    lastCoreEntry := entryCore6
+                    lastCoreTarget := p4c6
+                    lastCoreInvalid := p0c6
+                    lastCoreAge := 0
+                    lastCoreDir := postDir
+                    coreSignalEvent := true
+                    coreImpulseEvent := true
+                    matchedCore := true
+                else if hybridTriangleOK(hybPx, c6)
+                    float w1c = math.abs(p1c6 - p0c6)
+                    float w2c = math.abs(p2c6 - p1c6)
+                    float w3c = math.abs(p3c6 - p2c6)
+                    float w4c = math.abs(p4c6 - p3c6)
+                    float widest = math.max(w1c, math.max(w2c, math.max(w3c, w4c)))
+                    int eDir = p5c6 > p4c6 ? 1 : -1
+                    int thrustDir = -eDir
+                    lastCoreConfBar := confBarCore6
+                    lastCoreSignal := "TRIANGLE THRUST"
+                    lastCoreSide := coreDirText(thrustDir)
+                    lastCoreReason := "Post-pattern: thrust target = widest triangle wave"
+                    lastCoreEntry := entryCore6
+                    lastCoreTarget := p5c6 + thrustDir * widest
+                    lastCoreInvalid := p5c6 - thrustDir * widest * 0.382
+                    lastCoreAge := 0
+                    lastCoreDir := thrustDir
+                    coreSignalEvent := true
+                    coreTriangleEvent := true
+                    matchedCore := true
+        if not matchedCore and hn >= 4
+            int c4 = hn - 4
+            bool altCore4 = hybridAlternate(hybDir, c4, 3)
+            if altCore4
+                int confBarCore4 = array.get(hybConf, hn - 1)
+                float entryCore4 = close
+                float p0c4 = array.get(hybPx, c4)
+                float p1c4 = array.get(hybPx, c4 + 1)
+                float p2c4 = array.get(hybPx, c4 + 2)
+                float p3c4 = array.get(hybPx, c4 + 3)
+                string figDirCore4 = figDirection(p0c4, p1c4)
+                int fadeDir = figDirCore4 == "up" ? -1 : 1
+                float aLenCore = math.abs(p1c4 - p0c4)
+                float cTarget100 = p2c4 + fadeDir * -1 * aLenCore
+                float cTarget161 = p2c4 + fadeDir * -1 * aLenCore * 1.618
+                if hybridMovingFlatOK(hybPx, c4)
+                    int followDir = fadeDir
+                    lastCoreConfBar := confBarCore4
+                    lastCoreSignal := "MOVING CORR"
+                    lastCoreSide := "RESEARCH follow " + coreDirText(followDir)
+                    lastCoreReason := "Moving correction: expect strong post-pattern impulse"
+                    lastCoreEntry := entryCore4
+                    lastCoreTarget := entryCore4 + followDir * aLenCore * 1.618
+                    lastCoreInvalid := p3c4 - followDir * aLenCore * 0.382
+                    lastCoreAge := 0
+                    lastCoreDir := followDir
+                    coreSignalEvent := true
+                    coreMovingCorrEvent := true
+                else if hybridZigzagOK(hybPx, c4)
+                    bool cAtOneToOne = math.abs(p3c4 - cTarget100) <= aLenCore * 0.1
+                    int zigzagDir = cAtOneToOne ? fadeDir : -fadeDir
+                    lastCoreConfBar := confBarCore4
+                    lastCoreSignal := "ZIGZAG REVERSAL"
+                    lastCoreSide := cAtOneToOne ? "WAIT / reversal " + coreDirText(fadeDir) : "WAIT / C=A " + coreDirText(zigzagDir)
+                    lastCoreReason := cAtOneToOne ? "C≈A reached; watch reversal confirmation" : "Zigzag: monitor C=A completion level"
+                    lastCoreEntry := entryCore4
+                    lastCoreTarget := cAtOneToOne ? p2c4 : cTarget100
+                    lastCoreInvalid := cAtOneToOne ? cTarget161 : p2c4
+                    lastCoreAge := 0
+                    lastCoreDir := zigzagDir
+                    coreSignalEvent := true
+                    coreZigzagEvent := true
+
 if lastTradeStatus == "ACTIVE" and not na(lastTradeConfBar) and bar_index > lastTradeConfBar and not na(lastTradeTp) and not na(lastTradeSl)
     lastTradeAge := bar_index - lastTradeConfBar
     bool lastIsLong = lastTradeSide == "LONG"
@@ -976,6 +1174,9 @@ if lastTradeStatus == "ACTIVE" and not na(lastTradeConfBar) and bar_index > last
     else if lastTradeAge > tradeMaxAgeBars
         lastTradeStatus := "EXPIRED"
 
+if not na(lastCoreConfBar)
+    lastCoreAge := bar_index - lastCoreConfBar
+
 // ──────────────────── СТАРШИЙ ТАЙМФРЕЙМ (MTF) ────────────────────
 // Запрашиваем OHLC старшего ТФ; детектор шагает только при закрытии HTF-бара.
 // Pine v6: tuple в request.security не поддерживается — отдельный запрос на каждое значение.
@@ -988,6 +1189,8 @@ float hAtr   = request.security(syminfo.tickerid, htf, ta.atr(atrLen), lookahead
 revH = useATR ? hAtr * atrMult : hClose * pctRev / 100.0
 
 var ZZState zH = ZZState.new()
+var line activeHLine = na
+var label activeHLabel = na
 var int htfBiasDir = 0
 var int htfPrevDir = 0
 var int htfLastDir = 0
@@ -1003,6 +1206,25 @@ if newHTF and not na(hHigh)
         drawMono(rh, colCUp, colCDn, wH, true, colH, showLbl)
 
 string htfBias = htfBiasDir > 1 ? "UP strong" : htfBiasDir > 0 ? "UP" : htfBiasDir < -1 ? "DOWN strong" : htfBiasDir < 0 ? "DOWN" : "NEUTRAL"
+float activeHPrice = na(hClose) ? close : hClose
+float activeHAmp = not na(zH.pivotPrice) ? math.abs(activeHPrice - zH.pivotPrice) : na
+string activeHDir = waveDirText(zH.dir)
+string activeHInfo = not na(zH.pivotBar) and not na(zH.pivotPrice) ? activeHDir + " / " + waveAtrText(activeHAmp, hAtr) + " / " + htfBias : "—"
+if barstate.islast
+    if not na(activeHLine)
+        line.delete(activeHLine)
+    if not na(activeHLabel)
+        label.delete(activeHLabel)
+    activeHLine := na
+    activeHLabel := na
+    if showActiveHTFWave and showH and not na(zH.pivotBar) and not na(zH.pivotPrice)
+        activeHLine := line.new(zH.pivotBar, zH.pivotPrice, bar_index, activeHPrice,
+             xloc = xloc.bar_index, color = color.new(colH, 0),
+             width = activeWaveWidth + 1, style = line.style_dashed)
+        activeHLabel := label.new(bar_index + 1, activeHPrice, "Active HTF " + htf + "\n" + activeHInfo,
+             xloc = xloc.bar_index, yloc = yloc.price, style = label.style_label_left,
+             color = color.new(colH, 5), textcolor = color.white, size = size.tiny,
+             tooltip = "Активная незавершённая HTF-моноволна: от последнего подтверждённого HTF pivot до текущего HTF close.")
 
 bool chartIsStock = syminfo.type == "stock"
 bool chartIsCrypto = syminfo.type == "crypto"
@@ -1010,6 +1232,8 @@ bool marketModeAllowsChart = marketMode == "Research any" or (marketMode == "Sto
 bool cryptoResearchMarket = chartIsCrypto and (marketMode == "Crypto" or marketMode == "Auto" or marketMode == "Research any")
 bool actionableTradeSymbol = chartIsStock and (marketMode == "Stocks" or marketMode == "Auto" or marketMode == "Research any")
 string marketModel = actionableTradeSymbol ? "stocks-v0" : cryptoResearchMarket ? "crypto-v0 research" : "unsupported"
+string assetClassLabel = chartIsStock ? "STOCK" : chartIsCrypto ? "CRYPTO" : syminfo.type
+string canTradeLabel = actionableTradeSymbol ? "YES - STOCK MODEL" : cryptoResearchMarket ? "NO - CRYPTO RESEARCH" : "NO - UNSUPPORTED"
 string actionNow = "WAIT"
 string actionReason = "NO SIGNAL"
 float actionRR = na
@@ -1019,7 +1243,7 @@ bool htfAgainstAction = false
 if not marketModeAllowsChart
     actionReason := "UNSUPPORTED " + syminfo.type
 else if cryptoResearchMarket
-    actionReason := "CRYPTO RESEARCH ONLY"
+    actionReason := "CRYPTO RESEARCH ONLY - NO TRADE"
 else if not actionableTradeSymbol
     actionReason := "NO " + syminfo.type + " CALIBRATION"
 else if lastTradeSide != "LONG" and lastTradeSide != "SHORT"
@@ -1071,6 +1295,8 @@ if actionNow != "WAIT" and htfAgainstAction and htfActionMode == "WARN"
 
 string decisionMode = actionableTradeSymbol ? "STOCK LIVE" : cryptoResearchMarket ? "CRYPTO RESEARCH" : "UNSUPPORTED"
 color decisionModeColor = actionableTradeSymbol ? color.new(color.lime, 50) : cryptoResearchMarket ? color.new(color.orange, 20) : color.new(color.red, 45)
+string marketBannerText = actionableTradeSymbol ? "STOCK LIVE\nBUY/SELL ENABLED" : cryptoResearchMarket ? "CRYPTO RESEARCH ONLY\nNO BUY/SELL ALERTS" : "UNSUPPORTED MARKET\nWAIT ONLY"
+color marketBannerColor = actionableTradeSymbol ? color.new(color.lime, 10) : cryptoResearchMarket ? color.new(color.orange, 10) : color.new(color.red, 20)
 string displayTradeSide = actionableTradeSymbol ? lastTradeSide : "WAIT"
 string displayTradeType = actionableTradeSymbol ? lastTradeType : marketModel
 string displayTradeStatus = actionableTradeSymbol ? lastTradeStatus : "WAIT"
@@ -1082,20 +1308,29 @@ string displaySignalGrade = actionableTradeSymbol ? signalGradeNow : cryptoResea
 string displayRrProgress = actionableTradeSymbol ? (na(actionRR) ? "—" : str.tostring(actionRR, "#.00")) + " / " + (na(actionProgress) ? "—" : str.tostring(actionProgress * 100, "#") + "%") : "—"
 string displayMarket = marketMode + " / " + marketModel
 string displayCalibration = actionableTradeSymbol ? lastTradeProbSource : marketModel
+string displayCoreSignal = showCoreSignals ? lastCoreSignal : "OFF"
+string displayCoreSide = showCoreSignals ? lastCoreSide : "—"
+string displayCoreLevels = showCoreSignals and not na(lastCoreTarget) ? "T " + str.tostring(lastCoreTarget, format.mintick) + " / I " + str.tostring(lastCoreInvalid, format.mintick) : "—"
 
 // ───────────────────── ТЕКУЩИЙ ТОРГОВЫЙ ПЛАН ─────────────────────
 var int drawnActionKey = na
+var int drawnCoreKey = na
 var line actionEntryLine = na
 var line actionSlLine = na
 var line actionTp1Line = na
 var line actionTp2Line = na
 var line actionTp3Line = na
+var line coreTargetLine = na
+var line coreInvalidLine = na
 var label actionMainLabel = na
 var label actionEntryLabel = na
 var label actionSlLabel = na
 var label actionTp1Label = na
 var label actionTp2Label = na
 var label actionTp3Label = na
+var label coreMainLabel = na
+var label coreTargetLabel = na
+var label coreInvalidLabel = na
 var box actionWaveBox = na
 var line actionWaveLine1 = na
 var line actionWaveLine2 = na
@@ -1104,12 +1339,26 @@ var label actionWaveLabel0 = na
 var label actionWaveLabel1 = na
 var label actionWaveLabel2 = na
 var label actionWaveLabel3 = na
+var label marketBannerLabel = na
 var array<line> historicalPlanLines = array.new<line>()
 var array<label> historicalPlanLabels = array.new<label>()
 var array<box> historicalPlanBoxes = array.new<box>()
 
 bool canDrawActionPlan = showTradePlan and (actionNow == "BUY" or actionNow == "SELL") and not na(lastTradeConfBar) and not na(lastTradeEntry) and not na(lastTradeSl) and not na(lastTradeAmp) and lastTradeAmp > 0
 bool canDrawWaitNote = showTradePlan and actionNow == "WAIT" and actionableTradeSymbol and lastTradeSide != "—" and actionReason != "NO SIGNAL" and not na(lastTradeConfBar) and not na(lastTradeEntry)
+if barstate.islast
+    if not na(marketBannerLabel)
+        label.delete(marketBannerLabel)
+    if showMarketBanner and showTradePanel
+        float bannerY = high + ta.atr(atrLen) * 2.0
+        marketBannerLabel := label.new(bar_index + 2, bannerY, marketBannerText,
+             xloc = xloc.bar_index, yloc = yloc.price, style = label.style_label_left,
+             color = marketBannerColor, textcolor = color.white, size = size.normal,
+             tooltip = actionableTradeSymbol ? "Акции: рабочая stock-калибровка. BUY/SELL и alerts разрешены фильтрами Action now." :
+                  cryptoResearchMarket ? "Крипта: отдельный research-контур. Торговые BUY/SELL, Entry/TP/SL и alerts отключены до crypto production-калибровки." :
+                  "Этот тип рынка не поддержан текущей калибровкой. Action now всегда WAIT.")
+    else
+        marketBannerLabel := na
 bool canDrawAnyAction = canDrawActionPlan or canDrawWaitNote
 int actionKey = canDrawActionPlan ? lastTradeConfBar * 10 + (actionNow == "BUY" ? 1 : 2) : canDrawWaitNote ? lastTradeConfBar * 10 + 3 : na
 bool redrawActionPlan = barstate.islast and (actionKey != drawnActionKey)
@@ -1303,43 +1552,135 @@ if redrawActionPlan
             box oldBox = array.shift(historicalPlanBoxes)
             box.delete(oldBox)
 
+// ───────────────────── NEELY CORE SIGNAL LAYER ─────────────────────
+bool canDrawCoreSignal = showCoreSignals and showCoreMarkers and not na(lastCoreConfBar) and lastCoreSignal != "—" and not na(lastCoreEntry)
+int coreKey = canDrawCoreSignal ? lastCoreConfBar * 10 + (lastCoreSignal == "IMPULSE POST" ? 1 : lastCoreSignal == "TRIANGLE THRUST" ? 2 : lastCoreSignal == "ZIGZAG REVERSAL" ? 3 : 4) : na
+bool redrawCoreSignal = barstate.islast and coreKey != drawnCoreKey
+if redrawCoreSignal
+    if not na(coreTargetLine)
+        line.delete(coreTargetLine)
+    if not na(coreInvalidLine)
+        line.delete(coreInvalidLine)
+    if not na(coreMainLabel)
+        label.delete(coreMainLabel)
+    if not na(coreTargetLabel)
+        label.delete(coreTargetLabel)
+    if not na(coreInvalidLabel)
+        label.delete(coreInvalidLabel)
+    coreTargetLine := na
+    coreInvalidLine := na
+    coreMainLabel := na
+    coreTargetLabel := na
+    coreInvalidLabel := na
+    drawnCoreKey := coreKey
+
+    if canDrawCoreSignal
+        color coreCol = coreSignalColor(lastCoreSignal, lastCoreDir)
+        int coreX0 = lastCoreConfBar
+        int coreX1 = lastCoreConfBar + coreLevelBars
+        coreMainLabel := label.new(coreX0, lastCoreEntry, "CORE\n" + lastCoreSignal + "\n" + lastCoreSide,
+             xloc = xloc.bar_index, yloc = yloc.price,
+             style = lastCoreDir >= 0 ? label.style_label_up : label.style_label_down,
+             color = color.new(coreCol, 0), textcolor = color.white, size = size.small,
+             tooltip = lastCoreReason + ". Research context: does not override Action now.")
+        if not na(lastCoreTarget)
+            coreTargetLine := line.new(coreX0, lastCoreTarget, coreX1, lastCoreTarget,
+                 xloc = xloc.bar_index, color = color.new(coreCol, 10),
+                 width = 2, style = line.style_dashed)
+            coreTargetLabel := label.new(coreX1, lastCoreTarget, "Core target",
+                 xloc = xloc.bar_index, yloc = yloc.price,
+                 style = label.style_label_left, color = color.new(coreCol, 10),
+                 textcolor = color.white, size = size.tiny)
+        if not na(lastCoreInvalid)
+            coreInvalidLine := line.new(coreX0, lastCoreInvalid, coreX1, lastCoreInvalid,
+                 xloc = xloc.bar_index, color = color.new(color.yellow, 20),
+                 width = 1, style = line.style_dotted)
+            coreInvalidLabel := label.new(coreX1, lastCoreInvalid, "Core invalid",
+                 xloc = xloc.bar_index, yloc = yloc.price,
+                 style = label.style_label_left, color = color.new(color.yellow, 20),
+                 textcolor = color.black, size = size.tiny)
+
 // ──────────────────────── ИНФО-ПАНЕЛЬ ────────────────────────────
 alertcondition(actionBuySignal, "EWB Action BUY", "EWB Action now BUY on {{ticker}} {{interval}}")
 alertcondition(actionSellSignal, "EWB Action SELL", "EWB Action now SELL on {{ticker}} {{interval}}")
+alertcondition(coreSignalEvent, "EWB Neely Core Signal", "EWB Neely Core signal on {{ticker}} {{interval}}")
+alertcondition(coreImpulseEvent, "EWB Core IMPULSE POST", "EWB Neely Core impulse post-pattern on {{ticker}} {{interval}}")
+alertcondition(coreTriangleEvent, "EWB Core TRIANGLE THRUST", "EWB Neely Core triangle thrust on {{ticker}} {{interval}}")
+alertcondition(coreZigzagEvent, "EWB Core ZIGZAG REVERSAL", "EWB Neely Core zigzag reversal context on {{ticker}} {{interval}}")
+alertcondition(coreMovingCorrEvent, "EWB Core MOVING CORR", "EWB Neely Core moving correction research signal on {{ticker}} {{interval}}")
 
-var table info = table.new(position.top_right, 2, 15, border_width = 1)
+string actionAlertMessage = "EWB " + actionNow + " | " + syminfo.ticker + " " + timeframe.period +
+     " | " + lastTradeType + " | Grade " + signalGradeNow +
+     " | Entry " + (na(lastTradeEntry) ? "n/a" : str.tostring(lastTradeEntry, format.mintick)) +
+     " | SL " + (na(lastTradeSl) ? "n/a" : str.tostring(lastTradeSl, format.mintick)) +
+     " | TP " + (na(lastTradeTp) ? "n/a" : str.tostring(lastTradeTp, format.mintick)) +
+     " | P " + (na(lastTradeProb) ? "n/a" : str.tostring(lastTradeProb, "#.0") + "%") +
+     " | RR " + (na(actionRR) ? "n/a" : str.tostring(actionRR, "#.00")) +
+     " | " + actionReason
+string coreAlertMessage = "EWB CORE | " + syminfo.ticker + " " + timeframe.period +
+     " | " + lastCoreSignal + " | " + lastCoreSide +
+     " | Entry " + (na(lastCoreEntry) ? "n/a" : str.tostring(lastCoreEntry, format.mintick)) +
+     " | Target " + (na(lastCoreTarget) ? "n/a" : str.tostring(lastCoreTarget, format.mintick)) +
+     " | Invalid " + (na(lastCoreInvalid) ? "n/a" : str.tostring(lastCoreInvalid, format.mintick)) +
+     " | " + lastCoreReason
+bool soundAlertBarOK = soundAlertsOnClose ? barstate.isconfirmed : true
+if enableActionSoundAlerts and soundAlertBarOK and (actionBuySignal or actionSellSignal)
+    alert(actionAlertMessage, soundAlertsOnClose ? alert.freq_once_per_bar_close : alert.freq_once_per_bar)
+if enableCoreSoundAlerts and soundAlertBarOK and coreSignalEvent
+    alert(coreAlertMessage, soundAlertsOnClose ? alert.freq_once_per_bar_close : alert.freq_once_per_bar)
+
+var table info = table.new(position.top_right, 2, 22, border_width = 1)
 if showTradePanel and barstate.islast
-    table.cell(info, 0, 0, "Action now", text_color = color.white, bgcolor = color.new(color.gray, 20))
-    table.cell(info, 1, 0, actionNow, text_color = color.white, bgcolor = actionColor(actionNow))
-    table.cell(info, 0, 1, "Reason", text_color = color.white, bgcolor = color.new(color.gray, 45))
-    table.cell(info, 1, 1, actionReason, text_color = color.white, bgcolor = actionColor(actionNow))
-    table.cell(info, 0, 2, "Mode", text_color = color.white, bgcolor = color.new(color.gray, 30))
-    table.cell(info, 1, 2, decisionMode, text_color = color.white, bgcolor = decisionModeColor)
-    table.cell(info, 0, 3, "Trade", text_color = color.white, bgcolor = color.new(color.gray, 35))
-    table.cell(info, 1, 3, displayTradeSide, text_color = color.white,
+    table.cell(info, 0, 0, "EWB Market", text_color = color.white, bgcolor = color.new(color.gray, 10))
+    table.cell(info, 1, 0, marketBannerText, text_color = color.white, bgcolor = marketBannerColor)
+    table.cell(info, 0, 1, "Can trade?", text_color = color.white, bgcolor = color.new(color.gray, 20))
+    table.cell(info, 1, 1, canTradeLabel, text_color = color.white,
+         bgcolor = actionableTradeSymbol ? color.new(color.lime, 40) : color.new(color.orange, 20))
+    table.cell(info, 0, 2, "Action now", text_color = color.white, bgcolor = color.new(color.gray, 20))
+    table.cell(info, 1, 2, actionNow, text_color = color.white, bgcolor = actionColor(actionNow))
+    table.cell(info, 0, 3, "Reason", text_color = color.white, bgcolor = color.new(color.gray, 45))
+    table.cell(info, 1, 3, actionReason, text_color = color.white, bgcolor = actionColor(actionNow))
+    table.cell(info, 0, 4, "Mode", text_color = color.white, bgcolor = color.new(color.gray, 30))
+    table.cell(info, 1, 4, decisionMode, text_color = color.white, bgcolor = decisionModeColor)
+    table.cell(info, 0, 5, "Trade", text_color = color.white, bgcolor = color.new(color.gray, 35))
+    table.cell(info, 1, 5, displayTradeSide, text_color = color.white,
          bgcolor = tradeStatusColor(displayTradeStatus, displayTradeSide))
-    table.cell(info, 0, 4, "Фигура", text_color = color.white, bgcolor = color.new(color.gray, 50))
-    table.cell(info, 1, 4, displayTradeType, text_color = color.white, bgcolor = color.new(color.gray, 70))
-    table.cell(info, 0, 5, "Status", text_color = color.white, bgcolor = color.new(color.gray, 50))
-    table.cell(info, 1, 5, displayTradeStatus + (actionableTradeSymbol and not na(lastTradeAge) ? " / " + str.tostring(lastTradeAge) + "b" : ""),
+    table.cell(info, 0, 6, "Фигура", text_color = color.white, bgcolor = color.new(color.gray, 50))
+    table.cell(info, 1, 6, displayTradeType, text_color = color.white, bgcolor = color.new(color.gray, 70))
+    table.cell(info, 0, 7, "Status", text_color = color.white, bgcolor = color.new(color.gray, 50))
+    table.cell(info, 1, 7, displayTradeStatus + (actionableTradeSymbol and not na(lastTradeAge) ? " / " + str.tostring(lastTradeAge) + "b" : ""),
          text_color = color.white, bgcolor = tradeStatusColor(displayTradeStatus, displayTradeSide))
-    table.cell(info, 0, 6, "P≈", text_color = color.white, bgcolor = color.new(color.gray, 50))
-    table.cell(info, 1, 6, displayTradeProb, text_color = color.white, bgcolor = color.new(color.gray, 70))
-    table.cell(info, 0, 7, "Grade", text_color = color.white, bgcolor = color.new(color.gray, 50))
-    table.cell(info, 1, 7, displaySignalGrade, text_color = color.white, bgcolor = actionableTradeSymbol ? actionColor(actionNow) : decisionModeColor)
-    table.cell(info, 0, 8, "n / conf", text_color = color.white, bgcolor = color.new(color.gray, 50))
-    table.cell(info, 1, 8, displaySampleConf, text_color = color.white, bgcolor = color.new(color.gray, 70))
-    table.cell(info, 0, 9, "Entry / TP", text_color = color.white, bgcolor = color.new(color.gray, 50))
-    table.cell(info, 1, 9, displayEntryTp, text_color = color.white, bgcolor = color.new(color.gray, 70))
-    table.cell(info, 0, 10, "SL / invalid", text_color = color.white, bgcolor = color.new(color.gray, 50))
-    table.cell(info, 1, 10, displaySl, text_color = color.white, bgcolor = color.new(color.gray, 70))
-    table.cell(info, 0, 11, "RR / progress", text_color = color.white, bgcolor = color.new(color.gray, 50))
-    table.cell(info, 1, 11, displayRrProgress, text_color = color.white, bgcolor = color.new(color.gray, 70))
-    table.cell(info, 0, 12, "HTF mode/bias", text_color = color.white, bgcolor = color.new(color.gray, 50))
-    table.cell(info, 1, 12, htfActionMode + " / " + htfBias, text_color = color.white,
+    table.cell(info, 0, 8, "P≈", text_color = color.white, bgcolor = color.new(color.gray, 50))
+    table.cell(info, 1, 8, displayTradeProb, text_color = color.white, bgcolor = color.new(color.gray, 70))
+    table.cell(info, 0, 9, "Grade", text_color = color.white, bgcolor = color.new(color.gray, 50))
+    table.cell(info, 1, 9, displaySignalGrade, text_color = color.white, bgcolor = actionableTradeSymbol ? actionColor(actionNow) : decisionModeColor)
+    table.cell(info, 0, 10, "n / conf", text_color = color.white, bgcolor = color.new(color.gray, 50))
+    table.cell(info, 1, 10, displaySampleConf, text_color = color.white, bgcolor = color.new(color.gray, 70))
+    table.cell(info, 0, 11, "Entry / TP", text_color = color.white, bgcolor = color.new(color.gray, 50))
+    table.cell(info, 1, 11, displayEntryTp, text_color = color.white, bgcolor = color.new(color.gray, 70))
+    table.cell(info, 0, 12, "SL / invalid", text_color = color.white, bgcolor = color.new(color.gray, 50))
+    table.cell(info, 1, 12, displaySl, text_color = color.white, bgcolor = color.new(color.gray, 70))
+    table.cell(info, 0, 13, "RR / progress", text_color = color.white, bgcolor = color.new(color.gray, 50))
+    table.cell(info, 1, 13, displayRrProgress, text_color = color.white, bgcolor = color.new(color.gray, 70))
+    table.cell(info, 0, 14, "HTF mode/bias", text_color = color.white, bgcolor = color.new(color.gray, 50))
+    table.cell(info, 1, 14, htfActionMode + " / " + htfBias, text_color = color.white,
          bgcolor = htfBiasDir > 0 ? color.new(color.lime, 45) : htfBiasDir < 0 ? color.new(color.red, 45) : color.new(color.gray, 70))
-    table.cell(info, 0, 13, "Market", text_color = color.white, bgcolor = color.new(color.gray, 50))
-    table.cell(info, 1, 13, displayMarket, text_color = color.white,
+    table.cell(info, 0, 15, "Asset / Market", text_color = color.white, bgcolor = color.new(color.gray, 50))
+    table.cell(info, 1, 15, assetClassLabel + " / " + displayMarket, text_color = color.white,
          bgcolor = actionableTradeSymbol ? color.new(color.lime, 55) : cryptoResearchMarket ? color.new(color.orange, 35) : color.new(color.gray, 70))
-    table.cell(info, 0, 14, "Calib / TF", text_color = color.white, bgcolor = color.new(color.gray, 50))
-    table.cell(info, 1, 14, displayCalibration, text_color = color.white, bgcolor = color.new(color.gray, 70))
+    table.cell(info, 0, 16, "Calib / TF", text_color = color.white, bgcolor = color.new(color.gray, 50))
+    table.cell(info, 1, 16, displayCalibration, text_color = color.white, bgcolor = color.new(color.gray, 70))
+    table.cell(info, 0, 17, "Neely Core", text_color = color.white, bgcolor = color.new(color.gray, 50))
+    table.cell(info, 1, 17, displayCoreSignal, text_color = color.white,
+         bgcolor = coreSignalColor(lastCoreSignal, lastCoreDir))
+    table.cell(info, 0, 18, "Core side/age", text_color = color.white, bgcolor = color.new(color.gray, 50))
+    table.cell(info, 1, 18, displayCoreSide + (showCoreSignals and not na(lastCoreAge) ? " / " + str.tostring(lastCoreAge) + "b" : ""),
+         text_color = color.white, bgcolor = color.new(color.gray, 70))
+    table.cell(info, 0, 19, "Core target/invalid", text_color = color.white, bgcolor = color.new(color.gray, 50))
+    table.cell(info, 1, 19, displayCoreLevels, text_color = color.white, bgcolor = color.new(color.gray, 70))
+    table.cell(info, 0, 20, "Active CTF wave", text_color = color.white, bgcolor = color.new(color.gray, 50))
+    table.cell(info, 1, 20, activeCInfo, text_color = color.white,
+         bgcolor = zC.dir > 0 ? color.new(colCUp, 55) : zC.dir < 0 ? color.new(colCDn, 55) : color.new(color.gray, 70))
+    table.cell(info, 0, 21, "Active HTF wave", text_color = color.white, bgcolor = color.new(color.gray, 50))
+    table.cell(info, 1, 21, activeHInfo, text_color = color.white,
+         bgcolor = htfBiasDir > 0 ? color.new(color.lime, 55) : htfBiasDir < 0 ? color.new(color.red, 55) : color.new(color.gray, 70))

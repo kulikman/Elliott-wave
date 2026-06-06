@@ -12,7 +12,7 @@
 1. Открой crypto ticker в TradingView, например `BTCUSDT`, `ETHUSDT`, `SOLUSDT`.
 2. Поставь TF из таблицы.
 3. В `Elliott Wave Brain — Monowaves MTF` выставь `Market mode = Crypto`.
-4. Ожидаемый результат: `Action now = WAIT`, `Reason = CRYPTO RESEARCH ONLY`, `Market = Crypto / crypto-v0 research`.
+4. Ожидаемый результат: `Action now = WAIT`, `Reason = CRYPTO RESEARCH ONLY - NO TRADE`, баннер `CRYPTO RESEARCH ONLY / NO BUY/SELL ALERTS`, `Asset / Market = CRYPTO / Crypto / crypto-v0 research`.
 5. В `Market mode = Stocks` тот же график должен показывать `WAIT / unsupported crypto`.
 6. Убедись, что BUY/SELL alerts не срабатывают на crypto.
 
