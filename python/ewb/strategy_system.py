@@ -21,6 +21,16 @@ import pandas as pd
 TRADE_PATTERNS = {"flat", "double_corr"}
 DEFAULT_FORWARD_LOG = Path("python/data/forward_signals/ewb_forward_events.jsonl")
 DEFAULT_BACKTEST_DIR = Path("brain-output/backtests")
+CRYPTO_BASES = {
+    "AAVE", "ADA", "ARB", "ATOM", "AVAX", "BCH", "BNB", "BTC", "DOGE",
+    "DOT", "ETC", "ETH", "FIL", "HBAR", "ICP", "LINK", "LTC", "NEAR",
+    "OP", "PEPE", "POL", "SHIB", "SOL", "SUI", "TON", "TRX", "UNI",
+    "WIF", "XLM", "XRP",
+}
+CRYPTO_EXCHANGES = {
+    "BINANCE", "BITFINEX", "BITSTAMP", "BYBIT", "COINBASE", "CRYPTO",
+    "GEMINI", "KRAKEN", "KUCOIN", "OKX",
+}
 
 
 @dataclass(frozen=True)
@@ -49,6 +59,50 @@ def stable_signal_id(parts: Iterable[Any]) -> str:
 
 def side_to_int(side: str) -> int:
     return 1 if str(side).lower() in {"long", "buy", "enter long"} else -1
+
+
+def probability_percent(value: Any) -> float | None:
+    """Normalize probability input into the 0..100 percentage scale."""
+    if value in (None, ""):
+        return None
+    try:
+        number = float(value)
+    except Exception:
+        return None
+    if not math.isfinite(number):
+        return None
+    if 0.0 <= number <= 1.0:
+        number *= 100.0
+    return number
+
+
+def _symbol_leaf(symbol: Any) -> str:
+    return str(symbol or "").strip().upper().split(":")[-1]
+
+
+def _compact_symbol(symbol: Any) -> str:
+    return (
+        _symbol_leaf(symbol)
+        .replace("-", "")
+        .replace("/", "")
+        .replace("_", "")
+        .replace(" ", "")
+    )
+
+
+def is_crypto_ticker(ticker: Any) -> bool:
+    """Detect common stock-data and TradingView crypto symbol formats."""
+    raw = str(ticker or "").strip().upper()
+    if not raw:
+        return False
+    if ":" in raw and raw.split(":", 1)[0] in CRYPTO_EXCHANGES:
+        return True
+    compact = _compact_symbol(raw)
+    for quote in ("USDT", "USDC", "USD", "PERP"):
+        if compact.endswith(quote):
+            base = compact[: -len(quote)]
+            return base in CRYPTO_BASES
+    return compact in CRYPTO_BASES
 
 
 def setup_key(row: pd.Series | dict[str, Any]) -> str:
@@ -269,11 +323,11 @@ def signal_event(
         "entry_px": float(entry_px),
         "stop_px": None if stop_px is None else float(stop_px),
         "target_px": None if target_px is None else float(target_px),
-        "probability": None if probability is None else float(probability),
+        "probability": probability_percent(probability),
         "htf_context": htf_context,
     }
     row["setup_key"] = setup_key({
-        "asset_class": "crypto" if row["ticker"].endswith("-USD") else "stock",
+        "asset_class": "crypto" if is_crypto_ticker(row["ticker"]) else "stock",
         "interval": interval,
         "fig_type": fig_type,
         "side": side,
@@ -376,14 +430,20 @@ def forward_trades(events: list[dict[str, Any]]) -> pd.DataFrame:
         outcome = outcomes.get(signal_id)
         if outcome:
             row.update(outcome)
-            side = side_to_int(row.get("side", "long"))
-            entry = float(row["entry_px"])
-            exit_px = float(row["exit_px"])
-            raw_ret = side * (exit_px - entry) / entry if entry else math.nan
-            row["raw_ret"] = raw_ret
-            row["net_ret"] = raw_ret
-            row["win"] = raw_ret > 0
-            row["status"] = "closed"
+            if str(row.get("exit_reason", "")).lower() == "cancelled":
+                row["raw_ret"] = math.nan
+                row["net_ret"] = math.nan
+                row["win"] = False
+                row["status"] = "cancelled"
+            else:
+                side = side_to_int(row.get("side", "long"))
+                entry = float(row["entry_px"])
+                exit_px = float(row["exit_px"])
+                raw_ret = side * (exit_px - entry) / entry if entry else math.nan
+                row["raw_ret"] = raw_ret
+                row["net_ret"] = raw_ret
+                row["win"] = raw_ret > 0
+                row["status"] = "closed"
         else:
             row["status"] = "open"
         rows.append(row)

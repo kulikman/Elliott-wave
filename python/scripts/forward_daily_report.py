@@ -17,6 +17,7 @@ from ewb.strategy_system import (
     DEFAULT_FORWARD_LOG,
     forward_trades,
     markdown_table,
+    probability_percent,
     read_jsonl,
     trade_summary,
     write_frame,
@@ -61,6 +62,11 @@ def pct_text(value: Any) -> str:
     return f"{float(value) * 100:.1f}%"
 
 
+def probability_text(value: Any) -> str:
+    prob = probability_percent(value)
+    return "n/a" if prob is None else f"{prob:.1f}%"
+
+
 def bot_decision(closed_count: int, summary: dict[str, Any]) -> tuple[str, str]:
     if closed_count < 30:
         return "OBSERVE", "Меньше 30 закрытых forward-сделок. Реальные деньги и автоматизацию не включать."
@@ -90,7 +96,7 @@ def rows_for_open(open_trades: pd.DataFrame, limit: int) -> list[dict[str, Any]]
             "entry": fmt_price(row.get("entry_px")),
             "stop": fmt_price(row.get("stop_px")),
             "target": fmt_price(row.get("target_px")),
-            "p": row.get("probability"),
+            "p": probability_text(row.get("probability")),
             "time": row.get("entry_ts"),
         })
     return rows

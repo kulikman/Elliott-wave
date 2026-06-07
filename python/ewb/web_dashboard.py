@@ -4,6 +4,7 @@ from __future__ import annotations
 import json
 import math
 import subprocess
+import sys
 from pathlib import Path
 from typing import Any
 from urllib.parse import parse_qs
@@ -18,8 +19,10 @@ from ewb.strategy_system import (
     DEFAULT_FORWARD_LOG,
     append_jsonl,
     forward_trades,
+    is_crypto_ticker,
     note_event,
     outcome_event,
+    probability_percent,
     read_jsonl,
     signal_event,
     signal_event_from_payload,
@@ -131,6 +134,11 @@ def pct(value: Any) -> str:
     if not math.isfinite(number):
         return "-"
     return f"{number * 100:.1f}%"
+
+
+def probability_label(value: Any) -> str:
+    prob = probability_percent(value)
+    return "-" if prob is None else f"{prob:.1f}%"
 
 
 def price(value: Any) -> str:
@@ -352,9 +360,16 @@ def qty_text(value: Any) -> str:
 
 
 def tv_symbol(ticker: str) -> str:
-    ticker = ticker.upper()
-    if ticker.endswith("-USD"):
-        return "CRYPTO:" + ticker.replace("-USD", "USD")
+    ticker = str(ticker or "").strip().upper()
+    if ":" in ticker:
+        return ticker
+    if is_crypto_ticker(ticker):
+        compact = ticker.replace("-", "").replace("/", "").replace("_", "")
+        if compact.endswith(("USDT", "USDC")):
+            return "BINANCE:" + compact
+        if compact.endswith("USD"):
+            return "CRYPTO:" + compact
+        return "CRYPTO:" + compact + "USD"
     return "NASDAQ:" + ticker
 
 
@@ -367,15 +382,14 @@ def tradingview_link(ticker: Any) -> str:
 
 
 def action_decision(action: str, probability: Any, rr: float | None, entry_ts: Any) -> tuple[str, str]:
+    action = str(action).lower()
+    if action in {"long", "enter long"}:
+        action = "buy"
+    elif action in {"short", "enter short"}:
+        action = "sell"
     if action not in {"buy", "sell"}:
         return "WAIT", "No actionable side"
-    prob = None
-    try:
-        prob = float(probability)
-        if prob <= 1.0:
-            prob *= 100.0
-    except Exception:
-        pass
+    prob = probability_percent(probability)
     age = as_timestamp(entry_ts)
     age_hours = None if age is None else max(0.0, (pd.Timestamp.utcnow() - age).total_seconds() / 3600.0)
     if rr is None or rr < 1.0:
@@ -410,7 +424,7 @@ def accept_signal_form(signal: dict[str, Any]) -> str:
 
 
 def asset_class(ticker: Any) -> str:
-    return "crypto" if str(ticker or "").upper().endswith("-USD") else "stock"
+    return "crypto" if is_crypto_ticker(ticker) else "stock"
 
 
 def passes_action_filters(
@@ -427,13 +441,7 @@ def passes_action_filters(
     tf_filter = filters.get("tf", "all")
     min_p = float(filters.get("min_p") or 0)
     min_rr = float(filters.get("min_rr") or 0)
-    prob = None
-    try:
-        prob = float(probability)
-        if prob <= 1:
-            prob *= 100.0
-    except Exception:
-        pass
+    prob = probability_percent(probability)
     if decision_filter != "all" and decision.lower() != decision_filter:
         return False
     if asset_filter != "all" and asset_class(ticker) != asset_filter:
@@ -480,7 +488,7 @@ def action_board_rows(limit: int = 20, filters: dict[str, Any] | None = None) ->
             pill(action, action),
             html_escape(signal.get("interval", report.get("interval", ""))),
             html_escape(signal.get("pattern", "")),
-            pct(signal.get("p_trade_win")),
+            probability_label(signal.get("p_trade_win")),
             "-" if rr is None else f"{rr:.2f}",
             qty_text(plan.get("qty")) if plan.get("ok") else "-",
             money(plan.get("risk_cash"), plan.get("currency", "USD")) if plan.get("ok") else "-",
@@ -519,7 +527,7 @@ def action_board_rows(limit: int = 20, filters: dict[str, Any] | None = None) ->
             pill(row.get("side", ""), str(row.get("side", "")).lower()),
             html_escape(row.get("interval", "")),
             html_escape(row.get("fig_type", "")),
-            html_escape(row.get("probability", "")),
+            probability_label(row.get("probability")),
             "-" if rr is None else f"{rr:.2f}",
             qty_text(plan.get("qty")) if plan.get("ok") else "-",
             money(plan.get("risk_cash"), plan.get("currency", "USD")) if plan.get("ok") else "-",
@@ -536,11 +544,7 @@ def checklist_rows(signal: dict[str, Any], outcome: dict[str, Any] | None) -> li
     rr = rr_value(signal.get("entry_px"), signal.get("stop_px"), signal.get("target_px"))
     action = str(signal.get("action", signal.get("side", "wait"))).lower()
     decision, reason = action_decision(action, signal.get("probability"), rr, signal.get("entry_ts"))
-    prob = None
-    try:
-        prob = float(signal.get("probability"))
-    except Exception:
-        pass
+    prob = probability_percent(signal.get("probability"))
     return [
         ["Trade status", pill("CLOSED" if outcome else "OPEN", "open" if not outcome else "ready")],
         ["Decision", pill(decision, decision.lower())],
@@ -596,7 +600,7 @@ def alert_event_rows(limit: int = 30) -> list[list[Any]]:
             price(row.get("entry_px")),
             price(row.get("stop_px")),
             price(row.get("target_px")),
-            html_escape(row.get("probability", "")),
+            probability_label(row.get("probability")),
             html_escape(row.get("source", "")),
             html_escape(row.get("recorded_at", "")),
         ])
@@ -734,7 +738,7 @@ def signals() -> HTMLResponse:
             html_escape(signal.get("ticker", "")),
             pill(signal.get("recommended_action", "wait")),
             html_escape(signal.get("pattern", "")),
-            pct(signal.get("p_trade_win")),
+            probability_label(signal.get("p_trade_win")),
             pct(signal.get("expected_net_return")),
             rr,
             price(risk.get("entry_px")),
@@ -864,7 +868,7 @@ def trade_detail_page(signal_id: str) -> HTMLResponse:
         ["Stop", price(signal.get("stop_px"))],
         ["Target", price(signal.get("target_px"))],
         ["R:R", rr_text(signal.get("entry_px"), signal.get("stop_px"), signal.get("target_px"))],
-        ["Probability", html_escape(signal.get("probability", ""))],
+        ["Probability", probability_label(signal.get("probability"))],
         ["HTF context", html_escape(signal.get("htf_context", ""))],
         ["Source", html_escape(signal.get("source", ""))],
     ]
@@ -1109,7 +1113,7 @@ async def save_risk_settings(request: Request) -> RedirectResponse:
 
 @app.post("/settings/run-scan")
 def run_scan() -> RedirectResponse:
-    subprocess.run(["python3", "python/scripts/daily_report.py"], cwd=REPO, check=False)
+    subprocess.run([sys.executable, "python/scripts/daily_report.py"], cwd=REPO, check=False)
     return RedirectResponse("/action-board", status_code=303)
 
 

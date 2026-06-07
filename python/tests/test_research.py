@@ -66,9 +66,11 @@ from ewb.strategy_system import (
     filter_contract_trades,
     forward_trades,
     grouped_summary,
+    is_crypto_ticker,
     normalize_historical_trades,
     note_event,
     outcome_event,
+    probability_percent,
     signal_event,
     signal_event_from_payload,
     trade_summary,
@@ -89,6 +91,17 @@ def test_cost_for_asset_classes():
 def test_crypto_universe_uses_trx_instead_of_legacy_matic():
     assert "TRX-USD" in CRYPTO
     assert "MATIC-USD" not in CRYPTO
+
+
+def test_strategy_system_probability_and_crypto_symbol_helpers():
+    assert probability_percent(0.585) == pytest.approx(58.5)
+    assert probability_percent("58.5") == pytest.approx(58.5)
+    assert probability_percent(None) is None
+    assert is_crypto_ticker("BTC-USD")
+    assert is_crypto_ticker("BTCUSDT")
+    assert is_crypto_ticker("BINANCE:BTCUSDT")
+    assert is_crypto_ticker("CRYPTO:ETHUSD")
+    assert not is_crypto_ticker("AAPL")
 
 
 def test_strategy_system_contract_metrics_and_forward_log(tmp_path):
@@ -186,6 +199,43 @@ def test_strategy_system_contract_metrics_and_forward_log(tmp_path):
     assert alert["entry_px"] == 70000.0
     assert alert["probability"] == 58.5
     assert alert["setup_key"].startswith("crypto|4h|flat|long")
+
+    tv_alert = signal_event_from_payload({
+        "symbol": "BINANCE:BTCUSDT",
+        "timeframe": "4h",
+        "side": "buy",
+        "time": "2026-06-07T16:00:00Z",
+        "close": "70000",
+        "sl": "68000",
+        "tp": "74000",
+        "pattern": "flat",
+        "p_win": "0.585",
+    })
+    assert tv_alert["ticker"] == "BINANCE:BTCUSDT"
+    assert tv_alert["probability"] == pytest.approx(58.5)
+    assert tv_alert["setup_key"].startswith("crypto|4h|flat|long")
+
+    cancelled = signal_event(
+        ticker="BTCUSDT",
+        interval="4h",
+        action="buy",
+        entry_ts="2026-06-09T12:00:00Z",
+        entry_px=70000.0,
+        stop_px=68000.0,
+        target_px=74000.0,
+        fig_type="flat",
+        probability=0.61,
+    )
+    cancelled_forward = forward_trades([cancelled, outcome_event(
+        signal_id=cancelled["signal_id"],
+        exit_ts="2026-06-09T13:00:00Z",
+        exit_px=70000.0,
+        exit_reason="cancelled",
+    )])
+    assert cancelled["probability"] == pytest.approx(61.0)
+    assert cancelled["setup_key"].startswith("crypto|4h|flat|long")
+    assert cancelled_forward.loc[0, "status"] == "cancelled"
+    assert trade_summary(cancelled_forward[cancelled_forward["status"] == "closed"])["trades"] == 0
 
 
 def test_strategy_system_scripts_exist():
