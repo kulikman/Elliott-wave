@@ -1,0 +1,38 @@
+{
+  "contract": {
+    "strategy_id": "ewb-anton-v1",
+    "entry_rule": "confirm_close_or_alert_close",
+    "exit_rule": "tp_sl_time",
+    "allowed_patterns": [
+      "flat",
+      "double_corr"
+    ],
+    "allowed_actions": [
+      "long",
+      "short"
+    ],
+    "required_htf_context": "record_only",
+    "notes": "Python reports are source of truth for statistics; Pine is visual and alert surface."
+  },
+  "raw_rows": 817837,
+  "scoped_rows": 1518,
+  "portfolio": {
+    "trades": 1518,
+    "winrate": 0.5988142292490118,
+    "expectancy": 0.014394861924968224,
+    "profit_factor": 1.825554554736457,
+    "max_drawdown": -0.9621242136350999,
+    "avg_return": 0.014394861924968224,
+    "median_return": 0.008484215800087644,
+    "total_return": 1602053.1349666219,
+    "avg_win": 0.053157485563157476,
+    "avg_loss": -0.043462650204939876
+  },
+  "outputs": {
+    "trades": "/Users/DEV/Elliott-wave/brain-output/backtests/ewb_strategy_backtest_trades.parquet",
+    "grouped": "/Users/DEV/Elliott-wave/brain-output/backtests/ewb_strategy_backtest_grouped.parquet",
+    "walk_forward": "/Users/DEV/Elliott-wave/brain-output/backtests/ewb_strategy_walk_forward.parquet",
+    "markdown": "/Users/DEV/Elliott-wave/brain-output/backtests/ewb_strategy_backtest.md",
+    "json": "/Users/DEV/Elliott-wave/brain-output/backtests/ewb_strategy_backtest_summary.json"
+  }
+}

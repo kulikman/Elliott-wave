@@ -1,0 +1,4 @@
+account_size: 10000
+risk_pct: 1.0
+max_position_pct: 25.0
+currency: USD

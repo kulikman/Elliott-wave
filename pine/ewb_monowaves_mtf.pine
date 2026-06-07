@@ -861,6 +861,17 @@ hypSideText(int dir) =>
 hypDirText(int dir) =>
     dir > 0 ? "UP" : dir < 0 ? "DOWN" : "NEUTRAL"
 
+jsonString(string value) =>
+    string safeValue = str.replace_all(value, "\\", "\\\\")
+    safeValue := str.replace_all(safeValue, "\"", "\\\"")
+    "\"" + safeValue + "\""
+
+jsonFloat(float value) =>
+    na(value) ? "null" : str.tostring(value)
+
+jsonInt(int value) =>
+    na(value) ? "null" : str.tostring(value)
+
 // ─── Рейтинг Энергии (AKU-0213, Гл.10 стр.10-2) ─────────────────────────────
 // Возвращает рейтинг энергии и макс. откат следующей волны для подтверждённой фигуры.
 // figType: "impulse"|"terminal"|"flat"|"zigzag"|"triangle"|"double_corr"
@@ -2680,14 +2691,31 @@ alertcondition(coreZigzagEvent, "EWB Core ZIGZAG REVERSAL", "EWB Neely Core zigz
 alertcondition(coreMovingCorrEvent, "EWB Core MOVING CORR", "EWB Neely Core moving correction research signal on {{ticker}} {{interval}}")
 alertcondition(liveHypothesisReadyEvent, "EWB Live Hypothesis Ready", "EWB live structure hypothesis is ready on {{ticker}} {{interval}}")
 
-string actionAlertMessage = "EWB " + actionNow + " | " + syminfo.ticker + " " + timeframe.period +
-     " | " + lastTradeType + " | Grade " + signalGradeNow +
-     " | Entry " + (na(lastTradeEntry) ? "n/a" : str.tostring(lastTradeEntry, format.mintick)) +
-     " | SL " + (na(lastTradeSl) ? "n/a" : str.tostring(lastTradeSl, format.mintick)) +
-     " | TP " + (na(lastTradeTp) ? "n/a" : str.tostring(lastTradeTp, format.mintick)) +
-     " | P " + (na(lastTradeProb) ? "n/a" : str.tostring(lastTradeProb, "#.0") + "%") +
-     " | RR " + (na(actionRR) ? "n/a" : str.tostring(actionRR, "#.00")) +
-     " | " + actionReason
+string actionAlertFigType = lastTradeType == "Flat fade" ? "flat" : lastTradeType == "DoubleCorr fade" ? "double_corr" : "unknown"
+string actionAlertSide = actionNow == "BUY" ? "buy" : actionNow == "SELL" ? "sell" : "wait"
+string actionAlertTime = str.format_time(time, "yyyy-MM-dd'T'HH:mm:ss'Z'", "Etc/UTC")
+string actionAlertContext = mtfContextStack == "" ? activeHInfo : activeHInfo + " | " + mtfContextStack
+string actionAlertMessage = "{" +
+     "\"source\":\"tradingview_pine\"," +
+     "\"strategy_id\":\"ewb-anton-v1\"," +
+     "\"ticker\":" + jsonString(syminfo.ticker) + "," +
+     "\"symbol\":" + jsonString(syminfo.tickerid) + "," +
+     "\"interval\":" + jsonString(timeframe.period) + "," +
+     "\"action\":" + jsonString(actionAlertSide) + "," +
+     "\"side\":" + jsonString(lastTradeSide) + "," +
+     "\"entry_ts\":" + jsonString(actionAlertTime) + "," +
+     "\"entry_px\":" + jsonFloat(lastTradeEntry) + "," +
+     "\"stop_px\":" + jsonFloat(lastTradeSl) + "," +
+     "\"target_px\":" + jsonFloat(lastTradeTp) + "," +
+     "\"fig_type\":" + jsonString(actionAlertFigType) + "," +
+     "\"probability\":" + jsonFloat(lastTradeProb) + "," +
+     "\"sample_size\":" + jsonInt(lastTradeSampleN) + "," +
+     "\"confidence\":" + jsonString(lastTradeConfidence) + "," +
+     "\"grade\":" + jsonString(signalGradeNow) + "," +
+     "\"rr\":" + jsonFloat(actionRR) + "," +
+     "\"reason\":" + jsonString(actionReason) + "," +
+     "\"htf_context\":" + jsonString(actionAlertContext) +
+     "}"
 string coreAlertMessage = "EWB CORE | " + syminfo.ticker + " " + timeframe.period +
      " | " + lastCoreSignal + " | " + lastCoreSide +
      " | Entry " + (na(lastCoreEntry) ? "n/a" : str.tostring(lastCoreEntry, format.mintick)) +

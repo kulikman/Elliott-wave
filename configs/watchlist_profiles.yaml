@@ -1,0 +1,36 @@
+profiles:
+  long_term:
+    label: Long-term 1D
+    tickers: [AAPL, MSFT, NVDA, AMZN, GOOGL, META, TSLA, AVGO, JPM, COST, LLY, WMT, BTC-USD, ETH-USD]
+    interval: 1d
+    actions: [buy, sell]
+    fresh_hours: 168
+    limit: 30
+  swing:
+    label: Swing 4H
+    tickers: [AAPL, MSFT, NVDA, AMZN, GOOGL, META, TSLA, AVGO, AMD, NFLX, COST, JPM, BTC-USD, ETH-USD, SOL-USD]
+    interval: 4h
+    actions: [buy, sell]
+    fresh_hours: 96
+    limit: 30
+  intraday:
+    label: Intraday 1H
+    tickers: [AAPL, MSFT, NVDA, AMZN, GOOGL, META, TSLA, AVGO, AMD, NFLX, COST, JPM, WMT, LLY, ORCL, CRM, QCOM, INTU, NOW, AMAT, BKNG, ISRG]
+    interval: 1h
+    actions: [buy, sell]
+    fresh_hours: 48
+    limit: 20
+  crypto:
+    label: Crypto 4H
+    tickers: [BTC-USD, ETH-USD, SOL-USD, BNB-USD, XRP-USD, ADA-USD, DOGE-USD, TRX-USD, LINK-USD, AVAX-USD]
+    interval: 4h
+    actions: [buy, sell]
+    fresh_hours: 96
+    limit: 20
+  anton_favorites:
+    label: Anton Favorites
+    tickers: [AAPL, MSFT, NVDA, TSLA, AVGO, AMD, BTC-USD, ETH-USD, SOL-USD]
+    interval: 1d
+    actions: [buy, sell]
+    fresh_hours: 168
+    limit: 20

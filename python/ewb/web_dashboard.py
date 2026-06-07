@@ -1,0 +1,1144 @@
+"""Local web dashboard for the EWB strategy system."""
+from __future__ import annotations
+
+import json
+import math
+import subprocess
+from pathlib import Path
+from typing import Any
+from urllib.parse import parse_qs
+
+import pandas as pd
+import yaml
+from fastapi import FastAPI, Request
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
+
+from ewb.strategy_system import (
+    DEFAULT_BACKTEST_DIR,
+    DEFAULT_FORWARD_LOG,
+    append_jsonl,
+    forward_trades,
+    note_event,
+    outcome_event,
+    read_jsonl,
+    signal_event,
+    signal_event_from_payload,
+    trade_summary,
+)
+
+
+REPO = Path(__file__).resolve().parents[2]
+SIGNALS_DIR = REPO / "brain-output" / "signals"
+BACKTEST_DIR = REPO / DEFAULT_BACKTEST_DIR
+FORWARD_LOG = REPO / DEFAULT_FORWARD_LOG
+WATCHLIST = REPO / "configs" / "watchlist.yaml"
+WATCHLIST_PROFILES = REPO / "configs" / "watchlist_profiles.yaml"
+RISK_SETTINGS = REPO / "configs" / "risk_settings.yaml"
+
+
+app = FastAPI(title="EWB Local Dashboard", version="0.1.0")
+
+
+def read_json(path: Path) -> dict[str, Any]:
+    if not path.exists():
+        return {}
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def read_watchlist() -> dict[str, Any]:
+    if not WATCHLIST.exists():
+        return {"tickers": [], "interval": "1h", "actions": []}
+    return yaml.safe_load(WATCHLIST.read_text(encoding="utf-8")) or {}
+
+
+def write_watchlist(payload: dict[str, Any]) -> None:
+    WATCHLIST.parent.mkdir(parents=True, exist_ok=True)
+    WATCHLIST.write_text(yaml.safe_dump(payload, sort_keys=False, allow_unicode=True), encoding="utf-8")
+
+
+def read_profiles() -> dict[str, Any]:
+    if not WATCHLIST_PROFILES.exists():
+        return {"profiles": {}}
+    return yaml.safe_load(WATCHLIST_PROFILES.read_text(encoding="utf-8")) or {"profiles": {}}
+
+
+def read_risk_settings() -> dict[str, Any]:
+    defaults = {"account_size": 10000.0, "risk_pct": 1.0, "max_position_pct": 25.0, "currency": "USD"}
+    if not RISK_SETTINGS.exists():
+        return defaults
+    loaded = yaml.safe_load(RISK_SETTINGS.read_text(encoding="utf-8")) or {}
+    return {**defaults, **loaded}
+
+
+def write_risk_settings(payload: dict[str, Any]) -> None:
+    RISK_SETTINGS.parent.mkdir(parents=True, exist_ok=True)
+    RISK_SETTINGS.write_text(yaml.safe_dump(payload, sort_keys=False, allow_unicode=True), encoding="utf-8")
+
+
+def write_profiles(payload: dict[str, Any]) -> None:
+    WATCHLIST_PROFILES.parent.mkdir(parents=True, exist_ok=True)
+    WATCHLIST_PROFILES.write_text(yaml.safe_dump(payload, sort_keys=False, allow_unicode=True), encoding="utf-8")
+
+
+def clean_watchlist_form(form: dict[str, str]) -> dict[str, Any]:
+    tickers = [
+        item.strip().upper()
+        for item in form.get("tickers", "").replace("\n", ",").split(",")
+        if item.strip()
+    ]
+    actions = [
+        action.strip()
+        for action in form.get("actions", "buy,sell").replace("\n", ",").split(",")
+        if action.strip()
+    ]
+    return {
+        "tickers": tickers,
+        "interval": form.get("interval", "1h").strip() or "1h",
+        "actions": actions or ["buy", "sell"],
+        "fresh_hours": int(float(form.get("fresh_hours", "48") or 48)),
+        "limit": int(float(form.get("limit", "20") or 20)),
+    }
+
+
+def clean_risk_form(form: dict[str, str]) -> dict[str, Any]:
+    return {
+        "account_size": float(form.get("account_size", "10000") or 10000),
+        "risk_pct": float(form.get("risk_pct", "1") or 1),
+        "max_position_pct": float(form.get("max_position_pct", "25") or 25),
+        "currency": form.get("currency", "USD").strip().upper() or "USD",
+    }
+
+
+def fmt(value: Any, digits: int = 2) -> str:
+    if value in (None, ""):
+        return "-"
+    try:
+        number = float(value)
+    except Exception:
+        return str(value)
+    if not math.isfinite(number):
+        return "-"
+    return f"{number:.{digits}f}"
+
+
+def pct(value: Any) -> str:
+    if value in (None, ""):
+        return "-"
+    try:
+        number = float(value)
+    except Exception:
+        return str(value)
+    if not math.isfinite(number):
+        return "-"
+    return f"{number * 100:.1f}%"
+
+
+def price(value: Any) -> str:
+    if value in (None, "") or pd.isna(value):
+        return "-"
+    try:
+        return f"{float(value):.6g}"
+    except Exception:
+        return str(value)
+
+
+def html_escape(value: Any) -> str:
+    return (
+        str(value)
+        .replace("&", "&amp;")
+        .replace("<", "&lt;")
+        .replace(">", "&gt;")
+        .replace('"', "&quot;")
+    )
+
+
+def nav(active: str) -> str:
+    items = [
+        ("Dashboard", "/"),
+        ("Action Board", "/action-board"),
+        ("Signals", "/signals"),
+        ("Trades", "/trades"),
+        ("History", "/history"),
+        ("Backtest", "/backtest"),
+        ("Settings", "/settings"),
+    ]
+    links = []
+    for label, href in items:
+        cls = "active" if label == active else ""
+        links.append(f'<a class="{cls}" href="{href}">{label}</a>')
+    return "".join(links)
+
+
+def layout(title: str, active: str, body: str) -> HTMLResponse:
+    html = f"""<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{html_escape(title)}</title>
+  <style>
+    :root {{
+      --bg: #f6f7f9;
+      --surface: #ffffff;
+      --text: #17202a;
+      --muted: #667085;
+      --line: #d9dee7;
+      --green: #087443;
+      --red: #b42318;
+      --amber: #a15c07;
+      --blue: #175cd3;
+    }}
+    * {{ box-sizing: border-box; }}
+    body {{ margin: 0; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: var(--bg); color: var(--text); }}
+    header {{ display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 18px 28px; background: #101828; color: white; }}
+    header h1 {{ font-size: 18px; margin: 0; font-weight: 650; letter-spacing: 0; }}
+    nav {{ display: flex; flex-wrap: wrap; gap: 6px; }}
+    nav a {{ color: #d0d5dd; text-decoration: none; padding: 8px 10px; border-radius: 6px; font-size: 14px; }}
+    nav a.active, nav a:hover {{ background: #344054; color: white; }}
+    main {{ max-width: 1440px; margin: 0 auto; padding: 24px 28px 48px; }}
+    .topbar {{ display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 18px; }}
+    h2 {{ margin: 0; font-size: 24px; letter-spacing: 0; }}
+    h3 {{ margin: 26px 0 10px; font-size: 16px; }}
+    .muted {{ color: var(--muted); }}
+    .grid {{ display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }}
+    .metric {{ background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 14px; min-height: 92px; }}
+    .metric .label {{ color: var(--muted); font-size: 13px; }}
+    .metric .value {{ margin-top: 8px; font-size: 24px; font-weight: 700; }}
+    .band {{ background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 16px; margin: 14px 0; }}
+    table {{ width: 100%; border-collapse: collapse; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }}
+    th, td {{ padding: 10px 12px; border-bottom: 1px solid var(--line); text-align: left; font-size: 14px; vertical-align: top; }}
+    th {{ color: #344054; background: #eef2f6; font-weight: 650; }}
+    tr:last-child td {{ border-bottom: 0; }}
+    .pill {{ display: inline-flex; align-items: center; min-height: 24px; padding: 3px 8px; border-radius: 999px; font-size: 12px; font-weight: 650; background: #eef2f6; color: #344054; }}
+    .buy, .long, .win, .ready, .review {{ background: #dcfae6; color: var(--green); }}
+    .sell, .short, .loss, .block {{ background: #fee4e2; color: var(--red); }}
+    .observe, .paper, .wait, .open, .check, .watch {{ background: #fef0c7; color: var(--amber); }}
+    .btn {{ border: 1px solid #175cd3; background: #175cd3; color: white; border-radius: 6px; padding: 9px 12px; cursor: pointer; font-weight: 650; }}
+    .btn.secondary {{ background: white; color: #175cd3; }}
+    .btn.mini {{ display: inline-flex; width: auto; padding: 5px 8px; margin: 2px 3px 2px 0; font-size: 12px; text-decoration: none; }}
+    form.inline {{ display: inline; }}
+    input, select {{ width: 100%; border: 1px solid var(--line); border-radius: 6px; padding: 9px 10px; font: inherit; }}
+    .form-grid {{ display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; align-items: end; }}
+    .code {{ font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px; }}
+    @media (max-width: 900px) {{ header {{ align-items: flex-start; flex-direction: column; }} .grid, .form-grid {{ grid-template-columns: 1fr; }} main {{ padding: 18px; }} table {{ display: block; overflow-x: auto; }} }}
+  </style>
+</head>
+<body>
+  <header><h1>EWB Strategy System</h1><nav>{nav(active)}</nav></header>
+  <main>{body}</main>
+</body>
+</html>"""
+    return HTMLResponse(html)
+
+
+def pill(value: Any, cls: str | None = None) -> str:
+    text = html_escape(value if value not in (None, "") else "-")
+    css = cls or str(value).lower().replace(" ", "-")
+    return f'<span class="pill {html_escape(css)}">{text}</span>'
+
+
+def table(headers: list[str], rows: list[list[Any]]) -> str:
+    if not rows:
+        return '<div class="band muted">No rows yet.</div>'
+    head = "".join(f"<th>{html_escape(col)}</th>" for col in headers)
+    body_rows = []
+    for row in rows:
+        body_rows.append("<tr>" + "".join(f"<td>{cell}</td>" for cell in row) + "</tr>")
+    return f"<table><thead><tr>{head}</tr></thead><tbody>{''.join(body_rows)}</tbody></table>"
+
+
+def as_timestamp(value: Any) -> pd.Timestamp | None:
+    if value in (None, ""):
+        return None
+    try:
+        ts = pd.Timestamp(value)
+    except Exception:
+        return None
+    if ts.tzinfo is None:
+        ts = ts.tz_localize("UTC")
+    return ts.tz_convert("UTC")
+
+
+def age_text(value: Any) -> str:
+    ts = as_timestamp(value)
+    if ts is None:
+        return "-"
+    age_hours = max(0.0, (pd.Timestamp.utcnow() - ts).total_seconds() / 3600.0)
+    if age_hours < 48:
+        return f"{age_hours:.0f}h"
+    return f"{age_hours / 24.0:.1f}d"
+
+
+def rr_value(entry: Any, stop: Any, target: Any) -> float | None:
+    try:
+        entry_f = float(entry)
+        stop_f = float(stop)
+        target_f = float(target)
+    except Exception:
+        return None
+    risk = abs(entry_f - stop_f)
+    reward = abs(target_f - entry_f)
+    return reward / risk if risk > 0 else None
+
+
+def rr_text(entry: Any, stop: Any, target: Any) -> str:
+    rr = rr_value(entry, stop, target)
+    return "-" if rr is None else f"{rr:.2f}"
+
+
+def position_plan(
+    *,
+    entry: Any,
+    stop: Any,
+    target: Any,
+    side: str,
+    settings: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    settings = settings or read_risk_settings()
+    try:
+        entry_f = float(entry)
+        stop_f = float(stop)
+        target_f = float(target)
+        account = float(settings.get("account_size", 0))
+        risk_pct = float(settings.get("risk_pct", 0))
+        max_position_pct = float(settings.get("max_position_pct", 100))
+    except Exception:
+        return {"ok": False}
+    if entry_f <= 0 or account <= 0:
+        return {"ok": False}
+    direction = 1 if str(side).lower() in {"buy", "long"} else -1
+    risk_per_unit = direction * (entry_f - stop_f)
+    reward_per_unit = direction * (target_f - entry_f)
+    if risk_per_unit <= 0 or reward_per_unit <= 0:
+        return {"ok": False}
+    risk_cash = account * risk_pct / 100.0
+    max_position_cash = account * max_position_pct / 100.0
+    qty_by_risk = risk_cash / risk_per_unit
+    qty_by_cap = max_position_cash / entry_f
+    qty = max(0.0, min(qty_by_risk, qty_by_cap))
+    capital = qty * entry_f
+    actual_risk = qty * risk_per_unit
+    reward_cash = qty * reward_per_unit
+    return {
+        "ok": True,
+        "qty": qty,
+        "capital": capital,
+        "risk_cash": actual_risk,
+        "reward_cash": reward_cash,
+        "rr": reward_per_unit / risk_per_unit,
+        "risk_cap_limited": qty_by_cap < qty_by_risk,
+        "currency": settings.get("currency", "USD"),
+    }
+
+
+def money(value: Any, currency: str = "USD") -> str:
+    try:
+        number = float(value)
+    except Exception:
+        return "-"
+    if not math.isfinite(number):
+        return "-"
+    return f"{number:,.2f} {currency}"
+
+
+def qty_text(value: Any) -> str:
+    try:
+        number = float(value)
+    except Exception:
+        return "-"
+    if not math.isfinite(number):
+        return "-"
+    return f"{number:.6g}"
+
+
+def tv_symbol(ticker: str) -> str:
+    ticker = ticker.upper()
+    if ticker.endswith("-USD"):
+        return "CRYPTO:" + ticker.replace("-USD", "USD")
+    return "NASDAQ:" + ticker
+
+
+def tradingview_link(ticker: Any) -> str:
+    ticker_text = str(ticker or "")
+    if not ticker_text:
+        return "-"
+    href = "https://www.tradingview.com/chart/?symbol=" + tv_symbol(ticker_text)
+    return f'<a class="btn secondary mini" href="{html_escape(href)}" target="_blank">TV</a>'
+
+
+def action_decision(action: str, probability: Any, rr: float | None, entry_ts: Any) -> tuple[str, str]:
+    if action not in {"buy", "sell"}:
+        return "WAIT", "No actionable side"
+    prob = None
+    try:
+        prob = float(probability)
+        if prob <= 1.0:
+            prob *= 100.0
+    except Exception:
+        pass
+    age = as_timestamp(entry_ts)
+    age_hours = None if age is None else max(0.0, (pd.Timestamp.utcnow() - age).total_seconds() / 3600.0)
+    if rr is None or rr < 1.0:
+        return "WAIT", "RR below 1.0 or missing"
+    if prob is None or prob < 55.0:
+        return "WATCH", "Probability below 55%"
+    if age_hours is not None and age_hours > 72:
+        return "CHECK", "Signal is older than 72h"
+    return "REVIEW", "Check chart, HTF context and news"
+
+
+def accept_signal_form(signal: dict[str, Any]) -> str:
+    risk = signal.get("risk_box", {})
+    fields = {
+        "ticker": signal.get("ticker", ""),
+        "interval": signal.get("interval", ""),
+        "action": signal.get("recommended_action", ""),
+        "entry_ts": signal.get("entry_ts", ""),
+        "entry_px": risk.get("entry_px", ""),
+        "stop_px": risk.get("stop_px", ""),
+        "target_px": risk.get("target_px", ""),
+        "fig_type": signal.get("pattern", ""),
+        "probability": signal.get("p_trade_win", ""),
+        "htf_context": "scanner signal - confirm HTF on chart",
+    }
+    inputs = "".join(
+        f'<input type="hidden" name="{html_escape(key)}" value="{html_escape(value)}">'
+        for key, value in fields.items()
+        if value not in (None, "")
+    )
+    return f'<form class="inline" method="post" action="/signals/accept">{inputs}<button class="btn mini" type="submit">Paper</button></form>'
+
+
+def asset_class(ticker: Any) -> str:
+    return "crypto" if str(ticker or "").upper().endswith("-USD") else "stock"
+
+
+def passes_action_filters(
+    *,
+    decision: str,
+    ticker: Any,
+    interval: Any,
+    probability: Any,
+    rr: float | None,
+    filters: dict[str, Any],
+) -> bool:
+    decision_filter = filters.get("decision", "all")
+    asset_filter = filters.get("asset", "all")
+    tf_filter = filters.get("tf", "all")
+    min_p = float(filters.get("min_p") or 0)
+    min_rr = float(filters.get("min_rr") or 0)
+    prob = None
+    try:
+        prob = float(probability)
+        if prob <= 1:
+            prob *= 100.0
+    except Exception:
+        pass
+    if decision_filter != "all" and decision.lower() != decision_filter:
+        return False
+    if asset_filter != "all" and asset_class(ticker) != asset_filter:
+        return False
+    if tf_filter != "all" and str(interval) != tf_filter:
+        return False
+    if min_p and (prob is None or prob < min_p):
+        return False
+    if min_rr and (rr is None or rr < min_rr):
+        return False
+    return True
+
+
+def action_board_rows(limit: int = 20, filters: dict[str, Any] | None = None) -> list[list[Any]]:
+    filters = filters or {}
+    report = read_json(SIGNALS_DIR / "daily_report.json")
+    risk_settings = read_risk_settings()
+    rows: list[list[Any]] = []
+    for signal in report.get("signals", [])[:limit]:
+        action = str(signal.get("recommended_action", "wait")).lower()
+        risk = signal.get("risk_box", {})
+        rr = rr_value(risk.get("entry_px"), risk.get("stop_px"), risk.get("target_px"))
+        decision, reason = action_decision(action, signal.get("p_trade_win"), rr, signal.get("entry_ts"))
+        if not passes_action_filters(
+            decision=decision,
+            ticker=signal.get("ticker", ""),
+            interval=signal.get("interval", report.get("interval", "")),
+            probability=signal.get("p_trade_win"),
+            rr=rr,
+            filters=filters,
+        ):
+            continue
+        plan = position_plan(
+            entry=risk.get("entry_px"),
+            stop=risk.get("stop_px"),
+            target=risk.get("target_px"),
+            side=action,
+            settings=risk_settings,
+        )
+        action_cell = tradingview_link(signal.get("ticker", "")) + accept_signal_form(signal)
+        rows.append([
+            pill(decision, decision.lower()),
+            html_escape(signal.get("ticker", "")),
+            pill(action, action),
+            html_escape(signal.get("interval", report.get("interval", ""))),
+            html_escape(signal.get("pattern", "")),
+            pct(signal.get("p_trade_win")),
+            "-" if rr is None else f"{rr:.2f}",
+            qty_text(plan.get("qty")) if plan.get("ok") else "-",
+            money(plan.get("risk_cash"), plan.get("currency", "USD")) if plan.get("ok") else "-",
+            price(risk.get("entry_px")),
+            price(risk.get("stop_px")),
+            price(risk.get("target_px")),
+            age_text(signal.get("entry_ts")),
+            action_cell + f'<div class="muted">{html_escape(reason)}</div>',
+        ])
+    forward = forward_frame()
+    open_trades = forward[forward["status"] == "open"].copy() if not forward.empty else pd.DataFrame()
+    sort_col = "entry_ts" if "entry_ts" in open_trades.columns else None
+    sorted_open = open_trades.sort_values(sort_col, ascending=False) if sort_col else open_trades
+    for _, row in sorted_open.iterrows():
+        signal_id = html_escape(row.get("signal_id", ""))
+        rr = rr_value(row.get("entry_px"), row.get("stop_px"), row.get("target_px"))
+        if not passes_action_filters(
+            decision="HOLD",
+            ticker=row.get("ticker", ""),
+            interval=row.get("interval", ""),
+            probability=row.get("probability", ""),
+            rr=rr,
+            filters=filters,
+        ):
+            continue
+        plan = position_plan(
+            entry=row.get("entry_px"),
+            stop=row.get("stop_px"),
+            target=row.get("target_px"),
+            side=row.get("side", ""),
+            settings=risk_settings,
+        )
+        rows.insert(0, [
+            pill("HOLD", "open"),
+            html_escape(row.get("ticker", "")),
+            pill(row.get("side", ""), str(row.get("side", "")).lower()),
+            html_escape(row.get("interval", "")),
+            html_escape(row.get("fig_type", "")),
+            html_escape(row.get("probability", "")),
+            "-" if rr is None else f"{rr:.2f}",
+            qty_text(plan.get("qty")) if plan.get("ok") else "-",
+            money(plan.get("risk_cash"), plan.get("currency", "USD")) if plan.get("ok") else "-",
+            price(row.get("entry_px")),
+            price(row.get("stop_px")),
+            price(row.get("target_px")),
+            age_text(row.get("entry_ts")),
+            tradingview_link(row.get("ticker", "")) + f'<a class="btn mini" href="/trades/{signal_id}">Manage</a>',
+        ])
+    return rows[:limit]
+
+
+def checklist_rows(signal: dict[str, Any], outcome: dict[str, Any] | None) -> list[list[Any]]:
+    rr = rr_value(signal.get("entry_px"), signal.get("stop_px"), signal.get("target_px"))
+    action = str(signal.get("action", signal.get("side", "wait"))).lower()
+    decision, reason = action_decision(action, signal.get("probability"), rr, signal.get("entry_ts"))
+    prob = None
+    try:
+        prob = float(signal.get("probability"))
+    except Exception:
+        pass
+    return [
+        ["Trade status", pill("CLOSED" if outcome else "OPEN", "open" if not outcome else "ready")],
+        ["Decision", pill(decision, decision.lower())],
+        ["Reason", html_escape(reason)],
+        ["Freshness", age_text(signal.get("entry_ts"))],
+        ["Probability gate", pill("OK" if prob is not None and prob >= 55.0 else "CHECK", "review" if prob is not None and prob >= 55.0 else "check")],
+        ["R:R gate", pill("OK" if rr is not None and rr >= 1.0 else "CHECK", "review" if rr is not None and rr >= 1.0 else "check")],
+        ["HTF context", html_escape(signal.get("htf_context", "") or "Check chart manually")],
+        ["Chart", tradingview_link(signal.get("ticker", ""))],
+        ["Manual guard", "Check news, liquidity, earnings date and position size before entry."],
+    ]
+
+
+def risk_plan_rows(signal: dict[str, Any]) -> list[list[Any]]:
+    plan = position_plan(
+        entry=signal.get("entry_px"),
+        stop=signal.get("stop_px"),
+        target=signal.get("target_px"),
+        side=signal.get("action", signal.get("side", "")),
+    )
+    if not plan.get("ok"):
+        return [["Position plan", "Missing or invalid entry/SL/TP. Do not size this trade yet."]]
+    currency = plan.get("currency", "USD")
+    return [
+        ["Quantity", qty_text(plan.get("qty"))],
+        ["Capital used", money(plan.get("capital"), currency)],
+        ["Risk", money(plan.get("risk_cash"), currency)],
+        ["Potential reward", money(plan.get("reward_cash"), currency)],
+        ["R:R", fmt(plan.get("rr"))],
+        ["Capital limit", "Max position cap applied" if plan.get("risk_cap_limited") else "Risk % controls size"],
+    ]
+
+
+def forward_frame() -> pd.DataFrame:
+    return forward_trades(read_jsonl(FORWARD_LOG))
+
+
+def alert_event_rows(limit: int = 30) -> list[list[Any]]:
+    signals = [
+        row
+        for row in read_jsonl(FORWARD_LOG)
+        if row.get("event_type") == "signal"
+    ]
+    rows = []
+    for row in reversed(signals[-limit:]):
+        signal_id = html_escape(row.get("signal_id", ""))
+        rows.append([
+            f'<a class="code" href="/trades/{signal_id}">{signal_id}</a>',
+            html_escape(row.get("ticker", "")),
+            html_escape(row.get("interval", "")),
+            pill(row.get("side", ""), str(row.get("side", "")).lower()),
+            html_escape(row.get("fig_type", "")),
+            price(row.get("entry_px")),
+            price(row.get("stop_px")),
+            price(row.get("target_px")),
+            html_escape(row.get("probability", "")),
+            html_escape(row.get("source", "")),
+            html_escape(row.get("recorded_at", "")),
+        ])
+    return rows
+
+
+def events_for_signal(signal_id: str) -> list[dict[str, Any]]:
+    return [
+        row
+        for row in read_jsonl(FORWARD_LOG)
+        if row.get("signal_id") == signal_id
+    ]
+
+
+def signal_detail(signal_id: str) -> tuple[dict[str, Any] | None, dict[str, Any] | None, list[dict[str, Any]]]:
+    signal = None
+    outcome = None
+    notes = []
+    for row in events_for_signal(signal_id):
+        if row.get("event_type") == "signal":
+            signal = row
+        elif row.get("event_type") == "outcome":
+            outcome = row
+        elif row.get("event_type") == "note":
+            notes.append(row)
+    return signal, outcome, notes
+
+
+def dashboard_payload() -> dict[str, Any]:
+    forward = forward_frame()
+    open_trades = forward[forward["status"] == "open"].copy() if not forward.empty else pd.DataFrame()
+    closed = forward[forward["status"] == "closed"].copy() if not forward.empty else pd.DataFrame()
+    daily = read_json(BACKTEST_DIR / "ewb_forward_daily_report.json")
+    backtest = read_json(BACKTEST_DIR / "ewb_strategy_backtest_summary.json")
+    forward_summary = trade_summary(closed)
+    return {
+        "daily": daily,
+        "backtest": backtest,
+        "forward": forward,
+        "open": open_trades,
+        "closed": closed,
+        "forward_summary": forward_summary,
+    }
+
+
+@app.get("/", response_class=HTMLResponse)
+def dashboard() -> HTMLResponse:
+    data = dashboard_payload()
+    daily = data["daily"]
+    backtest = data["backtest"]
+    decision = daily.get("decision", "OBSERVE")
+    counts = daily.get("counts", {})
+    portfolio = backtest.get("portfolio", {})
+    metrics = [
+        ("Decision", pill(decision, decision.lower().split()[0])),
+        ("Open Trades", counts.get("open", len(data["open"]))),
+        ("Closed Forward", counts.get("closed", len(data["closed"]))),
+        ("Baseline Winrate", pct(portfolio.get("winrate"))),
+        ("Baseline Expectancy", pct(portfolio.get("expectancy"))),
+        ("Forward Winrate", pct(data["forward_summary"].get("winrate"))),
+        ("Forward Expectancy", pct(data["forward_summary"].get("expectancy"))),
+        ("Forward PF", fmt(data["forward_summary"].get("profit_factor"))),
+    ]
+    metric_html = "".join(
+        f'<div class="metric"><div class="label">{html_escape(label)}</div><div class="value">{value}</div></div>'
+        for label, value in metrics
+    )
+    body = f"""
+    <div class="topbar">
+      <div><h2>Dashboard</h2><div class="muted">Local control center for signals, paper trading and forward validation.</div></div>
+      <form method="post" action="/actions/run-strategy"><button class="btn" type="submit">Run pipeline</button></form>
+    </div>
+    <div class="grid">{metric_html}</div>
+    <div class="band"><strong>Operating decision:</strong> {html_escape(daily.get("decision_reason", "Run the strategy system pipeline to generate a fresh decision."))}</div>
+    <h3>Action Board</h3>
+    {table(["Decision", "Ticker", "Side", "TF", "Pattern", "P", "RR", "Qty", "Risk", "Entry", "SL", "TP", "Age", "Action"], action_board_rows(12))}
+    <h3>Next Actions</h3>
+    <div class="band">
+      1. Keep TradingView alert on <span class="code">Any alert() function call</span>.<br>
+      2. Record every alert in the forward log.<br>
+      3. Settle every paper trade with TP/SL/time/manual outcome.<br>
+      4. Do not scale until forward stats confirm the baseline.
+    </div>
+    """
+    return layout("Dashboard", "Dashboard", body)
+
+
+@app.get("/action-board", response_class=HTMLResponse)
+def action_board(
+    decision: str = "all",
+    asset: str = "all",
+    tf: str = "all",
+    min_p: float = 0,
+    min_rr: float = 0,
+) -> HTMLResponse:
+    filters = {"decision": decision, "asset": asset, "tf": tf, "min_p": min_p, "min_rr": min_rr}
+    body = f"""
+    <div class="topbar"><div><h2>Action Board</h2><div class="muted">First screen for trading decisions: what to review, hold, skip or close.</div></div></div>
+    <form class="band form-grid" method="get" action="/action-board">
+      <label>Decision<select name="decision">
+        <option value="all" {"selected" if decision == "all" else ""}>All</option>
+        <option value="review" {"selected" if decision == "review" else ""}>REVIEW</option>
+        <option value="hold" {"selected" if decision == "hold" else ""}>HOLD</option>
+        <option value="check" {"selected" if decision == "check" else ""}>CHECK</option>
+        <option value="watch" {"selected" if decision == "watch" else ""}>WATCH</option>
+      </select></label>
+      <label>Asset<select name="asset">
+        <option value="all" {"selected" if asset == "all" else ""}>All</option>
+        <option value="stock" {"selected" if asset == "stock" else ""}>Stocks</option>
+        <option value="crypto" {"selected" if asset == "crypto" else ""}>Crypto</option>
+      </select></label>
+      <label>TF<input name="tf" value="{html_escape(tf)}" placeholder="all, 1h, 4h, 1d"></label>
+      <label>Min P<input name="min_p" value="{html_escape(min_p)}" placeholder="55"></label>
+      <label>Min RR<input name="min_rr" value="{html_escape(min_rr)}" placeholder="1.0"></label>
+      <button class="btn" type="submit">Filter</button>
+    </form>
+    {table(["Decision", "Ticker", "Side", "TF", "Pattern", "P", "RR", "Qty", "Risk", "Entry", "SL", "TP", "Age", "Action"], action_board_rows(50, filters))}
+    <div class="band">
+      <strong>How to read:</strong> REVIEW means open the chart and confirm HTF/wave context before entry.
+      HOLD means there is an open forward trade to manage. WAIT/CHECK means do not enter without manual review.
+    </div>
+    """
+    return layout("Action Board", "Action Board", body)
+
+
+@app.get("/signals", response_class=HTMLResponse)
+def signals() -> HTMLResponse:
+    report = read_json(SIGNALS_DIR / "daily_report.json")
+    signals = report.get("signals", [])
+    rows = []
+    for signal in signals:
+        risk = signal.get("risk_box", {})
+        rr = rr_text(risk.get("entry_px"), risk.get("stop_px"), risk.get("target_px"))
+        rows.append([
+            html_escape(signal.get("ticker", "")),
+            pill(signal.get("recommended_action", "wait")),
+            html_escape(signal.get("pattern", "")),
+            pct(signal.get("p_trade_win")),
+            pct(signal.get("expected_net_return")),
+            rr,
+            price(risk.get("entry_px")),
+            price(risk.get("stop_px")),
+            price(risk.get("target_px")),
+            age_text(signal.get("entry_ts")),
+            tradingview_link(signal.get("ticker", "")),
+            html_escape(signal.get("entry_ts", "")),
+        ])
+    body = f"""
+    <div class="topbar"><div><h2>Signals</h2><div class="muted">Fresh scanner signals from the selected watchlist.</div></div></div>
+    {table(["Ticker", "Action", "Pattern", "P(win)", "EV", "RR", "Entry", "SL", "TP", "Age", "Chart", "Time"], rows)}
+    <h3>Add Alert</h3>
+    <form class="band form-grid" method="post" action="/alerts/add">
+      <label>Ticker<input name="ticker" placeholder="AAPL" required></label>
+      <label>TF<input name="interval" placeholder="1d" required></label>
+      <label>Action<select name="action"><option>buy</option><option>sell</option></select></label>
+      <label>Entry time<input name="entry_ts" placeholder="2026-06-07T16:00:00Z" required></label>
+      <label>Entry<input name="entry_px" required></label>
+      <label>Stop<input name="stop_px"></label>
+      <label>Target<input name="target_px"></label>
+      <label>Pattern<select name="fig_type"><option>flat</option><option>double_corr</option><option>unknown</option></select></label>
+      <label>Probability<input name="probability" placeholder="61.2"></label>
+      <label>HTF context<input name="htf_context" placeholder="1W UP | 1D W3?"></label>
+      <button class="btn" type="submit">Add alert</button>
+    </form>
+    <h3>Alerts Feed</h3>
+    {table(["ID", "Ticker", "TF", "Side", "Pattern", "Entry", "SL", "TP", "P", "Source", "Recorded"], alert_event_rows())}
+    """
+    return layout("Signals", "Signals", body)
+
+
+def trade_rows(frame: pd.DataFrame, include_settle: bool) -> list[list[Any]]:
+    if frame.empty:
+        return []
+    sort_col = "entry_ts" if "entry_ts" in frame.columns else frame.columns[0]
+    rows = []
+    for _, row in frame.sort_values(sort_col, ascending=False).iterrows():
+        settle = ""
+        signal_id = html_escape(row.get("signal_id", ""))
+        if include_settle:
+            settle = f"""
+            <form class="inline" method="post" action="/trades/settle">
+              <input type="hidden" name="signal_id" value="{signal_id}">
+              <input type="hidden" name="exit_ts" value="{pd.Timestamp.utcnow().isoformat()}">
+              <input type="hidden" name="exit_px" value="{html_escape(row.get("target_px", ""))}">
+              <input type="hidden" name="exit_reason" value="tp">
+              <button class="btn secondary" type="submit">TP</button>
+            </form>
+            """
+        rows.append([
+            f'<a class="code" href="/trades/{signal_id}">{signal_id}</a>',
+            html_escape(row.get("ticker", "")),
+            html_escape(row.get("interval", "")),
+            pill(row.get("side", ""), str(row.get("side", "")).lower()),
+            html_escape(row.get("fig_type", "")),
+            price(row.get("entry_px")),
+            price(row.get("stop_px")),
+            price(row.get("target_px")),
+            pct(row.get("net_ret")) if row.get("status") == "closed" else pill("open", "open"),
+            html_escape(row.get("exit_reason", "")),
+            settle,
+        ])
+    return rows
+
+
+@app.get("/trades", response_class=HTMLResponse)
+def trades() -> HTMLResponse:
+    frame = forward_frame()
+    open_trades = frame[frame["status"] == "open"].copy() if not frame.empty else pd.DataFrame()
+    body = f"""
+    <div class="topbar"><div><h2>Open Trades</h2><div class="muted">Paper/live positions reconstructed from TradingView alerts.</div></div></div>
+    {table(["ID", "Ticker", "TF", "Side", "Pattern", "Entry", "SL", "TP", "Status", "Exit", "Quick"], trade_rows(open_trades, True))}
+    <h3>Manual Close</h3>
+    <form class="band form-grid" method="post" action="/trades/settle">
+      <label>Signal ID<input name="signal_id" required></label>
+      <label>Exit time<input name="exit_ts" placeholder="2026-06-07T16:00:00Z" required></label>
+      <label>Exit price<input name="exit_px" required></label>
+      <label>Reason<select name="exit_reason"><option>tp</option><option>sl</option><option>time</option><option>manual</option><option>cancelled</option></select></label>
+      <button class="btn" type="submit">Settle</button>
+    </form>
+    """
+    return layout("Trades", "Trades", body)
+
+
+@app.get("/history", response_class=HTMLResponse)
+def history() -> HTMLResponse:
+    frame = forward_frame()
+    closed = frame[frame["status"] == "closed"].copy() if not frame.empty else pd.DataFrame()
+    body = f"""
+    <div class="topbar"><div><h2>History</h2><div class="muted">Closed forward trades and outcomes.</div></div></div>
+    {table(["ID", "Ticker", "TF", "Side", "Pattern", "Entry", "SL", "TP", "Return", "Exit", ""], trade_rows(closed, False))}
+    """
+    return layout("History", "History", body)
+
+
+@app.get("/trades/{signal_id}", response_class=HTMLResponse)
+def trade_detail_page(signal_id: str) -> HTMLResponse:
+    signal, outcome, notes = signal_detail(signal_id)
+    if signal is None:
+        body = f"""
+        <div class="topbar"><div><h2>Trade not found</h2><div class="muted">{html_escape(signal_id)}</div></div></div>
+        <div class="band">No signal event exists for this ID.</div>
+        """
+        return layout("Trade Detail", "Trades", body)
+
+    side = signal.get("side", "")
+    status = "closed" if outcome else "open"
+    ret_text = "-"
+    if outcome:
+        entry = float(signal.get("entry_px") or 0.0)
+        exit_px = float(outcome.get("exit_px") or 0.0)
+        direction = 1 if side == "long" else -1
+        ret_text = pct(direction * (exit_px - entry) / entry) if entry else "-"
+    metric_html = "".join([
+        f'<div class="metric"><div class="label">Ticker</div><div class="value">{html_escape(signal.get("ticker", ""))}</div></div>',
+        f'<div class="metric"><div class="label">Status</div><div class="value">{pill(status, status)}</div></div>',
+        f'<div class="metric"><div class="label">Side</div><div class="value">{pill(side, str(side).lower())}</div></div>',
+        f'<div class="metric"><div class="label">Return</div><div class="value">{ret_text}</div></div>',
+    ])
+    signal_rows = [
+        ["Signal ID", f'<span class="code">{html_escape(signal_id)}</span>'],
+        ["Interval", html_escape(signal.get("interval", ""))],
+        ["Pattern", html_escape(signal.get("fig_type", ""))],
+        ["Entry time", html_escape(signal.get("entry_ts", ""))],
+        ["Entry", price(signal.get("entry_px"))],
+        ["Stop", price(signal.get("stop_px"))],
+        ["Target", price(signal.get("target_px"))],
+        ["R:R", rr_text(signal.get("entry_px"), signal.get("stop_px"), signal.get("target_px"))],
+        ["Probability", html_escape(signal.get("probability", ""))],
+        ["HTF context", html_escape(signal.get("htf_context", ""))],
+        ["Source", html_escape(signal.get("source", ""))],
+    ]
+    if outcome:
+        signal_rows.extend([
+            ["Exit time", html_escape(outcome.get("exit_ts", ""))],
+            ["Exit price", price(outcome.get("exit_px"))],
+            ["Exit reason", html_escape(outcome.get("exit_reason", ""))],
+        ])
+    note_rows = [
+        [
+            html_escape(row.get("recorded_at", "")),
+            pill(row.get("tag", "note")),
+            html_escape(row.get("author", "")),
+            html_escape(row.get("note", "")),
+        ]
+        for row in reversed(notes)
+    ]
+    settle_form = "" if outcome else f"""
+    <h3>Close Trade</h3>
+    <form class="band form-grid" method="post" action="/trades/settle">
+      <input type="hidden" name="signal_id" value="{html_escape(signal_id)}">
+      <label>Exit time<input name="exit_ts" placeholder="2026-06-07T16:00:00Z" required></label>
+      <label>Exit price<input name="exit_px" required></label>
+      <label>Reason<select name="exit_reason"><option>tp</option><option>sl</option><option>time</option><option>manual</option><option>cancelled</option></select></label>
+      <button class="btn" type="submit">Settle</button>
+    </form>
+    """
+    body = f"""
+    <div class="topbar"><div><h2>Trade Detail</h2><div class="muted">{html_escape(signal_id)}</div></div></div>
+    <div class="grid">{metric_html}</div>
+    <h3>Trading Checklist</h3>
+    {table(["Check", "Value"], checklist_rows(signal, outcome))}
+    <h3>Risk Plan</h3>
+    {table(["Metric", "Value"], risk_plan_rows(signal))}
+    <h3>Signal Contract</h3>
+    {table(["Field", "Value"], signal_rows)}
+    {settle_form}
+    <h3>Anton Notes</h3>
+    {table(["Recorded", "Tag", "Author", "Note"], note_rows)}
+    <form class="band form-grid" method="post" action="/trades/{html_escape(signal_id)}/notes">
+      <label>Tag<select name="tag">
+        <option>note</option>
+        <option>late_entry</option>
+        <option>ignored_htf</option>
+        <option>moved_stop</option>
+        <option>manual_exit</option>
+        <option>news_risk</option>
+        <option>good_execution</option>
+      </select></label>
+      <label>Author<input name="author" value="anton"></label>
+      <label>Note<input name="note" placeholder="Что произошло и почему" required></label>
+      <button class="btn" type="submit">Add note</button>
+    </form>
+    """
+    return layout("Trade Detail", "Trades", body)
+
+
+@app.get("/backtest", response_class=HTMLResponse)
+def backtest() -> HTMLResponse:
+    data = dashboard_payload()
+    historical = data["backtest"].get("portfolio", {})
+    forward = data["forward_summary"]
+    rows = [
+        ["Historical baseline", historical.get("trades", 0), pct(historical.get("winrate")), pct(historical.get("expectancy")), fmt(historical.get("profit_factor")), pct(historical.get("max_drawdown"))],
+        ["Forward closed", forward.get("trades", 0), pct(forward.get("winrate")), pct(forward.get("expectancy")), fmt(forward.get("profit_factor")), pct(forward.get("max_drawdown"))],
+    ]
+    body = f"""
+    <div class="topbar"><div><h2>Backtest vs Forward</h2><div class="muted">Reality check before any bot or capital scaling.</div></div></div>
+    {table(["Scope", "Trades", "Winrate", "Expectancy", "PF", "Drawdown"], rows)}
+    <div class="band">Rule: fewer than 30 closed forward trades means observe only. PF below 1.1 or negative expectancy means block automation.</div>
+    """
+    return layout("Backtest", "Backtest", body)
+
+
+@app.get("/settings", response_class=HTMLResponse)
+def settings() -> HTMLResponse:
+    watchlist = read_watchlist()
+    profiles = read_profiles().get("profiles", {})
+    risk_settings = read_risk_settings()
+    tickers = watchlist.get("tickers", [])
+    profile_rows = []
+    for key, profile in profiles.items():
+        profile_rows.append([
+            html_escape(profile.get("label", key)),
+            html_escape(profile.get("interval", "")),
+            html_escape(", ".join(profile.get("actions", []))),
+            html_escape(profile.get("fresh_hours", "")),
+            html_escape(len(profile.get("tickers", []))),
+            f"""
+            <form class="inline" method="post" action="/settings/profiles/apply">
+              <input type="hidden" name="profile_id" value="{html_escape(key)}">
+              <button class="btn mini" type="submit">Apply</button>
+            </form>
+            """,
+        ])
+    body = f"""
+    <div class="topbar"><div><h2>Settings</h2><div class="muted">Watchlist profiles for long-term, swing, intraday and crypto modes.</div></div></div>
+    <div class="band">
+      <strong>Interval:</strong> {html_escape(watchlist.get("interval", "-"))}<br>
+      <strong>Actions:</strong> {html_escape(", ".join(watchlist.get("actions", [])))}<br>
+      <strong>Fresh hours:</strong> {html_escape(watchlist.get("fresh_hours", "-"))}<br>
+      <strong>Tickers:</strong> {html_escape(", ".join(tickers))}
+    </div>
+    <h3>Profiles</h3>
+    {table(["Profile", "TF", "Actions", "Fresh h", "Tickers", "Apply"], profile_rows)}
+    <h3>Edit Active Watchlist</h3>
+    <form class="band form-grid" method="post" action="/settings/watchlist/save">
+      <label>Profile ID<input name="profile_id" value="anton_custom"></label>
+      <label>Label<input name="label" value="Anton Custom"></label>
+      <label>Interval<input name="interval" value="{html_escape(watchlist.get("interval", "1h"))}"></label>
+      <label>Actions<input name="actions" value="{html_escape(",".join(watchlist.get("actions", ["buy", "sell"])))}"></label>
+      <label>Fresh hours<input name="fresh_hours" value="{html_escape(watchlist.get("fresh_hours", 48))}"></label>
+      <label>Limit<input name="limit" value="{html_escape(watchlist.get("limit", 20))}"></label>
+      <label style="grid-column: span 4;">Tickers<input name="tickers" value="{html_escape(", ".join(tickers))}"></label>
+      <button class="btn" type="submit">Save active</button>
+    </form>
+    <form class="band" method="post" action="/settings/run-scan">
+      <button class="btn" type="submit">Run scan for active watchlist</button>
+      <span class="muted">Updates Signals and Action Board from configs/watchlist.yaml.</span>
+    </form>
+    <h3>Risk Settings</h3>
+    <form class="band form-grid" method="post" action="/settings/risk/save">
+      <label>Account size<input name="account_size" value="{html_escape(risk_settings.get("account_size", 10000))}"></label>
+      <label>Risk % per trade<input name="risk_pct" value="{html_escape(risk_settings.get("risk_pct", 1.0))}"></label>
+      <label>Max position %<input name="max_position_pct" value="{html_escape(risk_settings.get("max_position_pct", 25.0))}"></label>
+      <label>Currency<input name="currency" value="{html_escape(risk_settings.get("currency", "USD"))}"></label>
+      <button class="btn" type="submit">Save risk</button>
+    </form>
+    """
+    return layout("Settings", "Settings", body)
+
+
+@app.post("/trades/settle")
+async def settle_trade(request: Request) -> RedirectResponse:
+    body = (await request.body()).decode("utf-8")
+    form = {key: values[0] for key, values in parse_qs(body).items()}
+    append_jsonl(FORWARD_LOG, outcome_event(
+        signal_id=form["signal_id"],
+        exit_ts=form["exit_ts"],
+        exit_px=float(form["exit_px"]),
+        exit_reason=form.get("exit_reason", "manual"),
+    ))
+    return RedirectResponse(f"/trades/{form['signal_id']}", status_code=303)
+
+
+@app.post("/trades/{signal_id}/notes")
+async def add_trade_note(signal_id: str, request: Request) -> RedirectResponse:
+    body = (await request.body()).decode("utf-8")
+    form = {key: values[0] for key, values in parse_qs(body).items()}
+    append_jsonl(FORWARD_LOG, note_event(
+        signal_id=signal_id,
+        note=form["note"],
+        tag=form.get("tag", "note"),
+        author=form.get("author", "anton"),
+    ))
+    return RedirectResponse(f"/trades/{signal_id}", status_code=303)
+
+
+@app.post("/alerts/add")
+async def add_alert(request: Request) -> RedirectResponse:
+    body = (await request.body()).decode("utf-8")
+    form = {key: values[0] for key, values in parse_qs(body).items()}
+    append_jsonl(FORWARD_LOG, signal_event(
+        ticker=form["ticker"],
+        interval=form["interval"],
+        action=form["action"],
+        entry_ts=form["entry_ts"],
+        entry_px=float(form["entry_px"]),
+        stop_px=float(form["stop_px"]) if form.get("stop_px") else None,
+        target_px=float(form["target_px"]) if form.get("target_px") else None,
+        fig_type=form.get("fig_type") or "unknown",
+        probability=float(form["probability"]) if form.get("probability") else None,
+        htf_context=form.get("htf_context", ""),
+        source="dashboard_manual",
+    ))
+    return RedirectResponse("/signals", status_code=303)
+
+
+@app.post("/signals/accept")
+async def accept_signal(request: Request) -> RedirectResponse:
+    body = (await request.body()).decode("utf-8")
+    form = {key: values[0] for key, values in parse_qs(body).items()}
+    row = signal_event(
+        ticker=form["ticker"],
+        interval=form["interval"],
+        action=form["action"],
+        entry_ts=form["entry_ts"],
+        entry_px=float(form["entry_px"]),
+        stop_px=float(form["stop_px"]) if form.get("stop_px") else None,
+        target_px=float(form["target_px"]) if form.get("target_px") else None,
+        fig_type=form.get("fig_type") or "unknown",
+        probability=float(form["probability"]) if form.get("probability") else None,
+        htf_context=form.get("htf_context", ""),
+        source="dashboard_scanner_accept",
+    )
+    append_jsonl(FORWARD_LOG, row)
+    return RedirectResponse(f"/trades/{row['signal_id']}", status_code=303)
+
+
+@app.post("/settings/profiles/apply")
+async def apply_profile(request: Request) -> RedirectResponse:
+    body = (await request.body()).decode("utf-8")
+    form = {key: values[0] for key, values in parse_qs(body).items()}
+    profiles = read_profiles().get("profiles", {})
+    profile = profiles.get(form.get("profile_id", ""))
+    if profile:
+        write_watchlist({
+            "tickers": profile.get("tickers", []),
+            "interval": profile.get("interval", "1h"),
+            "actions": profile.get("actions", ["buy", "sell"]),
+            "fresh_hours": profile.get("fresh_hours", 48),
+            "limit": profile.get("limit", 20),
+        })
+    return RedirectResponse("/settings", status_code=303)
+
+
+@app.post("/settings/watchlist/save")
+async def save_watchlist(request: Request) -> RedirectResponse:
+    body = (await request.body()).decode("utf-8")
+    form = {key: values[0] for key, values in parse_qs(body).items()}
+    watchlist = clean_watchlist_form(form)
+    write_watchlist(watchlist)
+    profiles_payload = read_profiles()
+    profiles = profiles_payload.setdefault("profiles", {})
+    profile_id = form.get("profile_id", "anton_custom").strip() or "anton_custom"
+    profiles[profile_id] = {
+        "label": form.get("label", profile_id).strip() or profile_id,
+        **watchlist,
+    }
+    write_profiles(profiles_payload)
+    return RedirectResponse("/settings", status_code=303)
+
+
+@app.post("/settings/risk/save")
+async def save_risk_settings(request: Request) -> RedirectResponse:
+    body = (await request.body()).decode("utf-8")
+    form = {key: values[0] for key, values in parse_qs(body).items()}
+    write_risk_settings(clean_risk_form(form))
+    return RedirectResponse("/settings", status_code=303)
+
+
+@app.post("/settings/run-scan")
+def run_scan() -> RedirectResponse:
+    subprocess.run(["python3", "python/scripts/daily_report.py"], cwd=REPO, check=False)
+    return RedirectResponse("/action-board", status_code=303)
+
+
+@app.post("/actions/run-strategy")
+def run_strategy() -> RedirectResponse:
+    subprocess.run([str(REPO / "scripts" / "run_strategy_system.sh")], cwd=REPO, check=False)
+    return RedirectResponse("/", status_code=303)
+
+
+@app.post("/api/alerts/tradingview")
+async def api_tradingview_alert(request: Request) -> JSONResponse:
+    payload = await request.json()
+    row = signal_event_from_payload(payload, source="tradingview_webhook")
+    append_jsonl(FORWARD_LOG, row)
+    return JSONResponse({
+        "ok": True,
+        "signal_id": row["signal_id"],
+        "ticker": row["ticker"],
+        "interval": row["interval"],
+        "side": row["side"],
+    })
+
+
+@app.get("/api/status")
+def api_status() -> dict[str, Any]:
+    data = dashboard_payload()
+    return {
+        "decision": data["daily"].get("decision", "OBSERVE"),
+        "open": int(len(data["open"])),
+        "closed": int(len(data["closed"])),
+        "baseline_trades": data["backtest"].get("portfolio", {}).get("trades", 0),
+    }

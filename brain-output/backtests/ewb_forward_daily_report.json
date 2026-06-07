@@ -1,0 +1,38 @@
+{
+  "decision": "OBSERVE",
+  "decision_reason": "Меньше 30 закрытых forward-сделок. Реальные деньги и автоматизацию не включать.",
+  "counts": {
+    "events": 0,
+    "signals": 0,
+    "open": 0,
+    "closed": 0
+  },
+  "historical": {
+    "trades": 1518,
+    "winrate": 0.5988142292490118,
+    "expectancy": 0.014394861924968224,
+    "profit_factor": 1.825554554736457,
+    "max_drawdown": -0.9621242136350999,
+    "avg_return": 0.014394861924968224,
+    "median_return": 0.008484215800087644,
+    "total_return": 1602053.1349666219,
+    "avg_win": 0.053157485563157476,
+    "avg_loss": -0.043462650204939876
+  },
+  "forward": {
+    "trades": 0,
+    "winrate": NaN,
+    "expectancy": NaN,
+    "profit_factor": NaN,
+    "max_drawdown": NaN,
+    "avg_return": NaN,
+    "median_return": NaN
+  },
+  "open_rows": [],
+  "closed_rows": [],
+  "outputs": {
+    "trades": "/Users/DEV/Elliott-wave/brain-output/backtests/ewb_forward_daily_trades.parquet",
+    "markdown": "/Users/DEV/Elliott-wave/brain-output/backtests/ewb_forward_daily_report.md",
+    "json": "/Users/DEV/Elliott-wave/brain-output/backtests/ewb_forward_daily_report.json"
+  }
+}

@@ -60,6 +60,20 @@ from ewb.research import (
     validate_trade_records,
 )
 from ewb.research.universe import CRYPTO
+from ewb.strategy_system import (
+    StrategyContract,
+    append_jsonl,
+    filter_contract_trades,
+    forward_trades,
+    grouped_summary,
+    normalize_historical_trades,
+    note_event,
+    outcome_event,
+    signal_event,
+    signal_event_from_payload,
+    trade_summary,
+    walk_forward_summary,
+)
 
 REPO = Path(__file__).resolve().parents[2]
 
@@ -75,6 +89,117 @@ def test_cost_for_asset_classes():
 def test_crypto_universe_uses_trx_instead_of_legacy_matic():
     assert "TRX-USD" in CRYPTO
     assert "MATIC-USD" not in CRYPTO
+
+
+def test_strategy_system_contract_metrics_and_forward_log(tmp_path):
+    raw = pd.DataFrame([
+        {
+            "ticker": "AAPL", "universe_rank": 1, "interval": "1h",
+            "fig_type": "flat", "side": "long", "mtf_policy": "none",
+            "entry_variant": "confirm_close", "entry_ts": "2026-01-01T10:00:00Z",
+            "entry_px": 100.0, "p_win_model": 60.0, "sample_size": 50,
+            "net_ret": 0.02, "win": True,
+        },
+        {
+            "ticker": "MSFT", "universe_rank": 2, "interval": "1h",
+            "fig_type": "triangle", "side": "short", "mtf_policy": "none",
+            "entry_variant": "confirm_close", "entry_ts": "2026-01-02T10:00:00Z",
+            "entry_px": 200.0, "p_win_model": 40.0, "sample_size": 50,
+            "net_ret": -0.01, "win": False,
+        },
+        {
+            "ticker": "NVDA", "universe_rank": 3, "interval": "4h",
+            "fig_type": "double_corr", "side": "short", "mtf_policy": "none",
+            "entry_variant": "confirm_close", "entry_ts": "2026-01-03T10:00:00Z",
+            "entry_px": 300.0, "p_win_model": 58.0, "sample_size": 30,
+            "net_ret": -0.01, "win": False,
+        },
+    ])
+    trades = normalize_historical_trades(raw, asset_class="stock")
+    scoped = filter_contract_trades(
+        trades,
+        contract=StrategyContract(),
+        min_model_p=55.0,
+        min_sample=20,
+        intervals={"1h", "4h"},
+        universe_limit=10,
+    )
+
+    assert set(scoped["fig_type"]) == {"flat", "double_corr"}
+    assert "setup_key" in scoped
+    assert "signal_id" in scoped
+    metrics = trade_summary(scoped)
+    assert metrics["trades"] == 2
+    assert metrics["winrate"] == 0.5
+    grouped = grouped_summary(scoped, ["interval", "fig_type"])
+    assert set(grouped["fig_type"]) == {"flat", "double_corr"}
+    folds = walk_forward_summary(scoped, folds=2)
+    assert len(folds) == 2
+
+    log_path = tmp_path / "forward.jsonl"
+    signal = signal_event(
+        ticker="TSLA",
+        interval="1h",
+        action="sell",
+        entry_ts="2026-06-07T12:00:00Z",
+        entry_px=390.0,
+        stop_px=411.0,
+        target_px=388.0,
+        fig_type="double_corr",
+        probability=54.5,
+        htf_context="4H DOWN | 1D DOWN",
+    )
+    append_jsonl(log_path, signal)
+    append_jsonl(log_path, outcome_event(
+        signal_id=signal["signal_id"],
+        exit_ts="2026-06-08T12:00:00Z",
+        exit_px=388.0,
+        exit_reason="tp",
+    ))
+    forward = forward_trades([signal, outcome_event(
+        signal_id=signal["signal_id"],
+        exit_ts="2026-06-08T12:00:00Z",
+        exit_px=388.0,
+        exit_reason="tp",
+    )])
+    assert forward.loc[0, "status"] == "closed"
+    assert forward.loc[0, "win"]
+    note = note_event(signal_id=signal["signal_id"], tag="late_entry", note="entered late")
+    assert note["event_type"] == "note"
+    assert note["tag"] == "late_entry"
+    assert note["note"] == "entered late"
+
+    alert = signal_event_from_payload({
+        "symbol": "BTC-USD",
+        "timeframe": "4h",
+        "side": "buy",
+        "time": "2026-06-07T16:00:00Z",
+        "close": "70000",
+        "sl": "68000",
+        "tp": "74000",
+        "pattern": "flat",
+        "p_win": "58.5",
+        "context": "1D UP | 1W UP",
+    })
+    assert alert["ticker"] == "BTC-USD"
+    assert alert["side"] == "long"
+    assert alert["entry_px"] == 70000.0
+    assert alert["probability"] == 58.5
+    assert alert["setup_key"].startswith("crypto|4h|flat|long")
+
+
+def test_strategy_system_scripts_exist():
+    assert (REPO / "python" / "scripts" / "backtest_ewb_strategy.py").exists()
+    assert (REPO / "python" / "scripts" / "forward_signal_logger.py").exists()
+    assert (REPO / "python" / "scripts" / "forward_daily_report.py").exists()
+    assert (REPO / "python" / "scripts" / "compare_backtest_forward.py").exists()
+    assert (REPO / "python" / "scripts" / "run_dashboard.py").exists()
+    assert (REPO / "python" / "ewb" / "web_dashboard.py").exists()
+    assert (REPO / "scripts" / "run_strategy_system.sh").exists()
+    assert (REPO / "configs" / "watchlist_profiles.yaml").exists()
+    assert (REPO / "configs" / "risk_settings.yaml").exists()
+    assert (REPO / "docs" / "strategy_system.md").exists()
+    assert (REPO / "docs" / "local_dashboard.md").exists()
 
 
 def test_pine_crypto_research_contract_is_static():
@@ -115,6 +240,15 @@ def test_pine_neely_core_signal_contract():
     assert "enableActionSoundAlerts" in mono
     assert "enableCoreSoundAlerts" in mono
     assert "actionAlertMessage" in mono
+    assert '\\"source\\":\\"tradingview_pine\\"' in mono
+    assert '\\"strategy_id\\":\\"ewb-anton-v1\\"' in mono
+    assert '\\"entry_px\\":' in mono
+    assert '\\"stop_px\\":' in mono
+    assert '\\"target_px\\":' in mono
+    assert '\\"htf_context\\":' in mono
+    assert "actionAlertFigType" in mono
+    assert "str.format_time(time" in mono
+    assert "jsonString(syminfo.ticker)" in mono
     assert "coreAlertMessage" in mono
     assert "alert(actionAlertMessage" in mono
     assert "alert(coreAlertMessage" in mono
