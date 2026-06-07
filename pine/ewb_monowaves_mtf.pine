@@ -32,6 +32,22 @@ htf     = input.timeframe("240", "Старший таймфрейм", group = gr
 colH    = input.color(color.orange, "Цвет старшего ТФ", group = grpH)
 wH      = input.int(3, "Толщина линий", group = grpH, minval = 1, maxval = 5)
 
+grpHtfMap = "HTF wave map"
+showHtfWaveMap = input.bool(true, "Show auto higher-TF wave map", group = grpHtfMap,
+     tooltip = "Визуальный слой вложенности: показывает ближайшие старшие активные моноволны, не меняя торговый HTF-фильтр.")
+htfContextLevels = input.int(2, "Auto higher-TF levels", group = grpHtfMap, minval = 1, maxval = 4,
+     tooltip = "1D: W(+M), 4H: D+W, 1H: 4H+D, 15m/30m: 1H+4H. Увеличьте до 3-4 для более дальнего контекста.")
+htfContextSegments = input.int(3, "Confirmed HTF segments", group = grpHtfMap, minval = 1, maxval = 6,
+     tooltip = "Сколько последних завершённых HTF-моноволн рисовать для контекста.")
+showHtfWaveMapLabels = input.bool(true, "Label active HTF waves", group = grpHtfMap,
+     tooltip = "Подписывает активные старшие моноволны справа от последнего бара.")
+htfContextWidth = input.int(2, "HTF map line width", group = grpHtfMap, minval = 1, maxval = 5)
+colMap1h = input.color(color.blue, "1H context color", group = grpHtfMap)
+colMap4h = input.color(color.orange, "4H context color", group = grpHtfMap)
+colMapD = input.color(color.purple, "1D context color", group = grpHtfMap)
+colMapW = input.color(color.fuchsia, "1W context color", group = grpHtfMap)
+colMapM = input.color(color.gray, "1M context color", group = grpHtfMap)
+
 grpActive = "Активная волна последнего бара"
 showActiveWave = input.bool(true, "Показывать активную волну текущего ТФ", group = grpActive,
      tooltip = "Показывает незавершённую моноволну от последнего подтверждённого pivot до последнего бара. Это live-контекст, не подтверждённая фигура.")
@@ -341,6 +357,69 @@ waveDirText(int dir) =>
 
 waveAtrText(float amp, float atrValue) =>
     not na(amp) and not na(atrValue) and atrValue > 0 ? str.tostring(amp / atrValue, "#.00") + " ATR" : "n/a ATR"
+
+chartTfRank() =>
+    timeframe.isintraday ? timeframe.multiplier < 60 ? 1 : timeframe.multiplier < 240 ? 2 : 3 :
+     timeframe.isdaily ? 4 :
+     timeframe.isweekly ? 5 :
+     timeframe.ismonthly ? 6 : 7
+
+contextTfEnabled(int tfRank, int currentRank) =>
+    showHtfWaveMap and tfRank > currentRank and tfRank <= currentRank + htfContextLevels
+
+appendContextText(string base, string item) =>
+    item == "" ? base : base == "" ? item : base + " | " + item
+
+contextWaveText(bool enabled, string tfName, int count, int dir) =>
+    enabled and dir != 0 ? tfName + " m" + str.tostring(count) + " " + waveDirText(dir) : ""
+
+clearHtfWaveMap(array<line> lines, array<label> labels) =>
+    while array.size(lines) > 0
+        line.delete(array.pop(lines))
+    while array.size(labels) > 0
+        label.delete(array.pop(labels))
+
+rememberContextPivot(array<int> bars, array<float> prices, ZZResult r, int maxPivots) =>
+    if r.confirmed and not na(r.prevBar)
+        if array.size(bars) == 0
+            array.push(bars, r.prevBar)
+            array.push(prices, r.prevPrice)
+        array.push(bars, r.bar)
+        array.push(prices, r.price)
+        while array.size(bars) > maxPivots
+            array.shift(bars)
+            array.shift(prices)
+
+drawHtfWaveMap(string tfName, bool enabled, array<int> bars, array<float> prices, int activeDir, int activeCount,
+               int activeBar, float activePivot, float activePrice, float activeAtr, color ctxCol, int xOffset,
+               array<line> lines, array<label> labels) =>
+    clearHtfWaveMap(lines, labels)
+    if enabled
+        int n = array.size(bars)
+        if n >= 2
+            int firstIdx = math.max(0, n - htfContextSegments - 1)
+            for i = firstIdx to n - 2
+                int x1 = array.get(bars, i)
+                int x2 = array.get(bars, i + 1)
+                float y1 = array.get(prices, i)
+                float y2 = array.get(prices, i + 1)
+                line ctxLine = line.new(x1, y1, x2, y2,
+                     xloc = xloc.bar_index, color = color.new(ctxCol, 35),
+                     width = htfContextWidth, style = line.style_dashed)
+                array.push(lines, ctxLine)
+        if not na(activeBar) and not na(activePivot) and not na(activePrice)
+            float activeAmp = math.abs(activePrice - activePivot)
+            line activeCtxLine = line.new(activeBar, activePivot, bar_index, activePrice,
+                 xloc = xloc.bar_index, color = color.new(ctxCol, 0),
+                 width = htfContextWidth + 1, style = line.style_solid)
+            array.push(lines, activeCtxLine)
+            if showHtfWaveMapLabels
+                label activeCtxLabel = label.new(bar_index + xOffset, activePrice,
+                     tfName + " active\nm" + str.tostring(activeCount) + " " + waveDirText(activeDir) + "\n" + waveAtrText(activeAmp, activeAtr),
+                     xloc = xloc.bar_index, yloc = yloc.price, style = label.style_label_left,
+                     color = color.new(ctxCol, 5), textcolor = color.white, size = size.tiny,
+                     tooltip = "Активная моноволна старшего ТФ, внутри которой находится последний бар текущего графика.")
+                array.push(labels, activeCtxLabel)
 
 // ──────────── РАСПОЗНАВАНИЕ ФИГУР (Уровень 3, Структурные Серии A-E) ──────────
 // Рисует рамку фигуры + метку с названием.
@@ -1553,6 +1632,107 @@ if showHtfWave3Bias and htfPivotN >= 3
         htfWave3Target1 := hp2 + htfWave3Dir * w1Len * 1.618
         htfWave3Target2 := hp2 + htfWave3Dir * w1Len * 2.618
 
+// ───────────────────── HTF WAVE MAP (VISUAL CONTEXT) ─────────────────────
+int currentTfRank = chartTfRank()
+bool map1hEnabled = contextTfEnabled(2, currentTfRank)
+bool map4hEnabled = contextTfEnabled(3, currentTfRank)
+bool mapDEnabled = contextTfEnabled(4, currentTfRank)
+bool mapWEnabled = contextTfEnabled(5, currentTfRank)
+bool mapMEnabled = contextTfEnabled(6, currentTfRank)
+
+float map1hHigh = request.security(syminfo.tickerid, "60", high, lookahead = barmerge.lookahead_off)
+float map1hLow = request.security(syminfo.tickerid, "60", low, lookahead = barmerge.lookahead_off)
+float map1hClose = request.security(syminfo.tickerid, "60", close, lookahead = barmerge.lookahead_off)
+int map1hTime = request.security(syminfo.tickerid, "60", time, lookahead = barmerge.lookahead_off)
+float map1hAtr = request.security(syminfo.tickerid, "60", ta.atr(atrLen), lookahead = barmerge.lookahead_off)
+
+float map4hHigh = request.security(syminfo.tickerid, "240", high, lookahead = barmerge.lookahead_off)
+float map4hLow = request.security(syminfo.tickerid, "240", low, lookahead = barmerge.lookahead_off)
+float map4hClose = request.security(syminfo.tickerid, "240", close, lookahead = barmerge.lookahead_off)
+int map4hTime = request.security(syminfo.tickerid, "240", time, lookahead = barmerge.lookahead_off)
+float map4hAtr = request.security(syminfo.tickerid, "240", ta.atr(atrLen), lookahead = barmerge.lookahead_off)
+
+float mapDHigh = request.security(syminfo.tickerid, "D", high, lookahead = barmerge.lookahead_off)
+float mapDLow = request.security(syminfo.tickerid, "D", low, lookahead = barmerge.lookahead_off)
+float mapDClose = request.security(syminfo.tickerid, "D", close, lookahead = barmerge.lookahead_off)
+int mapDTime = request.security(syminfo.tickerid, "D", time, lookahead = barmerge.lookahead_off)
+float mapDAtr = request.security(syminfo.tickerid, "D", ta.atr(atrLen), lookahead = barmerge.lookahead_off)
+
+float mapWHigh = request.security(syminfo.tickerid, "W", high, lookahead = barmerge.lookahead_off)
+float mapWLow = request.security(syminfo.tickerid, "W", low, lookahead = barmerge.lookahead_off)
+float mapWClose = request.security(syminfo.tickerid, "W", close, lookahead = barmerge.lookahead_off)
+int mapWTime = request.security(syminfo.tickerid, "W", time, lookahead = barmerge.lookahead_off)
+float mapWAtr = request.security(syminfo.tickerid, "W", ta.atr(atrLen), lookahead = barmerge.lookahead_off)
+
+float mapMHigh = request.security(syminfo.tickerid, "M", high, lookahead = barmerge.lookahead_off)
+float mapMLow = request.security(syminfo.tickerid, "M", low, lookahead = barmerge.lookahead_off)
+float mapMClose = request.security(syminfo.tickerid, "M", close, lookahead = barmerge.lookahead_off)
+int mapMTime = request.security(syminfo.tickerid, "M", time, lookahead = barmerge.lookahead_off)
+float mapMAtr = request.security(syminfo.tickerid, "M", ta.atr(atrLen), lookahead = barmerge.lookahead_off)
+
+var ZZState zMap1h = ZZState.new()
+var ZZState zMap4h = ZZState.new()
+var ZZState zMapD = ZZState.new()
+var ZZState zMapW = ZZState.new()
+var ZZState zMapM = ZZState.new()
+var array<int> map1hBars = array.new<int>()
+var array<float> map1hPrices = array.new<float>()
+var array<int> map4hBars = array.new<int>()
+var array<float> map4hPrices = array.new<float>()
+var array<int> mapDBars = array.new<int>()
+var array<float> mapDPrices = array.new<float>()
+var array<int> mapWBars = array.new<int>()
+var array<float> mapWPrices = array.new<float>()
+var array<int> mapMBars = array.new<int>()
+var array<float> mapMPrices = array.new<float>()
+var array<line> map1hLines = array.new<line>()
+var array<label> map1hLabels = array.new<label>()
+var array<line> map4hLines = array.new<line>()
+var array<label> map4hLabels = array.new<label>()
+var array<line> mapDLines = array.new<line>()
+var array<label> mapDLabels = array.new<label>()
+var array<line> mapWLines = array.new<line>()
+var array<label> mapWLabels = array.new<label>()
+var array<line> mapMLines = array.new<line>()
+var array<label> mapMLabels = array.new<label>()
+
+int mapMaxPivots = htfContextSegments + 2
+int map1hTimeChg = ta.change(map1hTime)
+int map4hTimeChg = ta.change(map4hTime)
+int mapDTimeChg = ta.change(mapDTime)
+int mapWTimeChg = ta.change(mapWTime)
+int mapMTimeChg = ta.change(mapMTime)
+if map1hEnabled and not na(map1hHigh) and map1hTimeChg != 0
+    ZZResult rMap1h = zMap1h.step(map1hHigh, map1hLow, useATR ? map1hAtr * atrMult : map1hClose * pctRev / 100.0)
+    rememberContextPivot(map1hBars, map1hPrices, rMap1h, mapMaxPivots)
+if map4hEnabled and not na(map4hHigh) and map4hTimeChg != 0
+    ZZResult rMap4h = zMap4h.step(map4hHigh, map4hLow, useATR ? map4hAtr * atrMult : map4hClose * pctRev / 100.0)
+    rememberContextPivot(map4hBars, map4hPrices, rMap4h, mapMaxPivots)
+if mapDEnabled and not na(mapDHigh) and mapDTimeChg != 0
+    ZZResult rMapD = zMapD.step(mapDHigh, mapDLow, useATR ? mapDAtr * atrMult : mapDClose * pctRev / 100.0)
+    rememberContextPivot(mapDBars, mapDPrices, rMapD, mapMaxPivots)
+if mapWEnabled and not na(mapWHigh) and mapWTimeChg != 0
+    ZZResult rMapW = zMapW.step(mapWHigh, mapWLow, useATR ? mapWAtr * atrMult : mapWClose * pctRev / 100.0)
+    rememberContextPivot(mapWBars, mapWPrices, rMapW, mapMaxPivots)
+if mapMEnabled and not na(mapMHigh) and mapMTimeChg != 0
+    ZZResult rMapM = zMapM.step(mapMHigh, mapMLow, useATR ? mapMAtr * atrMult : mapMClose * pctRev / 100.0)
+    rememberContextPivot(mapMBars, mapMPrices, rMapM, mapMaxPivots)
+
+string mtfContextStack = ""
+mtfContextStack := appendContextText(mtfContextStack, contextWaveText(map1hEnabled, "1H", zMap1h.count, zMap1h.dir))
+mtfContextStack := appendContextText(mtfContextStack, contextWaveText(map4hEnabled, "4H", zMap4h.count, zMap4h.dir))
+mtfContextStack := appendContextText(mtfContextStack, contextWaveText(mapDEnabled, "1D", zMapD.count, zMapD.dir))
+mtfContextStack := appendContextText(mtfContextStack, contextWaveText(mapWEnabled, "1W", zMapW.count, zMapW.dir))
+mtfContextStack := appendContextText(mtfContextStack, contextWaveText(mapMEnabled, "1M", zMapM.count, zMapM.dir))
+string mtfContextDisplay = mtfContextStack == "" ? "HTF map building" : mtfContextStack
+
+if barstate.islast
+    drawHtfWaveMap("1H", map1hEnabled, map1hBars, map1hPrices, zMap1h.dir, zMap1h.count, zMap1h.pivotBar, zMap1h.pivotPrice, map1hClose, map1hAtr, colMap1h, 2, map1hLines, map1hLabels)
+    drawHtfWaveMap("4H", map4hEnabled, map4hBars, map4hPrices, zMap4h.dir, zMap4h.count, zMap4h.pivotBar, zMap4h.pivotPrice, map4hClose, map4hAtr, colMap4h, 4, map4hLines, map4hLabels)
+    drawHtfWaveMap("1D", mapDEnabled, mapDBars, mapDPrices, zMapD.dir, zMapD.count, zMapD.pivotBar, zMapD.pivotPrice, mapDClose, mapDAtr, colMapD, 6, mapDLines, mapDLabels)
+    drawHtfWaveMap("1W", mapWEnabled, mapWBars, mapWPrices, zMapW.dir, zMapW.count, zMapW.pivotBar, zMapW.pivotPrice, mapWClose, mapWAtr, colMapW, 8, mapWLines, mapWLabels)
+    drawHtfWaveMap("1M", mapMEnabled, mapMBars, mapMPrices, zMapM.dir, zMapM.count, zMapM.pivotBar, zMapM.pivotPrice, mapMClose, mapMAtr, colMapM, 10, mapMLines, mapMLabels)
+
 bool chartIsStock = syminfo.type == "stock"
 bool chartIsCrypto = syminfo.type == "crypto"
 bool marketModeAllowsChart = marketMode == "Research any" or (marketMode == "Stocks" and chartIsStock) or (marketMode == "Crypto" and chartIsCrypto) or (marketMode == "Auto" and (chartIsStock or chartIsCrypto))
@@ -1963,8 +2143,10 @@ string antonRule = actionNow == "BUY" or actionNow == "SELL" ? "Enter near Entry
 string displayLevels = liveAgainstHtfWave3 and htfWave3PullbackOnly ? displayHtfWave3Levels : useLiveHypothesisDecision ? liveHypothesisLevels : useHtfWave3WaitDecision ? displayHtfWave3Levels : actionableTradeSymbol and not na(lastTradeEntry) ? "E " + str.tostring(lastTradeEntry, format.mintick) + " | SL " + str.tostring(lastTradeSl, format.mintick) + " | TP " + str.tostring(lastTradeTp, format.mintick) : "—"
 string displayProbabilityState = shouldExitPosition ? "EXIT" : shouldHoldPosition ? "MANAGE" : displaySignalGrade
 string displayProbabilityMove = liveAgainstHtfWave3 and htfWave3PullbackOnly ? displayHtfWave3Prob : useLiveHypothesisDecision ? liveHypothesisProbabilityText : useHtfWave3WaitDecision ? displayHtfWave3Prob : actionableTradeSymbol and not na(lastTradeProb) ? "P " + str.tostring(lastTradeProb, "#.0") + "% | " + displayProbabilityState : cryptoResearchMarket ? "research only" : "—"
-string tfPlanText = htfWave3BiasActive ? htfWave3Plan : useLiveHypothesisDecision ? liveHypothesisTfText : timeframe.period + " entry | HTF " + htf + " filter"
+string tfPlanBase = htfWave3BiasActive ? htfWave3Plan : useLiveHypothesisDecision ? liveHypothesisTfText : timeframe.period + " entry | HTF " + htf + " filter"
+string tfPlanText = mtfContextStack == "" ? tfPlanBase : tfPlanBase + " | Map " + mtfContextStack
 string displayLiveContextLevels = hasLiveHypothesis ? liveHypothesisLevels : htfWave3BiasActive ? displayHtfWave3Levels : "—"
+string activeHtfDisplay = mtfContextStack == "" ? activeHInfo : activeHInfo + " | Map " + mtfContextStack
 
 // ───────────────────── ТЕКУЩИЙ ТОРГОВЫЙ ПЛАН ─────────────────────
 var int drawnActionKey = na
@@ -2599,5 +2781,5 @@ if showTradePanel and barstate.islast
         table.cell(info, 1, 20, activeCInfo, text_color = color.white,
              bgcolor = zC.dir > 0 ? color.new(colCUp, 55) : zC.dir < 0 ? color.new(colCDn, 55) : color.new(color.gray, 70))
         table.cell(info, 0, 21, "Active HTF wave", text_color = color.white, bgcolor = color.new(color.gray, 50))
-        table.cell(info, 1, 21, activeHInfo, text_color = color.white,
+        table.cell(info, 1, 21, activeHtfDisplay, text_color = color.white,
              bgcolor = htfBiasDir > 0 ? color.new(color.lime, 55) : htfBiasDir < 0 ? color.new(color.red, 55) : color.new(color.gray, 70))

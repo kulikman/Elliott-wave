@@ -129,6 +129,21 @@ def test_pine_neely_core_signal_contract():
     assert 'showLatestPivotNumbers = input.bool(false, "Show last pivot points"' in mono
     assert "latestPivotLabels" in mono
     assert '"P" + str.tostring(lp)' in mono
+    assert 'grpHtfMap = "HTF wave map"' in mono
+    assert "showHtfWaveMap" in mono
+    assert "htfContextLevels" in mono
+    assert "chartTfRank()" in mono
+    assert "contextTfEnabled" in mono
+    assert 'request.security(syminfo.tickerid, "60", high' in mono
+    assert 'request.security(syminfo.tickerid, "240", high' in mono
+    assert 'request.security(syminfo.tickerid, "D", high' in mono
+    assert 'request.security(syminfo.tickerid, "W", high' in mono
+    assert 'request.security(syminfo.tickerid, "M", high' in mono
+    assert "drawHtfWaveMap" in mono
+    assert "mtfContextStack" in mono
+    assert "tfPlanBase" in mono
+    assert 'tfPlanText = mtfContextStack == "" ? tfPlanBase : tfPlanBase + " | Map " + mtfContextStack' in mono
+    assert "activeHtfDisplay" in mono
     assert 'grpHyp = "Live structure hypothesis"' in mono
     assert "showLiveHypothesis" in mono
     assert "showHypothesisLevels" in mono
