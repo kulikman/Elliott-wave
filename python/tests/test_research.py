@@ -120,6 +120,7 @@ def test_pine_neely_core_signal_contract():
     assert "alert(coreAlertMessage" in mono
     assert "simpleAntonPanel" in mono
     assert "panelPositionInput" in mono
+    assert 'showMarketBanner = input.bool(false, "Show market safety banner"' in mono
     assert 'showTradeMarkers = input.bool(false, "Show previous entries/exits"' in mono
     assert 'onlyLatestSignal = input.bool(true, "Only latest signal"' in mono
     assert "EXIT TP" in mono
@@ -132,6 +133,7 @@ def test_pine_neely_core_signal_contract():
     assert 'grpHtfMap = "HTF wave map"' in mono
     assert "showHtfWaveMap" in mono
     assert "htfContextLevels" in mono
+    assert "htfMapRightOffset" in mono
     assert "chartTfRank()" in mono
     assert "contextTfEnabled" in mono
     assert 'request.security(syminfo.tickerid, "60", high' in mono
@@ -143,7 +145,10 @@ def test_pine_neely_core_signal_contract():
     assert "mtfContextStack" in mono
     assert "tfPlanBase" in mono
     assert 'tfPlanText = mtfContextStack == "" ? tfPlanBase : tfPlanBase + " | Map " + mtfContextStack' in mono
+    assert "tfPlanShort" in mono
     assert "activeHtfDisplay" in mono
+    assert "label.new(bar_index + htfMapRightOffset + xOffset" in mono
+    assert "htfW3MainLabel := label.new(w3X1, activeHPrice" in mono
     assert 'grpHyp = "Live structure hypothesis"' in mono
     assert "showLiveHypothesis" in mono
     assert "showHypothesisLevels" in mono

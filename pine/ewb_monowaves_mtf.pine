@@ -42,6 +42,8 @@ htfContextSegments = input.int(3, "Confirmed HTF segments", group = grpHtfMap, m
 showHtfWaveMapLabels = input.bool(true, "Label active HTF waves", group = grpHtfMap,
      tooltip = "Подписывает активные старшие моноволны справа от последнего бара.")
 htfContextWidth = input.int(2, "HTF map line width", group = grpHtfMap, minval = 1, maxval = 5)
+htfMapRightOffset = input.int(24, "HTF map label right offset", group = grpHtfMap, minval = 4, maxval = 120,
+     tooltip = "Сдвигает подписи старших ТФ вправо от последнего бара, чтобы они не закрывали свечи.")
 colMap1h = input.color(color.blue, "1H context color", group = grpHtfMap)
 colMap4h = input.color(color.orange, "4H context color", group = grpHtfMap)
 colMapD = input.color(color.purple, "1D context color", group = grpHtfMap)
@@ -101,8 +103,8 @@ onlyLatestSignal = input.bool(true, "Only latest signal", group = grpTrade,
      tooltip = "ON по умолчанию: на графике остается только последний рабочий план, чтобы не терялась текущая волна.")
 showTpProbabilities = input.bool(true, "Show TP probabilities", group = grpTrade,
      tooltip = "TP1/TP2/TP3 показывают вероятностную лестницу от калиброванной P(win): conservative/base/aggressive.")
-showMarketBanner = input.bool(true, "Show market safety banner", group = grpTrade,
-     tooltip = "Крупная метка справа: STOCK LIVE, CRYPTO LIVE или UNSUPPORTED.")
+showMarketBanner = input.bool(false, "Show market safety banner", group = grpTrade,
+     tooltip = "OFF по умолчанию: статус рынка уже есть в таблице, а крупная метка может перекрывать свечи.")
 maxHistoricalSignals = input.int(3, "Max historical signals", group = grpTrade, minval = 1, maxval = 10,
      tooltip = "Используется только если выключить Only latest signal.")
 actionLevelBars = input.int(80, "Длина уровней Action, баров", group = grpTrade, minval = 10, maxval = 300)
@@ -391,7 +393,7 @@ rememberContextPivot(array<int> bars, array<float> prices, ZZResult r, int maxPi
             array.shift(prices)
 
 drawHtfWaveMap(string tfName, bool enabled, array<int> bars, array<float> prices, int activeDir, int activeCount,
-               int activeBar, float activePivot, float activePrice, float activeAtr, color ctxCol, int xOffset,
+               int activeBar, float activePivot, float activePrice, float activeAtr, color ctxCol, int xOffset, float yAtrShift,
                array<line> lines, array<label> labels) =>
     clearHtfWaveMap(lines, labels)
     if enabled
@@ -409,12 +411,13 @@ drawHtfWaveMap(string tfName, bool enabled, array<int> bars, array<float> prices
                 array.push(lines, ctxLine)
         if not na(activeBar) and not na(activePivot) and not na(activePrice)
             float activeAmp = math.abs(activePrice - activePivot)
+            float labelY = activePrice + (na(activeAtr) ? 0.0 : activeAtr * yAtrShift)
             line activeCtxLine = line.new(activeBar, activePivot, bar_index, activePrice,
                  xloc = xloc.bar_index, color = color.new(ctxCol, 0),
                  width = htfContextWidth + 1, style = line.style_solid)
             array.push(lines, activeCtxLine)
             if showHtfWaveMapLabels
-                label activeCtxLabel = label.new(bar_index + xOffset, activePrice,
+                label activeCtxLabel = label.new(bar_index + htfMapRightOffset + xOffset, labelY,
                      tfName + " active\nm" + str.tostring(activeCount) + " " + waveDirText(activeDir) + "\n" + waveAtrText(activeAmp, activeAtr),
                      xloc = xloc.bar_index, yloc = yloc.price, style = label.style_label_left,
                      color = color.new(ctxCol, 5), textcolor = color.white, size = size.tiny,
@@ -1724,14 +1727,13 @@ mtfContextStack := appendContextText(mtfContextStack, contextWaveText(map4hEnabl
 mtfContextStack := appendContextText(mtfContextStack, contextWaveText(mapDEnabled, "1D", zMapD.count, zMapD.dir))
 mtfContextStack := appendContextText(mtfContextStack, contextWaveText(mapWEnabled, "1W", zMapW.count, zMapW.dir))
 mtfContextStack := appendContextText(mtfContextStack, contextWaveText(mapMEnabled, "1M", zMapM.count, zMapM.dir))
-string mtfContextDisplay = mtfContextStack == "" ? "HTF map building" : mtfContextStack
 
 if barstate.islast
-    drawHtfWaveMap("1H", map1hEnabled, map1hBars, map1hPrices, zMap1h.dir, zMap1h.count, zMap1h.pivotBar, zMap1h.pivotPrice, map1hClose, map1hAtr, colMap1h, 2, map1hLines, map1hLabels)
-    drawHtfWaveMap("4H", map4hEnabled, map4hBars, map4hPrices, zMap4h.dir, zMap4h.count, zMap4h.pivotBar, zMap4h.pivotPrice, map4hClose, map4hAtr, colMap4h, 4, map4hLines, map4hLabels)
-    drawHtfWaveMap("1D", mapDEnabled, mapDBars, mapDPrices, zMapD.dir, zMapD.count, zMapD.pivotBar, zMapD.pivotPrice, mapDClose, mapDAtr, colMapD, 6, mapDLines, mapDLabels)
-    drawHtfWaveMap("1W", mapWEnabled, mapWBars, mapWPrices, zMapW.dir, zMapW.count, zMapW.pivotBar, zMapW.pivotPrice, mapWClose, mapWAtr, colMapW, 8, mapWLines, mapWLabels)
-    drawHtfWaveMap("1M", mapMEnabled, mapMBars, mapMPrices, zMapM.dir, zMapM.count, zMapM.pivotBar, zMapM.pivotPrice, mapMClose, mapMAtr, colMapM, 10, mapMLines, mapMLabels)
+    drawHtfWaveMap("1H", map1hEnabled, map1hBars, map1hPrices, zMap1h.dir, zMap1h.count, zMap1h.pivotBar, zMap1h.pivotPrice, map1hClose, map1hAtr, colMap1h, 0, 0.40, map1hLines, map1hLabels)
+    drawHtfWaveMap("4H", map4hEnabled, map4hBars, map4hPrices, zMap4h.dir, zMap4h.count, zMap4h.pivotBar, zMap4h.pivotPrice, map4hClose, map4hAtr, colMap4h, 2, 0.80, map4hLines, map4hLabels)
+    drawHtfWaveMap("1D", mapDEnabled, mapDBars, mapDPrices, zMapD.dir, zMapD.count, zMapD.pivotBar, zMapD.pivotPrice, mapDClose, mapDAtr, colMapD, 4, 1.20, mapDLines, mapDLabels)
+    drawHtfWaveMap("1W", mapWEnabled, mapWBars, mapWPrices, zMapW.dir, zMapW.count, zMapW.pivotBar, zMapW.pivotPrice, mapWClose, mapWAtr, colMapW, 6, 1.60, mapWLines, mapWLabels)
+    drawHtfWaveMap("1M", mapMEnabled, mapMBars, mapMPrices, zMapM.dir, zMapM.count, zMapM.pivotBar, zMapM.pivotPrice, mapMClose, mapMAtr, colMapM, 8, 2.00, mapMLines, mapMLabels)
 
 bool chartIsStock = syminfo.type == "stock"
 bool chartIsCrypto = syminfo.type == "crypto"
@@ -2145,6 +2147,8 @@ string displayProbabilityState = shouldExitPosition ? "EXIT" : shouldHoldPositio
 string displayProbabilityMove = liveAgainstHtfWave3 and htfWave3PullbackOnly ? displayHtfWave3Prob : useLiveHypothesisDecision ? liveHypothesisProbabilityText : useHtfWave3WaitDecision ? displayHtfWave3Prob : actionableTradeSymbol and not na(lastTradeProb) ? "P " + str.tostring(lastTradeProb, "#.0") + "% | " + displayProbabilityState : cryptoResearchMarket ? "research only" : "—"
 string tfPlanBase = htfWave3BiasActive ? htfWave3Plan : useLiveHypothesisDecision ? liveHypothesisTfText : timeframe.period + " entry | HTF " + htf + " filter"
 string tfPlanText = mtfContextStack == "" ? tfPlanBase : tfPlanBase + " | Map " + mtfContextStack
+string tfPlanShortBase = htfWave3BiasActive ? "W3 " + hypSideText(htfWave3Dir) : useLiveHypothesisDecision ? liveHypothesisState : timeframe.period + " entry"
+string tfPlanShort = mtfContextStack == "" ? tfPlanShortBase : tfPlanShortBase + " | " + mtfContextStack
 string displayLiveContextLevels = hasLiveHypothesis ? liveHypothesisLevels : htfWave3BiasActive ? displayHtfWave3Levels : "—"
 string activeHtfDisplay = mtfContextStack == "" ? activeHInfo : activeHInfo + " | Map " + mtfContextStack
 
@@ -2641,10 +2645,10 @@ if barstate.islast
         color w3Col = htfWave3Dir > 0 ? color.new(color.lime, 0) : color.new(color.red, 0)
         int w3X0 = bar_index
         int w3X1 = bar_index + htfWave3LevelBars
-        htfW3MainLabel := label.new(w3X0, activeHPrice,
+        htfW3MainLabel := label.new(w3X1, activeHPrice,
              "HTF W3\n" + (htfWave3Dir > 0 ? "BUY PULLBACKS" : "SELL PULLBACKS") + "\nP≈" + str.tostring(htfWave3Prob, "#.0") + "%",
              xloc = xloc.bar_index, yloc = yloc.price,
-             style = htfWave3Dir > 0 ? label.style_label_up : label.style_label_down,
+             style = label.style_label_left,
              color = w3Col, textcolor = color.white, size = size.small,
              tooltip = htfWave3Reason + ". LTF rule: trade pullbacks only in HTF W3 direction.")
         if not na(htfWave3Invalid)
@@ -2724,7 +2728,7 @@ if showTradePanel and barstate.islast
         table.cell(info, 0, 5, "Live hypothesis", text_color = color.white, bgcolor = color.new(color.gray, 35))
         table.cell(info, 1, 5, displayPatternNow, text_color = useLiveHypothesisDecision and not liveHypothesisReady ? color.black : color.white, bgcolor = hasLiveHypothesis ? hypColor(liveHypothesisProb, liveHypothesisTradeDir, liveHypothesisReady) : htfWave3BiasActive ? coreSignalColor("IMPULSE POST", htfWave3Dir) : color.new(color.gray, 70))
         table.cell(info, 0, 6, "TF plan", text_color = color.white, bgcolor = color.new(color.gray, 35))
-        table.cell(info, 1, 6, tfPlanText, text_color = color.white, bgcolor = color.new(color.gray, 70))
+        table.cell(info, 1, 6, tfPlanShort, text_color = color.white, bgcolor = color.new(color.gray, 70))
         for clearRow = 7 to 21
             table.cell(info, 0, clearRow, "", bgcolor = color.new(color.black, 100))
             table.cell(info, 1, clearRow, "", bgcolor = color.new(color.black, 100))
