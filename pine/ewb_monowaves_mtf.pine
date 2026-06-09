@@ -1094,6 +1094,40 @@ matchFigure(array<int> s, array<int> eb, array<float> ep, color c) =>
                     drawFig("Двойн.Корр.? (большая x)", db0, db1, dlo, dhi, color.new(color.orange, 40))
                     drew := true
 
+    // Hybrid fallback для импульса: когда W2/W4 имеют Правило 6-7 (base=0)
+    // структурный паттерн [5,0,5,0,5] не совпадает с [5,3,5,3,5].
+    // Прямая геометрическая проверка восстанавливает такие импульсы.
+    if not drew and n >= 6
+        int hfi0 = n - 6
+        // Все 6 точек доступны; проверяем направления альтернируют вручную
+        // (figStruct не содержит направлений, ep содержит цены)
+        float hfP0 = array.get(ep, hfi0),   float hfP1 = array.get(ep, hfi0 + 1)
+        float hfP2 = array.get(ep, hfi0 + 2), float hfP3 = array.get(ep, hfi0 + 3)
+        float hfP4 = array.get(ep, hfi0 + 4), float hfP5 = array.get(ep, hfi0 + 5)
+        // Чередование цен: каждый следующий пивот должен сменить направление
+        bool hfAlt = (hfP1 > hfP0) != (hfP2 > hfP1) and
+             (hfP2 > hfP1) != (hfP3 > hfP2) and
+             (hfP3 > hfP2) != (hfP4 > hfP3) and
+             (hfP4 > hfP3) != (hfP5 > hfP4)
+        if hfAlt
+            string hfDir = figDirection(hfP0, hfP1)
+            [hfOK, hfMsg] = confirmImpulse(ep, hfi0, hfDir)
+            if hfOK
+                int hfB0 = array.get(eb, hfi0), int hfB1 = array.get(eb, n - 1)
+                float hfHi = hfP0, float hfLo = hfP0
+                for i = hfi0 to n - 1
+                    float p = array.get(ep, i)
+                    hfHi := math.max(hfHi, p)
+                    hfLo := math.min(hfLo, p)
+                drawFig("Импульс ✅ (hybrid)", hfB0, hfB1, hfLo, hfHi, color.new(color.green, 20))
+                labelSeg(eb, ep, n - 5, ":5|:F3|:5|:F3|:L5", color.new(color.green, 20))
+                drawImpulseChannels(eb, ep, hfi0, color.green)
+                drawMotionLabels(eb, ep, hfi0, 6, "0|1|2|3|4|5", color.green)
+                float hfLen = math.abs(hfP5 - hfP0)
+                drawEnergy(hfB1, hfHi, "impulse", hfDir == "up" ? 1 : -1, hfLen)
+                compactFigure(s, eb, ep, n, 4, 5)
+                drew := true
+
     if not drew and n >= 4
         int w1 = array.get(s, n - 3), int w2 = array.get(s, n - 2), int w3 = array.get(s, n - 1)
         int startIdx = n - 4

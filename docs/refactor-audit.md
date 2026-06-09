@@ -39,8 +39,10 @@
 
 ## Дальнейшие спринты
 
-1. Baseline Hygiene: тесты, зависимости, конфигурация, audit baseline.
-2. Research Shared Core: вынести universe/download/costs/strategy/portfolio без изменения поведения.
-3. Backtest Hardening: убрать silent errors, добавить schema checks и regression fixtures.
-4. Pine Parity Audit: описать расхождения Pine/Python на synthetic cases.
-5. Pine Hybrid Matcher: перенести Python hybrid matcher в Pine.
+| # | Название | Статус | Commit / заметки |
+|---|---|---|---|
+| 1 | Baseline Hygiene | ✅ done | pytest 49/49, compileall clean |
+| 2 | Research Shared Core | ✅ done | `ewb/research/` module (universe/data/portfolio/schema/trades) |
+| 3 | Backtest Hardening | ✅ done | `577ad9d` — dead code, silent errors, 4 regression tests |
+| 4 | Pine Parity Audit | ✅ done | `docs/pine_parity_audit.md` D1-D5; Pine fixes `8556c14` |
+| 5 | Pine Hybrid Matcher | ✅ done | `hybridImpulseOK/TriangleOK/ZigzagOK/MovingFlatOK` + 6-piv priority в `showCoreSignals` |
