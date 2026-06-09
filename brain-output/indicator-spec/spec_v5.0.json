@@ -323,8 +323,8 @@
   },
   "pine_implementation": {
     "pine_file": "pine/ewb_monowaves_mtf.pine",
-    "neely_level": 7,
-    "neely_level_description": "Уровни 1–7: моноволны, предварительный анализ, группировка, паттерны, степени волн (Level 6), каналы (Level 7).",
+    "neely_level": 8,
+    "neely_level_description": "Уровни 1–8: моноволны, предварительный анализ, группировка, паттерны, степени волн (L6), каналы (L7), пост-эффекты (L8).",
     "last_audit_date": "2026-06-09",
     "implemented_rules": {
       "level_1_monowaves": {
@@ -414,11 +414,19 @@
         "notes": "drawImpulseChannels(): 0-2 trendline, 2-4 trendline, W5 Fib target (AKU-0201), AKU-0224 breakout window. Called for impulse+HTF."
       },
       "level_8_missing_waves": {
-        "status": "not_implemented",
+        "status": "partial",
         "aku_ids": [
+          "AKU-0073",
+          "AKU-0075",
+          "AKU-0077",
+          "AKU-0216",
+          "AKU-0218",
           "AKU-0238"
         ],
-        "blocker": "Уровень 8 — после реализации Уровней 5-7"
+        "blocker": "Уровень 8 — после реализации Уровней 5-7",
+        "pine_commit": "4979b6b",
+        "implemented": "drawPostEffectTargets(): impulse ≠W0 + W4zone, terminal MUST≤50%T, triangle Thrust, flat failed-c MUST reach",
+        "not_implemented": "Missing waves count-based detection (AKU-0238: polywave data point counting), x-waves (Ch.10)"
       },
       "level_9_advanced": {
         "status": "not_implemented",
@@ -459,7 +467,7 @@
       }
     ],
     "next_milestone": "spec_v6: Pine Уровень 6 (Wave Degrees MTF) + Position Indicators full wiring",
-    "next_pine_epic": "Level 8: Missing waves (AKU-0238), Advanced Logic (Гл.10-12)"
+    "next_pine_epic": "Level 9: Advanced Logic (Ch.10-12) — x-waves, combinations, missing wave detection"
   },
   "fibonacci": {
     "ratios": [
