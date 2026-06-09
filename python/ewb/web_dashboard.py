@@ -5,6 +5,8 @@ import json
 import math
 import subprocess
 import sys
+import uuid
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 from urllib.parse import parse_qs
@@ -37,6 +39,11 @@ FORWARD_LOG = REPO / DEFAULT_FORWARD_LOG
 WATCHLIST = REPO / "configs" / "watchlist.yaml"
 WATCHLIST_PROFILES = REPO / "configs" / "watchlist_profiles.yaml"
 RISK_SETTINGS = REPO / "configs" / "risk_settings.yaml"
+PORTFOLIO_FILE     = REPO / "brain-output" / "portfolio" / "holdings.json"
+AUTO_TRADER_STATE  = REPO / "brain-output" / "auto_trader_state.json"
+AUTO_TRADER_LOG    = REPO / "brain-output" / "auto_trader.log"
+AUTO_TRADER_PID    = REPO / "brain-output" / "auto_trader.pid"
+RETRAIN_EVERY      = 20
 
 
 app = FastAPI(title="EWB Local Dashboard", version="0.1.0")
@@ -167,6 +174,7 @@ def nav(active: str) -> str:
         ("Signals", "/signals"),
         ("Trades", "/trades"),
         ("History", "/history"),
+        ("Portfolio", "/portfolio"),
         ("Backtest", "/backtest"),
         ("Settings", "/settings"),
     ]
@@ -677,12 +685,13 @@ def dashboard() -> HTMLResponse:
     <div class="band"><strong>Operating decision:</strong> {html_escape(daily.get("decision_reason", "Run the strategy system pipeline to generate a fresh decision."))}</div>
     <h3>Action Board</h3>
     {table(["Decision", "Ticker", "Side", "TF", "Pattern", "P", "RR", "Qty", "Risk", "Entry", "SL", "TP", "Age", "Action"], action_board_rows(12))}
+    <h3>Auto-Trader</h3>
+    {auto_trader_widget()}
     <h3>Next Actions</h3>
     <div class="band">
-      1. Keep TradingView alert on <span class="code">Any alert() function call</span>.<br>
-      2. Record every alert in the forward log.<br>
-      3. Settle every paper trade with TP/SL/time/manual outcome.<br>
-      4. Do not scale until forward stats confirm the baseline.
+      1. Auto-trader открывает/закрывает бумажные сделки автономно.<br>
+      2. Следи за результатами на вкладках Trades и History.<br>
+      3. После {RETRAIN_EVERY} закрытых сделок — модель переобучается автоматически.
     </div>
     """
     return layout("Dashboard", "Dashboard", body)
@@ -1135,6 +1144,375 @@ async def api_tradingview_alert(request: Request) -> JSONResponse:
         "interval": row["interval"],
         "side": row["side"],
     })
+
+
+# ─────────── AUTO-TRADER ───────────
+
+def auto_trader_running() -> bool:
+    if not AUTO_TRADER_PID.exists():
+        return False
+    try:
+        pid = int(AUTO_TRADER_PID.read_text().strip())
+        import os, signal as _sig
+        os.kill(pid, 0)
+        return True
+    except Exception:
+        return False
+
+
+def auto_trader_state() -> dict:
+    if not AUTO_TRADER_STATE.exists():
+        return {}
+    try:
+        return json.loads(AUTO_TRADER_STATE.read_text(encoding="utf-8"))
+    except Exception:
+        return {}
+
+
+def auto_trader_last_log(n: int = 8) -> list[str]:
+    if not AUTO_TRADER_LOG.exists():
+        return []
+    lines = AUTO_TRADER_LOG.read_text(encoding="utf-8").splitlines()
+    return lines[-n:]
+
+
+def auto_trader_widget() -> str:
+    running = auto_trader_running()
+    state   = auto_trader_state()
+    status_pill = '<span class="pill buy">RUNNING</span>' if running else '<span class="pill observe">STOPPED</span>'
+    last_scan   = html_escape(state.get("last_scan", "—"))
+    last_retrain= html_escape(state.get("last_retrain", "—"))
+    pending     = state.get("closed_since_retrain", 0)
+    log_lines   = auto_trader_last_log()
+    log_html    = "\n".join(html_escape(l) for l in log_lines) or "нет логов"
+
+    start_btn = "" if running else """
+      <form class="inline" method="post" action="/auto-trader/start">
+        <button class="btn" type="submit">▶ Запустить</button>
+      </form>"""
+    stop_btn = "" if not running else """
+      <form class="inline" method="post" action="/auto-trader/stop">
+        <button class="btn secondary" type="submit">■ Остановить</button>
+      </form>"""
+    run_once_btn = """
+      <form class="inline" method="post" action="/auto-trader/run-once">
+        <button class="btn secondary" type="submit">↻ Один проход</button>
+      </form>"""
+
+    return f"""
+    <div class="band">
+      <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:12px">
+        {status_pill}
+        {start_btn}{stop_btn}{run_once_btn}
+        <span class="muted" style="font-size:13px">Последний скан: {last_scan}</span>
+        <span class="muted" style="font-size:13px">Последний ретрейн: {last_retrain}</span>
+        <span class="muted" style="font-size:13px">До ретрейна: {pending}/{RETRAIN_EVERY}</span>
+      </div>
+      <pre style="background:#f0f4f8;border-radius:6px;padding:10px;font-size:12px;margin:0;overflow-x:auto;max-height:160px;overflow-y:auto">{log_html}</pre>
+    </div>"""
+
+
+# ─────────── PORTFOLIO ───────────
+
+def read_portfolio() -> list[dict]:
+    if not PORTFOLIO_FILE.exists():
+        return []
+    try:
+        return json.loads(PORTFOLIO_FILE.read_text(encoding="utf-8"))
+    except Exception:
+        return []
+
+
+def write_portfolio(holdings: list[dict]) -> None:
+    PORTFOLIO_FILE.parent.mkdir(parents=True, exist_ok=True)
+    PORTFOLIO_FILE.write_text(json.dumps(holdings, indent=2, ensure_ascii=False), encoding="utf-8")
+
+
+def fetch_prices(tickers: list[str]) -> dict[str, float | None]:
+    if not tickers:
+        return {}
+    try:
+        import yfinance as yf
+        result: dict[str, float | None] = {}
+        batch = yf.Tickers(" ".join(tickers))
+        for sym in tickers:
+            try:
+                result[sym.upper()] = batch.tickers[sym.upper()].fast_info.last_price
+            except Exception:
+                result[sym.upper()] = None
+        return result
+    except Exception:
+        return {t.upper(): None for t in tickers}
+
+
+def portfolio_rows(holdings: list[dict], prices: dict[str, float | None]) -> list[list]:
+    rows = []
+    for h in holdings:
+        hid = html_escape(h.get("id", ""))
+        ticker = h.get("ticker", "").upper()
+        qty = h.get("qty", 0)
+        avg = h.get("avg_price", 0.0)
+        notes = h.get("notes", "")
+        added = h.get("added_at", "")[:10]
+        cur_px = prices.get(ticker)
+        cost = qty * avg
+        cur_val = qty * cur_px if cur_px is not None else None
+        pnl = cur_val - cost if cur_val is not None else None
+        pnl_pct = pnl / cost * 100 if cost > 0 and pnl is not None else None
+
+        cur_px_str = f"${cur_px:,.2f}" if cur_px is not None else '<span class="muted">—</span>'
+        cur_val_str = f"${cur_val:,.2f}" if cur_val is not None else '<span class="muted">—</span>'
+        if pnl is not None and pnl_pct is not None:
+            sign = "+" if pnl >= 0 else ""
+            css = "buy" if pnl >= 0 else "sell"
+            pnl_str = f'<span class="pill {css}">{sign}${pnl:,.2f} ({sign}{pnl_pct:.1f}%)</span>'
+        else:
+            pnl_str = '<span class="muted">—</span>'
+
+        edit_form = f"""
+        <form class="inline" method="post" action="/portfolio/edit">
+          <input type="hidden" name="id" value="{hid}">
+          <button class="btn secondary mini" type="button"
+            onclick="openEdit('{hid}','{html_escape(ticker)}','{qty}','{avg}','{html_escape(notes)}')">Edit</button>
+        </form>
+        <form class="inline" method="post" action="/portfolio/delete"
+          onsubmit="return confirm('Удалить {html_escape(ticker)}?')">
+          <input type="hidden" name="id" value="{hid}">
+          <button class="btn mini" style="border-color:#b42318;background:#b42318" type="submit">Del</button>
+        </form>"""
+
+        rows.append([
+            f"<strong>{html_escape(ticker)}</strong>",
+            f"{qty:g}",
+            f"${avg:,.2f}",
+            f"${cost:,.2f}",
+            cur_px_str,
+            cur_val_str,
+            pnl_str,
+            html_escape(notes),
+            html_escape(added),
+            edit_form,
+        ])
+    return rows
+
+
+def portfolio_totals(holdings: list[dict], prices: dict[str, float | None]) -> tuple[float, float | None]:
+    total_cost = sum(h.get("qty", 0) * h.get("avg_price", 0.0) for h in holdings)
+    total_val = None
+    val_acc = 0.0
+    all_known = True
+    for h in holdings:
+        px = prices.get(h.get("ticker", "").upper())
+        if px is None:
+            all_known = False
+            break
+        val_acc += h.get("qty", 0) * px
+    if all_known and holdings:
+        total_val = val_acc
+    return total_cost, total_val
+
+
+@app.get("/portfolio", response_class=HTMLResponse)
+def portfolio_page() -> HTMLResponse:
+    holdings = read_portfolio()
+    tickers = list({h.get("ticker", "").upper() for h in holdings if h.get("ticker")})
+    prices = fetch_prices(tickers)
+    rows = portfolio_rows(holdings, prices)
+    total_cost, total_val = portfolio_totals(holdings, prices)
+
+    cost_str = f"${total_cost:,.2f}"
+    val_str = f"${total_val:,.2f}" if total_val is not None else "—"
+    if total_val is not None and total_cost > 0:
+        pnl = total_val - total_cost
+        pnl_pct = pnl / total_cost * 100
+        sign = "+" if pnl >= 0 else ""
+        css = "buy" if pnl >= 0 else "sell"
+        total_pnl_str = f'<span class="pill {css}">{sign}${pnl:,.2f} ({sign}{pnl_pct:.1f}%)</span>'
+    else:
+        total_pnl_str = "—"
+
+    metrics = f"""
+    <div class="grid" style="grid-template-columns:repeat(3,minmax(0,1fr))">
+      <div class="metric"><div class="label">Позиций</div><div class="value">{len(holdings)}</div></div>
+      <div class="metric"><div class="label">Вложено</div><div class="value">{cost_str}</div></div>
+      <div class="metric"><div class="label">Текущая стоимость / P&L</div><div class="value" style="font-size:18px">{val_str} &nbsp;{total_pnl_str}</div></div>
+    </div>"""
+
+    tbl = table(
+        ["Тикер", "Кол-во", "Ср. цена", "Вложено", "Тек. цена", "Тек. стоимость", "P&L", "Заметки", "Добавлено", ""],
+        rows,
+    )
+
+    body = f"""
+    <div class="topbar">
+      <div><h2>Portfolio</h2><div class="muted">Ручной учёт позиций. Текущие цены — Yahoo Finance.</div></div>
+      <form method="get" action="/portfolio"><button class="btn secondary" type="submit">↻ Обновить цены</button></form>
+    </div>
+    {metrics}
+    <h3>Добавить позицию</h3>
+    <form class="band form-grid" method="post" action="/portfolio/add">
+      <label>Тикер<input name="ticker" placeholder="AAPL" required style="text-transform:uppercase"></label>
+      <label>Количество<input name="qty" type="number" step="any" min="0.000001" placeholder="10" required></label>
+      <label>Средняя цена ($)<input name="avg_price" type="number" step="any" min="0" placeholder="180.50" required></label>
+      <label>Заметки<input name="notes" placeholder="необязательно"></label>
+      <button class="btn" type="submit" style="align-self:end">Добавить</button>
+    </form>
+    <h3>Мои позиции</h3>
+    {tbl}
+
+    <!-- Edit modal -->
+    <div id="edit-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:999;align-items:center;justify-content:center">
+      <div style="background:#fff;border-radius:10px;padding:28px 32px;width:420px;max-width:95vw">
+        <h3 style="margin-top:0">Редактировать позицию</h3>
+        <form method="post" action="/portfolio/edit">
+          <input type="hidden" id="edit-id" name="id">
+          <label style="display:block;margin-bottom:10px">Тикер
+            <input id="edit-ticker" name="ticker" required style="width:100%;margin-top:4px;border:1px solid #d9dee7;border-radius:6px;padding:9px 10px;font:inherit">
+          </label>
+          <label style="display:block;margin-bottom:10px">Количество
+            <input id="edit-qty" name="qty" type="number" step="any" min="0.000001" required style="width:100%;margin-top:4px;border:1px solid #d9dee7;border-radius:6px;padding:9px 10px;font:inherit">
+          </label>
+          <label style="display:block;margin-bottom:10px">Средняя цена ($)
+            <input id="edit-avg" name="avg_price" type="number" step="any" min="0" required style="width:100%;margin-top:4px;border:1px solid #d9dee7;border-radius:6px;padding:9px 10px;font:inherit">
+          </label>
+          <label style="display:block;margin-bottom:16px">Заметки
+            <input id="edit-notes" name="notes" style="width:100%;margin-top:4px;border:1px solid #d9dee7;border-radius:6px;padding:9px 10px;font:inherit">
+          </label>
+          <div style="display:flex;gap:10px">
+            <button class="btn" type="submit">Сохранить</button>
+            <button class="btn secondary" type="button" onclick="closeEdit()">Отмена</button>
+          </div>
+        </form>
+      </div>
+    </div>
+    <script>
+      function openEdit(id, ticker, qty, avg, notes) {{
+        document.getElementById('edit-id').value = id;
+        document.getElementById('edit-ticker').value = ticker;
+        document.getElementById('edit-qty').value = qty;
+        document.getElementById('edit-avg').value = avg;
+        document.getElementById('edit-notes').value = notes;
+        var m = document.getElementById('edit-modal');
+        m.style.display = 'flex';
+      }}
+      function closeEdit() {{
+        document.getElementById('edit-modal').style.display = 'none';
+      }}
+      document.getElementById('edit-modal').addEventListener('click', function(e) {{
+        if (e.target === this) closeEdit();
+      }});
+    </script>
+    """
+    return layout("Portfolio", "Portfolio", body)
+
+
+@app.post("/portfolio/add")
+async def portfolio_add(request: Request) -> RedirectResponse:
+    form = dict(await request.form())
+    ticker = str(form.get("ticker", "")).strip().upper()
+    if not ticker:
+        return RedirectResponse("/portfolio", status_code=303)
+    try:
+        qty = float(form.get("qty", 0))
+        avg_price = float(form.get("avg_price", 0))
+    except (ValueError, TypeError):
+        return RedirectResponse("/portfolio", status_code=303)
+    holdings = read_portfolio()
+    holdings.append({
+        "id": str(uuid.uuid4()),
+        "ticker": ticker,
+        "qty": qty,
+        "avg_price": avg_price,
+        "notes": str(form.get("notes", "")).strip(),
+        "added_at": datetime.now(timezone.utc).isoformat(),
+    })
+    write_portfolio(holdings)
+    return RedirectResponse("/portfolio", status_code=303)
+
+
+@app.post("/portfolio/edit")
+async def portfolio_edit(request: Request) -> RedirectResponse:
+    form = dict(await request.form())
+    hid = str(form.get("id", "")).strip()
+    holdings = read_portfolio()
+    for h in holdings:
+        if h.get("id") == hid:
+            ticker = str(form.get("ticker", h["ticker"])).strip().upper()
+            if ticker:
+                h["ticker"] = ticker
+            try:
+                h["qty"] = float(form.get("qty", h["qty"]))
+                h["avg_price"] = float(form.get("avg_price", h["avg_price"]))
+            except (ValueError, TypeError):
+                pass
+            h["notes"] = str(form.get("notes", h.get("notes", ""))).strip()
+            break
+    write_portfolio(holdings)
+    return RedirectResponse("/portfolio", status_code=303)
+
+
+@app.post("/portfolio/delete")
+async def portfolio_delete(request: Request) -> RedirectResponse:
+    form = dict(await request.form())
+    hid = str(form.get("id", "")).strip()
+    holdings = [h for h in read_portfolio() if h.get("id") != hid]
+    write_portfolio(holdings)
+    return RedirectResponse("/portfolio", status_code=303)
+
+
+@app.post("/auto-trader/start")
+def auto_trader_start() -> RedirectResponse:
+    if not auto_trader_running():
+        log_fh = open(AUTO_TRADER_LOG, "a")
+        proc = subprocess.Popen(
+            [sys.executable, "-m", "ewb.auto_trader"],
+            cwd=REPO / "python",
+            stdout=log_fh,
+            stderr=log_fh,
+            start_new_session=True,
+        )
+        AUTO_TRADER_PID.write_text(str(proc.pid))
+    return RedirectResponse("/", status_code=303)
+
+
+@app.post("/auto-trader/stop")
+def auto_trader_stop() -> RedirectResponse:
+    if AUTO_TRADER_PID.exists():
+        try:
+            import os, signal as _sig
+            pid = int(AUTO_TRADER_PID.read_text().strip())
+            os.kill(pid, _sig.SIGTERM)
+        except Exception:
+            pass
+        AUTO_TRADER_PID.unlink(missing_ok=True)
+    return RedirectResponse("/", status_code=303)
+
+
+@app.post("/auto-trader/run-once")
+def auto_trader_run_once() -> RedirectResponse:
+    log_fh = open(AUTO_TRADER_LOG, "a")
+    subprocess.Popen(
+        [sys.executable, "-m", "ewb.auto_trader", "--once"],
+        cwd=REPO / "python",
+        stdout=log_fh,
+        stderr=log_fh,
+    )
+    return RedirectResponse("/", status_code=303)
+
+
+@app.get("/api/portfolio")
+def api_portfolio() -> JSONResponse:
+    holdings = read_portfolio()
+    tickers = list({h.get("ticker", "").upper() for h in holdings if h.get("ticker")})
+    prices = fetch_prices(tickers)
+    result = []
+    for h in holdings:
+        px = prices.get(h.get("ticker", "").upper())
+        cost = h["qty"] * h["avg_price"]
+        cur_val = h["qty"] * px if px is not None else None
+        result.append({**h, "current_price": px, "current_value": cur_val,
+                        "pnl": (cur_val - cost) if cur_val is not None else None})
+    return JSONResponse(result)
 
 
 @app.get("/api/status")
