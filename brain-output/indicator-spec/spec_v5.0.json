@@ -46,7 +46,15 @@
       "aku_count": 25,
       "compaction": ":5",
       "energy_dir": "neutral (0/0)",
-      "key_aku": ["AKU-0001", "AKU-0002", "AKU-0004", "AKU-0005", "AKU-0007", "AKU-0009", "AKU-0127"],
+      "key_aku": [
+        "AKU-0001",
+        "AKU-0002",
+        "AKU-0004",
+        "AKU-0005",
+        "AKU-0007",
+        "AKU-0009",
+        "AKU-0127"
+      ],
       "notes": "confirmImpulse + drawImpulseChannels + W5 Fibonacci + AKU-0224 deadline window"
     },
     "terminal": {
@@ -54,7 +62,9 @@
       "aku_count": 8,
       "compaction": ":5",
       "energy_dir": "strong_counter (-2 up / +2 down)",
-      "key_aku": ["AKU-0177"],
+      "key_aku": [
+        "AKU-0177"
+      ],
       "notes": "confirmTerminal: W2<W1, W4<W3, W3>=W1/W5; no W2/W4 overlap requirement. Detected from 3-3-3-3-3 structure. Orange labels.",
       "disambiguation": "3-3-3-3-3 → run confirmTerminal first; if passes → Terminal (:5); else confirmTriangle → Triangle (:3)"
     },
@@ -67,14 +77,19 @@
         "flat": "0.618 <= C/A <= 1.382, energy=-1/+1",
         "flat_extended": "C/A > 1.382, energy=+1/-1"
       },
-      "key_aku": ["AKU-0017", "AKU-0213"]
+      "key_aku": [
+        "AKU-0017",
+        "AKU-0213"
+      ]
     },
     "zigzag": {
       "pine_status": "new_in_v4",
       "aku_count": 6,
       "compaction": ":3",
       "energy_dir": "neutral (0/0)",
-      "key_aku": ["AKU-0166"],
+      "key_aku": [
+        "AKU-0166"
+      ],
       "notes": "confirmZigzag: B/A<0.618, C/A>=0.618, C extends beyond A terminus. Structure 5-3-5 (:F5|:c3|:L5). Blue labels.",
       "d3_caveat": "Without Position Indicators cannot distinguish from Impulse tail. Active on geometry only — D3 parity deviation documented.",
       "future": "Full disambiguation after Position Indicators (:F5/:c3/:L5) wired to classifyRule/classifyCond"
@@ -84,7 +99,10 @@
       "aku_count": 12,
       "compaction": ":3",
       "energy_dir": "neutral (0/0)",
-      "key_aku": ["AKU-0018", "AKU-0177"],
+      "key_aku": [
+        "AKU-0018",
+        "AKU-0177"
+      ],
       "notes": "confirmTriangle: c<a, d<b, e<c. Now distinguished from Terminal via confirmTerminal. Purple labels."
     },
     "double_corr": {
@@ -92,7 +110,11 @@
       "aku_count": 10,
       "compaction": ":3",
       "energy_dir": "strong (+2/-2)",
-      "key_aku": ["AKU-0185", "AKU-0186", "AKU-0191"],
+      "key_aku": [
+        "AKU-0185",
+        "AKU-0186",
+        "AKU-0191"
+      ],
       "notes": "3×:3 with small x (xRatio<0.618) or large x (xRatio>=1.618)"
     }
   },
@@ -117,7 +139,25 @@
   },
   "wave_degrees": {
     "source": "Neely MWE Гл.7 стр.7-11..7-14",
-    "key_aku": ["AKU-0349", "AKU-0350", "AKU-0351", "AKU-0352", "AKU-0353", "AKU-0354", "AKU-0355", "AKU-0356", "AKU-0357", "AKU-0358", "AKU-0359", "AKU-0360", "AKU-0361", "AKU-0362", "AKU-0363", "AKU-0364", "AKU-0365"],
+    "key_aku": [
+      "AKU-0349",
+      "AKU-0350",
+      "AKU-0351",
+      "AKU-0352",
+      "AKU-0353",
+      "AKU-0354",
+      "AKU-0355",
+      "AKU-0356",
+      "AKU-0357",
+      "AKU-0358",
+      "AKU-0359",
+      "AKU-0360",
+      "AKU-0361",
+      "AKU-0362",
+      "AKU-0363",
+      "AKU-0364",
+      "AKU-0365"
+    ],
     "pine_status": "not_implemented",
     "complexity_rule": {
       "description": "Правило сложности (Complexity Rule) — стандарт классификации Порядка сегментов (AKU-0351)",
@@ -265,7 +305,7 @@
       "note": "Охватывает моно-, поли-, мульти- и макроволны в отличие от исходного определения (только моноволна)"
     },
     "mtf_mapping": {
-      "pine_status": "planned",
+      "pine_status": "complete",
       "description": "Маппинг Порядков на таймфреймы TradingView для MTF-синхронизации",
       "conceptual_mapping": {
         "SubMinuette": "1m–5m",
@@ -276,14 +316,15 @@
         "Primary": "W",
         "Cycle": "M"
       },
-      "notes": "Маппинг приблизительный. Точное соответствие зависит от активности рынка и исторических данных. Реализация в Pine Уровень 6.",
-      "blocker": "Pine функции degree_from_timeframe() и mtfDegreeSync() — не реализованы"
+      "notes": "HTF labels use degreeIndexFromTF(htf). Fallback to curIdx+1 if htf≤ltf. Panel shows LTF/HTF degrees.",
+      "pine_commit": "0f5d9ed",
+      "pine_function": "degreeSuffix(isHTF) → degreeIndexFromTF(htf)"
     }
   },
   "pine_implementation": {
     "pine_file": "pine/ewb_monowaves_mtf.pine",
-    "neely_level": 4,
-    "neely_level_description": "Уровни 1–4: моноволны, предварительный анализ, группировка, подтверждение паттернов. Уровень 6 (Wave Degrees) запланирован на Pine v6.",
+    "neely_level": 7,
+    "neely_level_description": "Уровни 1–7: моноволны, предварительный анализ, группировка, паттерны, степени волн (Level 6), каналы (Level 7).",
     "last_audit_date": "2026-06-09",
     "implemented_rules": {
       "level_1_monowaves": {
@@ -292,17 +333,25 @@
       },
       "level_2_position_rules": {
         "status": "complete",
-        "aku_ids": ["AKU-0141", "AKU-0142"],
+        "aku_ids": [
+          "AKU-0141",
+          "AKU-0142"
+        ],
         "notes": "classifyRule (Правила 1–7) и classifyCond (Условия a–f) реализованы корректно"
       },
       "level_3_grouping": {
         "status": "partial",
-        "aku_ids": ["AKU-0003", "AKU-0166"],
+        "aku_ids": [
+          "AKU-0003",
+          "AKU-0166"
+        ],
         "notes": "Подобие и баланс реализованы. Зигзаг 5-3-5 активирован на геометрии (D3). Полные Индикаторы Положения не реализованы."
       },
       "level_4_pattern_confirmation": {
         "status": "complete",
-        "aku_ids": ["AKU-0177"],
+        "aku_ids": [
+          "AKU-0177"
+        ],
         "notes": "Impulse, Flat, Zigzag, Triangle, Terminal, Double Correction — все подтверждены.",
         "caveats": [
           "Zigzag без Position Indicators может перекрываться с Impulse tail (D3)",
@@ -311,28 +360,64 @@
       },
       "level_5_post_pattern": {
         "status": "partial",
-        "aku_ids": ["AKU-0213"],
+        "aku_ids": [
+          "AKU-0213"
+        ],
         "notes": "Energy Rating для всех паттернов включая Terminal (-2/+2), Zigzag (0/0), подтипы Flat"
       },
       "level_6_wave_degrees": {
-        "status": "partial",
-        "aku_ids": ["AKU-0349", "AKU-0350", "AKU-0351", "AKU-0352", "AKU-0353", "AKU-0354", "AKU-0355", "AKU-0356", "AKU-0357", "AKU-0358", "AKU-0359", "AKU-0365"],
-        "prerequisite_aku": ["AKU-0360", "AKU-0361", "AKU-0362"],
-        "pine_commit": "71eb7ca",
-        "pine_functions": ["degreeIndexFromTF()", "degreeLabel()", "degreeSuffix()", "DEGREE_NAMES"],
-        "pine_inputs": ["showDeg", "degAutoTF", "degManual", "showDegOnHTF"],
-        "implemented": "degree labels on monowave/HTF labels + Wave degree row in panel",
-        "not_implemented": "mtfDegreeSync() — cross-TF degree propagation (деferred to spec_v6)",
+        "status": "complete",
+        "aku_ids": [
+          "AKU-0349",
+          "AKU-0350",
+          "AKU-0351",
+          "AKU-0352",
+          "AKU-0353",
+          "AKU-0354",
+          "AKU-0355",
+          "AKU-0356",
+          "AKU-0357",
+          "AKU-0358",
+          "AKU-0359",
+          "AKU-0365"
+        ],
+        "prerequisite_aku": [
+          "AKU-0360",
+          "AKU-0361",
+          "AKU-0362"
+        ],
+        "pine_commit": "71eb7ca + 0f5d9ed",
+        "pine_functions": [
+          "degreeIndexFromTF()",
+          "degreeLabel()",
+          "degreeSuffix()",
+          "DEGREE_NAMES"
+        ],
+        "pine_inputs": [
+          "showDeg",
+          "degAutoTF",
+          "degManual",
+          "showDegOnHTF"
+        ],
+        "implemented": "degree labels on monowave/HTF labels + Wave degree row in panel + mtfDegreeSync (HTF degree from actual TF)",
+        "not_implemented": null,
         "notes": "Степени SubMicro→GSC (11 уровней) реализованы в Pine. Input showDeg=false по умолчанию. HTF-метки автоматически +1 Порядок (AKU-0365)."
       },
       "level_7_channels": {
-        "status": "partial",
-        "aku_ids": ["AKU-0011", "AKU-0054", "AKU-0201", "AKU-0224"],
-        "notes": "Каналы 0-2 и 2-4 для Импульса; W5 Fibonacci проекция; AKU-0224 deadline window"
+        "status": "complete",
+        "aku_ids": [
+          "AKU-0011",
+          "AKU-0054",
+          "AKU-0201",
+          "AKU-0224"
+        ],
+        "notes": "drawImpulseChannels(): 0-2 trendline, 2-4 trendline, W5 Fib target (AKU-0201), AKU-0224 breakout window. Called for impulse+HTF."
       },
       "level_8_missing_waves": {
         "status": "not_implemented",
-        "aku_ids": ["AKU-0238"],
+        "aku_ids": [
+          "AKU-0238"
+        ],
         "blocker": "Уровень 8 — после реализации Уровней 5-7"
       },
       "level_9_advanced": {
@@ -373,10 +458,21 @@
         "aku_ref": "AKU-0238"
       }
     ],
-    "next_milestone": "spec_v6: Pine Уровень 6 (Wave Degrees MTF) + Position Indicators full wiring"
+    "next_milestone": "spec_v6: Pine Уровень 6 (Wave Degrees MTF) + Position Indicators full wiring",
+    "next_pine_epic": "Level 8: Missing waves (AKU-0238), Advanced Logic (Гл.10-12)"
   },
   "fibonacci": {
-    "ratios": [0.236, 0.382, 0.5, 0.618, 0.786, 1.0, 1.272, 1.618, 2.618],
+    "ratios": [
+      0.236,
+      0.382,
+      0.5,
+      0.618,
+      0.786,
+      1.0,
+      1.272,
+      1.618,
+      2.618
+    ],
     "key_uses": {
       "W2_max_retrace": 0.618,
       "W4_typical_retrace": 0.382,
@@ -421,11 +517,23 @@
     "pine_level_reached": 4,
     "wave_degrees_aku_ready": 17,
     "pine_functions": [
-      "confirmImpulse", "confirmFlat", "confirmZigzag", "confirmTriangle",
-      "confirmTerminal", "hybridImpulseOK", "hybridTriangleOK",
-      "hybridZigzagOK", "hybridMovingFlatOK", "hybridDoubleCorrOK",
-      "energyRating", "drawEnergy", "drawImpulseChannels", "drawMotionLabels",
-      "labelSeg", "compactFigure", "matchFigure"
+      "confirmImpulse",
+      "confirmFlat",
+      "confirmZigzag",
+      "confirmTriangle",
+      "confirmTerminal",
+      "hybridImpulseOK",
+      "hybridTriangleOK",
+      "hybridZigzagOK",
+      "hybridMovingFlatOK",
+      "hybridDoubleCorrOK",
+      "energyRating",
+      "drawEnergy",
+      "drawImpulseChannels",
+      "drawMotionLabels",
+      "labelSeg",
+      "compactFigure",
+      "matchFigure"
     ],
     "coverage": "Гл.2-7 покрыты AKU. Pine реализован на уровне геометрии (Уровни 1-4). Уровень 6 (Wave Degrees) — AKU готовы, Pine не реализован.",
     "next_pine_epic": "E3 — Pine Уровень 6: degree_from_timeframe() + mtfDegreeSync() + степени на лейблах"
