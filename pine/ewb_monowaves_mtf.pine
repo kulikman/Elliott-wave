@@ -1017,7 +1017,10 @@ matchFigure(array<int> s, array<int> eb, array<float> ep, color c) =>
                          yloc = yloc.price, style = label.style_label_down,
                          color = color.new(color.orange, 20), textcolor = color.white, size = size.tiny)
                 drawImpulseChannels(eb, ep, pi0, color.green)
-                drawMotionLabels(eb, ep, pi0, 6, "0|1|2|3|4|5", color.green)
+                // n >= 6: все 6 точек (0..5) доступны; при n=5 рисуем только 5 (0..4 = до конца W4)
+                int impLabelCount = n >= 6 ? 6 : 5
+                string impLabels  = n >= 6 ? "0|1|2|3|4|5" : "0|1|2|3|4"
+                drawMotionLabels(eb, ep, pi0, impLabelCount, impLabels, color.green)
                 float impLen = math.abs(array.get(ep, n-1) - array.get(ep, pi0))
                 drawEnergy(b1, hi, "impulse", dir == "up" ? 1 : -1, impLen)
                 // AKU-0224: Реальная линия 2-4 — временное окно прорыва = длительность W5
@@ -1113,7 +1116,15 @@ matchFigure(array<int> s, array<int> eb, array<float> ep, color c) =>
                 drawMotionLabels(eb, ep, n - 4, 4, "0|A|B|C", color.teal)
                 float flatDir = array.get(ep, n-3) > array.get(ep, n-4) ? 1.0 : -1.0
                 float flatLen = math.abs(array.get(ep, n-1) - array.get(ep, n-4))
-                drawEnergy(b1, hi, "flat", int(flatDir), flatLen)
+                // Определяем подтип плоской по C/A (AKU-0213):
+                // C < 61.8%A → ordinary (0/0); 61.8–138.2% → failed-c (-1/+1); >138.2% → extended (+1/-1)
+                float flatWA = math.abs(array.get(ep, n-3) - array.get(ep, n-4))
+                float flatWC = math.abs(array.get(ep, n-1) - array.get(ep, n-2))
+                float flatCA = flatWA > 0 ? flatWC / flatWA : na
+                string flatSubtype = na(flatCA) ? "flat" :
+                     flatCA < 0.618  ? "flat_ordinary" :
+                     flatCA > 1.382  ? "flat_extended" : "flat"
+                drawEnergy(b1, hi, flatSubtype, int(flatDir), flatLen)
                 compactFigure(s, eb, ep, n, 2, 3)  // 3 волны → :3
         // Зигзаг (5-3-5) подавлен: неотличим от хвоста Импульса без Индикаторов положения.
         // Активировать после реализации полной логики F/c/L (Гл.3 стр.3-60+).
