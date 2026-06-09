@@ -16,7 +16,7 @@ Greedy non-overlapping selection with priority: impulse > triangle > flat
 from __future__ import annotations
 from dataclasses import dataclass, field
 from .monowaves import Pivot
-from .rules import rule_to_structure, structure_to_base
+
 from .confirm import (
     confirm_impulse, confirm_zigzag, confirm_flat, confirm_triangle,
     all_passed, CheckResult,
@@ -29,7 +29,6 @@ class Figure:
     direction: str
     start_idx: int
     end_idx: int                                       # bar of LAST pivot (extremum)
-    confirmed_idx: int = -1                            # bar when figure became visible (set externally)
     pivots: list[Pivot] = field(default_factory=list)
     confirmed: bool = True
     checks: list[CheckResult] = field(default_factory=list)

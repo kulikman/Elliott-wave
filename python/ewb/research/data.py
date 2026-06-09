@@ -1,8 +1,11 @@
 """Data loading helpers for research scripts."""
 from __future__ import annotations
 
+import logging
 import pandas as pd
 import yfinance as yf
+
+log = logging.getLogger(__name__)
 
 
 def normalize_ohlc(df: pd.DataFrame, include_volume: bool = False,
@@ -33,6 +36,7 @@ def download_ohlc(ticker: str, interval: str, period: str,
             auto_adjust=True,
             threads=False,
         )
-    except Exception:
+    except Exception as exc:
+        log.warning("download_ohlc failed for %s/%s/%s: %s", ticker, interval, period, exc)
         return None
     return normalize_ohlc(df, include_volume=include_volume, min_rows=min_rows)

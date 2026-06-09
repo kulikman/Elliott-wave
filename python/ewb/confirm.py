@@ -191,18 +191,3 @@ def confirm_triangle(prices: list[float]) -> list[CheckResult]:
 def all_passed(results: list[CheckResult]) -> bool:
     """True if no Error-severity check failed (warnings OK)."""
     return all(r.ok or r.severity != "E" for r in results)
-
-
-def summary(results: list[CheckResult]) -> dict:
-    """Count by severity."""
-    out = {"ok": 0, "err": 0, "warn": 0, "neutral": 0}
-    for r in results:
-        if r.ok and r.severity == "O":
-            out["ok"] += 1
-        elif r.severity == "E":
-            out["err"] += 1
-        elif r.severity == "W":
-            out["warn"] += 1
-        else:
-            out["neutral"] += 1
-    return out

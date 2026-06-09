@@ -160,9 +160,3 @@ def detect_monowaves(
             s.has_prev = True
 
     return pivots
-
-
-def monowave_dirs(pivots: list[Pivot]) -> list[int]:
-    """Return list of monowave directions in order. pivots[i].direction is
-    the direction of monowave that ENDED at pivots[i]."""
-    return [p.direction for p in pivots]

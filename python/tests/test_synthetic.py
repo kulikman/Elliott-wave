@@ -7,8 +7,8 @@ import numpy as np
 import pandas as pd
 from ewb.monowaves import Pivot, detect_monowaves
 from ewb.rules import classify_pivots, classify_rule
-from ewb.figures import match_figures
-from ewb.confirm import confirm_impulse
+from ewb.figures import match_figures, _try_double_corr
+from ewb.confirm import confirm_impulse, confirm_flat, confirm_triangle, all_passed
 
 
 def _build_ohlc_from_pivots(pivot_prices: list[float], bars_per_seg: int = 20,
@@ -142,6 +142,80 @@ def test_confirm_impulse_pure_math():
     assert len(errs) == 0, f"clean impulse should have 0 errors, got {errs}"
 
 
+# ─── Regression tests: parity fixes (2026-06-09 audit) ───────────────────────
+
+def test_confirm_flat_c_wave_minimum():
+    """D1: C < 61.8%A must be Error (not neutral) after parity fix."""
+    # failed-c: B=100%A, C=50%A → now Error
+    r = confirm_flat([100, 80, 100, 90])
+    errs = [c for c in r if c.severity == "E" and not c.ok]
+    assert any("C=" in e.msg and "<61.8%" in e.msg for e in errs), \
+        f"failed-c flat should produce C<61.8%A error, got: {[e.msg for e in errs]}"
+    assert not all_passed(r), "failed-c flat must not confirm"
+
+    # normal flat: B=100%A, C=100%A → ok
+    r = confirm_flat([100, 80, 100, 80])
+    assert all_passed(r), "normal flat (B=C=A) must confirm"
+
+    # extended flat: B=100%A, C=150%A → ok (C≥61.8%A)
+    r = confirm_flat([100, 80, 100, 70])
+    assert all_passed(r), "extended flat (C=150%A) must confirm"
+
+
+def test_confirm_flat_subtype_labels():
+    """D1: subtype neutral label present (AKU-0213)."""
+    # ordinary: C ≈ A (80-120%)
+    r = confirm_flat([100, 80, 100, 80])
+    labels = {c.aku: c.msg for c in r if c.severity == "N"}
+    assert "AKU-0213" in labels, "subtype label missing"
+    assert "обыкн" in labels["AKU-0213"]
+
+    # extended: C > 138% A
+    r = confirm_flat([100, 80, 100, 70])   # C=30/20=150%
+    labels = {c.aku: c.msg for c in r if c.severity == "N"}
+    assert "расш" in labels.get("AKU-0213", "")
+
+
+def test_double_corr_y_wave_required():
+    """D2: double_corr with Y < 61.8%W must be rejected after parity fix."""
+    # small Y: W=20, X=8 (40%), Y=6 (30%) → rejected
+    pts = _manual_pivots([100, 80, 88, 82], [0, -1, 1, -1])
+    fig = _try_double_corr(pts, 0)
+    assert fig is None, "DC with Y=30%W must not match after parity fix"
+
+    # good DC: W=20, X=8 (40%), Y=24 (120%) → ok
+    pts = _manual_pivots([100, 80, 88, 64], [0, -1, 1, -1])
+    fig = _try_double_corr(pts, 0)
+    assert fig is not None, "DC with Y=120%W must match"
+    assert fig.type == "double_corr"
+
+    # large X: W=20, X=14 (70%) → rejected by X check (not changed)
+    pts = _manual_pivots([100, 80, 94, 66], [0, -1, 1, -1])
+    fig = _try_double_corr(pts, 0)
+    assert fig is None, "DC with X=70%W must not match"
+
+
+def test_confirm_triangle_e_wave():
+    """D4: triangle with e >= c (6 pivots) must produce warning after parity fix."""
+    # perfect triangle: a=20 b=15 c=12 d=9 e=6 → all ok
+    r = confirm_triangle([100, 120, 105, 117, 108, 114])
+    assert all_passed(r), "perfect triangle must pass"
+    checks = {c.msg: c.ok for c in r}
+    assert any("e<c" in msg and ok for msg, ok in checks.items()), "e<c check must be present and ok"
+
+    # e=14 > c=12 → warning
+    r = confirm_triangle([100, 120, 105, 117, 108, 122])
+    checks = {c.msg: c.ok for c in r}
+    e_checks = [c for c in r if "e" in c.msg.lower() and "c" in c.msg.lower()]
+    assert e_checks, "e<c check must be present for 6-pivot input"
+    assert not e_checks[0].ok, "e>=c must produce a failed check"
+
+    # 5-pivot input: no e check
+    r = confirm_triangle([100, 120, 105, 117, 108])
+    msgs = [c.msg for c in r]
+    assert not any("e" in m.lower() for m in msgs), "no e check for 5-pivot triangle"
+
+
 def test_classify_rule_boundaries():
     """Boundary cases for Rule Identifier."""
     cases = [
@@ -171,4 +245,9 @@ if __name__ == "__main__":
     test_clean_zigzag_down()
     test_clean_flat()
     test_clean_triangle()
+    # Parity regression (2026-06-09)
+    test_confirm_flat_c_wave_minimum()
+    test_confirm_flat_subtype_labels()
+    test_double_corr_y_wave_required()
+    test_confirm_triangle_e_wave()
     print("All synthetic tests passed ✓")
