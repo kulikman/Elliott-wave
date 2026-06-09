@@ -86,6 +86,14 @@ showClass = input.bool(false, "Классифицировать моноволн
      "m0/m1 -> Условие a-f. Это структурная классификация Нили (Гл.3).")
 colClass = input.color(color.fuchsia, "Цвет меток классификации", group = grpClass)
 
+grpFib  = "Fibonacci-проекции (Level 10, AKU-0229..0237)"
+showFibProj = input.bool(true, "Показывать Fibonacci-аннотации на паттернах", group = grpFib,
+     tooltip = "Аннотирует подтверждённые паттерны коэффициентами Фибоначчи:\n" +
+     "• Импульс: тип расширения (Ext1/Ext3/Ext5) + W3/W1 коэффициент (AKU-0229..0232)\n" +
+     "• Зигзаг: C/A коэффициент (AKU-0233)\n" +
+     "• Плоская: C/A коэффициент (AKU-0234)\n" +
+     "• Треугольник: c = 0.618×a (AKU-0235)")
+
 grpFig  = "Распознавание фигур по Структурным Сериям (Уровень 3, AKU-0158..0166)"
 showFig = input.bool(false, "Распознавать фигуры (Импульс/Зигзаг/Плоская/Треугольник)", group = grpFig,
      tooltip = "Сопоставление окна базовых структур (:5/:3) со Структурными Сериями A-E (Гл.4). " +
@@ -1188,6 +1196,108 @@ drawPostEffectTargets(array<int> eb, array<float> ep, int i0, string figType, in
              textcolor = color.white, size = size.tiny,
              tooltip = "AKU-0215: Двойная/Тройная Коррекция → следующая волна НЕ должна достичь стартового уровня\n= " + str.tostring(p0, "#.####"))
 
+// ─── Level 10: Fibonacci Projections (AKU-0229..0237) ───────────────────────
+// Аннотирует подтверждённые паттерны коэффициентами Фибоначчи.
+// Impulse → тип расширения + W3/W1; Zigzag/Flat → C/A; Triangle → c/a check.
+drawFibProjections(array<int> eb, array<float> ep, int i0, string figType, int figDir) =>
+    if showFibProj
+        int   nPiv = array.size(ep)
+        int   bN   = array.get(eb, nPiv - 1)
+
+        if figType == "impulse" and nPiv >= i0 + 6
+            // AKU-0229/0230/0231: определить тип расширения по длинам волн
+            float p0f = array.get(ep, i0)
+            float p1f = array.get(ep, i0 + 1)
+            float p2f = array.get(ep, i0 + 2)
+            float p3f = array.get(ep, i0 + 3)
+            float p4f = array.get(ep, i0 + 4)
+            float p5f = array.get(ep, i0 + 5)
+            float iw1 = math.abs(p1f - p0f)
+            float iw2 = math.abs(p2f - p1f)
+            float iw3 = math.abs(p3f - p2f)
+            float iw5 = math.abs(p5f - p4f)
+            // Extension type: расширенная волна = самая длинная (AKU-0229/0230/0231)
+            string extType = iw1 >= iw3 and iw1 >= iw5 ? "Ext 1" :
+                             iw3 >= iw1 and iw3 >= iw5  ? "Ext 3" : "Ext 5"
+            // AKU-0232: W3/W1 ratio — ключевой индикатор
+            float w3w1 = iw1 > 0 ? iw3 / iw1 : na
+            float w5w1 = iw1 > 0 ? iw5 / iw1 : na
+            // AKU-0232: W2 retrace relative to W1
+            float w2ret = iw1 > 0 ? iw2 / iw1 : na
+            string w3Label = na(w3w1) ? "" :
+                 w3w1 < 1.0   ? "W3<W1 ⚠" :
+                 w3w1 < 1.52  ? "W3=" + str.tostring(w3w1, "#.##") + "×W1" :
+                 w3w1 < 1.85  ? "W3≈1.618×W1" :
+                 w3w1 < 2.30  ? "W3=" + str.tostring(w3w1, "#.##") + "×W1" : "W3≈2.618×W1"
+            string w5Label = na(w5w1) ? "" :
+                 extType == "Ext 3" ? (math.abs(w5w1 - 1.0) < 0.15 ? "W5≈W1 ✓" : "W5=" + str.tostring(w5w1, "#.##") + "×W1") : ""
+            string annot = extType + "\n" + w3Label + (w5Label == "" ? "" : "\n" + w5Label)
+            label.new(bN, p5f, annot,
+                 xloc = xloc.bar_index, yloc = yloc.price,
+                 style = figDir > 0 ? label.style_label_up : label.style_label_down,
+                 color = color.new(color.lime, 20), textcolor = color.white, size = size.tiny,
+                 tooltip = "AKU-0229/0230/0231: Тип расширения — " + extType +
+                           "\nW3/W1 = " + str.tostring(w3w1, "#.####") +
+                           "\nW5/W1 = " + str.tostring(w5w1, "#.####") +
+                           "\nW2 retrace = " + str.tostring(w2ret, "#.####") + " × W1" +
+                           "\nAKU-0232: большая коррекция → меньшая = 61.8% (или 38.2%)")
+
+        else if figType == "zigzag" and nPiv >= i0 + 4
+            // AKU-0233: C/A ratio — min 61.8%, common 100%, max 161.8%
+            float zzA = math.abs(array.get(ep, i0 + 1) - array.get(ep, i0))
+            float zzC = math.abs(array.get(ep, i0 + 3) - array.get(ep, i0 + 2))
+            float caRatio = zzA > 0 ? zzC / zzA : na
+            if not na(caRatio)
+                string caLabel = caRatio < 0.56  ? "C<61.8%A ⚠" :
+                     caRatio < 0.68 ? "C≈61.8%A (min)" :
+                     caRatio < 1.08 ? "C≈A (common)" :
+                     caRatio < 1.72 ? "C≈161.8%A (max)" : "C>161.8%A ⚠"
+                float pEnd = array.get(ep, i0 + 3)
+                label.new(bN, pEnd, "C/A=" + str.tostring(caRatio, "#.##") + "\n" + caLabel,
+                     xloc = xloc.bar_index, yloc = yloc.price,
+                     style = figDir > 0 ? label.style_label_up : label.style_label_down,
+                     color = color.new(color.blue, 20), textcolor = color.white, size = size.tiny,
+                     tooltip = "AKU-0233: Зигзаг C/A = " + str.tostring(caRatio, "#.####") +
+                               "\nMIN: 61.8% × A = " + str.tostring(zzA * 0.618, "#.####") +
+                               "\nCOMMON: 100% × A = " + str.tostring(zzA, "#.####") +
+                               "\nMAX: 161.8% × A = " + str.tostring(zzA * 1.618, "#.####"))
+
+        else if figType == "flat" and nPiv >= i0 + 4
+            // AKU-0234: Flat C/A ratio — min 61.8%, common 100%, max 138.2%
+            float fA = math.abs(array.get(ep, i0 + 1) - array.get(ep, i0))
+            float fC = math.abs(array.get(ep, i0 + 3) - array.get(ep, i0 + 2))
+            float fcRatio = fA > 0 ? fC / fA : na
+            if not na(fcRatio)
+                string fcLabel = fcRatio < 0.56  ? "C<61.8%A ⚠" :
+                     fcRatio < 0.68 ? "C≈61.8%A (min)" :
+                     fcRatio < 1.08 ? "C≈A (common)" :
+                     fcRatio < 1.45 ? "C≈138.2%A (max)" : "C>138.2%A ⚠"
+                float pEnd = array.get(ep, i0 + 3)
+                label.new(bN, pEnd, "C/A=" + str.tostring(fcRatio, "#.##") + "\n" + fcLabel,
+                     xloc = xloc.bar_index, yloc = yloc.price,
+                     style = figDir > 0 ? label.style_label_up : label.style_label_down,
+                     color = color.new(color.teal, 20), textcolor = color.white, size = size.tiny,
+                     tooltip = "AKU-0234: Плоская C/A = " + str.tostring(fcRatio, "#.####") +
+                               "\nMIN: 61.8% × A = " + str.tostring(fA * 0.618, "#.####") +
+                               "\nCOMMON: 100% × A = " + str.tostring(fA, "#.####") +
+                               "\nMAX: 138.2% × A = " + str.tostring(fA * 1.382, "#.####"))
+
+        else if figType == "triangle" and nPiv >= i0 + 4
+            // AKU-0235: Triangle internal Fibonacci — c = 61.8% × a
+            float trA = math.abs(array.get(ep, i0 + 1) - array.get(ep, i0))
+            float trC = nPiv >= i0 + 5 ? math.abs(array.get(ep, i0 + 3) - array.get(ep, i0 + 2)) : 0.0
+            float caT = trA > 0 and trC > 0 ? trC / trA : na
+            if not na(caT)
+                string caTLabel = math.abs(caT - 0.618) < 0.10 ? "c≈0.618a ✓" :
+                     caT < 0.618 ? "c=" + str.tostring(caT, "#.##") + "a" : "c>" + str.tostring(caT, "#.##") + "a"
+                float pEnd = array.get(ep, nPiv - 1)
+                label.new(bN, pEnd, "c/a=" + str.tostring(caT, "#.##") + "\n" + caTLabel,
+                     xloc = xloc.bar_index, yloc = yloc.price,
+                     style = figDir > 0 ? label.style_label_up : label.style_label_down,
+                     color = color.new(color.purple, 20), textcolor = color.white, size = size.tiny,
+                     tooltip = "AKU-0235: Треугольник c/a = " + str.tostring(caT, "#.####") +
+                               "\nEXPECTED: c ≈ 0.618 × a = " + str.tostring(trA * 0.618, "#.####"))
+
 // ─── Правило соотношения длительностей (AKU-0205, Гл.9 стр.9-4) ─────────────
 // 3 смежных волны одного Порядка не могут иметь одинаковую временную длину.
 // Возвращает true если нарушение (все три равны ±10%).
@@ -1235,6 +1345,7 @@ matchFigure(array<int> s, array<int> eb, array<float> ep, color c,
             array<int> mBars, array<label> mLbls) =>
     int n = array.size(s)
     bool drew = false
+    string figConfirmed = ""   // тип подтверждённого паттерна (для alertcondition)
     if n >= 5
         int v1 = array.get(s, n - 5), v2 = array.get(s, n - 4), v3 = array.get(s, n - 3)
         int v4 = array.get(s, n - 2), v5 = array.get(s, n - 1)
@@ -1274,6 +1385,8 @@ matchFigure(array<int> s, array<int> eb, array<float> ep, color c,
                 float impLen = math.abs(array.get(ep, n-1) - array.get(ep, pi0))
                 drawEnergy(b1, hi, "impulse", dir == "up" ? 1 : -1, impLen)
                 drawPostEffectTargets(eb, ep, pi0, "impulse", dir == "up" ? 1 : -1)  // Level 8
+                drawFibProjections(eb, ep, pi0, "impulse", dir == "up" ? 1 : -1)     // Level 10
+                figConfirmed := "impulse"
                 // AKU-0224: Реальная линия 2-4 — временное окно прорыва = длительность W5
                 // Рисуем вертикальную зону: конец W5 + длительность W5 = ожидаемый прорыв
                 // tb5 (конец W5) доступен только при n >= 6
@@ -1317,6 +1430,8 @@ matchFigure(array<int> s, array<int> eb, array<float> ep, color c,
                 int triDir = termDir == "up" ? 1 : -1
                 drawEnergy(b1, hi, termOK ? "terminal" : "triangle", triDir, triLen)
                 drawPostEffectTargets(eb, ep, pi0, termOK ? "terminal" : "triangle", triDir)  // Level 8
+                drawFibProjections(eb, ep, pi0, termOK ? "terminal" : "triangle", triDir)     // Level 10
+                figConfirmed := termOK ? "terminal" : "triangle"
                 compactFigure(s, eb, ep, n, 4, compactTarget)
             drew := true
     if not drew and n >= 5
@@ -1354,6 +1469,7 @@ matchFigure(array<int> s, array<int> eb, array<float> ep, color c,
                     drawEnergy(tcb1, tchi, "double_corr", tcDir, tcLen)
                     drawPostEffectTargets(eb, ep, tci0, "double_corr", tcDir)  // Level 9
                     compactFigure(s, eb, ep, n, 4, 3)  // 5 моноволн → :3 (AKU-0191)
+                    figConfirmed := "triple_corr"
                     drew := true
         if not drew and n >= 3
             int cx1 = array.get(s, n - 3), cx2 = array.get(s, n - 2), cx3 = array.get(s, n - 1)
@@ -1384,6 +1500,7 @@ matchFigure(array<int> s, array<int> eb, array<float> ep, color c,
                     drawEnergy(db1, dhi, "double_corr", dcDir, dcLen)
                     drawPostEffectTargets(eb, ep, dstartIdx, "double_corr", dcDir)  // Level 9
                     compactFigure(s, eb, ep, n, 2, 3)  // → :3 (AKU-0191)
+                    figConfirmed := "double_corr"
                     drew := true
                 else if isBigX
                     drawFig("Двойн.Корр.? (большая x)", db0, db1, dlo, dhi, color.new(color.orange, 40))
@@ -1424,6 +1541,8 @@ matchFigure(array<int> s, array<int> eb, array<float> ep, color c,
                 float hfLen = math.abs(hfP5 - hfP0)
                 drawEnergy(hfB1, hfHi, "impulse", hfDir == "up" ? 1 : -1, hfLen)
                 drawPostEffectTargets(eb, ep, hfi0, "impulse", hfDir == "up" ? 1 : -1)  // Level 8
+                drawFibProjections(eb, ep, hfi0, "impulse", hfDir == "up" ? 1 : -1)     // Level 10
+                figConfirmed := "impulse"
                 compactFigure(s, eb, ep, n, 4, 5)
                 drew := true
             // Hybrid fallback для треугольника/терминала: структурный паттерн [0,0,0,0,0] или
@@ -1451,6 +1570,10 @@ matchFigure(array<int> s, array<int> eb, array<float> ep, color c,
                     labelSeg(eb, ep, n - 5, ":F3|:c3|:c3|:sL3|:L3", htColor)
                     retroUpdatePI(eb, ep, n - 5, ":F3|:c3|:c3|:sL3|:L3", mBars, mLbls)
                     drawMotionLabels(eb, ep, hfi0, 6, "0|a|b|c|d|e", htTermOK ? color.orange : color.purple)
+                    int htFigDir = htDir == "up" ? 1 : -1
+                    drawPostEffectTargets(eb, ep, hfi0, htTermOK ? "terminal" : "triangle", htFigDir)  // Level 8
+                    drawFibProjections(eb, ep, hfi0, htTermOK ? "terminal" : "triangle", htFigDir)     // Level 10
+                    figConfirmed := htTermOK ? "terminal" : "triangle"
                     compactFigure(s, eb, ep, n, 4, htCompact)
                     drew := true
 
@@ -1489,6 +1612,8 @@ matchFigure(array<int> s, array<int> eb, array<float> ep, color c,
                 // Level 8: AKU-0216 — только для Неудавшейся-с (C/A = 61.8%–138.2%)
                 if flatSubtype == "flat"
                     drawPostEffectTargets(eb, ep, pi0, "flat", int(flatDir))
+                drawFibProjections(eb, ep, pi0, "flat", int(flatDir))  // Level 10
+                figConfirmed := "flat"
                 compactFigure(s, eb, ep, n, 2, 3)  // 3 волны → :3
         // Зигзаг 5-3-5 (AKU-0166): структура :5 → :3 → :5 (F5/c3/L5)
         // B/A < 0.618 отличает Зигзаг от Плоской (где B/A >= 0.618).
@@ -1508,7 +1633,10 @@ matchFigure(array<int> s, array<int> eb, array<float> ep, color c,
                 float zzLen = math.abs(array.get(ep, n-1) - array.get(ep, zzI0))
                 float zzFadeDir = zzDir == "up" ? 1.0 : -1.0
                 drawEnergy(b1, hi, "zigzag", int(zzFadeDir), zzLen)
+                drawFibProjections(eb, ep, zzI0, "zigzag", int(zzFadeDir))  // Level 10
+                figConfirmed := "zigzag"
                 compactFigure(s, eb, ep, n, 2, 3)  // Зигзаг → :3 (коррекция)
+    [drew, figConfirmed]   // return: (был ли распознан паттерн, тип паттерна)
 
 // Скользящее окно ссылок на метки моноволн — используется retroUpdatePI
 // для добавления Индикаторов Положения к m0/m1/... после подтверждения фигуры.
@@ -1603,6 +1731,9 @@ if barstate.islast
 var array<int>   figStruct  = array.new<int>()
 var array<int>   figEndBar  = array.new<int>()
 var array<float> figEndPx   = array.new<float>()
+// Тип последнего подтверждённого паттерна — сбрасывается каждый бар, используется alertcondition
+var string patConfType = ""
+patConfType := ""
 if showFig and rc.ruleNo > 0
     // Используем уточнённый Индикатор Положения (Rule+Condition) для точного base
     [rcPrimFig, _rcListFig] = ruleCondToStruct(rc.ruleNo, rc.condLetter)
@@ -1618,7 +1749,7 @@ if showFig and rc.ruleNo > 0
         array.shift(figEndBar)
         array.shift(figEndPx)
     if base > 0
-        matchFigure(figStruct, figEndBar, figEndPx, colFig, mLblBarArr, mLblRefArr)
+        [_figDrew, patConfType] = matchFigure(figStruct, figEndBar, figEndPx, colFig, mLblBarArr, mLblRefArr)
 
 // ── Hybrid trade matcher: подтверждённые пивоты текущего ТФ ──
 var array<int>   hybBar  = array.new<int>()
@@ -3130,6 +3261,14 @@ alertcondition(coreImpulseEvent, "EWB Core IMPULSE POST", "EWB Neely Core impuls
 alertcondition(coreTriangleEvent, "EWB Core TRIANGLE THRUST", "EWB Neely Core triangle thrust on {{ticker}} {{interval}}")
 alertcondition(coreZigzagEvent, "EWB Core ZIGZAG REVERSAL", "EWB Neely Core zigzag reversal context on {{ticker}} {{interval}}")
 alertcondition(coreMovingCorrEvent, "EWB Core MOVING CORR", "EWB Neely Core moving correction research signal on {{ticker}} {{interval}}")
+// ─── Level 10: Pattern confirmation alerts (AKU-0229..0237) ──────────────────
+alertcondition(patConfType == "impulse",     "EWB Pattern IMPULSE",     "Neely Impulse confirmed on {{ticker}} {{interval}}")
+alertcondition(patConfType == "terminal",    "EWB Pattern TERMINAL",    "Neely Terminal confirmed on {{ticker}} {{interval}}")
+alertcondition(patConfType == "triangle",    "EWB Pattern TRIANGLE",    "Neely Triangle confirmed on {{ticker}} {{interval}}")
+alertcondition(patConfType == "flat",        "EWB Pattern FLAT",        "Neely Flat confirmed on {{ticker}} {{interval}}")
+alertcondition(patConfType == "zigzag",      "EWB Pattern ZIGZAG",      "Neely Zigzag confirmed on {{ticker}} {{interval}}")
+alertcondition(patConfType == "double_corr", "EWB Pattern DOUBLE CORR", "Neely Double Correction confirmed on {{ticker}} {{interval}}")
+alertcondition(patConfType == "triple_corr", "EWB Pattern TRIPLE CORR", "Neely Triple Correction confirmed on {{ticker}} {{interval}}")
 alertcondition(liveHypothesisReadyEvent, "EWB Live Hypothesis Ready", "EWB live structure hypothesis is ready on {{ticker}} {{interval}}")
 
 string actionAlertFigType = lastTradeType == "Flat fade" ? "flat" : lastTradeType == "DoubleCorr fade" ? "double_corr" : "unknown"

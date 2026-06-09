@@ -1,0 +1,472 @@
+{
+  "spec_version": "6.0",
+  "generated_at": "2026-06-09T00:00:00Z",
+  "generated_from": {
+    "aku_total": 365,
+    "aku_verified": 356,
+    "aku_formalized_draft": 254,
+    "previous_spec": "spec_v5.0.json",
+    "key_sources": [
+      "neely-mwe-1990 Гл.2-7",
+      "ch07-vyvody AKU-0349..0365 (17 AKU)",
+      "AKU-0229..0237 (Fibonacci projections)",
+      "AKU-0185..0191 (Double/Triple Correction)",
+      "AKU-0073,0075,0077,0215,0216,0218 (post-effect targets)"
+    ]
+  },
+  "changelog_from_v5": {
+    "pine_level": "9 (spec_v5) → 10 (Fibonacci projections + Pattern alerts)",
+    "pine_lines": "3271 → 3410 (+139 lines)",
+    "new_sections": [
+      "fibonacci_projections — drawFibProjections() (AKU-0229..0237): Ext1/3/5, W3/W1, C/A ratios",
+      "alert_system — 7 new alertcondition() for pattern confirmations (patConfType)",
+      "matchFigure() return — now returns [bool, string] figConfirmed for alert wiring"
+    ],
+    "updated_sections": [
+      "pine_implementation.level_10_fibonacci_projections: not_implemented → complete",
+      "pine_implementation.alert_system: partial → complete (7 pattern alerts added)",
+      "summary: pine_level_reached 9 → 10, pine_functions updated"
+    ],
+    "aku_added": "none (using existing AKU-0229..0237)",
+    "commits": ["pending"]
+  },
+  "neely_methodology": {
+    "source": "Glenn Neely — Mastering Elliott Wave (1990)",
+    "levels": {
+      "level_1_monowaves": "Гл.2 — определение и метка моноволн",
+      "level_2_position_rules": "Гл.3 — предварительный анализ (Правила 1-7, Условия a-f)",
+      "level_3_grouping": "Гл.4 — группировка поливолн (подобие, баланс, сжатие)",
+      "level_4_pattern_confirmation": "Гл.5-6 — подтверждение паттернов (Импульс, Плоская, Зигзаг, Треугольник, Двойная Коррекция, Терминал)",
+      "level_5_post_pattern": "Гл.7 — Рейтинг Энергии, сжатие к :5/:3, выбор таймфрейма",
+      "level_6_wave_degrees": "Гл.7 — Степени волн (Submicro..Grand Supercycle), Правило Сложности",
+      "level_7_channels": "Гл.8-9 — каналы трендовых волн, параллельные линии",
+      "level_8_missing_waves": "Гл.10 — имитация, недостающие волны, x-волны",
+      "level_9_advanced": "Гл.11-12 — продвинутые паттерны, MTF-синхронизация",
+      "level_10_fibonacci": "Гл.5-6 (Нили) — Fibonacci internal/external ratios (AKU-0229..0237)"
+    }
+  },
+  "patterns": {
+    "impulse": {
+      "pine_status": "complete",
+      "aku_count": 25,
+      "compaction": ":5",
+      "energy_dir": "neutral (0/0)",
+      "key_aku": ["AKU-0001", "AKU-0002", "AKU-0004", "AKU-0005", "AKU-0007", "AKU-0009", "AKU-0127"],
+      "fibonacci_aku": ["AKU-0229", "AKU-0230", "AKU-0231", "AKU-0232", "AKU-0236"],
+      "notes": "confirmImpulse + drawImpulseChannels + drawPostEffectTargets (≠W0,W4zone) + drawFibProjections (Ext1/3/5, W3/W1) + AKU-0224 deadline"
+    },
+    "terminal": {
+      "pine_status": "complete",
+      "aku_count": 8,
+      "compaction": ":5",
+      "energy_dir": "counter-trend (-2/+2)",
+      "key_aku": ["AKU-0010", "AKU-0015", "AKU-0016"],
+      "notes": "confirmTerminal (simplified) + drawPostEffectTargets (MUST≤50%T) + drawFibProjections (triangle c/a annotation)"
+    },
+    "triangle": {
+      "pine_status": "complete",
+      "aku_count": 12,
+      "compaction": ":3",
+      "energy_dir": "neutral",
+      "key_aku": ["AKU-0018", "AKU-0019", "AKU-0020"],
+      "fibonacci_aku": ["AKU-0235"],
+      "notes": "confirmTriangle + drawPostEffectTargets (Thrust) + drawFibProjections (c/a = 0.618)"
+    },
+    "flat": {
+      "pine_status": "complete",
+      "aku_count": 10,
+      "compaction": ":3",
+      "energy_dir": "subtype-dependent",
+      "key_aku": ["AKU-0017", "AKU-0213"],
+      "fibonacci_aku": ["AKU-0234"],
+      "notes": "confirmFlat + 3 subtypes (ordinary/failed-c/extended) + drawPostEffectTargets (MUST reach for failed-c) + drawFibProjections (C/A ratio annotation)"
+    },
+    "zigzag": {
+      "pine_status": "complete",
+      "aku_count": 8,
+      "compaction": ":3",
+      "energy_dir": "trend-follow (0/0)",
+      "key_aku": ["AKU-0166"],
+      "fibonacci_aku": ["AKU-0233"],
+      "notes": "confirmZigzag (B<61.8%A) + drawFibProjections (C/A: 61.8%/100%/161.8% annotation) + drawEnergy"
+    },
+    "double_correction": {
+      "pine_status": "complete",
+      "aku_count": 7,
+      "compaction": ":3",
+      "energy_dir": "double_corr context",
+      "key_aku": ["AKU-0185", "AKU-0186", "AKU-0187", "AKU-0215"],
+      "notes": "x-wave ratio check (x < 61.8% W1) + motion labels (0|W1|x|W2) + drawPostEffectTargets (≠start) + drawEnergy"
+    },
+    "triple_correction": {
+      "pine_status": "complete",
+      "aku_count": 4,
+      "compaction": ":3",
+      "energy_dir": "triple correction context",
+      "key_aku": ["AKU-0190", "AKU-0191"],
+      "notes": "5×:3 pattern, both x-waves < 61.8% adjacent corrections + motion labels (0|W1|x1|W2|x2|W3) + drawPostEffectTargets"
+    }
+  },
+  "fibonacci_projections": {
+    "aku_basis": ["AKU-0229", "AKU-0230", "AKU-0231", "AKU-0232", "AKU-0233", "AKU-0234", "AKU-0235", "AKU-0236", "AKU-0237"],
+    "pine_function": "drawFibProjections(array<int> eb, array<float> ep, int i0, string figType, int figDir)",
+    "pine_input": "showFibProj (default: true)",
+    "pine_group": "Fibonacci-проекции (Level 10, AKU-0229..0237)",
+    "implementations": {
+      "impulse": {
+        "aku": ["AKU-0229", "AKU-0230", "AKU-0231", "AKU-0232"],
+        "description": "Тип расширения (Ext1/Ext3/Ext5) + W3/W1 коэффициент + W5/W1 для Ext3 + W2 retrace",
+        "extension_rules": {
+          "ext_1": "W1 ≥ W3 и W1 ≥ W5 — редко; W3 и W5 ≤ 61.8% W1",
+          "ext_3": "W3 ≥ W1 и W3 ≥ W5 — наиболее часто; W1 ≈ W5 (100% или 61.8%)",
+          "ext_5": "W5 наибольшая; W3 = 161.8% W1"
+        },
+        "w2_retrace_zone": "38.2%–61.8% × W1",
+        "w4_retrace_zone": "38.2% × W3 (или 61.8% если W1 extended)"
+      },
+      "zigzag": {
+        "aku": ["AKU-0233"],
+        "description": "C/A коэффициент с категорией: <61.8%(⚠) / ≈61.8%(min) / ≈100%(common) / ≈161.8%(max) / >161.8%(⚠)"
+      },
+      "flat": {
+        "aku": ["AKU-0234"],
+        "description": "C/A коэффициент с категорией: <61.8%(⚠) / ≈61.8%(min) / ≈100%(common) / ≈138.2%(max) / >138.2%(⚠)"
+      },
+      "triangle": {
+        "aku": ["AKU-0235"],
+        "description": "c/a коэффициент: ожидается c ≈ 0.618 × a"
+      }
+    },
+    "not_implemented": [
+      "AKU-0236: External Fibonacci Extended 5th (W3 stops at 161.8% above W1 end; W5 at 100%/161.8%/261.8%) — требует новых горизонтальных линий",
+      "AKU-0237: Waterfall effect (Double/Triple Zigzag 2nd push ≈ 61.8% first) — требует x-wave price tracking",
+      "W4 retracement grid lines (38.2%/61.8% от W3) — деferred"
+    ]
+  },
+  "alert_system": {
+    "implementation": "alertcondition() в Pine Script v6",
+    "pine_variable": "patConfType (var string, сбрасывается каждый бар)",
+    "wiring": "matchFigure() → [bool, string] → patConfType в main scope → alertcondition(patConfType == 'X')",
+    "alerts": [
+      {
+        "name": "EWB Action BUY",
+        "condition": "actionBuySignal",
+        "description": "Flat/DC fade LONG signal (Python ML ≥ 0.62)"
+      },
+      {
+        "name": "EWB Action SELL",
+        "condition": "actionSellSignal",
+        "description": "Flat/DC fade SHORT signal (Python ML ≥ 0.62)"
+      },
+      {
+        "name": "EWB Neely Core Signal",
+        "condition": "coreSignalEvent",
+        "description": "Любой core-сигнал (impulse/triangle/zigzag/moving_corr)"
+      },
+      {
+        "name": "EWB Core IMPULSE POST",
+        "condition": "coreImpulseEvent",
+        "description": "Post-impulse signal (core signal system, hybBar)"
+      },
+      {
+        "name": "EWB Core TRIANGLE THRUST",
+        "condition": "coreTriangleEvent",
+        "description": "Post-triangle thrust signal"
+      },
+      {
+        "name": "EWB Core ZIGZAG REVERSAL",
+        "condition": "coreZigzagEvent",
+        "description": "Zigzag reversal context signal"
+      },
+      {
+        "name": "EWB Core MOVING CORR",
+        "condition": "coreMovingCorrEvent",
+        "description": "Moving correction research signal"
+      },
+      {
+        "name": "EWB Pattern IMPULSE",
+        "condition": "patConfType == 'impulse'",
+        "description": "Neely Impulse confirmed in matchFigure() (AKU-0229..0232)",
+        "added_v6": true
+      },
+      {
+        "name": "EWB Pattern TERMINAL",
+        "condition": "patConfType == 'terminal'",
+        "description": "Neely Terminal confirmed (AKU-0077/0220)",
+        "added_v6": true
+      },
+      {
+        "name": "EWB Pattern TRIANGLE",
+        "condition": "patConfType == 'triangle'",
+        "description": "Neely Triangle confirmed (AKU-0218/0235)",
+        "added_v6": true
+      },
+      {
+        "name": "EWB Pattern FLAT",
+        "condition": "patConfType == 'flat'",
+        "description": "Neely Flat confirmed (AKU-0234)",
+        "added_v6": true
+      },
+      {
+        "name": "EWB Pattern ZIGZAG",
+        "condition": "patConfType == 'zigzag'",
+        "description": "Neely Zigzag confirmed (AKU-0233)",
+        "added_v6": true
+      },
+      {
+        "name": "EWB Pattern DOUBLE CORR",
+        "condition": "patConfType == 'double_corr'",
+        "description": "Neely Double Correction confirmed (AKU-0185..0189)",
+        "added_v6": true
+      },
+      {
+        "name": "EWB Pattern TRIPLE CORR",
+        "condition": "patConfType == 'triple_corr'",
+        "description": "Neely Triple Correction confirmed (AKU-0190/0191)",
+        "added_v6": true
+      }
+    ]
+  },
+  "wave_degrees": {
+    "hierarchy": {
+      "count": 11,
+      "degrees": [
+        { "level": 1, "name_en": "Sub-Micro", "abbrev": "SMc", "neely_addition": true },
+        { "level": 2, "name_en": "Micro", "abbrev": "Mc", "neely_addition": true },
+        { "level": 3, "name_en": "Sub-Minuette", "abbrev": "SM", "starting_degree": true, "note": "AKU-0365: starting degree for monowaves on minimum timeframe" },
+        { "level": 4, "name_en": "Minuette", "abbrev": "Mnut" },
+        { "level": 5, "name_en": "Minute", "abbrev": "Mnt" },
+        { "level": 6, "name_en": "Minor", "abbrev": "Mnr" },
+        { "level": 7, "name_en": "Intermediate", "abbrev": "In" },
+        { "level": 8, "name_en": "Primary", "abbrev": "P" },
+        { "level": 9, "name_en": "Cycle", "abbrev": "C" },
+        { "level": 10, "name_en": "Supercycle", "abbrev": "SC" },
+        { "level": 11, "name_en": "Grand Supercycle", "abbrev": "GSC" }
+      ]
+    },
+    "mtf_mapping": {
+      "conceptual_mapping": {
+        "SubMinuette": "1m–5m",
+        "Minuette": "15m",
+        "Minute": "1h",
+        "Minor": "4h",
+        "Intermediate": "D",
+        "Primary": "W",
+        "Cycle": "M"
+      },
+      "notes": "HTF labels use degreeIndexFromTF(htf). Fallback to curIdx+1 if htf≤ltf. Panel shows LTF/HTF degrees.",
+      "pine_commit": "0f5d9ed",
+      "pine_function": "degreeSuffix(isHTF) → degreeIndexFromTF(htf)"
+    }
+  },
+  "pine_implementation": {
+    "pine_file": "pine/ewb_monowaves_mtf.pine",
+    "neely_level": 10,
+    "neely_level_description": "Уровни 1–10: монволны, предварительный анализ, группировка, паттерны, степени, каналы, пост-эффекты, тройные коррекции, Fibonacci-проекции + алерты.",
+    "last_audit_date": "2026-06-09",
+    "implemented_rules": {
+      "level_1_monowaves": {
+        "status": "complete",
+        "notes": "ZigZag pivot detection с ATR/PCT порогом разворота"
+      },
+      "level_2_position_rules": {
+        "status": "complete",
+        "aku_ids": ["AKU-0141", "AKU-0142"],
+        "notes": "classifyRule (Правила 1–7) и classifyCond (Условия a–f) реализованы корректно"
+      },
+      "level_3_grouping": {
+        "status": "partial",
+        "aku_ids": ["AKU-0003", "AKU-0166"],
+        "notes": "Подобие и баланс реализованы. Зигзаг 5-3-5 активирован на геометрии (D3). Полные Индикаторы Положения не реализованы."
+      },
+      "level_4_pattern_confirmation": {
+        "status": "complete",
+        "aku_ids": ["AKU-0177"],
+        "notes": "Impulse, Flat, Zigzag, Triangle, Terminal, Double Correction, Triple Correction — все подтверждены.",
+        "caveats": [
+          "Zigzag без Position Indicators может перекрываться с Impulse tail (D3)",
+          "Terminal реализован через упрощённый confirmTerminal"
+        ]
+      },
+      "level_5_post_pattern": {
+        "status": "partial",
+        "aku_ids": ["AKU-0213"],
+        "notes": "Energy Rating для всех паттернов включая Terminal (-2/+2), Zigzag (0/0), подтипы Flat"
+      },
+      "level_6_wave_degrees": {
+        "status": "complete",
+        "aku_ids": ["AKU-0349", "AKU-0350", "AKU-0351", "AKU-0352", "AKU-0353", "AKU-0354", "AKU-0355", "AKU-0356", "AKU-0357", "AKU-0358", "AKU-0359", "AKU-0365"],
+        "pine_commit": "71eb7ca + 0f5d9ed",
+        "pine_functions": ["degreeIndexFromTF()", "degreeLabel()", "degreeSuffix()", "DEGREE_NAMES"],
+        "notes": "Степени SubMicro→GSC (11 уровней) реализованы в Pine. HTF-метки автоматически +1 Порядок (AKU-0365)."
+      },
+      "level_7_channels": {
+        "status": "complete",
+        "aku_ids": ["AKU-0011", "AKU-0054", "AKU-0201", "AKU-0224"],
+        "notes": "drawImpulseChannels(): 0-2 trendline, 2-4 trendline, W5 Fib target (AKU-0201), AKU-0224 breakout window."
+      },
+      "level_8_missing_waves": {
+        "status": "partial",
+        "aku_ids": ["AKU-0073", "AKU-0075", "AKU-0077", "AKU-0216", "AKU-0218", "AKU-0238"],
+        "pine_commit": "4979b6b",
+        "implemented": "drawPostEffectTargets(): impulse ≠W0 + W4zone, terminal MUST≤50%T, triangle Thrust, flat failed-c MUST reach",
+        "not_implemented": "Missing waves count-based detection (AKU-0238: polywave data point counting), x-waves (Ch.10)"
+      },
+      "level_9_advanced": {
+        "status": "partial",
+        "pine_commit": "675e623",
+        "implemented": [
+          "Triple Correction (5×:3): W1+x1+W2+x2+W3, x-wave ratio check, motion labels (AKU-0190/0191)",
+          "Double Correction: labelSeg + retroUpdatePI + drawMotionLabels + drawEnergy + drawPostEffectTargets (AKU-0185..0189)",
+          "Hybrid Triangle/Terminal: drawPostEffectTargets added in spec_v6"
+        ],
+        "not_implemented": "Missing wave count detection (AKU-0238), x-wave logic Ch.10-12 full detail"
+      },
+      "level_10_fibonacci_projections": {
+        "status": "complete",
+        "aku_ids": ["AKU-0229", "AKU-0230", "AKU-0231", "AKU-0232", "AKU-0233", "AKU-0234", "AKU-0235"],
+        "pine_function": "drawFibProjections(eb, ep, i0, figType, figDir)",
+        "pine_input": "showFibProj (default: true)",
+        "implemented": [
+          "Impulse: Ext1/Ext3/Ext5 label + W3/W1 ratio + W5/W1 for Ext3 + W2 retrace (AKU-0229..0232)",
+          "Zigzag: C/A ratio with category (61.8%/100%/161.8%) (AKU-0233)",
+          "Flat: C/A ratio with category (61.8%/100%/138.2%) (AKU-0234)",
+          "Triangle: c/a = 0.618 check (AKU-0235)"
+        ],
+        "not_implemented": [
+          "AKU-0236: external projection lines (W3 at 161.8% of W1 end, W5 at 261.8%)",
+          "AKU-0237: Waterfall effect x-wave = 61.8% first push"
+        ]
+      },
+      "alert_system": {
+        "status": "complete",
+        "pine_variable": "patConfType (string, per-bar reset)",
+        "implemented": [
+          "EWB Pattern IMPULSE (patConfType == 'impulse')",
+          "EWB Pattern TERMINAL (patConfType == 'terminal')",
+          "EWB Pattern TRIANGLE (patConfType == 'triangle')",
+          "EWB Pattern FLAT (patConfType == 'flat')",
+          "EWB Pattern ZIGZAG (patConfType == 'zigzag')",
+          "EWB Pattern DOUBLE CORR (patConfType == 'double_corr')",
+          "EWB Pattern TRIPLE CORR (patConfType == 'triple_corr')"
+        ],
+        "notes": "matchFigure() returns [bool, string]. patConfType captured in main scope. alertcondition() fires on bar where pattern confirmed."
+      },
+      "mtf_synchronization": {
+        "status": "partial",
+        "notes": "HTF overlay реализован. mtfDegreeSync() использует degreeIndexFromTF(htf). Финальная полная MTF-синхронизация деferred."
+      }
+    },
+    "deferred": [
+      {
+        "feature": "Position Indicators full wiring (:F/:c/:L → classifyRule/classifyCond)",
+        "blocker": "Требует полной реализации Гл.3 стр.3-1 до 3-59 логики",
+        "aku_ref": "AKU-0141, AKU-0142, AKU-0177"
+      },
+      {
+        "feature": "Zigzag full disambiguation (D3 parity)",
+        "blocker": "Position Indicators :F5/:c3/:L5 не привязаны к classifyRule",
+        "aku_ref": "AKU-0166"
+      },
+      {
+        "feature": "Terminal full confirmation (Гл.5 complete rules)",
+        "blocker": "confirmTerminal использует упрощённый набор правил",
+        "aku_ref": "AKU-0177"
+      },
+      {
+        "feature": "Missing waves / Imitation logic (Level 8)",
+        "blocker": "Требует polywave data-point counting (AKU-0238)",
+        "aku_ref": "AKU-0238"
+      },
+      {
+        "feature": "AKU-0236: External Fibonacci projection lines",
+        "blocker": "Требует горизонтальных линий до/после фигуры с offset от конца W1",
+        "aku_ref": "AKU-0236"
+      },
+      {
+        "feature": "AKU-0237: Waterfall (Double Zigzag 2nd push = 61.8%)",
+        "blocker": "Требует x-wave price tracking в matchFigure",
+        "aku_ref": "AKU-0237"
+      },
+      {
+        "feature": "AKU formalization pass",
+        "blocker": "254 draft AKU (ch05-ch12) — отдельный проход после верификации",
+        "aku_ref": "ch05-ch12 AKU"
+      }
+    ],
+    "next_milestone": "spec_v7: polywave detection (AKU-0238) OR full MTF sync OR AKU formalization batch",
+    "next_pine_epic": "Missing wave detection (AKU-0238) — polywave count-based identification; или ещё один Fibonacci batch (AKU-0236/0237)"
+  },
+  "fibonacci": {
+    "ratios": [0.236, 0.382, 0.5, 0.618, 0.786, 1.0, 1.272, 1.618, 2.618],
+    "key_uses": {
+      "W2_max_retrace": 0.618,
+      "W4_typical_retrace": 0.382,
+      "zigzag_B_max": 0.618,
+      "zigzag_C_min": 0.618,
+      "zigzag_C_max": 1.618,
+      "zigzag_C_common": 1.0,
+      "flat_B_min": 0.618,
+      "flat_C_min": 0.618,
+      "flat_C_extended": 1.382,
+      "flat_C_common": 1.0,
+      "W5_projection_from_W3": 1.618,
+      "triangle_thrust_min": 0.618,
+      "triangle_c_from_a": 0.618,
+      "double_zigzag_waterfall": 0.618
+    }
+  },
+  "parity_deviations": {
+    "D1": { "status": "closed", "description": "W2 retrace threshold 0.618 — Python и Pine совпадают" },
+    "D2": { "status": "closed", "description": "Flat B-wave min 0.618 — исправлено в FIX-1A" },
+    "D3": { "status": "partial", "description": "Zigzag (5-3-5) — геометрия активирована в v4; Position Indicators wiring отложен", "pine_behavior": "confirmZigzag активен, backtest impact TBD" },
+    "D4": { "status": "closed_deferred", "description": "Triangle e<c severity W (warning only) — backtest impact=0, оставлено как есть" },
+    "D5": { "status": "closed", "description": "W2 retrace impulse count — 0 impulse trades, нет влияния" }
+  },
+  "python_ml_pipeline": {
+    "model": "LightGBM lgbm_fade_h20.pkl",
+    "threshold": 0.62,
+    "win_rate": 0.707,
+    "sharpe_ann": 2.90,
+    "dataset": "figures_wide.parquet: 14,055 rows, 70 tickers, flat+DC=1,346",
+    "api": "python/ewb/prediction_api.py (FastAPI, port 8001)",
+    "last_trained": "2026-06-09"
+  },
+  "summary": {
+    "total_aku": 365,
+    "total_verified": 356,
+    "total_formalized_draft": 254,
+    "patterns_implemented": 7,
+    "patterns_total": 8,
+    "pine_level_reached": 10,
+    "wave_degrees_aku_ready": 17,
+    "pine_functions": [
+      "confirmImpulse",
+      "confirmFlat",
+      "confirmZigzag",
+      "confirmTriangle",
+      "confirmTerminal",
+      "hybridImpulseOK",
+      "hybridTriangleOK",
+      "hybridZigzagOK",
+      "hybridMovingFlatOK",
+      "hybridDoubleCorrOK",
+      "energyRating",
+      "drawEnergy",
+      "drawImpulseChannels",
+      "drawMotionLabels",
+      "drawPostEffectTargets",
+      "drawFibProjections",
+      "labelSeg",
+      "compactFigure",
+      "matchFigure",
+      "degreeIndexFromTF",
+      "degreeLabel",
+      "degreeSuffix"
+    ],
+    "alertconditions_total": 14,
+    "alertconditions_pattern_specific": 7,
+    "coverage": "Гл.2-12 Нили покрыты AKU. Pine реализован на уровне геометрии (Уровни 1-10). Fibonacci-проекции (C/A, W3/W1, Ext-type) добавлены в spec_v6.",
+    "next_pine_epic": "spec_v7: polywave detection (AKU-0238) или AKU-0236/0237 Fibonacci extensions"
+  }
+}
