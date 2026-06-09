@@ -1178,6 +1178,16 @@ drawPostEffectTargets(array<int> eb, array<float> ep, int i0, string figType, in
              textcolor = color.white, size = size.tiny,
              tooltip = "AKU-0216: Неудавшаяся-с Плоская → следующая волна ДОЛЖНА достичь старта\n= " + str.tostring(p0, "#.####"))
 
+    else if figType == "double_corr"
+        // AKU-0215: Двойная Коррекция (+2) → следующая волна НЕ должна достичь стартового уровня
+        line.new(bN, p0, bN + extLen, p0, xloc = xloc.bar_index,
+             color = color.new(color.orange, 50), width = 1, style = line.style_dotted)
+        label.new(bN + extLen, p0, "≠ start",
+             xloc = xloc.bar_index, yloc = yloc.price,
+             style = label.style_label_left, color = color.new(color.orange, 35),
+             textcolor = color.white, size = size.tiny,
+             tooltip = "AKU-0215: Двойная/Тройная Коррекция → следующая волна НЕ должна достичь стартового уровня\n= " + str.tostring(p0, "#.####"))
+
 // ─── Правило соотношения длительностей (AKU-0205, Гл.9 стр.9-4) ─────────────
 // 3 смежных волны одного Порядка не могут иметь одинаковую временную длину.
 // Возвращает true если нарушение (все три равны ±10%).
@@ -1316,9 +1326,35 @@ matchFigure(array<int> s, array<int> eb, array<float> ep, color c,
         int dx1 = array.get(s, n - 5), dx2 = array.get(s, n - 4), dx3 = array.get(s, n - 3)
         int dx4 = array.get(s, n - 2), dx5 = array.get(s, n - 1)
         if dx1 == 3 and dx2 == 3 and dx3 == 3 and dx4 == 3 and dx5 == 3
-            // 5 троек = потенциальная Двойная Коррекция с большой x + Тройная?
-            // Пропускаем — уже детектируется как Треугольник выше
-            drew := false
+            // Level 9: Тройная Коррекция W1(x1)W2(x2)W3 (AKU-0190, AKU-0191)
+            // Треугольник уже был исключён выше (drew=true если триOK или termOK).
+            // Проверяем: x-волны (позиции 2 и 4) меньше 61.8% соседних коррекций (AKU-0185).
+            if n >= 6
+                int tci0 = n - 6
+                float tcW1 = math.abs(array.get(ep, n-5) - array.get(ep, n-6))
+                float tcX1 = math.abs(array.get(ep, n-4) - array.get(ep, n-5))
+                float tcW2 = math.abs(array.get(ep, n-3) - array.get(ep, n-4))
+                float tcX2 = math.abs(array.get(ep, n-2) - array.get(ep, n-3))
+                float tcX1r = tcW1 > 0 ? tcX1 / tcW1 : na
+                float tcX2r = tcW2 > 0 ? tcX2 / tcW2 : na
+                bool isTCsmall = not na(tcX1r) and tcX1r < 0.618 and
+                                 not na(tcX2r) and tcX2r < 0.618
+                if isTCsmall
+                    int   tcb0 = array.get(eb, tci0), int tcb1 = array.get(eb, n - 1)
+                    float tchi = array.get(ep, tci0), float tclo = array.get(ep, tci0)
+                    for i = tci0 to n - 1
+                        float p = array.get(ep, i)
+                        tchi := math.max(tchi, p)
+                        tclo := math.min(tclo, p)
+                    drawFig("Тройн.Корр. ✅", tcb0, tcb1, tclo, tchi, color.new(color.fuchsia, 20))
+                    labelSeg(eb, ep, n - 5, ":F3|:x3|:c3|:x3|:L3", color.new(color.fuchsia, 20))
+                    drawMotionLabels(eb, ep, tci0, 6, "0|W1|x1|W2|x2|W3", color.fuchsia)
+                    float tcLen = math.abs(array.get(ep, n-1) - array.get(ep, tci0))
+                    int   tcDir = array.get(ep, n-1) > array.get(ep, tci0) ? 1 : -1
+                    drawEnergy(tcb1, tchi, "double_corr", tcDir, tcLen)
+                    drawPostEffectTargets(eb, ep, tci0, "double_corr", tcDir)  // Level 9
+                    compactFigure(s, eb, ep, n, 4, 3)  // 5 моноволн → :3 (AKU-0191)
+                    drew := true
         if not drew and n >= 3
             int cx1 = array.get(s, n - 3), cx2 = array.get(s, n - 2), cx3 = array.get(s, n - 1)
             if cx1 == 3 and cx2 == 3 and cx3 == 3
@@ -1340,10 +1376,19 @@ matchFigure(array<int> s, array<int> eb, array<float> ep, color c,
                 bool isBigX   = not na(xRatio) and xRatio >= 1.618  // Условие 2 (AKU-0186)
                 if isSmallX
                     drawFig("Двойн.Корр. ✅", db0, db1, dlo, dhi, color.new(color.orange, 20))
+                    labelSeg(eb, ep, n - 3, ":F3|:x3|:L3", color.new(color.orange, 20))
+                    retroUpdatePI(eb, ep, n - 3, ":F3|:x3|:L3", mBars, mLbls)
+                    drawMotionLabels(eb, ep, dstartIdx, 4, "0|W1|x|W2", color.orange)
+                    float dcLen = math.abs(array.get(ep, n-1) - array.get(ep, dstartIdx))
+                    int   dcDir = array.get(ep, n-1) > array.get(ep, dstartIdx) ? 1 : -1
+                    drawEnergy(db1, dhi, "double_corr", dcDir, dcLen)
+                    drawPostEffectTargets(eb, ep, dstartIdx, "double_corr", dcDir)  // Level 9
                     compactFigure(s, eb, ep, n, 2, 3)  // → :3 (AKU-0191)
                     drew := true
                 else if isBigX
                     drawFig("Двойн.Корр.? (большая x)", db0, db1, dlo, dhi, color.new(color.orange, 40))
+                    labelSeg(eb, ep, n - 3, ":F3|:x3|:L3", color.new(color.orange, 40))
+                    drawMotionLabels(eb, ep, dstartIdx, 4, "0|W1|x|W2", color.new(color.orange, 60))
                     drew := true
 
     // Hybrid fallback для импульса: когда W2/W4 имеют Правило 6-7 (base=0)
