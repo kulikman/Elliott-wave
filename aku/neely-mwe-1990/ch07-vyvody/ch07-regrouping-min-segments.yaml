@@ -1,0 +1,35 @@
+id: AKU-0362
+type: rule
+strength: mandatory
+status: verified
+topic: compaction
+subtopics:
+  - grouping-procedure
+  - structural-series
+statement_ru: >
+  Прежде чем начать точку новых Структурных Серий после сжатия, удостовериться,
+  что имеется по крайней мере пять структурно-меченых волновых сегментов для анализа.
+  После сжатия Плоской фигуры на Рисунке 7-1 осталось только три структурных метки.
+  Поэтому на Рисунке 7-2 прибавлены две дополнительные моноволны.
+source:
+  book_id: neely-mwe-1990
+  page: 7-3
+  chapter: "Глава 7: Выводы"
+  section: "Перегруппировка"
+  verbatim_quote:
+    text: >
+      Прежде чем начать точку новых Структурных Серий, удостоверьтесь, что имеется по
+      крайней мере пять структурно-меченых волновых сегментов для анализа.
+    language: ru
+formalization:
+  status: draft
+  applies_when: |
+    figure.compaction_done == true
+    AND starting_new_structural_series == true
+  result: |
+    available_segments = count(structural_labeled_segments_around_compact)
+    IF available_segments < 5:
+      REQUIRE add_adjacent_monowaves_until(available_segments >= 5)
+created_by: claude
+created_at: "2026-06-09"
+requires_review: false

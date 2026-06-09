@@ -1,0 +1,37 @@
+id: AKU-0363
+type: rule
+strength: mandatory
+status: verified
+topic: compaction
+subtopics:
+  - motion-labels
+  - structural-labels
+statement_ru: >
+  После завершения процедуры сжатия Метки Движения (1-2-3-4-5, a-b-c и т.д.) данной фигуры
+  теряют своё значение. При переносе "структурной информации" на более долгосрочный график
+  Метки Движения переносить нельзя. Самым важным фактором формирования более крупных
+  Сложных поливолновых или мультиволновых фигур становится базовая (базовая) структура
+  волны (":3" или ":5").
+source:
+  book_id: neely-mwe-1990
+  page: 7-8
+  chapter: "Глава 7: Выводы"
+  section: "Метки Движения (резюме)"
+  verbatim_quote:
+    text: >
+      При переносе "структурной информации" на график, охватывающий более продолжительный
+      период времени, Метки Движения данной фигуры переносить нельзя. Теперь самым важным
+      фактором формирования более крупных Сложных поливолновых или мультиволновых фигур
+      становится основная (базовая) структура волны (":3" или ":5").
+    language: ru
+formalization:
+  status: draft
+  applies_when: |
+    figure.is_compacted == true
+    AND transferring_to_higher_timeframe == true
+  result: |
+    figure.motion_labels = NULL  # не переносить
+    figure.compact_structure IN [":3", ":5"]  # только это переносится
+created_by: claude
+created_at: "2026-06-09"
+requires_review: false

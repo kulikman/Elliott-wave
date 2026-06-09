@@ -1,0 +1,40 @@
+id: AKU-0361
+type: rule
+strength: mandatory
+status: verified
+topic: compaction
+subtopics:
+  - analysis-workflow
+  - monowave
+statement_ru: >
+  После завершения процесса уплотнения требуется провести переоценку (reassessment)
+  базовой структуры данной фигуры. Нужно вернуться к Главе 3 и представить, что эта
+  компактная фигура — моноволна. Используя соответствующие правила, определить её
+  внутреннюю структуру. Если полученная в результате этого базовая структура противоречит
+  характеру (Классу) данной фигуры, то возможно наличие в ней "Пропавшей волны".
+  При переоценке двух "окружающих" компактную фигуру волн — не забывать об этом.
+source:
+  book_id: neely-mwe-1990
+  page: 7-3
+  chapter: "Глава 7: Выводы"
+  section: "Перегруппировка"
+  verbatim_quote:
+    text: >
+      По завершении процесса уплотнения требуется провести переоценку (reassessment) базовой
+      структуры данной фигуры. Вернитесь к Главе 3 и представьте, что эта компактная фигура
+      моноволна. Используя соответствующие правила, определите её внутреннюю структуру. Если
+      полученная в результате этого базовая структура противоречит характеру (Классу) данной
+      фигуры, то возможно наличие в ней "Пропавшей волны".
+    language: ru
+formalization:
+  status: draft
+  applies_when: |
+    figure.compaction_done == true
+  result: |
+    compact_wave.treat_as = "monowave"
+    compact_wave.internal_structure = apply_ch3_rules(compact_wave)
+    IF compact_wave.internal_structure CONTRADICTS compact_wave.class:
+      compact_wave.missing_wave_flag = true
+created_by: claude
+created_at: "2026-06-09"
+requires_review: false

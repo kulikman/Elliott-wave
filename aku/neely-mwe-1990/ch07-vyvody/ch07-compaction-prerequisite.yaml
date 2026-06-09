@@ -1,0 +1,44 @@
+id: AKU-0360
+type: rule
+strength: mandatory
+status: verified
+topic: compaction
+subtopics:
+  - analysis-workflow
+  - grouping-procedure
+statement_ru: >
+  Процедуру сжатия (уплотнения) нельзя проводить, пока не учтены все рассмотренные
+  в предыдущих главах критерии (структурные серии, Основные и Условные правила формирования
+  волн, Каналы, коэффициенты Фибоначчи, Следствия из формальных правил логики и т.д.).
+  Только убедившись в том, что все основные правила выполняются, можно приступать к сжатию.
+source:
+  book_id: neely-mwe-1990
+  page: 7-1
+  chapter: "Глава 7: Выводы"
+  section: "Процедура сжатия (уплотнения) волн"
+  verbatim_quote:
+    text: >
+      Его нельзя проводить, пока все рассмотренные в предыдущих главах критерии не будут
+      учтены (имеются в виду Структурная идентификация Структурных серий, Основные и Условные
+      правила формирования волн, Каналы, коэффициенты Фибоначчи, Следствия из формальных правил
+      логики и т.д.). Лишь убедившись в том, что все основные правила выполняются и все
+      необходимые процедуры проведены, можно приступать к процессу сжатия (уплотнения).
+    language: ru
+formalization:
+  status: draft
+  applies_when: |
+    figure.is_completed == true
+    AND attempting_compaction == true
+  result: |
+    IF NOT all_of(
+      structural_series_identified,
+      basic_rules_ch5_satisfied,
+      conditional_rules_satisfied,
+      channels_checked,
+      fibonacci_checked,
+      formal_logic_checked
+    ):
+      RAISE "Compaction blocked: ch1-6 criteria not fully satisfied"
+created_by: claude
+created_at: "2026-06-09"
+requires_review: false

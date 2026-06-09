@@ -1,0 +1,41 @@
+id: AKU-0365
+type: rule
+strength: mandatory
+status: verified
+topic: wave-degree
+subtopics:
+  - wave-degree
+  - monowave
+statement_ru: >
+  Монволны на первом (самом краткосрочном) графике с минимальным временным диапазоном
+  обозначаются как волны Субмельчайшего Порядка (Sub-Minuette Degree). После их сжатия
+  (уплотнения) в отдельную Структуру Порядок возрастает до Мельчайшего (Minuette Degree).
+  Таким образом, Порядок сжатой (компактной) фигуры всегда на единицу выше, чем самый
+  высокий Порядок, использованный до Уплотнения.
+source:
+  book_id: neely-mwe-1990
+  page: 7-13
+  chapter: "Глава 7: Выводы"
+  section: "О Порядке волн — Резюме"
+  verbatim_quote:
+    text: >
+      Чтобы начать применение меток Порядка [фигур], принимается, что Наименование
+      Субмельчайшая должно использоваться в случае моноволн на вашем самом краткосрочном
+      графике. После движения в направлении участка Сжатия (Уплотнения) Порядок сжатой
+      (компактной) фигуры вы работали (или работаете), должна быть составлена из трёх или
+      пяти Субмельчайших моноволн. После того как группа волн сжимается (уплотняется) в
+      отдельную меченую Структуру, в фигуре, её Порядок возрастает до Мельчайшего Порядка.
+    language: ru
+formalization:
+  status: draft
+  applies_when: |
+    wave.is_monowave == true
+    AND chart.is_minimum_timeframe == true
+  result: |
+    wave.degree = "SubMinuette"
+    # После сжатия 3 или 5 SubMinuette → compact degree = "Minuette"
+    if compacted:
+      compact_figure.degree = next_degree(wave.degree)
+created_by: claude
+created_at: "2026-06-09"
+requires_review: false
