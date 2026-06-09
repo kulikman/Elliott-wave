@@ -390,6 +390,47 @@ method step(ZZState s, float h, float l, float rev) =>
         s.hasPrev      := true
     r
 
+// ─── Level 6: Wave Degree helpers (AKU-0356, AKU-0357, AKU-0365) ──────────────
+// Таблица Порядков Нили (spec_v5 wave_degrees.degree_hierarchy):
+//   0=SMc  1=Mc  2=SM  3=Mnut  4=Mnt  5=Mnr  6=In  7=P  8=C  9=SC  10=GSC
+// Маппинг ТФ → индекс: monowaves на минимальном ТФ = Sub-Minuette (AKU-0365)
+var array<string> DEGREE_NAMES = array.from("SMc","Mc","SM","Mnut","Mnt","Mnr","In","P","C","SC","GSC")
+
+degreeIndexFromTF(string tf) =>
+    tfMult = timeframe.in_seconds(tf)
+    tfMult < 300   ? 0 :
+     tfMult < 600   ? 1 :
+     tfMult < 1800  ? 2 :
+     tfMult < 7200  ? 3 :
+     tfMult < 28800 ? 4 :
+     tfMult < 86400 ? 5 :
+     tfMult < 604800 ? 6 :
+     tfMult < 2592000 ? 7 :
+     tfMult < 31536000 ? 8 : 9
+
+degreeLabel(int idx, int extra) =>
+    clampedIdx = math.min(idx + extra, array.size(DEGREE_NAMES) - 1)
+    array.get(DEGREE_NAMES, clampedIdx)
+
+// Возвращает строку-суффикс Порядка для лейбла моноволны
+degreeSuffix(bool isHTF) =>
+    if not showDeg
+        ""
+    else if degAutoTF
+        curIdx = degreeIndexFromTF(timeframe.period)
+        if isHTF and showDegOnHTF
+            htfIdx = degreeIndexFromTF(htf)
+            useIdx = htfIdx > curIdx ? htfIdx : curIdx + 1
+            " [" + degreeLabel(useIdx, 0) + "]"
+        else
+            " [" + degreeLabel(curIdx, 0) + "]"
+    else
+        if isHTF and showDegOnHTF
+            manualIdx = array.indexof(DEGREE_NAMES, degManual)
+            manualIdx >= 0 ? " [" + degreeLabel(manualIdx, 1) + "]" : " [" + degManual + "+]"
+        else
+            " [" + degManual + "]"
+
 // Отрисовка одной завершившейся моноволны
 drawMono(ZZResult r, color cUp, color cDn, int width, bool isHTF, color cHTF, bool lbl) =>
     label monoL = na
@@ -421,55 +462,6 @@ chartTfRank() =>
      timeframe.isdaily ? 4 :
      timeframe.isweekly ? 5 :
      timeframe.ismonthly ? 6 : 7
-
-// ─── Level 6: Wave Degree helpers (AKU-0356, AKU-0357, AKU-0365) ──────────────
-// Таблица Порядков Нили (spec_v5 wave_degrees.degree_hierarchy):
-//   0=SMc  1=Mc  2=SM  3=Mnut  4=Mnt  5=Mnr  6=In  7=P  8=C  9=SC  10=GSC
-// Маппинг ТФ → индекс: monowaves на минимальном ТФ = Sub-Minuette (AKU-0365)
-var array<string> DEGREE_NAMES = array.from("SMc","Mc","SM","Mnut","Mnt","Mnr","In","P","C","SC","GSC")
-
-degreeIndexFromTF(string tf) =>
-    tfMult = timeframe.in_seconds(tf)
-    // < 5 min → SubMicro(0), < 10m → Micro(1), <30m → SM(2), <120m → Mnut(3),
-    // <480m(8h) → Mnt(4), <1440m(D) → Mnr(5), <7×D(W) → In(6), <30×D(M) → P(7), else C(8)
-    tfMult < 300   ? 0 :
-     tfMult < 600   ? 1 :
-     tfMult < 1800  ? 2 :
-     tfMult < 7200  ? 3 :
-     tfMult < 28800 ? 4 :
-     tfMult < 86400 ? 5 :
-     tfMult < 604800 ? 6 :
-     tfMult < 2592000 ? 7 :
-     tfMult < 31536000 ? 8 : 9
-
-degreeLabel(int idx, int extra) =>
-    // extra=0 → текущий TF; extra=1 → HTF (на 1 выше, AKU-0365 post-compaction)
-    clampedIdx = math.min(idx + extra, array.size(DEGREE_NAMES) - 1)
-    array.get(DEGREE_NAMES, clampedIdx)
-
-// Возвращает строку-суффикс Порядка для лейбла моноволны
-// mtfDegreeSync (AKU-0357, AKU-0365): HTF-метки используют degreeIndexFromTF(htf),
-// а не эвристику +1 — точное соответствие Порядка реальному таймфрейму HTF overlay.
-// Если htf ТФ даёт тот же или меньший индекс (нестандартные настройки), fallback: +1.
-degreeSuffix(bool isHTF) =>
-    if not showDeg
-        ""
-    else if degAutoTF
-        curIdx = degreeIndexFromTF(timeframe.period)
-        if isHTF and showDegOnHTF
-            htfIdx = degreeIndexFromTF(htf)
-            // Используем htfIdx если он выше curIdx, иначе curIdx+1 (fallback)
-            useIdx = htfIdx > curIdx ? htfIdx : curIdx + 1
-            " [" + degreeLabel(useIdx, 0) + "]"
-        else
-            " [" + degreeLabel(curIdx, 0) + "]"
-    else
-        if isHTF and showDegOnHTF
-            // найти индекс degManual и взять +1
-            manualIdx = array.indexof(DEGREE_NAMES, degManual)
-            manualIdx >= 0 ? " [" + degreeLabel(manualIdx, 1) + "]" : " [" + degManual + "+]"
-        else
-            " [" + degManual + "]"
 
 contextTfEnabled(int tfRank, int currentRank) =>
     showHtfWaveMap and tfRank > currentRank and tfRank <= currentRank + htfContextLevels
