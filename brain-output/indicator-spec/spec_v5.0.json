@@ -323,8 +323,8 @@
   },
   "pine_implementation": {
     "pine_file": "pine/ewb_monowaves_mtf.pine",
-    "neely_level": 8,
-    "neely_level_description": "Уровни 1–8: моноволны, предварительный анализ, группировка, паттерны, степени волн (L6), каналы (L7), пост-эффекты (L8).",
+    "neely_level": 9,
+    "neely_level_description": "Уровни 1–9: моноволны, предварительный анализ, группировка, паттерны (L4), степени (L6), каналы (L7), пост-эффекты (L8), тройные коррекции (L9).",
     "last_audit_date": "2026-06-09",
     "implemented_rules": {
       "level_1_monowaves": {
@@ -429,8 +429,15 @@
         "not_implemented": "Missing waves count-based detection (AKU-0238: polywave data point counting), x-waves (Ch.10)"
       },
       "level_9_advanced": {
-        "status": "not_implemented",
-        "notes": "Продвинутые правила логики (Гл.10-12), MTF-синхронизация spec_v6"
+        "status": "partial",
+        "notes": "Продвинутые правила логики (Гл.10-12), MTF-синхронизация spec_v6",
+        "pine_commit": "675e623",
+        "implemented": [
+          "Triple Correction (5x:3): W1+x1+W2+x2+W3, x-wave ratio check, motion labels, compact (AKU-0190/0191)",
+          "Double Correction: labelSeg + retroUpdatePI + drawMotionLabels + drawEnergy + drawPostEffectTargets (AKU-0185..0189)",
+          "drawPostEffectTargets double_corr: AKU-0215 ≠start line"
+        ],
+        "not_implemented": "Missing wave count detection (AKU-0238), x-wave logic Ch.10-12 full detail"
       },
       "mtf_synchronization": {
         "status": "partial",
@@ -467,7 +474,7 @@
       }
     ],
     "next_milestone": "spec_v6: Pine Уровень 6 (Wave Degrees MTF) + Position Indicators full wiring",
-    "next_pine_epic": "Level 9: Advanced Logic (Ch.10-12) — x-waves, combinations, missing wave detection"
+    "next_pine_epic": "L9 complete — missing waves (AKU-0238) and Ch.11-12 rules; or spec_v6 MTF sync"
   },
   "fibonacci": {
     "ratios": [
