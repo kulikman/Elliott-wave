@@ -25,34 +25,38 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: "# Правило применяется когда:\n# 1. Мы собираемся применить Неформальные\
-    \ Правила логики (Informal Logic Rules)\n# 2. К ценовой фигуре, которая является\
-    \ компактной (результат compaction)\n# 3. И эта фигура пересекает свой собственный\
-    \ начальный уровень\n\napplying_informal_logic_rules == true\nAND pattern.is_compacted\
-    \ == true\nAND pattern_crosses_own_start_level(pattern) == true\n\n# Определение:\
-    \ фигура пересекает свой начальный уровень,\n# если цена в ходе развития фигуры\
-    \ возвращается к уровню начала\n# фигуры или проходит через него\ndef pattern_crosses_own_start_level(pattern):\n\
-    \  start_price = pattern.start_price\n  for segment in pattern.segments:\n   \
-    \ if segment.high >= start_price AND segment.low <= start_price:\n      return\
-    \ true\n  return false\n"
-  constraint: "# НЕ применять Неформальные Правила логики напрямую к компактной фигуре,\n\
-    # пересекающей свой начальный уровень.\n# Вместо этого — декомпактировать и работать\
-    \ с базовой Структурой.\n\nif pattern.is_compacted AND pattern_crosses_own_start_level(pattern):\n\
-    \  # ЗАПРЕЩЕНО:\n  # apply_informal_logic_rules(pattern)\n\n  # ТРЕБУЕТСЯ:\n \
-    \ base_structure = decompact(pattern)  # получить базовую структуру до компактирования\n\
-    \  apply_informal_logic_rules(base_structure)\n"
-  formalization_notes: "1. \"Компактная ценовая фигура\" (compacted pattern) — фигура,\
-    \ полученная\n   в результате процедуры компактирования (compaction), когда несколько\n\
-    \   моноволн объединяются в одну структурную единицу.\n2. \"Базовая Структура\"\
-    \ (base Structure) — структура до компактирования,\n   т.е. исходные составляющие\
-    \ моноволны/поливолны.\n3. \"Пересекает свой собственный начальный уровень\" —\
-    \ цена в процессе\n   развития фигуры возвращается к ценовому уровню начала фигуры\n\
-    \   или проходит через него.\n4. Правило conditional — это рекомендация (\"не\
-    \ следует\"), а не абсолютный запрет.\n5. Функция decompact() (get_base_structure)\
-    \ зависит от контекста\n   компактирования и не детализирована в данном правиле.\n\
-    6. Правило не уточняет, что делать если базовая структура тоже\n   пересекает\
-    \ свой начальный уровень — предполагается что базовая\n   структура уже не является\
-    \ компактной."
+  applies_when: '# Когда применяются Неформальные Правила логики (Informal Logic Rules)
+
+    # И текущая ценовая фигура является компактной (compacted)
+
+    # И эта фигура пересекает свой собственный начальный уровень
+
+    applying_informal_logic_rules == true
+
+    AND is_compacted(pattern) == true
+
+    AND crosses_own_start_level(pattern) == true
+
+    '
+  constraint: "# НЕ применять Неформальные Правила логики напрямую к такой компактной\
+    \ фигуре\n# Вместо этого — работать только с базовой (underlying) Структурой этой\
+    \ фигуры\n\n# Определяем: фигура пересекает свой начальный уровень\n# crosses_own_start_level(pattern):\n\
+    #   start_price = price_at(pattern.start)\n#   Фигура в какой-то момент возвращается\
+    \ и пересекает start_price\n\nIF is_compacted(pattern) AND crosses_own_start_level(pattern):\n\
+    \    # Запрет прямого применения Informal Logic Rules к компактной фигуре\n  \
+    \  do_not_apply_informal_logic_rules_directly(pattern)\n    \n    # Извлечь базовую\
+    \ (деcompактированную) структуру\n    base_structure = get_underlying_structure(pattern)\n\
+    \    \n    # Применять Informal Logic Rules только к базовой структуре\n    apply_informal_logic_rules(base_structure)\n"
+  formalization_notes: "1. \"Компактная ценовая фигура\" (compacted price pattern)\
+    \ — это фигура, \n   полученная в результате процедуры компактирования (compaction),\
+    \ \n   где несколько моноволн объединены в одну структурную единицу.\n2. \"Пересекает\
+    \ свой собственный начальный уровень\" — фигура, ценовое \n   движение которой\
+    \ в какой-то момент возвращается через уровень цены \n   в точке начала этой фигуры.\n\
+    3. \"Базовая Структура\" (underlying Structure) — структура до компактирования,\
+    \ \n   т.е. исходные составляющие моноволны/поливолны.\n4. Точное определение\
+    \ функций is_compacted() и get_underlying_structure() \n   зависит от реализации\
+    \ процедуры компактирования в алгоритме.\n5. Правило conditional — применяется\
+    \ только при наличии описанных условий."
 aliases:
 - ограничение для компактных фигур
 related_aku: []

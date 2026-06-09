@@ -26,10 +26,37 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: flat or zigzag where wave-b < wave-a, second confirmation step
-  constraint: 'IF Wb < Wa AND pattern IN (flat, zigzag) THEN at_2nd_confirmation:
-    check Wc_structure'
-  formalization_notes: Добавлено в ходе аудита качества AKU
+  applies_when: '# Правило применяется к завершённым Плоским (Flat) и Зигзагам (Zigzag),
+
+    # где волна-b короче волны-a, на втором этапе подтверждения паттерна
+
+    pattern_type IN (''flat'', ''zigzag'')
+
+    AND price_length(wave_b) < price_length(wave_a)
+
+    AND confirmation_step == 2
+
+    '
+  constraint: "# Следующая за завершённой Коррекцией волна (post_pattern_wave)\n#\
+    \ должна достичь начала волны-с (start of wave_c)\n# за время, не превышающее\
+    \ длительности волны-с\n\npost_pattern_wave = next_wave_after(pattern)\ntarget_price\
+    \ = start_price(wave_c)\ntime_limit = duration(wave_c)\n\n# Проверяем: за период\
+    \ от начала post_pattern_wave,\n# не превышающий duration(wave_c), цена должна\
+    \ достичь уровня начала wave_c\ntime_elapsed = time_from_start(post_pattern_wave)\n\
+    \n# Условие подтверждения:\n# Цена post_pattern_wave достигает start_price(wave_c)\
+    \ И\n# время, за которое это произошло, <= duration(wave_c)\nIF post_pattern_wave\
+    \ reaches target_price THEN\n  time_to_reach = time_when_price_reached(post_pattern_wave,\
+    \ target_price)\n  ASSERT time_to_reach <= time_limit\nELSE\n  # Если цена не\
+    \ достигла начала wave_c за отведённое время —\n  # второй этап подтверждения\
+    \ НЕ пройден\n  confirmation_step_2 = FAILED\n"
+  formalization_notes: "1. \"Начало волны-с\" интерпретируется как ценовой уровень\
+    \ start(wave_c),\n   т.е. точка соединения wave_b и wave_c.\n2. \"Длительность\
+    \ последней\" — длительность wave_c (duration в барах/времени).\n3. \"Следующая\
+    \ за Коррекцией волна\" — первая волна, начинающаяся после\n   завершения всего\
+    \ паттерна (flat/zigzag).\n4. Правило описывает именно второй этап подтверждения\
+    \ (post-pattern logic);\n   первый этап здесь не описан.\n5. Цитата помечена как\
+    \ не найденная дословно — возможна неточность в\n   формулировке, требуется верификация\
+    \ по оригиналу (стр. 6-2, рис. 6-2)."
 created_by: claude
 created_at: '2026-06-02T17:57:59Z'
 requires_review: false

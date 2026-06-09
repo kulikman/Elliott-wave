@@ -4,9 +4,75 @@ from __future__ import annotations
 import copy
 import json
 import math
+import pickle
+from pathlib import Path
 from typing import Iterable
 
 import pandas as pd
+
+# LightGBM model path (Sprint 5)
+_LGBM_MODEL_PATH = Path(__file__).parent.parent.parent.parent / "brain-output" / "models" / "lgbm_fade_h20.pkl"
+_LGBM_BUNDLE: dict | None = None
+_LGBM_FEATURES = [
+    "amp_pct", "htf_bias", "with_htf", "against_htf",
+    "confirmation_lag", "duration", "avg_dur_per_wave",
+    "w1_w2_ratio", "w3_w1_ratio", "fig_type_enc", "direction_enc", "interval_enc",
+]
+
+
+def _load_lgbm() -> dict | None:
+    global _LGBM_BUNDLE
+    if _LGBM_BUNDLE is not None:
+        return _LGBM_BUNDLE
+    if not _LGBM_MODEL_PATH.exists():
+        return None
+    try:
+        with open(_LGBM_MODEL_PATH, "rb") as f:
+            _LGBM_BUNDLE = pickle.load(f)
+    except Exception:
+        return None
+    return _LGBM_BUNDLE
+
+
+def lgbm_probability(
+    fig_type: str,
+    direction: str,
+    interval: str,
+    amp_pct: float,
+    htf_bias: int,
+    with_htf: bool,
+    against_htf: bool,
+    confirmation_lag: int,
+    duration: int,
+    avg_dur_per_wave: float,
+    w1_w2_ratio: float,
+    w3_w1_ratio: float,
+) -> float | None:
+    """Return LightGBM P(fade_win) for a flat/DC figure. None if model unavailable."""
+    bundle = _load_lgbm()
+    if bundle is None:
+        return None
+    model = bundle["model"]
+    row = {
+        "amp_pct": amp_pct,
+        "htf_bias": htf_bias,
+        "with_htf": int(with_htf),
+        "against_htf": int(against_htf),
+        "confirmation_lag": confirmation_lag,
+        "duration": duration,
+        "avg_dur_per_wave": avg_dur_per_wave,
+        "w1_w2_ratio": w1_w2_ratio,
+        "w3_w1_ratio": w3_w1_ratio,
+        "fig_type_enc": int(fig_type == "double_corr"),
+        "direction_enc": int(direction == "up"),
+        "interval_enc": int(interval == "1h"),
+    }
+    X = pd.DataFrame([row])[_LGBM_FEATURES].astype(float)
+    try:
+        prob = float(model.predict_proba(X)[0, 1])
+    except Exception:
+        return None
+    return prob
 
 
 TRADE_PATTERNS = {"flat", "double_corr"}
@@ -120,6 +186,8 @@ def build_probability_signal(
     direction: str,
     entry_px: float | None = None,
     amplitude: float | None = None,
+    lgbm_prob: float | None = None,
+    lgbm_threshold: float = 0.54,
 ) -> dict:
     """Build the runtime v0 signal contract for one detected figure."""
     side = fade_side(direction)
@@ -154,12 +222,20 @@ def build_probability_signal(
     if fig_type in SKIP_PATTERNS:
         action = "skip"
 
+    # LightGBM v1 filter: if model available and p < threshold → downgrade to wait
+    lgbm_action_override = None
+    if lgbm_prob is not None and is_trade_pattern:
+        if lgbm_prob < lgbm_threshold:
+            lgbm_action_override = "wait"  # model says low confidence
+
+    effective_action = lgbm_action_override if lgbm_action_override else action
+
     signal = {
         "pattern": fig_type,
         "interval": interval,
         "direction": direction,
         "side": side,
-        "recommended_action": action,
+        "recommended_action": effective_action,
         "p_up": p_up,
         "p_down": p_down,
         "p_trade_win": p_trade_win,
@@ -168,11 +244,11 @@ def build_probability_signal(
         "sample_size": sample_size,
         "entry_zone": (
             "fade_after_confirmed_pattern"
-            if is_trade_pattern
+            if is_trade_pattern and effective_action != "wait"
             else "none"
         ),
-        "stop": "figure_amplitude" if is_trade_pattern else "none",
-        "target": "full_retrace" if is_trade_pattern else "none",
+        "stop": "figure_amplitude" if is_trade_pattern and effective_action != "wait" else "none",
+        "target": "full_retrace" if is_trade_pattern and effective_action != "wait" else "none",
         "risk_box": {
             **levels,
             "amplitude": amplitude,
@@ -180,6 +256,9 @@ def build_probability_signal(
         "lookup_level": lookup_level,
         "lookup_key": lookup_key,
         "source_model_version": calibration.get("model_version", "unknown"),
+        "lgbm_prob": lgbm_prob,
+        "lgbm_threshold": lgbm_threshold if lgbm_prob is not None else None,
+        "lgbm_action": lgbm_action_override,
     }
     return copy.deepcopy(signal)
 

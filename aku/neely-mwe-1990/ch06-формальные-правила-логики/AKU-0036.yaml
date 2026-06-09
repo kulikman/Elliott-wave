@@ -30,11 +30,50 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: pattern IN ('flat','zigzag') AND length(wave_b) < length(wave_a) AND
-    position == 'post_pattern'
-  constraint: duration(until_break(trendline(start(0), end(B)))) <= duration(wave_c)
-  formalization_notes: 'Иначе: волна-c терминальная, либо 4-я волна не завершена,
-    либо интерпретация ошибочна.'
+  applies_when: '# Правило применяется после завершения Плоской коррекции или Зигзага,
+
+    # где волна-b короче волны-a
+
+    pattern_type IN (''flat'', ''zigzag'')
+
+    AND price_length(wave_b) < price_length(wave_a)
+
+    AND pattern_is_completed == true
+
+    # Анализируем поведение следующей волны после завершения коррекции
+
+    next_wave = first_wave_after_pattern()
+
+    '
+  constraint: "# Определяем линию тренда 0-B:\n# Точка 0 — начало коррекции (начало\
+    \ волны-a)\n# Точка B — конец волны-b\npoint_0 = start(wave_a)\npoint_B = end(wave_b)\n\
+    trendline_0B = trendline(point_0, point_B)\n\n# Следующая за коррекцией волна\
+    \ должна пробить линию тренда 0-B\n# за время, не превышающее длительности волны-c\n\
+    max_allowed_duration = duration(wave_c)\n\n# Находим момент пробоя линии тренда\
+    \ 0-B следующей волной\nbreakout_time = time_of_first_cross(next_wave, trendline_0B)\n\
+    \n# Основное ограничение:\nIF breakout_time != NULL THEN\n    time_to_breakout\
+    \ = breakout_time - end(wave_c)\n    time_to_breakout <= max_allowed_duration\n\
+    ELSE\n    # Пробоя не произошло — правило нарушено\n    violation = true\nEND\
+    \ IF\n\n# Если правило нарушено (пробой занял больше времени или не произошёл),\n\
+    # то одно из трёх:\nIF violation OR time_to_breakout > max_allowed_duration THEN\n\
+    \    # Вариант 1: волна-c формирует Терминал (Terminal / Ending Diagonal)\n  \
+    \  possible_resolution_1: wave_c_is_terminal_pattern == true\n    # Вариант 2:\
+    \ четвёртая волна внутри волны-с ещё не завершилась\n    #            (т.е. волна-с\
+    \ на самом деле не закончена)\n    possible_resolution_2: wave_c_subwave_4_not_complete\
+    \ == true\n    # Вариант 3: вся интерпретация коррекции ошибочна\n    possible_resolution_3:\
+    \ pattern_interpretation_is_wrong == true\n\n    # Хотя бы одно из трёх должно\
+    \ быть истинным\n    REQUIRE (possible_resolution_1 OR possible_resolution_2 OR\
+    \ possible_resolution_3)\nEND IF\n"
+  formalization_notes: "1. Линия тренда 0-B — это линия, проведённая через начало\
+    \ коррекции (точка 0 = start(wave_a))\n   и конец волны-b (точка B = end(wave_b)),\
+    \ продлённая вправо.\n2. \"Пробить линию тренда\" означает, что цена следующей\
+    \ волны пересекает эту линию.\n3. Три альтернативных объяснения при нарушении\
+    \ правила сложно формализовать\n   как автоматическую проверку — они представляют\
+    \ собой диагностические подсказки\n   для переоценки разметки. В алгоритме это\
+    \ может быть реализовано как флаг\n   предупреждения с указанием возможных причин.\n\
+    4. \"Длительность волны-с\" — количество баров (или единиц времени) от начала\
+    \ до конца wave_c.\n5. price_length(wave_b) < price_length(wave_a) — сравнение\
+    \ по ценовой амплитуде (абсолютное значение)."
 created_by: claude
 created_at: '2026-06-02T17:57:59Z'
 requires_review: false

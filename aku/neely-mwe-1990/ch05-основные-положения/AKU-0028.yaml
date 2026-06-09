@@ -22,11 +22,34 @@ source:
       '
     language: ru
 formalization:
-  status: draft
-  applies_when: pattern == 'triangle'
-  constraint: length(wave_b) != 0.618 * length(wave_a)
-  formalization_notes: Если b == 61.8% a → отвергнуть гипотезу Треугольника (вероятностное,
-    не абсолютное).
+  status: formalized
+  applies_when: '# Правило применяется при идентификации паттерна как Треугольник
+
+    pattern == ''triangle''
+
+    '
+  constraint: "# Вычисляем отношение длины волны-b к длине волны-a\nratio_b_to_a =\
+    \ price_length(wave_b) / price_length(wave_a)\n\n# Допуск для сравнения с уровнем\
+    \ Фибоначчи\ntolerance = 0.02\n\n# Если волна-b составляет ~61.8% волны-a, фигура\
+    \ вероятно НЕ является Треугольником\nif abs(ratio_b_to_a - 0.618) <= tolerance:\n\
+    \    triangle_confidence = DECREASE_SIGNIFICANTLY\n    # Пометить паттерн как\
+    \ сомнительный Треугольник\n    flag_pattern_as_unlikely('triangle', reason='wave_b\
+    \ ≈ 61.8% of wave_a')\n\n# Примечание: правило не является абсолютным запретом,\n\
+    # а существенно снижает вероятность идентификации как Треугольника\n"
+  formalization_notes: 'Правило содержит слово "вероятно" — это не абсолютный запрет,
+    а сильная эвристика.
+
+    При этом в оригинале помечено как "Важное замечание", что подчёркивает значимость.
+
+    В алгоритме следует реализовать как существенное снижение confidence score
+
+    для гипотезы Треугольника, но не как полный запрет.
+
+    price_length(wave) = abs(end_price - start_price) — ценовая длина волны.
+
+    Strength помечен как mandatory, но по содержанию это скорее conditional/heuristic
+
+    из-за слова "вероятно" в исходной цитате.'
 aliases:
 - правило b-волны 61.8% в треугольнике
 related_aku: []

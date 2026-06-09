@@ -24,33 +24,56 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: '# Правило применяется к любому Треугольнику (contracting, expanding,
-    etc.)
-
-    pattern == ''triangle''
+  applies_when: 'pattern == ''triangle''
 
     '
-  constraint: "# Определяем Базовую линию Треугольника — трендлинию через концы волн\
-    \ b и d\nbaseline = trendline(end(wave_b), end(wave_d))\n\n# Ни одна часть волны\
-    \ c не должна пробивать (пересекать) линию b-d\nfor each point in wave_c:\n  price_at_point\
-    \ must not cross baseline at that time\n\n# Ни одна часть волны e не должна пробивать\
-    \ (пересекать) линию b-d\nfor each point in wave_e:\n  price_at_point must not\
-    \ cross baseline at that time\n\n# Формально:\n# not breaks(wave_c, baseline)\
-    \ AND not breaks(wave_e, baseline)\n#\n# где breaks(wave, line) == true, если\
-    \ любая ценовая точка волны\n# оказывается по другую сторону от линии относительно\
-    \ вершины\n# треугольника (волны a):\n#   - если треугольник сужается вниз (b-d\
-    \ линия сверху):\n#       breaks == any high in wave > baseline_value_at(time)\n\
-    #   - если треугольник сужается вверх (b-d линия снизу):\n#       breaks == any\
-    \ low in wave < baseline_value_at(time)\n"
-  formalization_notes: "1. Линия b-d называется \"Базовой линией\" (Base line) Треугольника.\n\
-    2. Формулировка \"в качестве общего правила\" указывает, что это mandatory правило,\n\
-    \   но в редких/исключительных случаях возможны незначительные нарушения.\n  \
-    \ Для алгоритма трактуем как строгое ограничение (mandatory).\n3. \"Пробитие\"\
-    \ (breaks) означает, что цена проходит сквозь линию —\n   т.е. оказывается на\
-    \ противоположной стороне от направления треугольника.\n4. Проверяются все ценовые\
-    \ данные внутри волн c и e (включая все подволны),\n   а не только их конечные\
-    \ точки.\n5. Волны a, b, d не упоминаются в ограничении — они формируют саму линию\n\
-    \   или находятся по другую сторону от неё."
+  constraint: '# Базовая линия Треугольника — трендлиния через концы волн b и d
+
+    baseline = trendline(end(wave_b), end(wave_d))
+
+
+    # Определяем, с какой стороны от baseline находится волна a (вершина треугольника)
+
+    # Это определяет, в какую сторону "пробитие" запрещено
+
+    apex_side = side_of(end(wave_a), baseline)
+
+
+    # Функция breaks: волна пробивает линию, если любая её ценовая точка
+
+    # оказывается на стороне apex_side (т.е. пересекает baseline в сторону вершины)
+
+    #
+
+    # Если apex_side == ABOVE (end(wave_a) выше baseline):
+
+    #   breaks(wave, baseline) = any bar in wave where high(bar) > baseline_value_at(time(bar))
+
+    # Если apex_side == BELOW (end(wave_a) ниже baseline):
+
+    #   breaks(wave, baseline) = any bar in wave where low(bar) < baseline_value_at(time(bar))
+
+
+    # Ни одна часть волны c не должна пробивать линию b-d
+
+    not breaks(wave_c, baseline)
+
+
+    # Ни одна часть волны e не должна пробивать линию b-d
+
+    not breaks(wave_e, baseline)
+
+    '
+  formalization_notes: "1. Линия b-d называется \"Базовой линией\" (Base line) Треугольника\
+    \ — \n   это прямо указано в statement_ru.\n2. Формулировка \"в качестве общего\
+    \ правила\" присутствует в verbatim_quote.\n   Несмотря на это, AKU имеет strength:\
+    \ mandatory, поэтому формализуем \n   как строгое ограничение.\n3. \"Пробитие\"\
+    \ означает, что цена проходит сквозь линию b-d — \n   проверяются все ценовые\
+    \ данные (все бары) внутри волн c и e, \n   включая все подволны, а не только\
+    \ конечные точки.\n4. Сторона пробития определяется положением вершины треугольника\
+    \ (wave_a) \n   относительно baseline: запрещено пересечение в сторону wave_a.\n\
+    5. Правило не накладывает ограничений на волны a, b и d — \n   волны b и d формируют\
+    \ саму линию, а волна a находится по другую сторону."
 created_by: claude
 created_at: '2026-06-02T17:55:31Z'
 requires_review: false

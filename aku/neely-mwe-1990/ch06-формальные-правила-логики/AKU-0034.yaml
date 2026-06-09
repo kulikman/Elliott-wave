@@ -27,10 +27,44 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: pattern == 'impulse' AND extended_wave == 5 AND position == 'post_pattern'
-  constraint: length(next_corrective) >= 0.618 * length(wave_5)
-  formalization_notes: 'Доп. условие: length(next_corrective) < length(wave_5), если
-    тренд силён.'
+  applies_when: '# Правило применяется после завершения Импульса с Растянутой пятой
+    волной
+
+    pattern == ''impulse''
+
+    AND extended_wave == 5
+
+    AND position == ''post_pattern''
+
+    # Анализируем следующую за импульсом коррективную волну
+
+    next_corrective = first_corrective_wave_after(impulse)
+
+    '
+  constraint: "# Обязательное условие: коррекция после импульса с растянутой 5-й\n\
+    # должна составлять как минимум 61.8% длины пятой волны\nlength(next_corrective)\
+    \ >= 0.618 * length(wave_5)\n\n# Дополнительное условие (при сильном тренде):\n\
+    # коррекция должна быть меньше длины пятой волны\nIF trend_is_still_strong THEN\n\
+    \  length(next_corrective) < length(wave_5)\nEND IF\n"
+  formalization_notes: 'Правило содержит два компонента:
+
+    1. Безусловный минимум: коррекция >= 61.8% от wave_5 — формализуется точно.
+
+    2. Условный максимум: коррекция < wave_5, если тренд всё ещё силён.
+
+
+    Критерий "тренд всё ещё силён" (trend_is_still_strong) не определён
+
+    в исходном тексте формально. Это субъективная оценка, которую
+
+    алгоритм должен определять внешним образом (например, по контексту
+
+    старшего таймфрейма или по структуре последующих волн).
+
+
+    При невозможности определить силу тренда, безопасно применять
+
+    только первое условие (>= 61.8%) как обязательное.'
 created_by: claude
 created_at: '2026-06-02T17:57:59Z'
 requires_review: false

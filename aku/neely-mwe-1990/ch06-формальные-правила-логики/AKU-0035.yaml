@@ -28,11 +28,64 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: pattern == 'impulse' AND subtype == 'failure_5th' AND position ==
-    'post_pattern'
-  constraint: length(next_wave) >= length(whole_impulse) AND no_new_extreme(before
-    reaching start_level(impulse))
-  formalization_notes: null
+  applies_when: '# Правило применяется после завершения импульса с неудавшейся пятой
+    волной
+
+    # Импульс с неудавшейся пятой: wave_5 короче wave_4 по длине
+
+    pattern == ''impulse''
+
+    AND length(wave_5) < length(wave_4)  # признак неудавшейся пятой
+
+    AND impulse_is_completed == true
+
+    AND next_wave_after_impulse exists
+
+    '
+  constraint: "# Определяем направление импульса\ndirection = direction(impulse) \
+    \ # 'up' или 'down'\n\n# Длина всего импульса (от начала wave_1 до конца wave_5)\n\
+    impulse_length = abs(price(end(wave_5)) - price(start(wave_1)))\n\n# Волна, следующая\
+    \ за импульсом\nnext_wave = wave_after(impulse)\n\n# УСЛОВИЕ 1: Длина следующей\
+    \ волны должна достигать длины всего импульса\nlength(next_wave) >= impulse_length\n\
+    \n# УСЛОВИЕ 2: До достижения начального уровня импульса рынок не должен\n# образовывать\
+    \ новых точек экстремума в направлении завершённого импульса\n#\n# start_level\
+    \ = price(start(wave_1))\n#\n# Для повышательного импульса (direction == 'up'):\n\
+    #   Пока цена не достигла start_level сверху вниз,\n#   рынок НЕ должен формировать\
+    \ новый максимум выше end(wave_5)\n#   (т.е. не должен превышать конец пятой волны)\n\
+    #\n# Для понижательного импульса (direction == 'down'):\n#   Пока цена не достигла\
+    \ start_level снизу вверх,\n#   рынок НЕ должен формировать новый минимум ниже\
+    \ end(wave_5)\n#   (т.е. не должен опускаться ниже конца пятой волны)\n\nstart_level\
+    \ = price(start(wave_1))\n\nIF direction == 'up':\n  # В зоне от end(wave_5) до\
+    \ момента достижения start_level:\n  max_price_before_reaching_start_level <=\
+    \ price(end(wave_5))\nELIF direction == 'down':\n  # В зоне от end(wave_5) до\
+    \ момента достижения start_level:\n  min_price_before_reaching_start_level >=\
+    \ price(end(wave_5))\n\n# Если любое из условий не выполняется — текущая интерпретация\
+    \ ошибочна,\n# необходимо пересмотреть разметку\n"
+  formalization_notes: 'Правило является пост-паттерновым: оно проверяет поведение
+    рынка ПОСЛЕ
+
+    завершения импульса с неудавшейся пятой. Это правило валидации —
+
+    если условия не выполняются, вся разметка импульса считается ошибочной.
+
+
+    "Длина волны следующей за импульсом" — подразумевается первая волна
+
+    коррекции после импульса (wave A или вся первая моноволна после паттерна).
+
+
+    "Новые точки экстремума" — новые максимумы (для бычьего импульса) или
+
+    минимумы (для медвежьего) в направлении завершённого тренда, т.е. выход
+
+    за пределы конца wave_5.
+
+
+    Для реализации в Pine Script потребуется отслеживать ценовое поведение
+
+    в реальном времени после идентификации паттерна, что делает это правило
+
+    скорее валидационным'
 created_by: claude
 created_at: '2026-06-02T17:57:59Z'
 requires_review: false

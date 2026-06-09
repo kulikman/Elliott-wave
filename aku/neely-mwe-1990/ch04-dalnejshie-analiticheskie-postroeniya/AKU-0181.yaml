@@ -25,10 +25,11 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: '# Цикл 2 запускается после того, как все фигуры Цикла 1 на текущем
-    уровне подтверждены
+  applies_when: '# Цикл 2 запускается после завершения Цикла 1,
 
-    cycle == 2 AND all_cycle1_figures_confirmed == true
+    # когда все фигуры на текущем уровне подтверждены
+
+    cycle == 2 AND cycle_1_completed == true
 
     '
   constraint: "# Для каждой подтверждённой фигуры из Цикла 1:\nfor each confirmed_figure\
@@ -39,30 +40,28 @@ formalization:
     \ = ':5'\n\n    # 2. Сжатие (compaction): заменить всю фигуру одной волной\n \
     \   compacted_wave = new Wave(\n        start = confirmed_figure.start_point,\n\
     \        end   = confirmed_figure.end_point,\n        label = base_structure\n\
-    \    )\n\n    # 3. Удалить все внутренние обозначения и пометки между границами\
-    \ сжатой фигуры\n    remove_all_internal_labels(\n        from_point = confirmed_figure.start_point,\n\
+    \    )\n\n    # 3. Удалить все внутренние метки и обозначения между границами\n\
+    \    remove_all_internal_labels(\n        from_point = confirmed_figure.start_point,\n\
     \        to_point   = confirmed_figure.end_point\n    )\n\n    # 4. Заменить исходную\
     \ фигуру сжатой волной в рабочей последовательности\n    replace_in_sequence(confirmed_figure,\
-    \ compacted_wave)\n\n# 5. Переоценка (reassessment): после всех сжатий проверить,\n\
-    #    не изменилась ли структура соседних волн\nfor each compacted_wave in all_compacted_waves:\n\
-    \    left_neighbor  = get_adjacent_wave(compacted_wave, direction='left')\n  \
-    \  right_neighbor = get_adjacent_wave(compacted_wave, direction='right')\n\n \
-    \   if left_neighbor is not None:\n        reassess_structure(left_neighbor)\n\
+    \ compacted_wave)\n\n# 5. Переоценка (reassessment): после всех сжатий проверить\
+    \ соседние волны\nfor each compacted_wave in all_compacted_waves:\n    left_neighbor\
+    \  = get_adjacent_wave(compacted_wave, direction='left')\n    right_neighbor =\
+    \ get_adjacent_wave(compacted_wave, direction='right')\n\n    # Сжатие может изменить\
+    \ контекст соседних волн\n    # (соотношения длин, временные пропорции, структурные\
+    \ метки)\n    if left_neighbor is not None:\n        reassess_structure(left_neighbor)\n\
     \    if right_neighbor is not None:\n        reassess_structure(right_neighbor)\n\
-    \n# 6. После сжатия и переоценки — перезапустить Цикл 1 на новом уровне иерархии\n\
-    #    (сжатые волны становятся входными данными для нового прохода группировки)\n\
-    restart_cycle_1_on_compacted_sequence()\n"
+    \n# 6. После сжатия и переоценки — перезапуск Цикла 1\n#    на новом (более высоком)\
+    \ уровне иерархии\nrestart_cycle_1_on_compacted_sequence()\n"
   formalization_notes: "1. Правило описывает процедурный шаг (Цикл 2), а не числовое\
-    \ ограничение.\n2. Verbatim quote явно подтверждает: сжатие к \":3\" или \":5\"\
-    ,\n   удаление всех обозначений и пометок между границами.\n3. Reassessment (переоценка)\
-    \ упомянут в statement_ru, но конкретные критерии\n   переоценки не детализированы\
-    \ в verbatim_quote — reassess_structure()\n   подразумевает повторное применение\
-    \ правил Цикла 1 к соседним волнам,\n   чья структура могла измениться из-за изменения\
-    \ контекста после сжатия.\n4. После Цикла 2 процесс возвращается к Циклу 1 на\
-    \ новом уровне —\n   это создаёт рекурсивную иерархию волн (Цикл 1 → Цикл 2 →\
-    \ Цикл 1 → ...).\n5. Маппинг типов фигур на :3 и :5 следует из стандартной классификации\
-    \ Эллиотта,\n   но конкретный перечень типов не перечислен в verbatim_quote —\n\
-    \   он выводится из общего контекста метода."
+    \ ограничение.\n2. Verbatim quote подтверждает: сжатие к \":3\" или \":5\", удаление\
+    \ внутренних меток.\n3. Reassessment (переоценка) упомянут в statement_ru, но\
+    \ конкретные критерии\n   переоценки не детализированы в verbatim_quote — реализация\
+    \ reassess_structure()\n   зависит от правил Цикла 1 (группировка, проверка фигур).\n\
+    4. После Цикла 2 процесс возвращается к Циклу 1 на новом уровне —\n   это создаёт\
+    \ рекурсивную иерархию волн.\n5. Маппинг типов фигур на :3 и :5 следует из общих\
+    \ правил Эллиотта\n   (коррективные = :3, движущие = :5), но конкретный перечень\
+    \ типов\n   не перечислен в verbatim_quote — он выведен из контекста книги."
 aliases: []
 related_aku: []
 contradicts_aku: []

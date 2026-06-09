@@ -30,10 +30,40 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: pattern == 'impulse' AND position == 'post_pattern'
-  constraint: duration(until_break(trendline(end(2), end(4)))) <= duration(wave_5)
-  formalization_notes: 'Первое подтверждение импульса. Иначе: волна-5 терминальная,
-    либо волна-4 не завершена, либо не импульс.'
+  applies_when: '# Правило применяется после предполагаемого завершения импульсной
+    фигуры (волны 1-5)
+
+    # Мы наблюдаем пост-паттерновое движение (волну, следующую за волной 5)
+
+    pattern == ''impulse''
+
+    AND impulse_appears_complete == true
+
+    AND post_pattern_wave_is_forming == true
+
+    '
+  constraint: "# Построить линию тренда 2-4 (через конец волны 2 и конец волны 4)\n\
+    trendline_2_4 = trendline(end(wave_2), end(wave_4))\n\n# Определить момент, когда\
+    \ пост-паттерновая волна (волна после 5) пересекает эту линию\ntime_of_break =\
+    \ time_when_price_crosses(trendline_2_4, after=end(wave_5))\n\n# Вычислить длительность\
+    \ от конца волны 5 до момента пересечения\nduration_until_break = time_of_break\
+    \ - time(end(wave_5))\n\n# Вычислить длительность волны 5\nduration_wave_5 = time(end(wave_5))\
+    \ - time(start(wave_5))\n\n# ПЕРВОЕ ПОДТВЕРЖДЕНИЕ ИМПУЛЬСА:\nIF duration_until_break\
+    \ <= duration_wave_5 THEN\n    # Импульсный характер подтверждён (этап 1)\n  \
+    \  impulse_confirmation_stage_1 = PASSED\nELSE\n    # Подтверждение НЕ получено\
+    \ — три альтернативы:\n    # 1) Волна 5 развивается в Терминальную (Terminal Impulse)\n\
+    \    # 2) Волна 4 ещё не завершена (пересмотреть разметку волны 4)\n    # 3) Гипотеза\
+    \ об импульсном характере конфигурации неверна\n    impulse_confirmation_stage_1\
+    \ = FAILED\n    possible_alternatives = [\n        'wave_5_is_terminal',\n   \
+    \     'wave_4_not_complete',\n        'not_an_impulse'\n    ]\n"
+  formalization_notes: "1. Линия тренда 2-4 строится через точки end(wave_2) и end(wave_4).\n\
+    2. \"Пересечение последующей волной\" — имеется в виду волна, формирующаяся\n\
+    \   после завершения волны 5 (пост-паттерновое движение, т.е. начало коррекции).\n\
+    3. Правило является диагностическим: при нарушении оно не однозначно\n   отвергает\
+    \ импульс, а предлагает три альтернативных интерпретации.\n   Алгоритм должен\
+    \ проверить все три варианта.\n4. \"Длительность волны 5\" — временная протяжённость\
+    \ (количество баров/свечей)\n   от начала до конца волны 5.\n5. Это именно ПЕРВЫЙ\
+    \ этап двухэтапного процесса подтверждения (Этап 1 из главы 6)."
 created_by: claude
 created_at: '2026-06-02T17:57:59Z'
 requires_review: false

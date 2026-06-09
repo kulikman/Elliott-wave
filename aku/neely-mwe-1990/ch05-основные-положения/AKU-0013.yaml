@@ -41,14 +41,14 @@ formalization:
     \ != price_length(wave_4))\n# \"!=\" означает \"существенно отличаются\" — порог\
     \ не определён в данном правиле\n\n# B. Время (длительность волны в барах/периодах)\n\
     time_alternation = (duration(wave_2) != duration(wave_4))\n\n# C. Сила отката\
-    \ (процент коррекции предшествующей импульсной волны)\n# Примечание: \"процент\
-    \ превышения длины предшествующей волны касается только волн 2 и 4\"\nretracement_w2\
-    \ = price_length(wave_2) / price_length(wave_1)\nretracement_w4 = price_length(wave_4)\
-    \ / price_length(wave_3)\nseverity_alternation = (retracement_w2 != retracement_w4)\n\
-    \n# D. Сложность (количество составляющих подволн в ценовой фигуре)\ncomplexity_alternation\
-    \ = (subwave_count(wave_2) != subwave_count(wave_4))\n\n# E. Строение (тип коррекционной\
-    \ фигуры: Плоская, Зигзаг, Треугольник и т.п.)\nconstruction_alternation = (pattern_type(wave_2)\
-    \ != pattern_type(wave_4))\n# Пример: wave_2 == 'flat' AND wave_4 == 'zigzag'\n\
+    \ (процент коррекции предшествующей импульсной волны)\n# Контекст: \"процент превышения\
+    \ длины предшествующей волны касается только волн 2 и 4\"\nretracement_w2 = price_length(wave_2)\
+    \ / price_length(wave_1)\nretracement_w4 = price_length(wave_4) / price_length(wave_3)\n\
+    severity_alternation = (retracement_w2 != retracement_w4)\n\n# D. Сложность (количество\
+    \ составляющих подволн в ценовой фигуре)\ncomplexity_alternation = (subwave_count(wave_2)\
+    \ != subwave_count(wave_4))\n\n# E. Строение (тип коррекционной фигуры: Плоская,\
+    \ Зигзаг и т.п.)\n# Контекст: \"одна волна может быть Плоской, a другая - Зигзагом\
+    \ и т.п.\"\nconstruction_alternation = (pattern_type(wave_2) != pattern_type(wave_4))\n\
     \n# Обязательное условие: хотя бы один из пяти параметров должен чередоваться\n\
     alternation_exists = (\n  price_alternation\n  OR time_alternation\n  OR severity_alternation\n\
     \  OR complexity_alternation\n  OR construction_alternation\n)\n\n# Если ни один\
@@ -66,7 +66,7 @@ formalization:
     \ — нарушение правила не означает абсолютную\n   невозможность счёта; группа волн\
     \ может быть переинтерпретирована\n   как иная фигура (например, сложная коррекция),\
     \ но как импульс\n   рассматриваться не может.\n5. Из контекста: параметры A-E\
-    \ перечислены в книге"
+    \ перечислены в"
 aliases:
 - минимальное чередование волн 2 и 4
 related_aku: []

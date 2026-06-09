@@ -28,52 +28,44 @@ formalization:
 
     # Оно определяет, как читать другие правила, когда в них упоминается
 
-    # "длина волны" без уточнения.
+    # "длина волны" без уточнения — имеется в виду ценовая длина (price distance),
+
+    # а не временная (time duration).
 
     '
-  constraint: '# Конвенция для интерпретатора правил:
-
-    # WHEN rule mentions "length" or "длина" of a wave
-
-    #   AND rule does NOT explicitly specify time_length or price_length
-
-    # THEN
-
-    #   measurement_dimension = PRICE  # (не TIME)
+  constraint: '# Конвенция для парсера/интерпретатора правил:
 
     #
 
-    # Эквивалент в коде:
+    # WHEN rule_text mentions "длина волны" or "wave length" or comparison of waves
 
-    # function default_wave_measurement(wave, dimension=null):
+    #   AND rule_text does NOT explicitly specify measurement_type
 
-    #   if dimension is null:
+    # THEN
 
-    #     dimension = "price"
+    #   measurement_type = PRICE  # (не TIME)
 
-    #   if dimension == "price":
+    #
 
-    #     return abs(wave.end_price - wave.start_price)
+    # То есть:
 
-    #   elif dimension == "time":
+    #   wave_length(W) = abs(price(end(W)) - price(start(W)))  # по умолчанию
 
-    #     return abs(wave.end_time - wave.start_time)
+    #   # а НЕ time_length(W) = time(end(W)) - time(start(W))
 
     '
-  formalization_notes: 'Это не constraint на волновую структуру, а мета-конвенция
-    для интерпретации
+  formalization_notes: 'Это не ограничение на структуру волн, а мета-конвенция для
+    интерпретации
 
-    других правил. Она не может быть проверена как самостоятельное ограничение
+    других правил. Она не может быть выражена как constraint на волновую разметку.
 
-    на паттерн. Вместо этого она должна быть встроена в движок как default:
+    Для реализации в коде это означает, что функция измерения волны по умолчанию
 
-    любая функция wave_length(wave) без явного указания dimension должна
+    должна возвращать ценовое расстояние (price distance), если явно не указано иное.
 
-    возвращать ценовую длину (price distance), а не временную (time distance).
+    В алгоритме это реализуется как дефолтный параметр функции measurement(),
 
-    Формализация дана как спецификация поведения функции измерения,
-
-    но статус not_formalizable, т.к. это не проверяемое правило волновой структуры.'
+    а не как проверяемое правило.'
 aliases:
 - умолчание ценовой длины
 related_aku: []

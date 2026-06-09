@@ -50,12 +50,12 @@ formalization:
     \ 1 и 2\nimpulse_hypothesis = build_impulse_hypothesis(\n  wave_3_candidate =\
     \ segment_sequence[0],  # :5\n  wave_4_candidate = segment_sequence[1],  # :F3\n\
     \  wave_5_candidate = segment_sequence[2]   # :L5\n)\n\n# Шаг 2: Проверить импульсную\
-    \ гипотезу по правилам Глав 5-12\nimpulse_confirmed = test_impulse_rules(impulse_hypothesis)\n\
-    \n# Шаг 3: Принять решение\nif impulse_confirmed:\n  final_pattern = 'impulse'\n\
-    \  STOP  # паттерн идентифицирован как Импульс, дальше не проверять\nelse:\n \
-    \ final_pattern = 'zigzag'\n  # вернуться к идентификации как Зигзаг\n\n# ПОРЯДОК\
-    \ ОБЯЗАТЕЛЕН: импульсная проверка ВСЕГДА выполняется ДО\n# окончательной идентификации\
-    \ как Зигзаг\n"
+    \ гипотезу по правилам Глав 5-12\nimpulse_valid = test_impulse_rules(impulse_hypothesis)\n\
+    \n# Шаг 3: Принять решение на основе результата\nif impulse_valid:\n  final_pattern\
+    \ = 'impulse'\n  STOP  # паттерн идентифицирован как Импульс, дальше не проверять\n\
+    else:\n  final_pattern = 'zigzag'\n  # вернуться к идентификации как Зигзаг\n\n\
+    # ИНВАРИАНТ ПОРЯДКА:\n# impulse_check MUST execute BEFORE zigzag_confirmation\n\
+    # Нельзя подтвердить Зигзаг без предварительной проверки импульсной гипотезы\n"
   formalization_notes: "1. Правило задаёт обязательный порядок проверки гипотез: импульс\
     \ ПРЕЖДЕ зигзага.\n   Это процедурное (workflow) правило, а не числовое ограничение.\n\
     2. Конкретные правила проверки импульса (Главы 5-12) не детализированы в данном\

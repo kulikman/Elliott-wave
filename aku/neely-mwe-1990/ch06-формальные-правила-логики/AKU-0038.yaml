@@ -26,10 +26,64 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: pattern == 'contracting_triangle' AND position == 'post_pattern_stage1'
-  constraint: breaks(next_wave, trendline(end(B), end(D))) AND duration(until_break)
-    <= duration(wave_e)
-  formalization_notes: null
+  applies_when: '# Правило применяется после завершения Сужающегося Треугольника,
+
+    # на первом этапе подтверждения (post-pattern confirmation stage 1)
+
+    pattern == ''contracting_triangle''
+
+    AND triangle_is_complete == true
+
+    AND position == ''post_pattern_stage1''
+
+    '
+  constraint: '# Определяем линию тренда B-D
+
+    # В Треугольниках линия тренда проводится через конец волны-B и конец волны-D
+
+    # (а НЕ через 0-B, как явно указано в контексте)
+
+    trendline_BD = trendline(end(wave_B), end(wave_D))
+
+
+    # Первая волна после завершения Треугольника ("выброс" / thrust)
+
+    post_wave = first_wave_after(triangle)
+
+
+    # Условие 1: эта волна должна достичь и пробить линию тренда B-D
+
+    price_breaks_trendline = crosses(post_wave.price_path, trendline_BD)
+
+
+    # Условие 2: пробитие должно произойти за время, не превышающее
+
+    # длительности волны-е Треугольника
+
+    time_of_break = time_when(post_wave.price_path, crosses, trendline_BD)
+
+    time_from_triangle_end = time_of_break - end_time(wave_e)
+
+    duration_constraint = time_from_triangle_end <= duration(wave_e)
+
+
+    # Оба условия должны выполняться
+
+    price_breaks_trendline == true
+
+    AND duration_constraint == true
+
+    '
+  formalization_notes: "1. Линия тренда B-D проводится через концы (end) волн B и\
+    \ D, а не через начала.\n   Контекст явно указывает: \"В Треугольниках чертится\
+    \ линия тренда B-D, а не 0-В.\"\n2. \"Достичь и пробить\" означает, что цена должна\
+    \ не просто коснуться линии,\n   а пересечь её (cross through).\n3. Время отсчитывается\
+    \ от момента завершения волны-е (конец Треугольника)\n   до момента пробития линии\
+    \ тренда B-D.\n4. Правило применяется только к Сужающимся (contracting) Треугольникам.\n\
+    \   Для Расширяющихся Треугольников могут быть иные правила.\n5. Направление пробития\
+    \ зависит от направления Треугольника:\n   - если Треугольник бычий (thrust вверх),\
+    \ пробитие линии B-D вверх\n   - если Треугольник медвежий (thrust вниз), пробитие\
+    \ линии B-D вниз"
 created_by: claude
 created_at: '2026-06-02T17:57:59Z'
 requires_review: false

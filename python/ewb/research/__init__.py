@@ -2,7 +2,7 @@
 
 from .data import download_ohlc, normalize_ohlc
 from .dataset import figure_rows_from_matches
-from .logging import log_processing_error
+from .log_helpers import log_processing_error
 from .portfolio import portfolio_metrics
 from .probability import (
     build_probability_signal,

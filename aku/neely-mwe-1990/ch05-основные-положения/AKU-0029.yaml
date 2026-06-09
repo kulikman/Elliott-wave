@@ -24,9 +24,37 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: pattern == 'zigzag'
-  constraint: length(wave_b) <= 0.618 * length(wave_a) AND length(wave_b) != length(wave_a)
-  formalization_notes: null
+  applies_when: 'pattern == ''zigzag''
+
+    '
+  constraint: '# Волна-b должна отличаться по цене от волны-a
+
+    # и составлять 61.8% или менее от волны-a
+
+    length(wave_b) != length(wave_a)
+
+    AND length(wave_b) <= 0.618 * length(wave_a)
+
+    '
+  formalization_notes: 'Правило находится в разделе "Условные правила построения поливолн
+    коррекции",
+
+    что указывает на conditional strength, однако в AKU указан strength: mandatory
+
+    на основании маркера "должны". Формулировка содержит два требования:
+
+    1) волны должны отличаться по цене (length(wave_b) != length(wave_a));
+
+    2) волна-b составит 61.8% или менее волны-a.
+
+    Второе условие (<=0.618) автоматически обеспечивает выполнение первого
+
+    (неравенство), за исключением вырожденного случая когда wave_a = 0.
+
+    Тем не менее оба условия оставлены явно, так как оба присутствуют в исходном тексте.
+
+    length() означает ценовую длину (абсолютное расстояние от начала до конца волны
+    по цене).'
 aliases:
 - ценовое чередование в зигзаге
 related_aku: []

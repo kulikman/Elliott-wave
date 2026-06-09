@@ -27,10 +27,46 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: pattern == 'zigzag' AND subtype == 'elongated' AND position == 'post_pattern'
-  constraint: retrace(next_wave) > 0.618 * length(wave_c) BEFORE price passes end(wave_c)
-  formalization_notes: 'Подтверждающее правило: если не выполнено — вероятно это Импульс,
-    а не Зигзаг.'
+  applies_when: '# Правило применяется после завершения предполагаемого Удлиненного
+    Зигзага (a-b-c),
+
+    # где волна-c превышает 161.8% волны-a
+
+    pattern_candidate == ''zigzag''
+
+    AND subtype == ''elongated''
+
+    AND length(wave_c) > 1.618 * length(wave_a)
+
+    AND pattern_is_complete == true
+
+    '
+  constraint: "# После завершения Удлиненного Зигзага отслеживаем поведение рынка\
+    \ (post_pattern_action).\n# Нужно проверить, что произойдёт РАНЬШЕ:\n#   (A) откат\
+    \ более 61.8% длины волны-c, ИЛИ\n#   (B) преодоление конечного уровня волны-c\
+    \ (пробой в направлении волны-c)\n\nend_c = price_at(end(wave_c))\nstart_c = price_at(start(wave_c))\n\
+    c_length = abs(end_c - start_c)\nthreshold_retrace = 0.618 * c_length\n\n# Определяем\
+    \ направление волны-c\nif end_c > start_c:\n  # волна-c направлена вверх\n  #\
+    \ откат = движение вниз от end_c\n  # преодоление end_c = новый максимум выше\
+    \ end_c\n  min_after_c = lowest price reached after end(wave_c) BEFORE price exceeds\
+    \ end_c\n  retracement_amount = end_c - min_after_c\nelse:\n  # волна-c направлена\
+    \ вниз\n  # откат = движение вверх от end_c\n  # преодоление end_c = новый минимум\
+    \ ниже end_c\n  max_after_c = highest price reached after end(wave_c) BEFORE price\
+    \ exceeds end_c\n  retracement_amount = max_after_c - end_c\n\n# Условие подтверждения\
+    \ Удлиненного Зигзага:\nis_elongated_zigzag = (retracement_amount > threshold_retrace)\n\
+    #   т.е. откат > 61.8% длины wave_c произошёл ДО того, как конечный уровень wave_c\
+    \ был преодолён\n\n# Если условие НЕ выполняется — переклассифицировать фигуру:\n\
+    if NOT is_elongated_zigzag:\n  reclassify pattern_candidate as 'impulse'\n  #\
+    \ волны a-b-c вероятно являются волнами 1-2-3 пятисегментного Импульса\n"
+  formalization_notes: "1. Это правило пост-паттерновой валидации: оно проверяет поведение\
+    \ рынка ПОСЛЕ\n   завершения предполагаемого паттерна для подтверждения или опровержения\
+    \ классификации.\n2. \"Конечный уровень волны-с будет преодолен\" означает, что\
+    \ цена пробивает\n   экстремум wave_c в направлении wave_c (новый максимум если\
+    \ c вверх, новый минимум если c вниз).\n3. Правило является mandatory по формулировке\
+    \ (\"должен\"), но результат невыполнения —\n   не инвалидация, а переклассификация\
+    \ в Импульс (\"вероятно, данная фигура Импульс\").\n4. Контекст уточняет предусловие:\
+    \ c > 161.8% * a — именно тогда возникает\n   неопределённость между Удлинённым\
+    \ Зигзагом и Импульсом 1-2-3."
 created_by: claude
 created_at: '2026-06-02T17:55:31Z'
 requires_review: false

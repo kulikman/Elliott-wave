@@ -25,9 +25,50 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: pattern == 'impulse' AND extended_wave == 3 AND position == 'post_pattern'
-  constraint: extreme(next_wave) within price_range(start(wave_4), end(wave_4))
-  formalization_notes: Обычно завершается вблизи конца волны-4.
+  applies_when: '# Импульс с растянутой третьей волной завершён,
+
+    # анализируем следующую за ним волну (post-pattern wave)
+
+    pattern == ''impulse''
+
+    AND extended_wave == 3
+
+    AND impulse_is_completed == true
+
+    AND next_wave_after_pattern exists
+
+    '
+  constraint: "# Mandatory: следующая за импульсом волна должна достичь ценовой области\
+    \ волны 4\n# Ценовая область волны 4 = диапазон от start(wave_4) до end(wave_4)\n\
+    \nif impulse_is_bullish:\n  # Волна 4 идёт вниз: start(wave_4) = high (конец wave_3),\
+    \ end(wave_4) = low (конец wave_4)\n  price_range_wave4_upper = price(start(wave_4))\
+    \   # начало волны 4\n  price_range_wave4_lower = price(end(wave_4))     # конец\
+    \ волны 4\n  # Следующая волна (коррекция вниз) должна достичь этой области\n\
+    \  low(next_wave) <= price_range_wave4_upper\n\nif impulse_is_bearish:\n  # Волна\
+    \ 4 идёт вверх: start(wave_4) = low (конец wave_3), end(wave_4) = high (конец\
+    \ wave_4)\n  price_range_wave4_lower = price(start(wave_4))   # начало волны 4\n\
+    \  price_range_wave4_upper = price(end(wave_4))     # конец волны 4\n  # Следующая\
+    \ волна (коррекция вверх) должна достичь этой области\n  high(next_wave) >= price_range_wave4_lower\n\
+    \n# Conditional (обычно): завершение вблизи конца волны 4\n# preferred: extreme(next_wave)\
+    \ is near price(end(wave_4))\n"
+  formalization_notes: 'Mandatory часть: следующая волна должна достичь ценовой области
+    волны 4
+
+    (т.е. войти в диапазон цен между началом и концом волны 4).
+
+
+    Conditional часть (слово "обычно"): завершение вблизи конца волны 4.
+
+    Понятие "вблизи" не определено количественно в исходном правиле,
+
+    поэтому эта часть оставлена как рекомендательная (preferred),
+
+    а не как жёсткое ограничение.
+
+
+    "Следующая волна" — это первая волна паттерна, следующего за данным импульсом
+
+    (post-pattern wave).'
 created_by: claude
 created_at: '2026-06-02T17:57:59Z'
 requires_review: false

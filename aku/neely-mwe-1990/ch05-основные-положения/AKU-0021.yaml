@@ -27,35 +27,39 @@ formalization:
 
     # и проверке допустимости его позиции в структуре более высокого порядка
 
-    pattern == ''expanding_triangle''
+    current_pattern.type == ''expanding_triangle''
 
     '
-  constraint: "# Определяем контекст: в какой волне какого паттерна находится данный\
-    \ расширяющийся треугольник\nparent_pattern = get_parent_pattern(current_pattern)\n\
-    parent_wave_position = get_position_in_parent(current_pattern)\n\n# Запрет 1:\
-    \ Расширяющийся Треугольник не может быть волной-b Зигзага\nif parent_pattern.type\
-    \ == 'zigzag':\n    assert parent_wave_position != 'wave_b'\n\n# Запрет 2: Расширяющийся\
-    \ Треугольник не может быть волной b, c или d более крупного Треугольника\n# (любого\
-    \ типа треугольника — сужающегося, расширяющегося и т.д.)\nif parent_pattern.type\
-    \ in ['contracting_triangle', 'expanding_triangle',\n                        \
-    \    'ascending_triangle', 'descending_triangle',\n                          \
-    \  'neutral_triangle']:\n    assert parent_wave_position not in ['wave_b', 'wave_c',\
-    \ 'wave_d']\n"
-  formalization_notes: 'Правило задаёт ограничение на позицию расширяющегося треугольника
+  constraint: "parent_pattern = get_parent_pattern(current_pattern)\nparent_wave_position\
+    \ = get_position_in_parent(current_pattern)\n\n# Запрет 1: Расширяющийся Треугольник\
+    \ не может быть волной-b Зигзага\nif parent_pattern.type == 'zigzag':\n    assert\
+    \ parent_wave_position != 'wave_b'\n\n# Запрет 2: Расширяющийся Треугольник не\
+    \ может быть волной b, c или d\n# более крупного Треугольника (любого типа)\n\
+    if parent_pattern.type in ['contracting_triangle', 'expanding_triangle',\n   \
+    \                         'ascending_triangle', 'descending_triangle',\n     \
+    \                       'neutral_triangle']:\n    assert parent_wave_position\
+    \ not in ['wave_b', 'wave_c', 'wave_d']\n"
+  formalization_notes: 'Правило задаёт запрет на позицию расширяющегося треугольника
     в структуре
 
-    более высокого порядка. Оно запрещает два конкретных контекста:
+    более высокого порядка. Два конкретных запрета:
 
     1) wave_b внутри Zigzag
 
     2) wave_b, wave_c, wave_d внутри любого более крупного Triangle
 
-    Неявно допускается, что расширяющийся треугольник может быть wave_a или wave_e
 
-    более крупного треугольника (они не перечислены в запрете).
+    Из формулировки следует, что wave_a и wave_e более крупного треугольника
 
-    Также не запрещено появление в других позициях (например, wave_b Flat, wave_4
-    Impulse и т.д.).'
+    НЕ запрещены (они не перечислены в запрете).
+
+    Также не запрещено появление в других контекстах (wave_b Flat, wave_4 Impulse
+    и т.д.).
+
+
+    Перечень типов треугольников в parent_pattern.type может потребовать уточнения
+
+    в зависимости от используемой классификации треугольников в системе.'
 created_by: claude
 created_at: '2026-06-02T17:55:31Z'
 requires_review: false
