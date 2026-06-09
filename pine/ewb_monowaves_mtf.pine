@@ -1636,7 +1636,7 @@ matchFigure(array<int> s, array<int> eb, array<float> ep, color c,
                 drawFibProjections(eb, ep, zzI0, "zigzag", int(zzFadeDir))  // Level 10
                 figConfirmed := "zigzag"
                 compactFigure(s, eb, ep, n, 2, 3)  // Зигзаг → :3 (коррекция)
-    [drew, figConfirmed]   // return: (был ли распознан паттерн, тип паттерна)
+    [drew, figConfirmed]
 
 // Скользящее окно ссылок на метки моноволн — используется retroUpdatePI
 // для добавления Индикаторов Положения к m0/m1/... после подтверждения фигуры.
@@ -1749,7 +1749,8 @@ if showFig and rc.ruleNo > 0
         array.shift(figEndBar)
         array.shift(figEndPx)
     if base > 0
-        [_figDrew, patConfType] = matchFigure(figStruct, figEndBar, figEndPx, colFig, mLblBarArr, mLblRefArr)
+        [bool _mfDrew, string _mfType] = matchFigure(figStruct, figEndBar, figEndPx, colFig, mLblBarArr, mLblRefArr)
+        patConfType := _mfType
 
 // ── Hybrid trade matcher: подтверждённые пивоты текущего ТФ ──
 var array<int>   hybBar  = array.new<int>()
