@@ -485,11 +485,11 @@ drawImpulseChannels(array<int> eb, array<float> ep, int i0, color c) =>
          width = 1, style = line.style_dashed)
     // Fibonacci проекции Волны-5 (AKU-0201):
     // Цель W5 = end(W3) + 1.618 * (end(W3) - start(W1))
-    // Старт от p2 (end W3), не от p4 (end W4)
+    // p3 = end(W3), p0 = start(W1)
     bool isUp = p1 > p0
-    float m = math.abs(p2 - p0)          // расстояние start(W1) → end(W3)
-    float w5target = isUp ? p2 + 1.618 * m : p2 - 1.618 * m
-    int   w5bar    = b2 + (b4 - b0)      // проецируем от end(W3) на ту же длину что W1..W4
+    float m = math.abs(p3 - p0)          // расстояние start(W1) → end(W3) (AKU-0201)
+    float w5target = isUp ? p3 + 1.618 * m : p3 - 1.618 * m
+    int   w5bar    = b4 + (b4 - b0)      // визуально: от end(W4) на длину всего импульса вперёд
     line.new(b4, p4, w5bar, w5target, xloc = xloc.bar_index,
          color = color.new(color.yellow, 30), width = 1, style = line.style_dotted)
     label.new(w5bar, w5target, "W5 161.8%", xloc = xloc.bar_index, yloc = yloc.price,
@@ -507,14 +507,17 @@ confirmImpulse(array<float> ep, int i0, string dir) =>
     float p0px = array.get(ep, i0),     p1px = array.get(ep, i0 + 1)
     float p2px = array.get(ep, i0 + 2), p3px = array.get(ep, i0 + 3)
     float p4px = array.get(ep, i0 + 4)
+    // W5 известна только если i0+5 в диапазоне массива (n >= 6)
+    float p5px = i0 + 5 < array.size(ep) ? array.get(ep, i0 + 5) : na
     float lw1 = math.abs(p1px - p0px), float lw2 = math.abs(p2px - p1px)
     float lw3 = math.abs(p3px - p2px), float lw4 = math.abs(p4px - p3px)
+    float lw5 = na(p5px) ? na : math.abs(p5px - p4px)
     // AKU-0001/0004: W2 не пробивает старт W1
     bool r1 = dir == "up" ? p2px > p0px : p2px < p0px
     // AKU-0005: W4 не пробивает старт W3
     bool r2 = dir == "up" ? p4px > p2px : p4px < p2px
-    // AKU-0002/0007: W3 >= W1 по цене
-    bool r3 = lw3 >= lw1
+    // AKU-0002/0007: W3 не может быть самой короткой из W1/W3/W5
+    bool r3 = lw3 >= lw1 and (na(lw5) or lw3 >= lw5)
     // AKU-0127: W2 <= 61.8% W1
     bool r4 = lw1 > 0 ? lw2 / lw1 <= 0.618 : true
     // AKU-0009: ценовые диапазоны W2 и W4 не перекрываются
@@ -523,32 +526,43 @@ confirmImpulse(array<float> ep, int i0, string dir) =>
     bool r5 = w2hi < w4lo or w4hi < w2lo  // нет пересечения
     // AKU-0126: чередование W2/W4 по цене (>20% разница)
     bool r6 = lw2 > 0 ? (lw4 / lw2 < 0.8 or lw4 / lw2 > 1.2) : true
-    // AKU-0203: признаки неправильной начальной точки — длины 1/3/5 почти равны
-    float minW = math.min(lw1, math.min(lw3, lw4))
-    float maxW = math.max(lw1, math.max(lw3, lw4))
+    // AKU-0203: признаки неправильной начальной точки — длины W1/W3/W5 почти равны
+    float minW = na(lw5) ? math.min(lw1, lw3) : math.min(lw1, math.min(lw3, lw5))
+    float maxW = na(lw5) ? math.max(lw1, lw3) : math.max(lw1, math.max(lw3, lw5))
     bool r7 = maxW > 0 ? minW / maxW < 0.85 : true
-    bool ok = r1 and r2 and r3 and r4
+    // AKU-0009 mandatory для трендового импульса: перекрытие W2/W4 = не импульс
+    bool ok = r1 and r2 and r3 and r4 and r5
     string msg = not r1 ? "W2>W1start" : not r2 ? "W4>W3start" :
          not r3 ? "W3<W1" : not r4 ? "W2>61.8%W1" :
-         not r5 ? "⚠W2/W4 overlap" : not r6 ? "⚠нет чередования" :
+         not r5 ? "W2/W4 overlap" : not r6 ? "⚠нет чередования" :
          not r7 ? "⚠W1≈W3≈W5 (неверный старт?)" : ""
     [ok, msg]
 
-// Проверяет Плоскую: B >= 61.8% A (AKU-0017)
+// Проверяет Плоскую: B >= 61.8%A и C >= 61.8%A (Neely MWE Гл.5)
+// Вызывается при n >= 4, поэтому ep[i0+3] всегда в диапазоне.
 confirmFlat(array<float> ep, int i0) =>
     float wA = math.abs(array.get(ep, i0 + 1) - array.get(ep, i0))
     float wB = math.abs(array.get(ep, i0 + 2) - array.get(ep, i0 + 1))
-    bool ok = wA > 0 ? wB / wA >= 0.618 : true
-    [ok, ok ? "" : "B<61.8%A"]
+    float wC = math.abs(array.get(ep, i0 + 3) - array.get(ep, i0 + 2))
+    bool bOK = wA > 0 and wB / wA >= 0.618
+    bool cOK = wA > 0 and wC / wA >= 0.618
+    bool ok = bOK and cOK
+    string msg = not bOK ? "B<61.8%A" : not cOK ? "C<61.8%A" : ""
+    [ok, msg]
 
-// Проверяет Треугольник: W3<W1 и W4<W2 (AKU-0018)
+// Проверяет Треугольник: c<a, d<b, e<c (AKU-0018)
+// e-волна доступна только при n >= 6; при n=5 e-волна не проверяется.
 confirmTriangle(array<float> ep, int i0) =>
     float lw1 = math.abs(array.get(ep, i0+1)-array.get(ep, i0))
     float lw2 = math.abs(array.get(ep, i0+2)-array.get(ep, i0+1))
     float lw3 = math.abs(array.get(ep, i0+3)-array.get(ep, i0+2))
     float lw4 = math.abs(array.get(ep, i0+4)-array.get(ep, i0+3))
-    bool ok = lw3 < lw1 and lw4 < lw2
-    [ok, ok ? "" : "не сужается"]
+    float lw5 = i0 + 5 < array.size(ep) ? math.abs(array.get(ep, i0+5)-array.get(ep, i0+4)) : na
+    bool r45 = lw3 < lw1 and lw4 < lw2
+    bool r5e = na(lw5) or lw5 < lw3   // e < c (когда e-волна известна)
+    bool ok = r45 and r5e
+    string msg = not r45 ? "не сужается (a/b/c/d)" : not r5e ? "e > c" : ""
+    [ok, msg]
 
 // Возвращает направление по p0→p1
 figDirection(float p0px, float p1px) =>
@@ -578,7 +592,8 @@ hybridBounds(array<int> bars, array<float> pxs, int i0, int count) =>
 hybridFlatOK(array<float> pxs, int i0) =>
     float a = math.abs(array.get(pxs, i0 + 1) - array.get(pxs, i0))
     float b = math.abs(array.get(pxs, i0 + 2) - array.get(pxs, i0 + 1))
-    a > 0 and b / a >= 0.618
+    float c = math.abs(array.get(pxs, i0 + 3) - array.get(pxs, i0 + 2))
+    a > 0 and b / a >= 0.618 and c / a >= 0.618
 
 hybridZigzagOK(array<float> pxs, int i0) =>
     float p0 = array.get(pxs, i0)
@@ -608,8 +623,10 @@ hybridMovingFlatOK(array<float> pxs, int i0) =>
 hybridDoubleCorrOK(array<float> pxs, int i0) =>
     float w = math.abs(array.get(pxs, i0 + 1) - array.get(pxs, i0))
     float x = math.abs(array.get(pxs, i0 + 2) - array.get(pxs, i0 + 1))
+    float y = math.abs(array.get(pxs, i0 + 3) - array.get(pxs, i0 + 2))
     float xr = w > 0 ? x / w : na
-    not na(xr) and xr > 0.1 and xr < 0.618
+    float yr = w > 0 ? y / w : na
+    not na(xr) and not na(yr) and xr > 0.1 and xr < 0.618 and yr >= 0.618
 
 hybridImpulseOK(array<float> pxs, int i0) =>
     string dir = figDirection(array.get(pxs, i0), array.get(pxs, i0 + 1))
@@ -634,8 +651,9 @@ drawTradeSignal(string figType, string figDir, int confBar, float entryPx,
                 int b0, int b1, float lo, float hi, float amp) =>
     bool figUp = figDir == "up"
     bool isLong = not figUp
-    float tp = isLong ? entryPx + amp : entryPx - amp
-    float sl = isLong ? entryPx - amp : entryPx + amp
+    // Используем те же multipliers, что и lastTradeTp/Sl (lines ~1298), чтобы визуальные маркеры совпадали с трекингом статуса
+    float tp = isLong ? entryPx + amp * actionTargetMult : entryPx - amp * actionTargetMult
+    float sl = isLong ? entryPx - amp * actionStopMult : entryPx + amp * actionStopMult
     float prob = figType == "flat" ? flatProb : dcProb
     string side = isLong ? "LONG" : "SHORT"
     color sigCol = isLong ? color.lime : color.red
@@ -889,8 +907,16 @@ energyRating(string figType, int dir) =>
         e := dir > 0 ? 0 : 0
         retracePct := 1.0
     else if figType == "flat"
-        e := dir > 0 ? -1 : 1
+        // AKU-0213: подтипы Плоской имеют разные рейтинги
+        // Обыкновенная плоская 0/0, Неудавшаяся-с -1/+1, Удлинённая +1/-1
+        e := dir > 0 ? -1 : 1  // дефолт = Неудавшаяся-с (наиболее частая)
         retracePct := 0.9
+    else if figType == "flat_ordinary"
+        e := 0
+        retracePct := 1.0
+    else if figType == "flat_extended"
+        e := dir > 0 ? 1 : -1
+        retracePct := 0.85
     else if figType == "triangle"
         e := 0                  // Треугольник нейтрален для последующих волн
         retracePct := 1.0
@@ -996,11 +1022,13 @@ matchFigure(array<int> s, array<int> eb, array<float> ep, color c) =>
                 drawEnergy(b1, hi, "impulse", dir == "up" ? 1 : -1, impLen)
                 // AKU-0224: Реальная линия 2-4 — временное окно прорыва = длительность W5
                 // Рисуем вертикальную зону: конец W5 + длительность W5 = ожидаемый прорыв
-                int w5dur = tb4 - tb3  // длительность W5 в барах
-                if w5dur > 0
-                    line.new(tb4 + w5dur, lo, tb4 + w5dur, hi, xloc = xloc.bar_index,
+                // tb5 (конец W5) доступен только при n >= 6
+                int tb5 = n >= 6 ? array.get(eb, pi0 + 5) : na
+                int w5dur = n >= 6 and not na(tb5) ? tb5 - tb4 : na  // правильная длительность W5
+                if not na(w5dur) and w5dur > 0
+                    line.new(tb5 + w5dur, lo, tb5 + w5dur, hi, xloc = xloc.bar_index,
                          color = color.new(color.yellow, 50), width = 1, style = line.style_dotted)
-                    label.new(tb4 + w5dur, lo, "↓2-4\n≤W5", xloc = xloc.bar_index,
+                    label.new(tb5 + w5dur, lo, "↓2-4\n≤W5", xloc = xloc.bar_index,
                          yloc = yloc.price, style = label.style_label_up,
                          color = color.new(color.yellow, 30), textcolor = color.white, size = size.tiny,
                          tooltip = "AKU-0224: прорыв линии 2-4 должен произойти в этот срок (≤ длительности W5). Иначе → W5 сегментирована или Терминал.")
@@ -1019,7 +1047,10 @@ matchFigure(array<int> s, array<int> eb, array<float> ep, color c) =>
             drawFig(nm, b0, b1, lo, hi, fc)
             labelSeg(eb, ep, n - 5, ":F3|:c3|:c3|:sL3|:L3", fc)
             if triOK
-                drawMotionLabels(eb, ep, pi0, 6, "0|a|b|c|d|e", color.purple)
+                // n >= 6: все 6 точек (0+a..e) доступны; при n=5 рисуем только 5 (0+a..d)
+                int triLabelCount = n >= 6 ? 6 : 5
+                string triLabels  = n >= 6 ? "0|a|b|c|d|e" : "0|a|b|c|d"
+                drawMotionLabels(eb, ep, pi0, triLabelCount, triLabels, color.purple)
                 // Сжатие: :3 для Треугольника, :5 для Терминала — пока :3 (безопасно)
                 compactFigure(s, eb, ep, n, 4, 3)
             drew := true
@@ -1060,9 +1091,9 @@ matchFigure(array<int> s, array<int> eb, array<float> ep, color c) =>
                     drawFig("Двойн.Корр.? (большая x)", db0, db1, dlo, dhi, color.new(color.orange, 40))
                     drew := true
 
-    if not drew and n >= 3
+    if not drew and n >= 4
         int w1 = array.get(s, n - 3), int w2 = array.get(s, n - 2), int w3 = array.get(s, n - 1)
-        int startIdx = n >= 4 ? n - 4 : n - 3
+        int startIdx = n - 4
         int b0 = array.get(eb, startIdx)
         int b1 = array.get(eb, n - 1)
         float hi = array.get(ep, startIdx), lo = array.get(ep, startIdx)
@@ -1825,7 +1856,8 @@ if showLiveHypothesis and hybN >= 3
     float hypBuffer = na(hypAtr) ? aLenH * 0.05 : hypAtr * 0.25
     hypSideForStats := fadeDirH > 0 ? "LONG" : "SHORT"
 
-    bool flatCandidate = cIsDeveloping and not na(bRatioH) and bRatioH >= 0.50 and bRatioH < 1.75
+    // Минимум B >= 61.8%A по Нили (было 0.50 — ошибка): AKU-0017 / Neely MWE Гл.5
+    bool flatCandidate = cIsDeveloping and not na(bRatioH) and bRatioH >= 0.618 and bRatioH < 1.75
     if flatCandidate
         float flatPatternScore = bRatioH >= 0.618 and bRatioH <= 1.382 ? 1.0 : bRatioH < 1.618 ? 0.80 : 0.55
         float flatFibScore = math.max(fibClusterScore(cRatioH), scoreBand(cRatioH, 0.382, 1.382) * 0.65)
