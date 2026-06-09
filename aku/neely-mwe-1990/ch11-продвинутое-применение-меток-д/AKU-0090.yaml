@@ -23,9 +23,30 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: pattern == 'triangle'
-  constraint: not (any 3 of [a,b,c,d,e] are equal within 5% by price)
-  formalization_notes: null
+  applies_when: '# Правило применяется к любому паттерну Треугольник
+
+    pattern == ''triangle''
+
+    '
+  constraint: "# Вычисляем ценовые длины (price range) каждой стороны треугольника\n\
+    # Стороны одинакового порядка — это волны a, b, c, d, e\nprice_lengths = [\n \
+    \ price_range(wave_a),\n  price_range(wave_b),\n  price_range(wave_c),\n  price_range(wave_d),\n\
+    \  price_range(wave_e)\n]\n\n# Функция проверки равенства двух значений в пределах\
+    \ ±5%\ndef are_equal_within_5pct(x, y):\n  return abs(x - y) <= 0.05 * max(x,\
+    \ y)\n\n# Перебираем все комбинации из 3 сторон (C(5,3) = 10 комбинаций)\nfor\
+    \ each combination (i, j, k) from [a, b, c, d, e] where i < j < k:\n  len_i =\
+    \ price_lengths[i]\n  len_j = price_lengths[j]\n  len_k = price_lengths[k]\n\n\
+    \  # Все три попарно равны в пределах ±5%\n  all_three_equal = (\n    are_equal_within_5pct(len_i,\
+    \ len_j) AND\n    are_equal_within_5pct(len_j, len_k) AND\n    are_equal_within_5pct(len_i,\
+    \ len_k)\n  )\n\n  # Ни одна такая тройка не должна существовать\n  assert all_three_equal\
+    \ == false\n"
+  formalization_notes: "- \"Стороны одинакового порядка\" — в контексте треугольника\
+    \ это волны a, b, c, d, e,\n  которые все являются сторонами одного и того же\
+    \ порядка (степени).\n- \"Равны по цене\" интерпретируется как равенство ценовых\
+    \ диапазонов (price_range)\n  каждой волны, т.е. abs(high - low) волны.\n- Допуск\
+    \ ±5% применяется попарно; если все три пары попадают в допуск,\n  считается что\
+    \ три стороны равны — это запрещено.\n- Правило категорическое (\"ни при каких\
+    \ обстоятельствах\"), mandatory."
 aliases:
 - правило неравенства трёх сторон треугольника
 related_aku: []

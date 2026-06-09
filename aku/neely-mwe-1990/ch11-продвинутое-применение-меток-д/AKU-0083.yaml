@@ -21,9 +21,32 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: pattern == 'trend_impulse' AND extended_wave != 1
-  constraint: length(wave_3) > length(wave_1)
-  formalization_notes: null
+  applies_when: '# Паттерн — Трендовый Импульс (не Терминальный)
+
+    pattern == ''trend_impulse''
+
+    # Волна-1 НЕ является растянутой (extended_wave != 1)
+
+    AND extended_wave != 1
+
+    '
+  constraint: '# Третья волна должна быть длиннее волны-1 по ценовому расстоянию
+
+    # length = абсолютное ценовое расстояние от начала до конца волны
+
+    length(wave_3) > length(wave_1)
+
+    '
+  formalization_notes: 'Правило явно указано в verbatim_quote: "Третья волна должна
+    быть длиннее волны-1."
+
+    Контекст: раздел "Волна-1 Нерастянутая" в Трендовых Импульсах.
+
+    length() — абсолютное ценовое расстояние (price distance) волны,
+
+    т.е. abs(end_price - start_price).
+
+    Правило является строгим неравенством (строго длиннее, не ">=").'
 aliases:
 - волна-3 длиннее волны-1 при нерастянутой первой
 related_aku: []

@@ -24,9 +24,30 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: pattern == 'triple_combination'
-  constraint: parent IN ('triangle', 'terminal_impulse')
-  formalization_notes: null
+  applies_when: '# Когда идентифицированный паттерн является Тройной Комбинацией
+
+    pattern.type == ''triple_combination''
+
+    '
+  constraint: '# Тройная Комбинация допустима только как волна (leg) внутри
+
+    # Треугольника или Терминального Импульса (Ending Diagonal)
+
+    parent_pattern = get_parent_pattern(current_pattern)
+
+
+    parent_pattern.type IN [''triangle'', ''terminal_impulse'']
+
+
+    # Иными словами, если parent_pattern.type не является ни треугольником,
+
+    # ни терминальным импульсом — тройная комбинация невалидна
+
+    '
+  formalization_notes: "Правило ограничивает контекст появления тройной комбинации.\n\
+    \"Терминальный Импульс\" (terminal_impulse) — это ending diagonal \nв терминологии\
+    \ Нили. Правило проверяет тип родительского паттерна,\nв котором тройная комбинация\
+    \ выступает одной из волн (leg)."
 aliases:
 - правило позиции тройной комбинации
 related_aku: []

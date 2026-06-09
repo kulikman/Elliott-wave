@@ -24,9 +24,45 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: pattern == 'moving_correction' AND position == 'post_pattern'
-  constraint: length(next_segment) == max(length(all_segments(completed_pattern)))
-  formalization_notes: null
+  applies_when: "# Завершена Подвижная коррекция (Running/Moving correction)\n# и\
+    \ существует движение непосредственно после неё\npattern.type == 'flat'\nAND pattern.subtype\
+    \ == 'moving' # Подвижная коррекция\nAND pattern.is_completed == true\nAND next_segment_after(pattern)\
+    \ exists\n# next_segment — это следующий моноволновый сегмент (или волна) \n#\
+    \ непосредственно после завершения подвижной коррекции,\n# являющийся частью более\
+    \ крупной завершённой фигуры Эллиотта\n"
+  constraint: '# Определяем завершённую фигуру Эллиотта, частью которой является
+
+    # подвижная коррекция и следующее за ней движение
+
+    completed_pattern = parent_pattern_containing(pattern)
+
+
+    # Движение непосредственно после подвижной коррекции
+
+    post_move = next_segment_after(pattern)
+
+
+    # Все сегменты завершённой фигуры Эллиотта
+
+    all_segs = all_segments(completed_pattern)
+
+
+    # post_move должно быть самым длинным сегментом в этой фигуре
+
+    length(post_move) == max(length(seg) for seg in all_segs)
+
+    '
+  formalization_notes: "1. \"Подвижная коррекция\" (Moving correction / Running correction)\
+    \ — \n   подтип плоской коррекции, где волна C не достигает начала волны A.\n\
+    2. \"Самый длинный сегмент завершённой фигуры Эллиотта\" — неясно,\n   имеется\
+    \ ли в виду длина по цене (price distance) или по времени.\n   Предполагается\
+    \ длина по цене, так как это стандартная метрика \n   в контексте меток движения\
+    \ у Нили.\n3. \"Завершённая фигура Эллиотта\" — паттерн более высокого порядка,\n\
+    \   в который входит подвижная коррекция как составная часть.\n   Какой именно\
+    \ уровень иерархии имеется в виду — не уточнено.\n4. \"Сегмент\" — отдельная волна\
+    \ (leg) завершённой фигуры, \n   не обязательно моноволна, а скорее волна того\
+    \ же уровня \n   декомпозиции, что и сама подвижная коррекция внутри родительского\
+    \ паттерна."
 aliases:
 - правило постподвижного движения
 related_aku: []

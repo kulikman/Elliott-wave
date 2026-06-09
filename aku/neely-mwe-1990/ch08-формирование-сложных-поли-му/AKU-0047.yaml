@@ -25,10 +25,61 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: pattern == 'x-wave'
-  constraint: complexity(x_wave) >= complexity(preceding_c_wave) AND complexity(x_wave)
-    <= max_complexity(standard_patterns_in_config)
-  formalization_notes: null
+  applies_when: '# Правило применяется к x-волне в сложной коррекции с малой x-волной
+
+    # x-волна соединяет две стандартные коррекционные фигуры
+
+    is_complex_correction == true AND
+
+    current_wave.label == ''x'' AND
+
+    x_wave.type == ''small_x''  # малая x-волна
+
+    '
+  constraint: '# Определяем c-волну, непосредственно предшествующую данной x-волне
+
+    # (последняя c-волна завершённой стандартной фигуры перед x-волной)
+
+    preceding_c_wave = get_immediately_preceding_c_wave(x_wave)
+
+
+    # Определяем все стандартные фигуры в завершённой конфигурации
+
+    # (все стандартные коррекционные паттерны, соединённые x-волнами)
+
+    all_standard_patterns = get_all_standard_patterns_in_completed_configuration()
+
+
+    # Вычисляем уровень сложности каждого элемента
+
+    # (уровень сложности = степень подразбиения: моноволна=1, поливолна=2, мультиволна=3
+    и т.д.)
+
+    x_complexity = complexity_level(x_wave)
+
+    c_complexity = complexity_level(preceding_c_wave)
+
+    max_pattern_complexity = max(complexity_level(p) for p in all_standard_patterns)
+
+
+    # Ограничение: сложность x-волны >= сложности предшествующей c-волны
+
+    # И сложность x-волны <= максимальной сложности среди стандартных фигур
+
+    x_complexity >= c_complexity AND
+
+    x_complexity <= max_pattern_complexity
+
+    '
+  formalization_notes: "1. \"Уровень сложности\" (complexity level) — предполагается\
+    \ иерархия:\n   моноволна < поливолна < мультиволна < макроволна.\n   Точная числовая\
+    \ шкала зависит от реализации функции complexity_level().\n2. \"Непосредственно\
+    \ предшествующая c-волна\" — это c-волна последней\n   стандартной коррекционной\
+    \ фигуры, завершившейся перед данной x-волной.\n3. \"Стандартные фигуры в завершённой\
+    \ конфигурации\" — все стандартные\n   коррекционные паттерны (зигзаг, плоская,\
+    \ треугольник и т.д.),\n   входящие в состав данной сложной коррекции.\n4. Правило\
+    \ сформулировано для малой x-волны (раздел \"Сложная Коррекция\n   c малой x-волной\"\
+    ). Применимость к большой x-волне требует\n   отдельной проверки по другим AKU."
 aliases:
 - правило сложности x-волны
 related_aku: []

@@ -22,9 +22,45 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: after confirming non-standard figure with x-wave
-  constraint: compact(non_standard_figure_with_x_wave) → ':3'
-  formalization_notes: Из Гл.7 стр.7-1 — все нестандартные → :3.
+  applies_when: '# Фигура является нестандартной (non-standard) и содержит x-волну
+
+    is_non_standard_figure(pattern) == true
+
+    AND has_x_wave(pattern) == true
+
+    AND compaction_procedure_applied == true
+
+    '
+  constraint: '# После уплотнения (compaction) нестандартная фигура с x-волной
+
+    # сводится к базовой структуре '':3''
+
+    compacted_structure = compact(pattern)
+
+    compacted_structure.monowave_label == '':3''
+
+
+    # Уровень сложности x-волны обычно на один уровень ниже
+
+    # самой сложной стандартной фигуры в завершённой конфигурации
+
+    # (это рекомендация, не строгое mandatory ограничение)
+
+    # standard_figures = get_all_standard_figures_in(pattern)
+
+    # max_complexity = max(complexity_level(fig) for fig in standard_figures)
+
+    # complexity_level(x_wave) == max_complexity - 1  # "обычно", не всегда
+
+    '
+  formalization_notes: "1. Mandatory часть: compact(non_standard_with_x_wave) → ':3'\
+    \ — \n   это прямо следует из verbatim_quote (пункт F).\n2. Часть про \"уровень\
+    \ сложности x-волны обычно на один уровень ниже\" \n   присутствует в statement_ru,\
+    \ но слово \"обычно\" указывает на \n   рекомендательный характер, а не строгое\
+    \ mandatory правило.\n   В verbatim_quote эта часть отсутствует, поэтому она \n\
+    \   закомментирована и не включена как mandatory constraint.\n3. Процедура compaction\
+    \ (уплотнения/сжатия) — это отдельная \n   процедура из Гл.7, которая заменяет\
+    \ группу подволн \n   одной моноволной с соответствующей структурной меткой."
 aliases: []
 related_aku: []
 contradicts_aku: []

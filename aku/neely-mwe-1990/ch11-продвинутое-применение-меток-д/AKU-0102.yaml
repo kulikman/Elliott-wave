@@ -26,10 +26,38 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: pattern == 'expanding_limiting_triangle' AND position == 'wave_b'
-  constraint: parent == 'flat' AND parent NOT IN ('zigzag', 'complex_correction_x',
-    'larger_triangle')
-  formalization_notes: null
+  applies_when: '# Текущий паттерн — Расширяющийся Ограничивающий Треугольник (Expanding
+    Limiting Triangle)
+
+    # и он находится в позиции b-волны какой-либо родительской структуры
+
+    pattern.type == ''expanding_limiting_triangle''
+
+    AND pattern.position == ''wave_b''
+
+    '
+  constraint: "# Если расширяющийся ограничивающий треугольник является b-волной,\n\
+    # то родительский паттерн ДОЛЖЕН быть Плоской коррекцией (Flat).\n# Он НЕ может\
+    \ быть:\n#   - b-волной Зигзага\n#   - x-волной Сложной Коррекции\n#   - b-волной\
+    \ более крупного Треугольника\n\nparent.type == 'flat'\n\n# Запреты (эквивалентная\
+    \ проверка, явно перечисленная):\n# parent.type != 'zigzag'\n# parent.type !=\
+    \ 'triangle'\n# pattern.position != 'wave_x' WHERE parent.type == 'complex_correction'\n\
+    \n# Примечание: позиция wave_x в сложной коррекции также запрещена,\n# хотя wave_x\
+    \ — не wave_b; это отдельно упомянуто в правиле как\n# дополнительное ограничение\
+    \ на использование данного треугольника.\n# Формально, если applies_when ограничен\
+    \ position == 'wave_b',\n# то запрет на x-волну — это отдельная проверка:\n\n\
+    IF pattern.type == 'expanding_limiting_triangle':\n  allowed_positions = []\n\
+    \  IF parent.type == 'flat':\n    allowed_positions.append('wave_b')\n  # В zigzag\
+    \ позиция wave_b запрещена\n  # В triangle позиция wave_b запрещена\n  # В complex_correction\
+    \ позиция wave_x запрещена\n  assert pattern.position IN allowed_positions\n"
+  formalization_notes: "Правило содержит два аспекта:\n1. Если expanding_limiting_triangle\
+    \ в позиции wave_b — родитель должен быть flat.\n2. Дополнительно упомянут запрет\
+    \ на позицию x-волны в сложной коррекции,\n   что выходит за рамки условия \"\
+    position == wave_b\". Это означает, что\n   правило фактически ограничивает ВСЕ\
+    \ допустимые позиции данного треугольника:\n   единственная разрешённая позиция\
+    \ — wave_b внутри flat.\nФормулировка \"по всей видимости\" (verbatim) вносит\
+    \ элемент неопределённости,\nно правило помечено как mandatory, поэтому формализовано\
+    \ как жёсткое ограничение."
 aliases:
 - ограничение позиции расширяющегося ограничивающего треугольника
 related_aku: []

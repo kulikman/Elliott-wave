@@ -27,10 +27,47 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: wave_5 crosses trendline_2_4
-  constraint: 'if wave_5 crosses trendline_2_4: figure = ''ending_diagonal'' NOT ''impulse'''
-  formalization_notes: 'Ключевое: W5 пересекает 2-4 → Терминал. Уже реализовано частично
-    в AKU-0054.'
+  applies_when: '# Правило состоит из двух независимых подправил:
+
+    # Подправило 1: применяется к Импульсным фигурам
+
+    # Подправило 2: применяется к Треугольникам (выброс после треугольника)
+
+
+    (pattern == ''impulse'' AND wave_3_completed == true)
+
+    OR
+
+    (pattern == ''triangle'' AND thrust_completed == true)
+
+    '
+  constraint: "# ============================================================\n# Подправило\
+    \ 1: Импульс — линия тренда 2-4\n# ============================================================\n\
+    \ntrendline_2_4 = line_through(end(wave_2), end(wave_4))\n\n# 1a) W3 НИКОГДА не\
+    \ пробивает линию тренда 2-4 (mandatory)\nfor each price_point in wave_3:\n  \
+    \  price_point does NOT cross trendline_2_4\n\n# 1b) Если W5 пересекает линию\
+    \ тренда 2-4 → переклассификация\nwave_5_crosses_2_4 = any price_point in wave_5\
+    \ crosses trendline_2_4\n\nif wave_5_crosses_2_4:\n    # Фигура НЕ может быть\
+    \ обычным Импульсом\n    # Формируется Терминальная Импульсная фигура (ending\
+    \ diagonal)\n    reclassify pattern from 'impulse' to 'ending_diagonal'\n\n# ============================================================\n\
+    # Подправило 2: Треугольник — выброс (thrust)\n# ============================================================\n\
+    \n# apex = точка схождения линий тренда треугольника (вершина)\napex_time = time_of_apex(triangle)\n\
+    \n# Выброс должен завершиться до или на уровне временной зоны вершины\nthrust_end_time\
+    \ = time(end(thrust))\n\nif thrust_end_time > apex_time:\n    # Выброс не завершился\
+    \ в пределах временной зоны вершины\n    # → Два варианта переклассификации:\n\
+    \    #   Вариант A: фигура является Терминальной (ending_diagonal)\n    #   Вариант\
+    \ B: Треугольник был Неограничивающим (non-limiting triangle)\n    reclassify\
+    \ pattern to 'ending_diagonal' OR 'non_limiting_triangle'\n"
+  formalization_notes: "1. Подправило 1a (W3 не пробивает 2-4) — абсолютное mandatory\
+    \ правило для Импульса.\n2. Подправило 1b (W5 пересекает 2-4) — условие переклассификации\
+    \ в ending_diagonal.\n   Связано с AKU-0054, где это правило может быть частично\
+    \ покрыто.\n3. Подправило 2 (thrust треугольника) — verbatim_quote обрывается\
+    \ на подправиле 1,\n   но statement_ru явно содержит описание подправила 2 про\
+    \ выброс из треугольника.\n   Формализация подправила 2 основана на statement_ru.\n\
+    4. Выбор между ending_diagonal и non_limiting_triangle в подправиле 2\n   требует\
+    \ дополнительного контекста (других правил) для однозначного определения.\n5.\
+    \ \"Временная зона вершины\" (apex) — точка пересечения продлённых линий тренда\n\
+    \   треугольника; точное определение допуска (tolerance) не указано в правиле."
 aliases: []
 related_aku: []
 contradicts_aku: []

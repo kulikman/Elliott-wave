@@ -24,10 +24,33 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: classifying multiwave impulse, identifying extended wave
-  constraint: count(polywave IN {wave_2, wave_4}) >= 1 AND longest_correction IS adjacent_to
-    extended_wave
-  formalization_notes: null
+  applies_when: '# Правило применяется при классификации паттерна как мультиволнового
+    импульса
+
+    pattern == ''impulse'' AND degree == ''multiwave''
+
+    '
+  constraint: "# Часть 1: Как минимум одна коррективная фаза (волна 2 или 4) должна\
+    \ быть поливолной\ncount_polywave_corrections = 0\nif structural_degree(wave_2)\
+    \ == 'polywave':\n    count_polywave_corrections += 1\nif structural_degree(wave_4)\
+    \ == 'polywave':\n    count_polywave_corrections += 1\n\nassert count_polywave_corrections\
+    \ >= 1\n\n# Часть 2: Самая длинная коррекция (волна 2 или 4) должна быть смежной\n\
+    # с растянутой импульсной волной (непосредственно перед или после неё)\n\nlongest_correction\
+    \ = wave_2 if price_distance(wave_2) >= price_distance(wave_4) else wave_4\n\n\
+    # Определяем растянутую волну среди импульсных подволн (1, 3, 5)\nextended = get_extended_wave(wave_1,\
+    \ wave_3, wave_5)\n\nif extended == wave_1:\n    # Смежная коррекция — только\
+    \ волна 2 (следует после wave_1)\n    assert longest_correction == wave_2\nelif\
+    \ extended == wave_3:\n    # Смежные коррекции — волна 2 (перед wave_3) или волна\
+    \ 4 (после wave_3)\n    # longest_correction может быть любой из них — обе смежны\n\
+    \    assert longest_correction == wave_2 OR longest_correction == wave_4\nelif\
+    \ extended == wave_5:\n    # Смежная коррекция — только волна 4 (непосредственно\
+    \ перед wave_5)\n    assert longest_correction == wave_4\n"
+  formalization_notes: "- \"Поливолная\" (polywave) означает, что коррективная фаза\
+    \ состоит из подволн\n  моноволнового уровня, т.е. её структурная степень == polywave.\n\
+    - \"Самая длинная коррекция\" интерпретируется как коррекция с наибольшим\n  ценовым\
+    \ расстоянием (price coverage) среди волн 2 и 4.\n- Когда растянута волна 3, обе\
+    \ коррекции (2 и 4) смежны с ней,\n  поэтому ограничение выполняется автоматически\
+    \ для любой из них.\n- Правило содержит два независимых обязательных условия (AND)."
 aliases: []
 related_aku: []
 contradicts_aku: []

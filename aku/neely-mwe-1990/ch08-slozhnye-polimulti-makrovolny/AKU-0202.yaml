@@ -27,11 +27,51 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: choosing wave count start point
-  constraint: start_point = end(previous_completed_figure) NOT = absolute_high_or_low
-    ; look for secondary_spike AFTER global_extreme
-  formalization_notes: 'Рис.8-21: типичная ошибка новичка — старт от абсолютного экстремума.
-    Рис.8-23: 4 формы завершения A/B/C/D.'
+  applies_when: '# При выборе начальной точки для нового волнового счёта
+
+    # после завершения предыдущей фигуры Эллиотта
+
+    action == ''choose_wave_count_start_point''
+
+    '
+  constraint: "# Определяем абсолютный экстремум на анализируемом участке\nabsolute_high\
+    \ = max(price, over=analysis_range)\nabsolute_low = min(price, over=analysis_range)\n\
+    \n# Определяем предыдущую завершённую фигуру Эллиотта\nprev_figure = find_previous_completed_elliott_pattern()\n\
+    \n# Конечная точка предыдущей фигуры может НЕ совпадать\n# с абсолютным максимумом\
+    \ или минимумом.\n# 4 формы завершения БЕЗ нового экстремума:\n#   A — Неудавшаяся\
+    \ пятая (failure fifth) — волна 5 не превышает конец волны 3\n#   B — Плоская\
+    \ с неудавшейся c-волной (flat with failed c) — c не превышает конец a\n#   C\
+    \ — Сужающийся неограничивающий треугольник на вершине (contracting non-limiting\
+    \ triangle)\n#   D — Терминальная фигура (terminal pattern)\n\nend_of_prev_figure\
+    \ = end_point(prev_figure)\n\n# ПРАВИЛО: начальная точка нового счёта = конец\
+    \ предыдущей фигуры,\n# а НЕ точка абсолютного экстремума\nwave_count_start_point\
+    \ = end_of_prev_figure\n\n# ЗАПРЕТ: нельзя начинать счёт от абсолютного экстремума,\n\
+    # если он не совпадает с концом предыдущей фигуры\nif end_of_prev_figure != absolute_high\
+    \ AND end_of_prev_figure != absolute_low:\n    # Абсолютный экстремум принадлежит\
+    \ ВНУТРЕННЕЙ структуре предыдущей фигуры\n    # (например, концу волны 3 в случае\
+    \ неудавшейся пятой)\n    assert wave_count_start_point != point_of(absolute_high)\n\
+    \    assert wave_count_start_point != point_of(absolute_low)\n    wave_count_start_point\
+    \ = end_of_prev_figure  # подтверждаем\n\n# Если начать от абсолютного экстремума\
+    \ вместо конца фигуры —\n# прогнозы поведения рынка могут очень долго оставаться\
+    \ неверными\n"
+  formalization_notes: 'Правило является методологическим указанием по выбору начальной
+    точки анализа.
+
+    Алгоритмически: при поиске начала нового паттерна необходимо сначала
+
+    идентифицировать предыдущий завершённый паттерн и использовать его конечную
+
+    точку, даже если она не является глобальным экстремумом.
+
+    Четыре формы завершения (A/B/C/D) — это перечень случаев, когда конец фигуры
+
+    отличается от абсолютного экстремума. Их детальная формализация требует
+
+    отдельных AKU для каждой формы.
+
+    Источник: Рис.8-21 (типичная ошибка — старт от экстремума),
+
+    Рис.8-23 (4 формы завершения A/B/C/D).'
 aliases: []
 related_aku: []
 contradicts_aku: []

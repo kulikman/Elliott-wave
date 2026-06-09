@@ -23,11 +23,62 @@ source:
       некоторого типа Треугольника того или иного Порядка.
     language: ru
 formalization:
-  status: draft
-  applies_when: detecting false breakouts of 0-B trendline
-  constraint: 'count(false_breakouts) == 1: triangle_b_wave_possible ; count(false_breakouts)
-    >= 2: triangle_practically_guaranteed'
-  formalization_notes: Рис.12-6,12-7,12-8. Признак раннего обнаружения Треугольника.
+  status: not_formalizable
+  applies_when: '# Контекст: анализ поведения цены относительно установленной линии
+    тренда
+
+    # (например, 0-B trendline) в процессе формирования паттерна
+
+    # Применяется когда наблюдаются "случайные, непреднамеренные" прорывы
+
+    # установленной линии тренда
+
+    '
+  constraint: '# Концептуально:
+
+    #
+
+    # false_breakout = price crosses trendline BUT then returns back
+
+    #                  AND the breakout appears "random, unintentional"
+
+    #                  (as if the trendline has no significance)
+
+    #
+
+    # IF count(false_breakouts) == 1:
+
+    #     triangle_b_wave = POSSIBLE  # не гарантировано
+
+    #     triangle_formation = POSSIBLE
+
+    #
+
+    # IF count(false_breakouts) >= 2:
+
+    #     triangle_formation = PRACTICALLY_GUARANTEED
+
+    #     # Треугольник того или иного Порядка (degree)
+
+    #
+
+    # НЕ ФОРМАЛИЗУЕМО — см. notes
+
+    '
+  formalization_notes: "Правило не поддаётся строгой формализации по следующим причинам:\n\
+    \n1. Ключевое понятие \"случайный, непреднамеренный прорыв\" (random, unintentional\n\
+    \   breakout) — субъективная визуальная оценка, не имеющая числового критерия.\n\
+    \   Нет определения того, что отличает \"ложный/непреднамеренный\" прорыв от\n\
+    \   истинного прорыва линии тренда.\n\n2. Формулировка \"как будто линия тренда\
+    \ не имеет никакого значения\" описывает\n   характер движения цены качественно,\
+    \ а не количественно.\n\n3. Результат правила — вероятностная оценка (\"не гарантировано\"\
+    , \"практически\n   гарантирует\"), а не жёсткое ограничение. Это эвристика раннего\
+    \ обнаружения,\n   а не constraint для валидации паттерна.\n\n4. \"Треугольник\
+    \ того или иного Порядка\" — неопределённость в степени (degree)\n   треугольника\
+    \ делает невозможным точное указание, какой именно паттерн\n   формируется.\n\n\
+    5. Не определено, какая именно линия тренда имеется в виду (0-B, 0-2, или\n  \
+    \ иная), хотя из контекста предполагается линия тренда канала.\n\nРис. 12-6, 12-7,\
+    \ 12-8 — иллюстрации раннего обнаружения Треугольника."
 aliases: []
 related_aku: []
 contradicts_aku: []

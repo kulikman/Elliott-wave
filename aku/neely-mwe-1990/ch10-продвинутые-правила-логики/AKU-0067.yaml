@@ -25,9 +25,56 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: pattern == 'moving_double_three' AND position == 'post_pattern'
-  constraint: type(next_wave) == 'impulse' AND length(next_wave) > 1.618 * length(previous_impulse)
-  formalization_notes: Подвижная Двойная Тройка может быть только волной-2.
+  applies_when: '# Завершена Подвижная Двойная Тройка (Moving Double Three)
+
+    pattern.type == ''double_three''
+
+    AND pattern.is_moving == true
+
+    # Анализируем пост-паттерн логику и позиционное ограничение
+
+    '
+  constraint: '# 1. Подвижная Двойная Тройка может быть только волной-2
+
+    pattern.position == wave_2
+
+
+    # 2. Следующая за ней волна (wave_3) должна быть Импульсом
+
+    type(next_wave) == ''impulse''
+
+
+    # 3. Длина следующей волны должна превышать 161.8% длины предыдущей импульсной
+    волны (wave_1)
+
+    # previous_impulse — это волна-1, предшествующая данной коррекции (волне-2)
+
+    previous_impulse = wave_1
+
+    length(next_wave) > 1.618 * length(previous_impulse)
+
+
+    # Где:
+
+    # previous_impulse = wave_1 (импульсная волна перед подвижной двойной тройкой)
+
+    # next_wave = wave_3 (волна, следующая за подвижной двойной тройкой)
+
+    # length() = ценовое расстояние волны (от начала до конца по вертикали)
+
+    '
+  formalization_notes: 'В verbatim_quote упоминается "а часто - и 261.8%", но это
+    статистическое наблюдение,
+
+    а не mandatory правило, поэтому не включено в constraint.
+
+    Mandatory часть: next_wave — импульс, length > 161.8% previous_impulse, позиция
+    — только wave_2.
+
+    previous_impulse однозначно определяется как wave_1, поскольку подвижная двойная
+    тройка
+
+    может быть только волной-2.'
 aliases:
 - правило подвижной двойной тройки
 related_aku: []

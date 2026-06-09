@@ -23,9 +23,32 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: pattern == 'expanding_triangle' AND position == 'post_pattern'
-  constraint: length(thrust) < max_width(triangle)
-  formalization_notes: null
+  applies_when: '# Паттерн — Расширяющийся Треугольник (Expanding Triangle) завершён
+
+    # Анализируется движение после завершения треугольника ("выброс" / thrust)
+
+    pattern == ''expanding_triangle''
+
+    AND triangle_is_completed == true
+
+    AND thrust_exists == true
+
+    '
+  constraint: "# Определяем длину (ценовой размах) каждой волны треугольника\nwave_lengths\
+    \ = [\n  abs(price_end(wave_a) - price_start(wave_a)),\n  abs(price_end(wave_b)\
+    \ - price_start(wave_b)),\n  abs(price_end(wave_c) - price_start(wave_c)),\n \
+    \ abs(price_end(wave_d) - price_start(wave_d)),\n  abs(price_end(wave_e) - price_start(wave_e))\n\
+    ]\n\n# Самая широкая (наибольшая по ценовому размаху) волна треугольника\nmax_wave_length\
+    \ = max(wave_lengths)\n\n# Длина выброса (thrust) — движение после завершения\
+    \ треугольника\nthrust_length = abs(price_end(thrust) - price_start(thrust))\n\
+    \n# Выброс должен быть меньше самой широкой волны треугольника\nthrust_length\
+    \ < max_wave_length\n"
+  formalization_notes: "- \"Самая широкая волна\" интерпретируется как волна с наибольшим\
+    \ ценовым размахом\n  (price range), что естественно для расширяющегося треугольника,\
+    \ где последние\n  волны шире первых.\n- \"Выброс\" (thrust) — это движение цены,\
+    \ следующее сразу после завершения\n  треугольника (после волны e).\n- Правило\
+    \ использует строгое неравенство (<), как указано в источнике (\"должен быть меньше\"\
+    )."
 aliases:
 - правило выброса расширяющегося треугольника
 related_aku: []

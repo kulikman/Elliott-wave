@@ -24,9 +24,33 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: pattern == 'zigzag' AND subtype == 'elongated' AND position == 'post_pattern'
-  constraint: not reaches(next_wave_same_degree, start_level(zigzag))
-  formalization_notes: null
+  applies_when: '# Удлинённый Зигзаг завершён и идентифицирован
+
+    pattern.type == ''zigzag''
+
+    AND pattern.subtype == ''elongated''
+
+    AND pattern.is_completed == true
+
+    # Существует следующая волна того же Порядка (degree)
+
+    AND next_wave_same_degree exists
+
+    '
+  constraint: "# Следующая за Удлинённым Зигзагом волна одного с ним Порядка\n# никогда\
+    \ не должна достигать его начального уровня\n\nelongated_zigzag_start = price_at(pattern.start)\n\
+    \nif pattern.direction == 'up':\n  # Зигзаг направлен вверх — следующая волна\
+    \ (вниз) не должна дойти до начала\n  min(next_wave_same_degree) > elongated_zigzag_start\n\
+    elif pattern.direction == 'down':\n  # Зигзаг направлен вниз — следующая волна\
+    \ (вверх) не должна дойти до начала\n  max(next_wave_same_degree) < elongated_zigzag_start\n"
+  formalization_notes: "- Правило использует слово \"никогда\" — это абсолютный запрет\
+    \ (mandatory).\n- \"Начальный уровень\" = ценовой уровень в точке начала Удлинённого\
+    \ Зигзага.\n- \"Достигать\" интерпретируется как касание или пробой этого уровня\
+    \ (строгое неравенство).\n- Контекст указывает, что Удлинённый Зигзаг встречается\
+    \ почти исключительно\n  в Треугольниках и Терминальных Импульсах, но само правило\
+    \ отката\n  сформулировано безусловно для любого Удлинённого Зигзага.\n- \"Волна\
+    \ одного с ним Порядка\" = next wave of the same degree,\n  т.е. следующий сегмент\
+    \ в родительской фигуре."
 aliases:
 - правило отката удлинённого зигзага
 related_aku: []

@@ -23,9 +23,19 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: pattern == 'contracting_triangle'
-  constraint: 'for seg in [a,b,c,d]: type(seg) != ''contracting_triangle'''
-  formalization_notes: null
+  applies_when: '# Правило применяется когда текущий паттерн — Сужающийся Треугольник
+
+    pattern.type == ''contracting_triangle''
+
+    '
+  constraint: "# Ни одна из сторон (подволн) a, b, c, d не может быть Сужающимся Треугольником.\n\
+    # Волна-е является исключением — она МОЖЕТ быть Сужающимся Треугольником.\nfor\
+    \ leg in [wave_a, wave_b, wave_c, wave_d]:\n    assert leg.pattern_type != 'contracting_triangle'\n\
+    # wave_e — исключение, ограничение на неё не распространяется\n"
+  formalization_notes: 'Правило явно исключает волну-е из запрета: она может быть
+    Сужающимся Треугольником.
+
+    Запрет касается только волн a, b, c, d внутри Сужающегося Треугольника.'
 aliases:
 - правило запрета вложенных сужающихся треугольников
 related_aku: []

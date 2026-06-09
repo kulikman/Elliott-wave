@@ -29,9 +29,30 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: any monowave, before grouping
-  constraint: classify_each_monowave AS impulse(:5) OR corrective(:3) BEFORE grouping
-  formalization_notes: Добавлено в ходе аудита качества AKU
+  applies_when: "# Применяется на каждом этапе анализа, для каждого сегмента каждой\
+    \ волны\n# Перед группировкой моноволн в паттерны более высокого порядка\nfor\
+    \ each wave in all_waves:\n  for each segment in wave.segments:\n    BEFORE proceeding_to_higher_degree_grouping(segment)\n"
+  constraint: "# Правило 1: Каждый сегмент каждой волны должен быть классифицирован\n\
+    # как импульс (:5) или коррекция (:3) до перехода к анализу следующего уровня\n\
+    for each wave in all_waves:\n  for each segment in wave.segments:\n    REQUIRE\
+    \ segment.structure_label IN [\":5\", \":3\"]\n    REQUIRE segment.structure_label\
+    \ IS NOT NULL\n\n# Правило 2: При неясности намерений рынка (неоднозначности текущего\
+    \ движения)\n# сохранять ранее установленную и проверенную структурную разметку\n\
+    if current_market_direction_is_ambiguous():\n  for each segment in previously_classified_segments:\n\
+    \    segment.structure_label = segment.previous_verified_structure_label\n   \
+    \ # НЕ менять ранее проверенную классификацию из-за текущей неопределённости\n\
+    \    REQUIRE segment.structure_label == segment.previous_verified_structure_label\n\
+    \n# Нарушение: переход к группировке без классификации всех составляющих\nASSERT\
+    \ no_unclassified_segments_exist() BEFORE higher_degree_analysis()\n"
+  formalization_notes: "Правило содержит два аспекта:\n1. Процедурный (формализуемый):\
+    \ каждый сегмент должен получить метку :5 или :3\n   до перехода к анализу более\
+    \ высокого уровня. Это проверяемо алгоритмически.\n2. Принцип консервативности\
+    \ (частично формализуемый): при неясности рынка\n   сохранять предыдущую проверенную\
+    \ структуру. Формализуемо как запрет\n   на изменение verified-разметки при отсутствии\
+    \ явных оснований,\n   но критерий \"намерения рынка не вполне ясны\" требует\
+    \ эвристики\n   для определения степени неоднозначности.\nVerbatim quote подтверждает:\
+    \ без своевременной классификации \"анализ усложняется\",\nчто делает это методологическим\
+    \ требованием к порядку работы алгоритма."
 aliases:
 - правило структурной целостности
 - structural integrity rule

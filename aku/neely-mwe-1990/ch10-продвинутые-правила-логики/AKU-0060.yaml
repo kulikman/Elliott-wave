@@ -30,10 +30,45 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: pattern == 'terminal_impulse' AND position == 'post_pattern'
-  constraint: reaches(next_move, start_level(terminal)) AND duration(until_reach)
-    <= 0.5 * duration(terminal)
-  formalization_notes: null
+  applies_when: '# Правило применяется после завершения Терминальной Импульсной фигуры
+    (Ending Diagonal / Terminal Impulse)
+
+    pattern.type == ''terminal_impulse''
+
+    AND pattern.is_completed == true
+
+    AND position == ''post_pattern''
+
+    '
+  constraint: "# Определяем начальный уровень (цену) всей Терминальной фигуры\nterminal_start_price\
+    \ = price_at(pattern.start)\n\n# Определяем длительность всей Терминальной фигуры\n\
+    terminal_duration = duration(pattern)  # от начала wave_1 до конца wave_5\n\n\
+    # Максимально допустимое время для достижения начального уровня\nmax_retracement_time\
+    \ = 0.5 * terminal_duration\n\n# Движение после завершения терминала (post-pattern\
+    \ move)\npost_move = next_move_after(pattern)\n\n# Проверяем: цена должна вернуться\
+    \ к начальному уровню терминала\n# Для бычьего терминала: цена должна упасть до\
+    \ terminal_start_price\n# Для медвежьего терминала: цена должна подняться до terminal_start_price\n\
+    IF pattern.direction == 'bullish':\n  price_reached = low(post_move) <= terminal_start_price\n\
+    ELIF pattern.direction == 'bearish':\n  price_reached = high(post_move) >= terminal_start_price\n\
+    \n# Определяем время, за которое был достигнут начальный уровень\ntime_to_reach\
+    \ = duration_from(pattern.end, time_when_price_reached(terminal_start_price))\n\
+    \n# MANDATORY: начальный уровень должен быть достигнут за время <= 50% длительности\
+    \ терминала\n# Если не выполняется вовсе — гипотеза отвергается\nIF NOT price_reached:\n\
+    \  INVALIDATE pattern  # гипотеза о терминале несостоятельна\nELIF time_to_reach\
+    \ > max_retracement_time:\n  INVALIDATE pattern  # гипотеза о терминале несостоятельна\n\
+    ELSE:\n  VALID\n"
+  formalization_notes: "1. В verbatim_quote упоминается также \"реакция должна быть\
+    \ достаточно мощной\" — \n   это качественное требование, которое не имеет числового\
+    \ критерия в данном правиле \n   и не формализовано здесь.\n2. В verbatim_quote\
+    \ различается \"частичное несоблюдение\" (существенный изъян, но не \n   инвалидация)\
+    \ и полное невыполнение (инвалидация). Частичное несоблюдение может \n   означать,\
+    \ что уровень достигнут, но с превышением времени — это \"существенный изъян\"\
+    , \n   но формально statement_ru говорит: \"если не выполняется вовсе — отвергнуть\"\
+    . \n   Граница между \"частичным несоблюдением\" и \"полным невыполнением\" не\
+    \ определена \n   количественно в источнике. В данной формализации любое нарушение\
+    \ трактуется как \n   инвалидация (mandatory), что может быть строже оригинала.\n\
+    3. \"Начальный уровень всей Терминальной фигуры\" — интерпретируется как цена\
+    \ на момент \n   начала wave_1 терминала."
 aliases:
 - правило постэффекта терминала
 related_aku: []

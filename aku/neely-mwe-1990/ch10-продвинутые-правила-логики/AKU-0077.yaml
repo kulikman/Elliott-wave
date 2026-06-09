@@ -26,10 +26,58 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: pattern == 'terminal_impulse' AND position == 'post_pattern'
-  constraint: reaches(next_wave, start_level(terminal)) AND duration(until_reach)
-    <= 0.5 * duration(terminal)
-  formalization_notes: Обычно достигается за ~25% времени формирования.
+  applies_when: '# Правило применяется к волне, следующей сразу после завершённого
+    Терминального Импульса (Ending Diagonal)
+
+    pattern_just_completed == ''terminal_impulse''
+
+    # Анализируем next_wave — первую волну после завершения терминального импульса
+
+    next_wave = first_wave_after(terminal_impulse)
+
+    '
+  constraint: '# Определяем начальный уровень (цену) терминального импульса
+
+    terminal_start_price = price_at(start(terminal_impulse))
+
+
+    # Определяем длительность формирования терминального импульса
+
+    terminal_duration = duration(terminal_impulse)
+
+
+    # next_wave должна достичь начального уровня терминального импульса
+
+    # (т.е. полностью откатить весь терминальный импульс)
+
+    # Для бычьего терминального импульса: min_price(next_wave_segment) <= terminal_start_price
+
+    # Для медвежьего терминального импульса: max_price(next_wave_segment) >= terminal_start_price
+
+
+    # Время, за которое цена достигает terminal_start_price после окончания terminal_impulse
+
+    time_to_reach = time_from(end(terminal_impulse), first_bar_where_price_reaches(terminal_start_price))
+
+
+    # MANDATORY: это должно произойти не более чем за 50% времени формирования терминального
+    импульса
+
+    time_to_reach <= 0.50 * terminal_duration
+
+
+    # GUIDELINE (не обязательное): обычно это занимает ~25% времени формирования
+
+    # typical: time_to_reach ≈ 0.25 * terminal_duration
+
+    '
+  formalization_notes: "- \"Следующая волна\" интерпретируется как движение цены сразу\
+    \ после завершения терминального импульса.\n- \"Достичь начального уровня\" означает\
+    \ полный откат цены к точке начала терминального импульса.\n- Обязательное ограничение:\
+    \ <= 50% времени формирования.\n- Типичное значение (~25%) — это ориентир/guideline,\
+    \ не mandatory constraint.\n- Если next_wave не достигает начального уровня терминального\
+    \ импульса вообще,\n  это также является нарушением правила (паттерн не является\
+    \ терминальным импульсом)."
 aliases:
 - правило отката терминального импульса
 related_aku: []

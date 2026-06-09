@@ -24,10 +24,43 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: pattern == 'expanding_triangle' AND position == 'post_pattern' AND
-    role IN ('wave_c','wave_5')
-  constraint: not reaches(next_wave, start_level(wave_e))
-  formalization_notes: null
+  applies_when: '# Завершён Расширяющийся Треугольник (как часть коррекции или импульса)
+
+    # и начинается следующая волна после треугольника
+
+    parent_pattern == ''expanding_triangle''
+
+    AND triangle_is_complete == true
+
+    AND post_triangle_wave IN (''wave_c'', ''wave_5'')
+
+    # wave_c — если треугольник был волной-b в плоской/зигзаге
+
+    # wave_5 — если треугольник был волной-4 в импульсе
+
+    '
+  constraint: "# Определяем начальный уровень волны-e треугольника\nwave_e_start =\
+    \ start_price(wave_e_of_triangle)\n\n# Пост-треугольная волна не должна откатываться\
+    \ до начального уровня волны-e\n# \"Откатываться\" означает, что волна возвращается\
+    \ обратно к этому уровню\n# (т.е. ретрейсит в направлении, противоположном своему\
+    \ основному движению)\n\nif trend_direction(post_triangle_wave) == 'up':\n  #\
+    \ Пост-треугольная волна идёт вверх, откат — это движение вниз\n  # Волна не должна\
+    \ упасть до уровня начала wave_e\n  low(post_triangle_wave) > wave_e_start\nelif\
+    \ trend_direction(post_triangle_wave) == 'down':\n  # Пост-треугольная волна идёт\
+    \ вниз, откат — это движение вверх\n  # Волна не должна подняться до уровня начала\
+    \ wave_e\n  high(post_triangle_wave) < wave_e_start\n"
+  formalization_notes: 'Правило сформулировано для Расширяющегося Треугольника, хотя
+    в verbatim_quote
+
+    написано просто "Треугольника" — контекст однозначно указывает на раздел
+
+    "Расширяющиеся Треугольники", и AKU уточняет это.
+
+    "Начальный уровень волны-е" — это цена в точке начала (старта) волны-e
+
+    треугольника. "Откатываться до" интерпретируется как достижение этого
+
+    ценового уровня экстремумом пост-треугольной волны в направлении отката.'
 aliases:
 - правило постфигурного отката расширяющегося треугольника
 related_aku: []

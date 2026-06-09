@@ -24,10 +24,49 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: x_wave candidate between two corrections
-  constraint: length(x_wave) < 0.618 * length(correction_1) AND complexity(x_wave)
-    == complexity(correction_1) - 1
-  formalization_notes: Малая x-волна → Серия a (Таблица А).
+  applies_when: '# Кандидат на x-волну между двумя коррективными структурами в комбинации
+
+    pattern == ''combination''
+
+    AND x_wave_candidate is identified between correction_1 and correction_2
+
+    # Обе коррекции должны быть "компактными" (поливолна или выше)
+
+    AND complexity(correction_1) >= polywaves
+
+    AND complexity(correction_2) >= polywaves
+
+    # x-волна — коррективная волна (моноволна или выше, стандартного или нестандартного
+    типа)
+
+    AND is_corrective(x_wave_candidate)
+
+    '
+  constraint: '# Условие 1 (малая x-волна): промежуточная волна МЕНЬШЕ 61.8% длины
+    первой Коррекции
+
+    length(x_wave_candidate) < 0.618 * length(correction_1)
+
+
+    # Уровень сложности x-волны обычно на один ниже окружающих Коррекций
+
+    # ("обычно" — не абсолютное требование, но сильный ориентир)
+
+    complexity(x_wave_candidate) == complexity(correction_1) - 1
+
+    '
+  formalization_notes: "1. \"length\" — ценовая длина (расстояние от начала до конца\
+    \ волны в пунктах/процентах).\n2. \"компактные Коррекции\" — в verbatim_quote\
+    \ уточняется как \"поливолна или выше\",\n   т.е. минимальный уровень сложности\
+    \ — polywaves.\n3. x-волна может быть моноволной или волной более высокого порядка\
+    \ (стандартного\n   или нестандартного типа) — это из verbatim_quote.\n4. Условие\
+    \ complexity == complexity(correction_1) - 1 описано в statement_ru\n   словом\
+    \ \"обычно\", что делает его скорее guideline, чем strict mandatory.\n   Однако\
+    \ оно включено, так как является частью определения \"малой x-волны\".\n5. Данное\
+    \ правило определяет \"малую x-волну\" — самый сильный сигнал x-волны,\n   соответствующий\
+    \ Серии a (Таблица А) по Нили.\n6. Правило не уточняет, должна ли complexity(correction_2)\
+    \ совпадать\n   с complexity(correction_1); из текста следует что обе \"компактные\"\
+    ,\n   но точное соотношение их сложностей здесь не задано."
 aliases: []
 related_aku: []
 contradicts_aku: []

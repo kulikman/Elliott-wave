@@ -31,10 +31,45 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: pattern == 'contracting_triangle' AND position == 'post_pattern_stage2'
-  constraint: new_extreme(thrust) beyond extreme(triangle) AND duration(thrust) <
-    0.5 * duration(triangle)
-  formalization_notes: 50%-е временное правило не применяется к Неограничивающим Треугольникам.
+  applies_when: '# Правило применяется на втором этапе подтверждения Сужающегося Треугольника
+
+    # после завершения волны-е
+
+    pattern == ''contracting_triangle''
+
+    AND triangle_is_complete == true
+
+    AND position == ''post_pattern_stage2''
+
+    '
+  constraint: "# Определяем направление треугольника\ntriangle_extreme_high = max(high(wave_a),\
+    \ high(wave_b), high(wave_c), high(wave_d), high(wave_e))\ntriangle_extreme_low\
+    \ = min(low(wave_a), low(wave_b), low(wave_c), low(wave_d), low(wave_e))\n\n#\
+    \ \"Выброс\" (thrust) — первая волна после завершения треугольника (после волны-е)\n\
+    thrust = first_wave_after(wave_e)\n\n# Условие 1: Выброс должен образовать новый\
+    \ экстремум,\n# превосходящий максимальный/минимальный уровень всего Треугольника\n\
+    IF triangle_direction == 'bullish':\n    high(thrust) > triangle_extreme_high\n\
+    ELIF triangle_direction == 'bearish':\n    low(thrust) < triangle_extreme_low\n\
+    \n# Условие 2: Временное ограничение на длительность выброса\n# Длительность выброса\
+    \ должна быть меньше половины временной длины\n# всего Треугольника, прибавленной\
+    \ к концу волны-е\n#\n# Интерпретация: выброс должен достичь нового экстремума\
+    \ за время,\n# не превышающее 50% от duration всего треугольника\ntriangle_duration\
+    \ = end_time(wave_e) - start_time(wave_a)\ntime_limit = end_time(wave_e) + 0.5\
+    \ * triangle_duration\n\ntime_of_new_extreme(thrust) < time_limit\n\n# Исключение:\
+    \ Неограничивающие Треугольники НЕ связаны 50%-м временным правилом\nIF triangle_type\
+    \ == 'non_limiting':\n    # Условие 2 (временное ограничение) НЕ применяется\n\
+    \    # Применяется только Условие 1 (новый экстремум)\n    SKIP time_limit_check\n"
+  formalization_notes: "1. «Длительность всего Треугольника» интерпретируется как\
+    \ время от начала волны-a\n   до конца волны-e.\n2. Формулировка «меньше половины\
+    \ временной длины всего Треугольника, прибавленной\n   к концу волны-е» означает:\
+    \ дедлайн = end(wave_e) + 0.5 * duration(triangle),\n   и выброс должен достичь\
+    \ нового экстремума до этого дедлайна.\n3. Неограничивающие Треугольники (non-limiting\
+    \ triangles) освобождены от 50%-го\n   временного правила, но условие нового экстремума\
+    \ для них по-прежнему действует\n   (это явно следует из текста).\n4. Правило\
+    \ сформулировано для Сужающихся Треугольников (contracting). Применимость\n  \
+    \ к Расширяющимся Треугольникам не указана в данном фрагменте.\n5. Направление\
+    \ выброса (bullish/bearish) определяется контекстом — какой тренд\n   продолжается\
+    \ после треугольника."
 created_by: claude
 created_at: '2026-06-02T17:57:59Z'
 requires_review: false

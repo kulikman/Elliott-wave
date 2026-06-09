@@ -26,10 +26,37 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: wave_5 breaks larger trendline_2_4 during terminal formation
-  constraint: 'if wave_5 breaks trendline_2_4(larger_degree): confirm terminal_impulse
-    ; after terminal: price MUST reach min(wave_4)'
-  formalization_notes: Рис.12-10 Диаграммы A/B. Важнейшее подтверждение Терминала.
+  applies_when: "# Контекст: внутри Ending Diagonal (Terminal Impulse)\n# и существует\
+    \ более крупная фигура (larger_degree_pattern) с определённой линией тренда 2-4\n\
+    pattern.type == 'ending_diagonal'\nAND current_wave == 5\nAND larger_degree_pattern\
+    \ EXISTS\nAND trendline_2_4_larger = trendline(\n  larger_degree_pattern.wave(2).end,\n\
+    \  larger_degree_pattern.wave(4).end\n)\n"
+  constraint: "# ЧАСТЬ 1: Подтверждение Терминальной активности\n# W5 текущей Терминальной\
+    \ фигуры должна пробить линию тренда 2-4 более крупной фигуры\n#\n# Для бычьего\
+    \ рынка (uptrend):\nIF larger_degree_pattern.direction == 'up':\n  wave_5_low\
+    \ = low(pattern.wave(5))\n  trendline_value_at_wave5 = trendline_2_4_larger.value_at(pattern.wave(5).time)\n\
+    \  terminal_confirmed = (wave_5_low < trendline_value_at_wave5)\n\n# Для медвежьего\
+    \ рынка (downtrend):\nIF larger_degree_pattern.direction == 'down':\n  wave_5_high\
+    \ = high(pattern.wave(5))\n  trendline_value_at_wave5 = trendline_2_4_larger.value_at(pattern.wave(5).time)\n\
+    \  terminal_confirmed = (wave_5_high > trendline_value_at_wave5)\n\n# ЧАСТЬ 2:\
+    \ Обязательная структурная разметка\n# W3 сегментирована (отмечается 'x'), W5\
+    \ — Терминальная ('s')\npattern.wave(3).structure_label == 'x'   # сегментированная\n\
+    pattern.wave(5).structure_label == 's'   # терминальная\n\n# ЧАСТЬ 3: Обязательное\
+    \ поведение после завершения W5 (mandatory)\n# После завершения W5 рынок ДОЛЖЕН\
+    \ вернуться как минимум к экстремуму W4\n#\n# Для бычьего ending diagonal (рост\
+    \ завершается):\nIF larger_degree_pattern.direction == 'up':\n  post_terminal_low\
+    \ = min_price_after(pattern.wave(5).end)\n  post_terminal_low <= low(pattern.wave(4))\n\
+    \n# Для медвежьего ending diagonal (падение завершается):\nIF larger_degree_pattern.direction\
+    \ == 'down':\n  post_terminal_high = max_price_after(pattern.wave(5).end)\n  post_terminal_high\
+    \ >= high(pattern.wave(4))\n\n# Если цена НЕ достигает уровня W4 после завершения\
+    \ — интерпретация неверна\nIF NOT condition_met:\n  INVALIDATE pattern interpretation\n"
+  formalization_notes: "1. Рис.12-10 Диаграммы A/B из книги.\n2. \"Минимум W4\" в\
+    \ verbatim_quote означает экстремум W4 (low для бычьего, high для медвежьего).\n\
+    3. Правило состоит из двух частей: (a) подтверждение терминала через пробой trendline\
+    \ 2-4\n   более крупной фигуры, (b) обязательный возврат цены к уровню W4 после\
+    \ завершения.\n4. Часть (b) является mandatory: \"если этого не происходит, ваша\
+    \ интерпретация неправильная\".\n5. Временной горизонт для \"возврата к W4\" не\
+    \ уточнён в источнике — \n   это первая цель (first target), но не"
 aliases: []
 related_aku: []
 contradicts_aku: []

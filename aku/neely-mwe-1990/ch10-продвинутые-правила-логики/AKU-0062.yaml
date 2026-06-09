@@ -24,10 +24,36 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: pattern == 'triple_combination'
-  constraint: type(correction_1) != 'triangle' AND type(correction_2) != 'triangle'
-  formalization_notes: correction_1 = начальная коррекция; correction_2 = коррекция
-    сразу после первой x-волны.
+  applies_when: '# Правило применяется к паттерну Тройная Комбинация
+
+    # Структура тройной комбинации: W - X1 - Y - X2 - Z
+
+    # где W = correction_1 (начальная коррекция)
+
+    #     Y = correction_2 (коррекция сразу после первой x-волны X1)
+
+    #     Z = correction_3 (финальная коррекция)
+
+    pattern == ''triple_combination''
+
+    '
+  constraint: '# Две первые коррекции не должны быть Треугольниками
+
+    # correction_1 (W) — коррекция, с которой начинается Комбинация
+
+    # correction_2 (Y) — коррекция, немедленно следующая за первой x-волной (X1)
+
+    type(W) != ''triangle'' AND type(Y) != ''triangle''
+
+    '
+  formalization_notes: 'W (correction_1) — первая коррективная фаза тройной комбинации.
+
+    Y (correction_2) — вторая коррективная фаза, следующая сразу за первой x-волной
+    (X1).
+
+    Правило не запрещает треугольник для третьей коррекции Z.
+
+    Правило является mandatory — нарушение исключает классификацию как тройная комбинация.'
 aliases:
 - правило треугольников в тройной комбинации
 related_aku: []

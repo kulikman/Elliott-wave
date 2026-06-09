@@ -26,10 +26,47 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: pattern == 'trend_impulse' AND role IN ('wave_a', 'wave_1', 'wave_3')
-    AND position == 'post_pattern'
-  constraint: retrace(next_wave) <= 0.618 * length(impulse)
-  formalization_notes: null
+  applies_when: '# Завершённый паттерн является Трендовым Импульсом (не Терминальным)
+
+    completed_pattern.type == ''impulse''
+
+    AND completed_pattern.subtype == ''trending''  # трендовый, не терминальный
+
+
+    # Этот импульс выступает в роли волны-a, волны-1 или волны-3 более крупной фигуры
+
+    AND completed_pattern.role_in_larger_pattern IN (''wave_a'', ''wave_1'', ''wave_3'')
+
+
+    # Следующая волна (next_wave) уже начала формироваться или завершена
+
+    AND next_wave EXISTS
+
+    '
+  constraint: '# Длина (ценовой размах) завершённого Трендового Импульса
+
+    impulse_length = abs(completed_pattern.end_price - completed_pattern.start_price)
+
+
+    # Откат следующей за импульсом волны
+
+    next_wave_retracement = abs(next_wave.end_price - completed_pattern.end_price)
+
+
+    # Откат следующей волны НЕ ДОЛЖЕН превышать 61.8% длины импульса
+
+    next_wave_retracement <= 0.618 * impulse_length
+
+    '
+  formalization_notes: "1. В verbatim_quote указано \"волну-а, 1 или S\" — символ\
+    \ \"S\" интерпретирован как \"3\"\n   (OCR-опечатка, подтверждено в review_notes\
+    \ AKU). В statement_ru уже исправлено на \"3\".\n2. Правило является mandatory\
+    \ — если нарушено, текущая разметка (роль импульса\n   как wave_a/wave_1/wave_3\
+    \ в более крупной фигуре) невалидна.\n3. \"Следующая за ним волна\" — это волна,\
+    \ непосредственно следующая за завершённым\n   импульсом в рамках более крупной\
+    \ фигуры (например, wave_b после wave_a,\n   wave_2 после wave_1, wave_4 после\
+    \ wave_3).\n4. Правило применяется именно к Трендовым Импульсам (trending impulse),\n\
+    \   не к Терминальным (terminal impulse)."
 aliases:
 - правило 61.8% отката трендового импульса
 related_aku: []

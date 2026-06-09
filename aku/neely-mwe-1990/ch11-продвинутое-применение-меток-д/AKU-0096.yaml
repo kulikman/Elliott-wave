@@ -26,10 +26,38 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: pattern == 'zigzag'
-  constraint: structure(wave_a) == ':5' AND structure(wave_b) == ':3' AND retrace(wave_b)
-    <= 0.618 * length(wave_a)
-  formalization_notes: null
+  applies_when: '# Правило применяется при идентификации паттерна Зигзаг
+
+    pattern == ''zigzag''
+
+    '
+  constraint: '# 1. Волна-a должна быть Импульсной (пятиволновая структура)
+
+    structure(wave_a) == '':5''
+
+
+    # 2. Волна-b должна быть коррективной (трёхволновая структура)
+
+    structure(wave_b) == '':3''
+
+
+    # 3. Волна-b не должна откатываться от волны-a более чем на 61.8%
+
+    retracement_ratio = abs(end(wave_b) - end(wave_a)) / abs(end(wave_a) - start(wave_a))
+
+    retracement_ratio <= 0.618
+
+    '
+  formalization_notes: 'В statement_ru требование об откате волны-b повторяется дважды
+    (для волны-a — импульсность
+
+    и ограничение отката, для волны-b — коррективность и ограничение отката), но по
+    сути
+
+    это одно и то же ограничение: волна-b не откатывает более 61.8% от волны-a.
+
+    Retracement считается как отношение ценового движения волны-b к ценовому движению
+    волны-a.'
 aliases:
 - правило отката волны-b в зигзаге
 related_aku: []

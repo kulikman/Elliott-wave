@@ -27,12 +27,49 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: after contracting triangle completion
-  constraint: 'thrust_length: horizontal => ~1.0 * widest_wave ; irregular => up_to
-    1.618 * widest ; moving => up_to 2.618 * widest ; thrust_time ~= time(wave_e to
-    trendline_convergence)'
-  formalization_notes: Рис. из Гл.10. Горизонтальное влияние вершины Треугольника
-    длится 2-3 пробития.
+  applies_when: '# Правило применяется после завершения Ограничивающего Сужающегося
+    Треугольника (Limiting Contracting Triangle)
+
+    pattern_just_completed == ''contracting_triangle''
+
+    AND triangle_subtype IN [''horizontal'', ''irregular'', ''running'']
+
+    AND triangle_is_limiting == true
+
+    '
+  constraint: "# === 1. Наличие выброса (thrust) ===\n# За Сужающимся Треугольником\
+    \ ВСЕГДА следует \"выброс\" — сильная резкая волна\nthrust = next_wave_after(triangle)\n\
+    ASSERT thrust EXISTS  # mandatory: выброс обязателен\n\n# === 2. Выброс должен\
+    \ превысить уровень волны-b ===\n# \"заходить за максимальный или минимальный\
+    \ уровень котировок, достигнутый в процессе формирования Треугольника\"\n# Это\
+    \ уровень волны-b (самая широкая точка треугольника после волны-a)\n# Исключение:\
+    \ если направление выброса противоположно направлению волны-b\n\nwave_b = triangle.wave_b\n\
+    thrust_direction = direction(thrust)\nwave_b_direction = direction(wave_b)\n\n\
+    IF thrust_direction == wave_b_direction:\n    # Выброс должен превысить экстремум\
+    \ волны-b\n    IF thrust_direction == UP:\n        ASSERT end_price(thrust) >\
+    \ high(wave_b)\n    ELSE:\n        ASSERT end_price(thrust) < low(wave_b)\n# ELSE:\
+    \ если направление выброса противоположно волне-b, требование превышения уровня\
+    \ волны-b не применяется\n\n# === 3. Длина выброса зависит от типа треугольника\
+    \ ===\nwidest_wave_price_range = max(price_range(wave) FOR wave IN [triangle.wave_a,\
+    \ triangle.wave_b, triangle.wave_c, triangle.wave_d, triangle.wave_e])\nthrust_price_range\
+    \ = price_range(thrust)\n\nIF triangle_subtype == 'horizontal':\n    # Приблизительно\
+    \ равна ширине самой широкой волны (±25%)\n    ASSERT thrust_price_range >= widest_wave_price_range\
+    \ * 0.75\n    ASSERT thrust_price_range <= widest_wave_price_range * 1.25\n\n\
+    ELIF triangle_subtype == 'irregular':\n    # До 161.8% ширины самой широкой волны\n\
+    \    ASSERT thrust_price_range <= widest_wave_price_range * 1.618\n\nELIF triangle_subtype\
+    \ == 'running':\n    # До 261.8% ширины самой широкой волны\n    ASSERT thrust_price_range\
+    \ <= widest_wave_price_range * 2.618\n\n# === 4. Временная длина выброса ===\n\
+    # Приблизительно равна времени от конца волны-e до точки пересечения (конвергенции)\
+    \ линий тренда треугольника\ntrendline_upper = trendline(triangle.wave_b, triangle.wave_d)\n\
+    trendline_lower = trendline(triangle.wave_a, triangle.wave_c)  # или (wave_c,\
+    \ wave_e)\nconvergence_time = time_of_intersection(trendline_upper, trendline_lower)\n\
+    expected_thrust_time = convergence_time - end_time(triangle.wave_e)\nactual_thrust_time\
+    \ = duration(thrust)\n\nASSERT actual_thrust_time ≈ expected_thrust_time  # приблизительное\
+    \ равенство\n"
+  formalization_notes: '1. Правило из verbatim_quote чётко указывает: выброс обязателен
+    ("всегда следует").
+
+    2. Исключение для превышения уровня волны-b: "'
 aliases: []
 related_aku: []
 contradicts_aku: []

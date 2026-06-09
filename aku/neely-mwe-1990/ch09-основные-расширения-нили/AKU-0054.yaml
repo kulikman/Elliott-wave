@@ -27,9 +27,43 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: pattern == 'impulse'
-  constraint: not breaks(wave_3, trendline(end(2), end(4)))
-  formalization_notes: Если breaks(wave_5, trendline(2,4)) → фигура Терминальная.
+  applies_when: '# Правило применяется к завершённому или формирующемуся Импульсу
+    (impulse),
+
+    # когда известны как минимум волны 1-4 (для проверки волны 3)
+
+    # или все 5 волн (для проверки волны 5 и классификации)
+
+    pattern == ''impulse''
+
+    '
+  constraint: "# Определяем линию тренда 2-4:\n# Проводится через конец волны 2 и\
+    \ конец волны 4\ntl_2_4 = trendline(end(wave_2), end(wave_4))\n\n# ПРАВИЛО 1 (mandatory):\
+    \ Волна 3 НЕ должна пробивать линию тренда 2-4\n# Проверяем, что ни одна точка\
+    \ волны 3 не пересекает эту линию\nfor each price_point in wave_3:\n    if pattern_direction\
+    \ == 'up':\n        # В восходящем импульсе линия 2-4 проходит ниже;\n       \
+    \ # волна 3 идёт вверх, пробитие = уход ниже линии\n        assert price_point\
+    \ >= tl_2_4.value_at(time(price_point))\n    elif pattern_direction == 'down':\n\
+    \        # В нисходящем импульсе линия 2-4 проходит выше;\n        # волна 3 идёт\
+    \ вниз, пробитие = уход выше линии\n        assert price_point <= tl_2_4.value_at(time(price_point))\n\
+    \n# Если правило 1 нарушено → паттерн НЕ является валидным импульсом\n\n# ПРАВИЛО\
+    \ 2 (классификация): Если волна 5 пересекает линию тренда 2-4,\n# то фигура является\
+    \ Терминальным Импульсом (Ending Diagonal)\nif wave_5_exists:\n    wave_5_crosses_tl\
+    \ = false\n    for each price_point in wave_5:\n        if pattern_direction ==\
+    \ 'up':\n            if price_point < tl_2_4.value_at(time(price_point)):\n  \
+    \              wave_5_crosses_tl = true\n                break\n        elif pattern_direction\
+    \ == 'down':\n            if price_point > tl_2_4.value_at(time(price_point)):\n\
+    \                wave_5_crosses_tl = true\n                break\n\n    if wave_5_crosses_tl:\n\
+    \        reclassify pattern as 'ending_diagonal'  # Терминальная Импульсная фигура\n"
+  formalization_notes: "1. Линия тренда 2-4 строится через конечные точки волн 2 и\
+    \ 4 (end(wave_2), end(wave_4)).\n   Для проверки волны 3 линия строится ретроспективно\
+    \ — после того как волна 4 завершена,\n   проверяется, не пробивала ли волна 3\
+    \ эту линию.\n2. \"Пробитие\" (breaks) означает, что какая-либо часть волны 3\
+    \ оказывается\n   по другую сторону линии тренда 2-4 относительно направления\
+    \ импульса.\n3. Пересечение волной 5 линии тренда 2-4 — не нарушение правила импульса,\n\
+    \   а индикатор переклассификации в Терминальную Импульсную фигуру (Ending Diagonal).\n\
+    4. В verbatim_quote сказано \"крайне редко\" про пересечение волной 5, но формализуется\n\
+    \   только конкретное следствие: если пересечение произошло → Терминальная фигура."
 aliases:
 - правило линии тренда 2-4
 - 2-4 trendline rule

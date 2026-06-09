@@ -20,7 +20,7 @@ source:
       сегмента.
     language: ru
 formalization:
-  status: formalized
+  status: draft
   applies_when: 'pattern == ''impulse'' AND wave_4_completed
 
     '

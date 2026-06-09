@@ -21,9 +21,31 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: pattern == 'trend_impulse' AND extended_wave == 1
-  constraint: length(wave_5) == min(length(wave_1), length(wave_3), length(wave_5))
-  formalization_notes: null
+  applies_when: '# Паттерн — Трендовый Импульс с Растянутой первой волной
+
+    pattern == ''trend_impulse'' AND extended_wave == 1
+
+    '
+  constraint: '# Волна-5 должна быть кратчайшей из трёх импульсных волн (1, 3, 5)
+
+    # "Кратчайшая" — по ценовой длине (price length)
+
+    length(wave_5) < length(wave_1) AND length(wave_5) < length(wave_3)
+
+
+    # Где length(wave_N) = abs(end_price(wave_N) - start_price(wave_N))
+
+    '
+  formalization_notes: 'Правило mandatory: волна-5 строго кратчайшая, т.е. меньше
+    каждой из двух других
+
+    импульсных волн (1 и 3). Используется строгое неравенство (<), поскольку
+
+    в оригинале сказано "кратчайшей" (shortest), что подразумевает строгое
+
+    превосходство, а не равенство. Под "length" понимается ценовая длина волны
+
+    (price distance), что является стандартной интерпретацией у Нили.'
 aliases:
 - волна-5 кратчайшая при растянутой первой
 related_aku: []

@@ -25,10 +25,43 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: validating impulse start point
-  constraint: NOT(length(w1)≈length(w3)≈length(w5)) AND alternation(w2,w4) AND w2_not_cross_trendline_02
-  formalization_notes: 'Рис.8-25: Счёт A — ошибочный, Счёт B — правильный (Неограничивающий
-    Треугольник + нисходящий импульс).'
+  applies_when: '# Применяется при валидации выбранной начальной точки импульсного
+    счёта
+
+    # После того как предварительно размечены волны 1-2-3-4-5 от выбранной точки старта
+
+    pattern == ''impulse''
+
+    AND waves [w1, w2, w3, w4, w5] are labeled from candidate_start_point
+
+    '
+  constraint: "# Четыре независимых признака неправильной начальной точки импульса.\n\
+    # Любой из них (OR) указывает на ошибку в выборе старта.\n\n# Признак 1: длины\
+    \ волн 1, 3, 5 практически равны\nsign_1_equal_lengths =\n  approx_equal(length(w1),\
+    \ length(w3)) AND approx_equal(length(w3), length(w5))\n  # где approx_equal(a,\
+    \ b) = abs(a - b) / max(a, b) < tolerance\n  # tolerance — порог \"практически\
+    \ равны\", например 0.05..0.10\n\n# Признак 2: волны 2 и 4 практически не чередуются\n\
+    # (нет чередования по форме, глубине или длительности)\nsign_2_no_alternation\
+    \ =\n  NOT alternation(w2, w4)\n  # alternation проверяет различие w2 и w4 по:\n\
+    \  #   - типу коррекции (sharp vs flat / zigzag vs triangle и т.д.)\n  #   - глубине\
+    \ (retracement ratio)\n  #   - длительности\n\n# Признак 3: волна-2 нисходящего\
+    \ тренда длиннее предыдущей волны\n# (предыдущая волна = волна предшествующей\
+    \ степени, обозначенная как (ii) в тексте)\n# В контексте рис.8-25: w2 текущего\
+    \ счёта > волна предшествующей степени перед w1\nsign_3_w2_longer_than_prior =\n\
+    \  IF trend_direction == 'down' THEN\n    price_length(w2) > price_length(prior_wave_of_higher_degree)\n\
+    \  ELSE\n    false\n\n# Признак 4: волна-2 пересекает линию тренда, проведённую\n\
+    # от точки 0 (начало счёта) через точку окончания волны-2 предшествующей степени\n\
+    # В тексте: линия тренда (0)-(ii)\ntrendline_0_ii = line_from(candidate_start_point,\
+    \ end(prior_wave_ii))\nsign_4_w2_crosses_trendline =\n  wave_crosses_line(w2,\
+    \ trendline_0_ii)\n\n# Итоговая проверка: если ЛЮБОЙ признак истинен — начальная\
+    \ точка ошибочна\nstart_point_is_wrong =\n  sign_1_equal_lengths\n  OR sign_2_no_alternation\n\
+    \  OR sign_3_w2_longer_than_prior\n  OR sign_4_w2_crosses_trendline\n\n# Если\
+    \ start_point_is_wrong == true, необходимо пересмотреть выбор начальной точки\n"
+  formalization_notes: "1. Контекст: рис.8-25 — счёт A ошибочный, счёт B правильный\n\
+    \   (Неограничивающий Треугольник + нисходящий импульс).\n2. \"Предыдущая волна\"\
+    \ (prior_wave_of_higher_degree) в признаке 3 —\n   это волна (ii) из рисунка,\
+    \ т.е. волна предшествующей степени,\n   завершившаяся до начала текущего импульса.\
+    \ Точная идентификация\n   зависит от контек"
 aliases: []
 related_aku: []
 contradicts_aku: []

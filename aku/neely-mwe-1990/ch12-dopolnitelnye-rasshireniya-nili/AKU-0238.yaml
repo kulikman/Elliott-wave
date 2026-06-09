@@ -6,40 +6,71 @@ topic: missing-waves
 subtopics:
 - polywave
 - wave-identification
-statement_ru: >
-  Пропавшие волны возникают ТОЛЬКО в поливолновом масштабе. Стандартные Коррекции
-  НЕ МОГУТ содержать Пропавших волн. Минимальное число точек данных: Импульс=8,
+statement_ru: 'Пропавшие волны возникают ТОЛЬКО в поливолновом масштабе. Стандартные
+  Коррекции НЕ МОГУТ содержать Пропавших волн. Минимальное число точек данных: Импульс=8,
   Зигзаг=5, Плоская=5, Треугольник=8, Двойные=10, Двойные с Треуг.=13, Тройные=15,
-  Тройные с Треуг.=18. Если точек данных от (min/2+1) до (2×min−1) → возможна
-  пропажа. При ≥2×min → пропажа невозможна.
+  Тройные с Треуг.=18. Если точек данных от (min/2+1) до (2×min−1) → возможна пропажа.
+  При ≥2×min → пропажа невозможна.
+
+  '
 statement_en: null
 source:
   book_id: neely-mwe-1990
   page: 12-35
   chapter: 'Глава 12: Дополнительные Расширения Нили'
   section: Пропавшие волны / Где и когда возникают / Как они возникают
-  figure_id: '12-45,12-46'
+  figure_id: 12-45,12-46
   verbatim_quote:
-    text: >
-      Пропавшие волны могут возникать только в поливолновом масштабе, но не в
+    text: 'Пропавшие волны могут возникать только в поливолновом масштабе, но не в
       мультиволновом или выше... Стандартные Коррекции Эллиота не могут содержать
-      «Пропавших» волн... Импульсная волна — 8, Зигзаг — 5, Плоская — 5,
-      Треугольник — 8, Двойные Плоские и Зигзаги — 10... Любое число точек данных
-      меньше минимума (но больше половины минимума) указывает либо на однозначное
-      наличие пропавшей волны, либо на неправильность вашего волнового счёта.
+      «Пропавших» волн... Импульсная волна — 8, Зигзаг — 5, Плоская — 5, Треугольник
+      — 8, Двойные Плоские и Зигзаги — 10... Любое число точек данных меньше минимума
+      (но больше половины минимума) указывает либо на однозначное наличие пропавшей
+      волны, либо на неправильность вашего волнового счёта.
+
+      '
     language: ru
 formalization:
   status: draft
-  applies_when: polywave scale analysis, checking for missing waves
-  constraint: >
-    missing_waves ONLY polywave (NOT multiwave+) ;
-    standard_corrections: missing_wave = impossible ;
-    min_data_points = {impulse:8, zigzag:5, flat:5, triangle:8,
-      double_flat_zigzag:10, double_with_triangle:13,
-      triple_flat_zigzag:15, triple_with_triangle:18} ;
-    IF data_points >= min/2+1 AND data_points <= 2*min-1 THEN missing_wave_possible ;
-    IF data_points >= 2*min THEN missing_wave_impossible
-  formalization_notes: 'Рис.12-45/46. Начальная точка данных включена в подсчёт.'
+  applies_when: '# Применяется при анализе поливолновой структуры (polywave scale)
+
+    # для определения возможности наличия пропавшей (missing) волны
+
+    wave_scale == ''polywave''
+
+    '
+  constraint: "# === ПРАВИЛО 1: Пропавшие волны возникают ТОЛЬКО в поливолновом масштабе\
+    \ ===\nIF wave_scale != 'polywave':\n    missing_wave_possible = FALSE\n    #\
+    \ В мультиволновом масштабе и выше пропавшие волны невозможны\n\n# === ПРАВИЛО\
+    \ 2: Стандартные Коррекции НЕ МОГУТ содержать пропавших волн ===\nstandard_corrections\
+    \ = ['zigzag', 'flat', 'triangle',\n                        'double_flat', 'double_zigzag',\n\
+    \                        'double_with_triangle',\n                        'triple_flat',\
+    \ 'triple_zigzag',\n                        'triple_with_triangle']\nIF pattern_type\
+    \ IN standard_corrections:\n    missing_wave_possible = FALSE\n\n# === ПРАВИЛО\
+    \ 3: Минимальное число точек данных для каждого паттерна ===\nmin_data_points\
+    \ = {\n    'impulse':               8,\n    'zigzag':                5,\n    'flat':\
+    \                  5,\n    'triangle':              8,\n    'double_flat':   \
+    \       10,\n    'double_zigzag':        10,\n    'double_with_triangle': 13,\n\
+    \    'triple_flat':          15,\n    'triple_zigzag':        15,\n    'triple_with_triangle':\
+    \ 18\n}\n\nmin_dp = min_data_points[pattern_type]\n\n# === ПРАВИЛО 4: Определение\
+    \ возможности пропавшей волны по числу точек данных ===\n# Только для импульсных\
+    \ паттернов в поливолновом масштабе\nIF wave_scale == 'polywave' AND pattern_type\
+    \ == 'impulse':\n    IF data_points < (min_dp / 2 + 1):\n        # Слишком мало\
+    \ данных — волновой счёт неверен\n        wave_count_invalid = TRUE\n        missing_wave_possible\
+    \ = FALSE\n    ELIF data_points >= (min_dp / 2 + 1) AND data_points <= (2 * min_dp\
+    \ - 1):\n        # Возможна пропавшая волна ИЛИ волновой счёт неверен\n      \
+    \  missing_wave_possible = TRUE\n    ELIF data_points >= 2 * min_dp:\n       \
+    \ # Достаточно точек данных — пропавшая волна невозможна\n        missing_wave_possible\
+    \ = FALSE\n"
+  formalization_notes: "1. Рис.12-45/12-46: начальная точка данных включена в подсчёт\
+    \ data_points.\n2. Verbatim quote говорит: \"число точек данных меньше минимума\
+    \ (но больше половины\n   минимума)\" — это соответствует диапазону (min/2+1)\
+    \ .. (min-1), но в statement_ru\n   указан расширенный диапазон до (2*min-1).\
+    \ Формализация следует statement_ru.\n3. Стандартные коррекции не могут содержать\
+    \ пропавших волн — это явно указано\n   в verbatim_quote. Однако пропавшие волны\
+    \ в импульсах на поливолновом масштабе\n   возможны при выполнении условия по\
+    \ числу точек данных.\n4. Двойные и тройные паттерны разделены на варианты с треугольником\
+    \ и без,\n   согласно statement_ru."
 aliases: []
 related_aku:
 - AKU-0239

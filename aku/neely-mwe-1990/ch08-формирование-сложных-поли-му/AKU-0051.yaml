@@ -28,10 +28,36 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: subtype IN ('failure_5th', 'flat_failure_c', 'contracting_nonlimiting_triangle')
-  constraint: extreme_point(pattern) != end_point(pattern)
-  formalization_notes: В 3 из 4 ситуаций потери силы импульса экстремум не совпадает
-    с концом фигуры.
+  applies_when: '# Правило применяется к завершённым фигурам Эллиотта, которые относятся
+    к одной из трёх ситуаций потери силы импульса:
+
+    pattern_subtype IN (''failure_5th'', ''flat_failure_c'', ''contracting_nonlimiting_triangle'')
+
+    '
+  constraint: "# 1. Точка экстремума (максимума или минимума) НЕ является конечной\
+    \ точкой фигуры\nextreme_point = max_price_point(pattern) IF pattern.direction\
+    \ == 'up' ELSE min_price_point(pattern)\nend_point = pattern.end_point  # последняя\
+    \ точка фигуры по времени\n\nASSERT extreme_point.price != end_point.price\n#\
+    \ т.е. экстремум достигается раньше по времени, чем конец фигуры\nASSERT extreme_point.time\
+    \ < end_point.time\n\n# 2. Если следующая за фигурой волна достигла начального\
+    \ уровня фигуры\n#    И самая высокая/низкая цена не является конечной точкой\
+    \ фигуры,\n#    то точка завершения фигуры возникает ПОСЛЕ достижения точки экстремума\n\
+    next_wave = wave_after(pattern)\nIF next_wave IS NOT NULL:\n  pattern_start_level\
+    \ = pattern.start_point.price\n  IF pattern.direction == 'up':\n    next_wave_reached_start\
+    \ = min_price(next_wave) <= pattern_start_level\n  ELSE:\n    next_wave_reached_start\
+    \ = max_price(next_wave) >= pattern_start_level\n\n  IF next_wave_reached_start\
+    \ AND extreme_point.price != end_point.price:\n    # Подтверждение: завершение\
+    \ фигуры (end_point) по времени после экстремума\n    ASSERT end_point.time >\
+    \ extreme_point.time\n"
+  formalization_notes: "Правило описывает свойство трёх из четырёх ситуаций потери\
+    \ силы импульса:\n- Неудавшаяся пятая волна (failure_5th)\n- Неудавшаяся волна-С\
+    \ Плоской (flat_failure_c)\n- Завершение Сужающимся Неограничивающим Треугольником\
+    \ (contracting_nonlimiting_triangle)\n\nЧетвёртая ситуация (не указана явно в\
+    \ statement_ru) исключена из формализации.\n\nВторая часть правила (про следующую\
+    \ волну, достигающую начального уровня) \nслужит дополнительным подтверждением:\
+    \ если после фигуры цена вернулась к её началу,\nэто подтверждает, что конечная\
+    \ точка фигуры находится после экстремума по времени,\nа не до него. Это помогает\
+    \ корректно идентифицировать точку завершения фигуры."
 aliases:
 - правило точки экстремума
 related_aku: []

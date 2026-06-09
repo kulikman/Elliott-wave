@@ -23,9 +23,38 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: expanding limiting triangle post-thrust
-  constraint: thrust < widest_segment_length
-  formalization_notes: Добавлено в ходе аудита качества AKU
+  applies_when: '# Паттерн — Ограничивающий Расширяющийся Треугольник (Limiting Expanding
+    Triangle)
+
+    # Треугольник завершён (волны a-b-c-d-e завершены)
+
+    # Анализируется пост-треугольный выброс (thrust)
+
+    pattern == ''expanding_triangle''
+
+    AND triangle_subtype == ''limiting''
+
+    AND triangle_is_complete == true
+
+    AND thrust_exists == true
+
+    '
+  constraint: '# Длина выброса (thrust) должна быть меньше длины е-волны треугольника
+
+    # Длина измеряется в ценовых единицах (расстояние от начала до конца)
+
+    length(thrust) < length(wave_e)
+
+    '
+  formalization_notes: "- \"Длина е-волны\" — ценовое расстояние от начала до конца\
+    \ волны e треугольника.\n- \"Выброс\" (thrust) — движение, следующее сразу после\
+    \ завершения треугольника,\n  в направлении пробоя.\n- Ограничивающий треугольник\
+    \ выступает в роли b-волны или 4-й волны (контекст из цитаты),\n  но это не часть\
+    \ данного constraint, а условие идентификации limiting triangle.\n- Цитата помечена\
+    \ как возможная галлюцинация, но statement_ru и verbatim_quote\n  согласованы\
+    \ между собой, правило формализовано по их содержанию.\n- В draft-формализации\
+    \ было \"thrust < widest_segment_length\", что некорректно:\n  правило сравнивает\
+    \ с длиной именно е-волны, а не самого широкого сегмента."
 aliases:
 - правило выброса ограничивающего расширяющегося треугольника
 related_aku: []

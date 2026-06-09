@@ -28,11 +28,43 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: pattern == 'impulse' AND degree == 'multiwave'
-  constraint: adjacent(longest_correction, extended_wave) AND (extended_wave==1 IMPLIES
-    duration(wave_2) > duration(wave_4)) AND (extended_wave==5 IMPLIES duration(wave_4)
-    > duration(wave_2))
-  formalization_notes: null
+  applies_when: '# Правило применяется к завершённому импульсу на уровне мультиволны
+
+    pattern == ''impulse''
+
+    AND has_extended_wave == true
+
+    '
+  constraint: "# Определяем длительности коррективных волн\ndur_w2 = duration(wave_2)\n\
+    dur_w4 = duration(wave_4)\n\n# Определяем какая коррекция самая длительная\nlongest_correction\
+    \ = (dur_w2 >= dur_w4) ? wave_2 : wave_4\n\n# Самая длительная коррекция должна\
+    \ быть непосредственно перед или после растянутой волны\n# (т.е. смежной с ней)\n\
+    is_adjacent = adjacent(longest_correction, extended_wave)\n# adjacent означает:\n\
+    #   extended_wave == 1 => longest_correction == wave_2 (следует сразу после wave_1)\n\
+    #   extended_wave == 3 => longest_correction == wave_2 OR longest_correction ==\
+    \ wave_4 (перед или после wave_3)\n#   extended_wave == 5 => longest_correction\
+    \ == wave_4 (непосредственно перед wave_5)\n\nREQUIRE is_adjacent\n\n# Конкретные\
+    \ правила для растяжения волны 1 и волны 5:\nIF extended_wave == 1 THEN\n  REQUIRE\
+    \ dur_w2 > dur_w4\nEND\n\nIF extended_wave == 5 THEN\n  REQUIRE dur_w4 > dur_w2\n\
+    END\n\n# Примечание: для extended_wave == 3 правило требует только смежности\n\
+    # (longest_correction — wave_2 или wave_4), без указания строгого соотношения\n\
+    # длительностей, кроме того что одна из них является наибольшей и смежна с wave_3\n"
+  formalization_notes: 'Правило явно описывает только случаи растяжения волны 1 и
+    волны 5.
+
+    Для растяжения волны 3 из текста следует лишь требование смежности:
+
+    самая длительная коррекция (wave_2 или wave_4) должна быть рядом с
+
+    растянутой волной 3, что выполняется автоматически (обе смежны с wave_3).
+
+    Таким образом, для extended_wave == 3 правило не накладывает
+
+    дополнительного ограничения на соотношение dur_w2 vs dur_w4 —
+
+    любая из них может быть длиннее.
+
+    Функция duration() измеряет временну́ю протяжённость волны (количество баров/свечей).'
 aliases:
 - правило длительности коррекций относительно растянутой волны
 related_aku:

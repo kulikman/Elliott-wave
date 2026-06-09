@@ -23,9 +23,34 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: after double zigzag (+2 up direction)
-  constraint: 'if not (terminal_impulse AND extended_5): next_wave NOT reach start(double_zigzag)'
-  formalization_notes: null
+  applies_when: '# Завершён паттерн Двойной Зигзаг (Double Zigzag)
+
+    # Энергетический рейтинг: +2 (направление вверх)
+
+    completed_pattern == ''double_zigzag''
+
+    AND energy_rating == +2
+
+    AND direction == ''up''
+
+    '
+  constraint: "# Следующая волна того же Порядка (degree) не должна достичь\n# начального\
+    \ уровня фигуры Двойного Зигзага\n#\n# Исключение: фигура является волной-5 Терминального\
+    \ Импульса\n# с Растянутой пятой (extended 5th)\n\nnext_wave = next_wave_same_degree(completed_pattern)\n\
+    pattern_start = start_price(completed_pattern)\n\n# Поскольку direction == 'up',\
+    \ паттерн шёл вверх,\n# \"достичь начального уровня\" означает откатиться вниз\
+    \ до start\nis_exception = (\n  parent_pattern == 'terminal_impulse'\n  AND parent_extended_wave\
+    \ == 5\n  AND wave_number_in_parent(completed_pattern) == 5\n)\n\nif NOT is_exception:\n\
+    \  low(next_wave) > pattern_start\n# Если исключение выполняется — ограничение\
+    \ не применяется\n"
+  formalization_notes: "- \"Следующая волна того же Порядка\" — волна, непосредственно\
+    \ следующая\n  за завершённым Двойным Зигзагом на том же уровне degree.\n- Направление\
+    \ \"вверх\" (+2) означает, что паттерн двигался вверх,\n  поэтому \"не достичь\
+    \ начального уровня\" = next_wave не должна\n  опуститься до или ниже start_price\
+    \ паттерна.\n- Исключение: паттерн является 5-й волной Терминального Импульса\n\
+    \  с Растянутой пятой — в этом случае правило не действует.\n- Правило сформулировано\
+    \ для +2 up; для зеркального -2 down\n  нужна симметричная версия (high(next_wave)\
+    \ < pattern_start)."
 aliases: []
 related_aku: []
 contradicts_aku: []

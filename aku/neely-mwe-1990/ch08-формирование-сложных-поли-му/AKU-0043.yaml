@@ -25,9 +25,42 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: pattern == 'impulse' AND degree == 'multiwave'
-  constraint: is_polywave(wave_2) OR is_polywave(wave_4)
-  formalization_notes: null
+  applies_when: '# Правило применяется при формировании импульсной мультиволны
+
+    pattern == ''impulse'' AND degree == ''multiwave''
+
+    '
+  constraint: '# Как минимум одна из коррективных фаз (волна 2 или 4) должна быть
+    поливолной
+
+    is_polywave(wave_2) OR is_polywave(wave_4)
+
+
+    # Другая может быть как моноволной, так и поливолной (нет ограничения сверху)
+
+    # т.е. допустимые комбинации:
+
+    #   wave_2 = polywave, wave_4 = monowave
+
+    #   wave_2 = polywave, wave_4 = polywave
+
+    #   wave_2 = monowave, wave_4 = polywave
+
+    #
+
+    # Недопустимая комбинация:
+
+    #   wave_2 = monowave AND wave_4 = monowave  => НАРУШЕНИЕ
+
+    '
+  formalization_notes: 'Правило устанавливает минимальное требование к сложности коррективных
+    фаз
+
+    в импульсной мультиволне. Обе волны 2 и 4 не могут одновременно быть моноволнами.
+
+    Верхнего ограничения нет — обе могут быть поливолнами.
+
+    Связано с AKU-0042 (требование к нечётным волнам) и AKU-0044 (длительность коррекций).'
 aliases:
 - правило коррективных поливолн в мультиволне
 related_aku:

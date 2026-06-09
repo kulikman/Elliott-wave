@@ -25,9 +25,40 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: pattern == 'impulse' AND extended_wave == 3 AND position == 'post_pattern'
-  constraint: extreme(retrace) reaches price_zone(wave_4)
-  formalization_notes: null
+  applies_when: '# Правило применяется после завершения импульса с растянутой волной
+    3
+
+    pattern.type == ''impulse''
+
+    AND pattern.extended_wave == 3
+
+    AND pattern.is_completed == true
+
+    # Анализируем движение рынка ПОСЛЕ завершения этого импульса
+
+    AND post_pattern_move exists
+
+    '
+  constraint: "# Определяем ценовую зону волны 4 завершившегося импульса\nwave4_price_zone_start\
+    \ = start_price(pattern.wave_4)\nwave4_price_zone_end = end_price(pattern.wave_4)\n\
+    wave4_zone_min = min(wave4_price_zone_start, wave4_price_zone_end)\nwave4_zone_max\
+    \ = max(wave4_price_zone_start, wave4_price_zone_end)\n\n# Откат после завершения\
+    \ импульса должен достичь как минимум ценовой зоны волны 4\nif pattern.direction\
+    \ == 'up':\n  # Для восходящего импульса откат идёт вниз\n  # Минимум отката должен\
+    \ быть <= верхней границы зоны волны 4\n  low(post_pattern_retrace) <= wave4_zone_max\n\
+    elif pattern.direction == 'down':\n  # Для нисходящего импульса откат идёт вверх\n\
+    \  # Максимум отката должен быть >= нижней границы зоны волны 4\n  high(post_pattern_retrace)\
+    \ >= wave4_zone_min\n"
+  formalization_notes: '"Ценовая зона волны-4" интерпретируется как диапазон цен между
+    началом и концом волны 4.
+
+    "Дойти как минимум до ценовой зоны" означает, что откат должен войти в этот диапазон
+
+    (достичь хотя бы его ближайшей границы относительно конца импульса).
+
+    Правило описывает поведение рынка ПОСЛЕ завершения паттерна (post-pattern logic),
+
+    а не внутреннюю структуру самого импульса.'
 aliases:
 - минимальный откат после растянутой третьей
 related_aku: []

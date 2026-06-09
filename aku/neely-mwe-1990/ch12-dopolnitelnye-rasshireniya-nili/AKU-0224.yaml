@@ -29,10 +29,41 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: after wave_5 completion, checking 2-4 breakout speed
-  constraint: time(breakout_2_4) <= time(wave_5) => normal ; time(breakout_2_4) >
-    time(wave_5) => wave_5_extended OR wrong_channel
-  formalization_notes: 'Рис.12-11. Терминал: W5 пробивает 2-4 ещё во время формирования.'
+  applies_when: '# Правило применяется после завершения волны 5 импульсной фигуры
+
+    pattern == ''impulse''
+
+    AND wave_5.is_completed == true
+
+    AND trendline_2_4.is_constructed == true
+
+    '
+  constraint: "# Построить линию тренда 2-4 через конец W2 и конец W4\ntrendline_2_4\
+    \ = line(end(wave_2), end(wave_4))\n\n# Определить момент пробоя линии 2-4 после\
+    \ завершения W5\n# (цена пересекает trendline_2_4 в направлении, противоположном\
+    \ тренду импульса)\nbreakout_point = first_price_crossing(trendline_2_4, after=end(wave_5))\n\
+    \n# Время от конца W5 до момента пробоя линии 2-4\ntime_breakout = time(breakout_point)\
+    \ - time(end(wave_5))\n\n# Длительность волны 5\ntime_wave_5 = time(end(wave_5))\
+    \ - time(start(wave_5))\n\n# Проверка скорости прорыва\nIF time_breakout <= time_wave_5\
+    \ THEN\n  # Нормальное поведение: W5 завершена корректно,\n  # линия 2-4 построена\
+    \ правильно\n  breakout_status = 'normal'\n  wave_5_confirmed_complete = true\n\
+    \nELSE  # time_breakout > time_wave_5\n  # Аномалия: два возможных объяснения\n\
+    \  # 1) Волна 5 ещё продолжается (развивается в импульсную/терминальную фигуру)\n\
+    \  # 2) Линия тренда 2-4 построена неправильно\n  breakout_status = 'abnormal'\n\
+    \  wave_5_confirmed_complete = false\n  possible_issues = ['wave_5_still_extending_into_terminal',\
+    \ 'trendline_2_4_incorrectly_drawn']\n\n# Дополнительно: после пробоя рынок должен\
+    \ откатиться на всю величину W5\n# (ретрейсмент пост-пробоя покрывает ценовой\
+    \ диапазон W5)\nIF breakout_status == 'normal' THEN\n  post_breakout_retracement\
+    \ = price_move_after(breakout_point)\n  REQUIRE abs(post_breakout_retracement)\
+    \ >= abs(price(end(wave_5)) - price(start(wave_5)))\n"
+  formalization_notes: "1. \"Быстро пробить\" формализовано как time_breakout <= time_wave_5\
+    \ согласно verbatim_quote.\n2. Требование отката \"на всю величину W5\" упомянуто\
+    \ в statement_ru, но не детализировано\n   в verbatim_quote — добавлено как дополнительная\
+    \ проверка, может потребовать уточнения.\n3. Два исхода при медленном прорыве\
+    \ (W5 продолжается / неправильная линия) —\n   алгоритм не может автоматически\
+    \ выбрать между ними без дополнительного контекста.\n4. Рис.12-11 упоминает терминальную\
+    \ фигуру, где W5 пробивает линию 2-4 ещё во время\n   формирования — это отдельный\
+    \ случай, не покрытый данным правилом напрямую."
 aliases: []
 related_aku: []
 contradicts_aku: []

@@ -23,9 +23,54 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: three consecutive adjacent waves of same degree
-  constraint: not (duration(w_i) == duration(w_i+1) AND duration(w_i+1) == duration(w_i+2))
-  formalization_notes: null
+  applies_when: '# Для любых трёх последовательных смежных волн одного и того же Порядка
+    (Degree)
+
+    # Применяется универсально — к любым паттернам и любым позициям волн
+
+    # w_i, w_i+1, w_i+2 — три подряд идущие волны
+
+    degree(w_i) == degree(w_i_plus_1) AND degree(w_i_plus_1) == degree(w_i_plus_2)
+
+    AND waves_are_adjacent(w_i, w_i_plus_1, w_i_plus_2)
+
+    '
+  constraint: '# Длительность волны = количество баров (или единиц времени) от начала
+    до конца волны
+
+    duration_i = end_time(w_i) - start_time(w_i)
+
+    duration_i1 = end_time(w_i_plus_1) - start_time(w_i_plus_1)
+
+    duration_i2 = end_time(w_i_plus_2) - start_time(w_i_plus_2)
+
+
+    # Все три длительности НЕ могут быть равны одновременно
+
+    NOT (duration_i == duration_i1 AND duration_i1 == duration_i2)
+
+
+    # Примечание: правило запрещает именно тройное равенство всех трёх.
+
+    # Попарное равенство двух из трёх волн НЕ запрещается данным правилом.
+
+    '
+  formalization_notes: 'Правило говорит именно о том, что все три длительности не
+    могут быть равны
+
+    между собой одновременно ("не могут быть равны между собой" = все три равны друг
+    другу).
+
+    Это не запрещает ситуацию, когда две из трёх волн имеют одинаковую длительность.
+
+    Единица измерения длительности (бары, календарные дни и т.д.) в правиле не уточняется
+    —
+
+    предполагается единообразное измерение для всех волн.
+
+    На практике может потребоваться допуск (tolerance) для сравнения на равенство,
+
+    но в исходном правиле допуск не упоминается.'
 aliases:
 - правило соотношения длительностей
 - rule of duration ratios

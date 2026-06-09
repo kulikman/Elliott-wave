@@ -22,10 +22,48 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: pattern == 'flat' AND subtype == 'common'
-  constraint: 0.81 * length(wave_a) <= length(wave_b) <= 1.00 * length(wave_a) AND
-    length(wave_c) >= length(wave_b) AND structure(wave_c) == ':5'
-  formalization_notes: null
+  applies_when: '# Правило применяется к Обыкновенной Плоской фигуре (Common Flat)
+
+    pattern == ''flat'' AND subtype == ''common''
+
+    '
+  constraint: '# Определяем ценовые длины волн
+
+    price_a = abs(end(wave_a) - start(wave_a))
+
+    price_b = abs(end(wave_b) - start(wave_b))
+
+    price_c = abs(end(wave_c) - start(wave_c))
+
+
+    # Волна-b не должна быть более 100% волны-a
+
+    price_b <= 1.00 * price_a
+
+
+    # Волна-b должна откатываться как минимум на 81% волны-a
+
+    price_b >= 0.81 * price_a
+
+
+    # Волна-c должна откатываться на всю величину волны-b
+
+    price_c >= 1.00 * price_b
+
+
+    # Волна-c должна быть Импульсной (из statement_ru)
+
+    structure(wave_c) == ''impulse''  # :5 (пятиволновая импульсная структура)
+
+    '
+  formalization_notes: "1. Требование \"волна-с должна быть Импульсной\" присутствует\
+    \ в statement_ru,\n   но отсутствует в verbatim_quote. Включено, так как statement_ru\
+    \ является\n   верифицированным правилом (status: verified).\n2. В verbatim_quote\
+    \ упоминается также что \"волна-с должна слегка превысить\n   конец волны-а, но\
+    \ не более чем на 10 или 20%\" — это ограничение НЕ включено\n   в данный AKU\
+    \ (не входит в statement_ru), но может быть релевантно\n   для отдельного правила.\n\
+    3. \"Откатываться на всю величину\" интерпретируется как price_c >= price_b\n\
+    \   (ценовая длина волны-c не менее ценовой длины волны-b)."
 aliases:
 - правила обыкновенной плоской
 related_aku: []

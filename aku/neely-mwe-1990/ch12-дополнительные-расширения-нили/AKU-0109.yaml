@@ -30,10 +30,41 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: pattern == 'impulse' AND position == 'post_pattern'
-  constraint: breaks(next_move, trendline(end(2), end(4))) AND duration(until_break)
-    <= duration(wave_5) AND retrace(next_move) >= 0.99 * length(wave_5)
-  formalization_notes: '''Большая часть или вся'' волна-5 откатывается.'
+  applies_when: '# Правило применяется после завершения 5-волнового импульса
+
+    pattern == ''impulse'' AND wave_5.is_completed == true
+
+    '
+  constraint: "# 1. Построить линию тренда 2-4 (через конец волны-2 и конец волны-4)\n\
+    trendline_2_4 = trendline(end(wave_2), end(wave_4))\n\n# 2. Определить движение\
+    \ рынка после завершения волны-5\npost_wave5_move = price_action_after(end(wave_5))\n\
+    \n# 3. Длительность волны-5\nduration_wave5 = duration(wave_5)\n\n# 4. Рынок должен\
+    \ пробить линию тренда 2-4 в течение времени <= длительности волны-5\ntime_to_break\
+    \ = time_from(end(wave_5), until: crosses(post_wave5_move, trendline_2_4))\ncondition_break\
+    \ = crosses(post_wave5_move, trendline_2_4) == true\ncondition_time = time_to_break\
+    \ <= duration_wave5\n\n# 5. Рынок должен откатиться на большую часть или на всю\
+    \ величину волны-5\n#    \"большая часть\" интерпретируется как >= ~50% (точный\
+    \ порог не указан в источнике)\nprice_length_wave5 = abs(price(end(wave_5)) -\
+    \ price(start(wave_5)))\nretrace_amount = abs(price(end(wave_5)) - extreme_after_break(post_wave5_move))\n\
+    condition_retrace = retrace_amount >= majority_of(price_length_wave5)\n#    где\
+    \ majority_of ~ [0.5 .. 1.0] * price_length_wave5\n\n# 6. Итоговая проверка\n\
+    IF condition_break AND condition_time AND condition_retrace:\n    # Правило выполнено\
+    \ — импульсная разметка и линия 2-4 корректны\n    validation = PASS\nELSE:\n\
+    \    # Правило нарушено — два возможных вывода:\n    #   a) Линия тренда 2-4 построена\
+    \ неправильно (позиция wave_2 и/или wave_4 ошибочна)\n    #   b) Волна-5 развивается\
+    \ в Терминальную фигуру (Terminal pattern)\n    validation = FAIL\n    possible_reasons\
+    \ = [\n        'trendline_2_4_incorrect (wave_2 and/or wave_4 position is wrong)',\n\
+    \        'wave_5_is_terminal_pattern'\n    ]\n"
+  formalization_notes: "1. \"Большая часть\" (majority) волны-5 — точный порог не\
+    \ определён в источнике.\n   Нили не даёт конкретного процента. Разумная интерпретация:\
+    \ >= 50%-61.8% длины волны-5,\n   но это остаётся на усмотрение реализации. Формулировка\
+    \ \"большую часть или всю\"\n   предполагает диапазон примерно от 50% до 100%.\n\
+    2. \"Сразу\" конкретизировано как \"в течение периода времени, не превышающего\n\
+    \   длительность волны-5\" — это чёткий критерий.\n3. При нарушении правила алгоритм\
+    \ не может однозначно определить причину\n   (неправильная разметка vs терминальная\
+    \ фигура) — требуется дополнительная логика\n   для дифференциации этих двух случаев.\n\
+    4. Линия тренда 2-4 — это линия через точки end(wave_2) и end(wave_4),\n   экстраполированная\
+    \ вправо за предел"
 aliases:
 - правило пробития линии 2-4 после волны-5
 related_aku: []

@@ -25,9 +25,41 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: pattern == 'terminal_impulse' AND position == 'post_pattern'
-  constraint: hold(extreme(terminal)) for duration >= 2 * duration(terminal)
-  formalization_notes: '''Примерно'' два периода — мягкое ограничение.'
+  applies_when: '# Правило применяется после завершения паттерна "Терминальный Импульс"
+    (Ending Diagonal)
+
+    # Терминальный Импульс всегда завершает более крупную фигуру
+
+    pattern.type == ''terminal_impulse''  # ending diagonal
+
+    AND pattern.is_completed == true
+
+    '
+  constraint: "# Определяем длительность формирования терминального импульса\nterminal_duration\
+    \ = pattern.end_time - pattern.start_time\n\n# Определяем экстремум, созданный\
+    \ терминальным импульсом\n# (точка максимума или минимума в конце паттерна)\n\
+    if pattern.direction == 'up':\n    extreme_price = pattern.end_price  # максимум\n\
+    \    # После завершения цена не должна превысить этот максимум\n    # в течение\
+    \ минимум 2x длительности формирования\n    hold_period_start = pattern.end_time\n\
+    \    hold_period_end = pattern.end_time + 2 * terminal_duration\n    for each\
+    \ bar in range(hold_period_start, hold_period_end):\n        high(bar) <= extreme_price\
+    \  # экстремум удерживается\nelif pattern.direction == 'down':\n    extreme_price\
+    \ = pattern.end_price  # минимум\n    # После завершения цена не должна пробить\
+    \ этот минимум\n    # в течение минимум 2x длительности формирования\n    hold_period_start\
+    \ = pattern.end_time\n    hold_period_end = pattern.end_time + 2 * terminal_duration\n\
+    \    for each bar in range(hold_period_start, hold_period_end):\n        low(bar)\
+    \ >= extreme_price  # экстремум удерживается\n\n# Дополнительное следствие: терминальный\
+    \ импульс ВСЕГДА завершает\n# более крупную фигуру (parent pattern), т.е. является\
+    \ финальной волной\npattern.completes_parent_pattern == true\n"
+  formalization_notes: "1. Слово \"примерно\" (в \"примерно в течение как минимум\
+    \ двух периодов\") \n   вносит неопределённость — точный допуск не указан. В формализации\
+    \ \n   используется строгое 2x, но на практике допустимо небольшое отклонение\
+    \ \n   (например, 1.8x-2.0x). Разработчику стоит предусмотреть tolerance ~10%.\n\
+    2. \"Удержаться\" интерпретируется как отсутствие пробоя экстремума \n   (цена\
+    \ не выходит за созданный максимум/минимум).\n3. Отсчёт периода удержания начинается\
+    \ с момента окончания паттерна,\n   как явно указано в правиле.\n4. Утверждение\
+    \ \"всегда завершает более крупную фигуру\" — это \n   самостоятельное обязательное\
+    \ правило о позиции терминального импульса \n   в структуре старшего порядка."
 aliases:
 - правило удержания экстремума терминального импульса
 related_aku: []

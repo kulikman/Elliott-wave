@@ -21,9 +21,26 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: pattern == 'trend_impulse' AND extended_wave == 1
-  constraint: type(wave_2) != 'moving_correction'
-  formalization_notes: null
+  applies_when: '# Паттерн — Трендовый Импульс с Растянутой первой волной
+
+    pattern == ''trend_impulse'' AND extended_wave == 1
+
+    '
+  constraint: '# Волна-2 не может быть Подвижной коррекцией
+
+    correction_type(wave_2) != ''running_correction''
+
+    '
+  formalization_notes: '"Подвижная коррекция" (running correction) — коррекция, конец
+    которой
+
+    выходит за пределы начала предшествующей импульсной волны (т.е. волна-2
+
+    завершается за пределами конца волны-1 в направлении тренда).
+
+    Правило прямо и однозначно запрещает такой тип коррекции для волны-2
+
+    в данной конфигурации.'
 aliases:
 - запрет подвижной коррекции в волне-2 при растянутой первой
 related_aku: []

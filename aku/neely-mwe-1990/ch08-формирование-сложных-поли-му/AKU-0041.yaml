@@ -26,9 +26,37 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: pattern == 'impulse'
-  constraint: has_extension(impulse) == true AND alternation(wave_2, wave_4) == true
-  formalization_notes: null
+  applies_when: '# Проверяется при валидации завершённого паттерна из 5 волн
+
+    pattern == ''impulse''
+
+    '
+  constraint: "# Правило 1: Должно быть четко регистрируемое расширение (растяжение)\n\
+    # Одна из действующих волн (1, 3 или 5) должна быть значительно длиннее остальных\n\
+    has_clear_extension = (\n  length(wave_1) > 1.618 * length(wave_3) AND length(wave_1)\
+    \ > 1.618 * length(wave_5)\n) OR (\n  length(wave_3) > 1.618 * length(wave_1)\
+    \ AND length(wave_3) > 1.618 * length(wave_5)\n) OR (\n  length(wave_5) > 1.618\
+    \ * length(wave_1) AND length(wave_5) > 1.618 * length(wave_3)\n)\n\n# Правило\
+    \ 2: Чередование (альтернация) между волной 2 и волной 4\n# Волны 2 и 4 должны\
+    \ различаться по структуре, сложности, глубине или времени\nhas_alternation =\
+    \ (\n  structure(wave_2) != structure(wave_4)   # например: sharp vs flat, zigzag\
+    \ vs triangle\n  OR complexity(wave_2) != complexity(wave_4)  # простая vs сложная\n\
+    \  OR (duration_ratio(wave_2, wave_4) < 0.618 OR duration_ratio(wave_2, wave_4)\
+    \ > 1.618)\n  OR (retracement_depth(wave_2) != retracement_depth(wave_4))  # глубокая\
+    \ vs мелкая\n)\n\n# ОБА правила должны выполняться одновременно\n# Если хотя бы\
+    \ одно не выполняется — это НЕ импульсная волна\nREQUIRE has_clear_extension ==\
+    \ true AND has_alternation == true\n\n# Если нарушено:\nIF NOT (has_clear_extension\
+    \ AND has_alternation):\n  REJECT pattern as 'impulse'  # формируется не импульсная\
+    \ волна\n"
+  formalization_notes: "1. Понятие \"четко регистрируемое расширение\" не имеет точного\
+    \ числового порога\n   в данном правиле. Использован порог 1.618 как типичный\
+    \ для метода Нили,\n   но конкретное значение может требовать уточнения по другим\
+    \ AKU.\n2. Чередование (alternation) между wave_2 и wave_4 — многоаспектное понятие.\n\
+    \   Правило требует чередования, но не уточняет по какому именно параметру\n \
+    \  (структура, время, глубина, сложность). Достаточно различия хотя бы\n   по\
+    \ одному аспекту. Детализация чередования может быть в отдельных AKU.\n3. Правило\
+    \ является обязательным (mandatory) — нарушение любого из двух\n   условий означает,\
+    \ что паттерн не является импульсом."
 aliases:
 - правило растяжения и чередования в импульсе
 related_aku: []

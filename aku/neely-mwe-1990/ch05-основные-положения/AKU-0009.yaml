@@ -21,7 +21,7 @@ source:
       трендовых импульсных формаций) не могут перекрываться (накладываться) даже частично
     language: ru
 formalization:
-  status: formalized
+  status: draft
   applies_when: '# Правило применяется к трендовым импульсным формациям (5-3-5-3-5)
 
     pattern_type == ''trending_impulse''

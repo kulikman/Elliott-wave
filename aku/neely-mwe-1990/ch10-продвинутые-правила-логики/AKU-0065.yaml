@@ -24,9 +24,40 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: subtype == 'irregular_failure' AND position == 'post_pattern'
-  constraint: reaches(next_wave_same_degree, start_level(pattern))
-  formalization_notes: null
+  applies_when: '# Паттерн является Неправильной Неудавшейся (Irregular Failure) флэт
+
+    pattern.type == ''flat''
+
+    AND pattern.subtype == ''irregular_failure''
+
+    # Рассматриваем волну, следующую за завершённым паттерном
+
+    # Эта волна должна быть того же Порядка (degree), что и сам паттерн
+
+    next_wave = get_next_wave_after(pattern)
+
+    AND next_wave.degree == pattern.degree
+
+    '
+  constraint: "# Следующая волна того же Порядка должна достигать начального уровня\n\
+    # паттерна Неправильной Неудавшейся (т.е. начала волны A флэта)\nstart_level =\
+    \ price_at(pattern.start)  # начальный уровень паттерна\n\n# Для бычьего паттерна\
+    \ (паттерн шёл вверх): следующая волна идёт вниз\n# и должна достичь уровня начала\
+    \ паттерна\nif pattern.direction == 'up':\n  low(next_wave) <= start_level\n\n\
+    # Для медвежьего паттерна (паттерн шёл вниз): следующая волна идёт вверх\n# и\
+    \ должна достичь уровня начала паттерна\nif pattern.direction == 'down':\n  high(next_wave)\
+    \ >= start_level\n"
+  formalization_notes: '"Начальный уровень" интерпретируется как ценовой уровень начала
+
+    паттерна Неправильной Неудавшейся (начало волны A).
+
+    "Волна такого же Порядка" — волна того же degree, что и весь паттерн,
+
+    следующая непосредственно за его завершением.
+
+    Правило является обязательным (mandatory) — следующая волна ДОЛЖНА
+
+    достигать этого уровня.'
 aliases:
 - правило постэффекта неправильной неудавшейся
 related_aku: []

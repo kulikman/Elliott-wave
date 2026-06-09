@@ -21,7 +21,7 @@ source:
       быть меньше 38.2% длины четвертого (в ценовом отношении).
     language: ru
 formalization:
-  status: formalized
+  status: draft
   applies_when: '# Правило применяется к импульсной структуре, когда определены сегменты
     4 и 5
 

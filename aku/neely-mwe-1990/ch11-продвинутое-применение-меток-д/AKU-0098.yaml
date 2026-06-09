@@ -25,10 +25,34 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: pattern == 'horizontal_contracting_limiting_triangle'
-  constraint: length(wave_d) < length(wave_c) AND length(wave_e) < length(wave_d)
-    AND 0.382 * length(wave_a) <= length(wave_b) <= 2.618 * length(wave_a)
-  formalization_notes: null
+  applies_when: '# Паттерн — Горизонтальный Сужающийся Ограничивающий Треугольник
+
+    pattern == ''horizontal_contracting_limiting_triangle''
+
+    '
+  constraint: '# Правило 1: волна-d короче волны-c
+
+    length(wave_d) < length(wave_c)
+
+
+    # Правило 2: волна-e короче волны-d
+
+    length(wave_e) < length(wave_d)
+
+
+    # Правило 3: волна-b не менее 38.2% и не более 261.8% волны-a
+
+    length(wave_b) >= 0.382 * length(wave_a)
+
+    AND
+
+    length(wave_b) <= 2.618 * length(wave_a)
+
+    '
+  formalization_notes: 'length() — ценовая длина (расстояние от начала до конца волны
+    по цене).
+
+    Все три условия являются обязательными (mandatory) и должны выполняться одновременно.'
 aliases:
 - правила длин сторон горизонтального треугольника
 related_aku: []

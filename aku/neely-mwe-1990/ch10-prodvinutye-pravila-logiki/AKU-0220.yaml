@@ -24,11 +24,47 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: after terminal impulse (ending diagonal) completion
-  constraint: next_wave MUST reach start(terminal) ; time(reach_start) <= 0.5 * time(terminal_formation)
-    ; level_held >= 2 * terminal_duration
-  formalization_notes: 'Самый надёжный постэффект для торговли: быстрый разворот после
-    Терминала.'
+  applies_when: '# Правило применяется после завершения Терминального Импульса (Ending
+    Diagonal)
+
+    pattern_just_completed == ''terminal_impulse''
+
+    # Терминал всегда завершает более крупную фигуру
+
+    # (т.е. является финальным сегментом вышестоящего паттерна)
+
+    '
+  constraint: "# --- Определения ---\nterminal = completed_terminal_impulse\nterminal_start_price\
+    \ = price_at(start(terminal))\nterminal_end_price = price_at(end(terminal))\n\
+    terminal_duration = time(end(terminal)) - time(start(terminal))\n\nnext_wave =\
+    \ wave_immediately_following(terminal)\n\n# --- Правило 1 (mandatory из verbatim_quote):\
+    \ ---\n# Следующая за Терминальным Импульсом волна ДОЛЖНА достичь его начального\
+    \ уровня\n# не более чем за 50% времени его формирования\n\n# Определяем момент,\
+    \ когда цена возвращается к начальному уровню терминала\nif direction(terminal)\
+    \ == 'up':\n  # Терминал шёл вверх — следующая волна идёт вниз\n  time_to_reach_start\
+    \ = first_time_after(end(terminal), where: low <= terminal_start_price) - time(end(terminal))\n\
+    elif direction(terminal) == 'down':\n  # Терминал шёл вниз — следующая волна идёт\
+    \ вверх\n  time_to_reach_start = first_time_after(end(terminal), where: high >=\
+    \ terminal_start_price) - time(end(terminal))\n\n# Обязательное ограничение: достижение\
+    \ начального уровня за ≤ 50% времени формирования\nREQUIRE time_to_reach_start\
+    \ <= 0.50 * terminal_duration\n\n# Типичное значение (не mandatory, информационное):\
+    \ ~25% времени\n# TYPICAL: time_to_reach_start ≈ 0.25 * terminal_duration\n\n\
+    # --- Правило 2 (из statement_ru, из контекста книги): ---\n# Создаваемая Терминалом\
+    \ точка минимума/максимума удерживается\n# примерно в течение минимум двух периодов\
+    \ его формирования\n\nextreme_price = terminal_end_price  # точка экстремума,\
+    \ созданная терминалом\nhold_period_start = time(end(terminal))\nhold_period_end\
+    \ = hold_period_start + 2 * terminal_duration\n\nif direction(terminal) == 'up':\n\
+    \  # Максимум не должен быть превышен в течение ~2x длительности терминала\n \
+    \ REQUIRE max(high, from: hold_period_start, to: hold_period_end) <= extreme_price\n\
+    elif direction(terminal) == 'down':\n  # Минимум не должен быть пробит в течение\
+    \ ~2x длительности терминала\n  REQUIRE min(low, from: hold_period_start, to:\
+    \ hold_period_end) >= extreme_price\n"
+  formalization_notes: "1. Правило 1 (50% времени) — mandatory, подтверждено verbatim_quote.\n\
+    2. Правило 2 (удержание экстремума ~2 периода) — в тексте сказано \"примерно в\
+    \ течение \n   как минимум двух периодов\", слово \"примерно\" вносит нечёткость;\
+    \ формализовано \n   как строгое ≤/≥, но на практике допустимы незначительные\
+    \ отклонения.\n3. Типичное значение 25% — не mandatory, указано как ориентир (\"\
+    обычно\").\n4. Утверждение \"Терминал всегда завершает более крупную фиг"
 aliases: []
 related_aku: []
 contradicts_aku: []

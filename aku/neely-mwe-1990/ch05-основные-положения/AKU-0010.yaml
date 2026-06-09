@@ -20,7 +20,7 @@ source:
       перекрываться
     language: ru
 formalization:
-  status: formalized
+  status: draft
   applies_when: '# Правило применяется к Терминальным Импульсам (Ending Diagonals,
     структура 3-3-3-3-3)
 

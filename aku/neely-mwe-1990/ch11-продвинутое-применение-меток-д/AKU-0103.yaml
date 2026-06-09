@@ -24,9 +24,39 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: expanding limiting triangle, wave failure
-  constraint: only Wb OR Wd may fail_to_exceed previous wave; no other waves may fail
-  formalization_notes: Добавлено в ходе аудита качества AKU
+  applies_when: '# Паттерн — Расширяющийся Ограничивающий Треугольник (Expanding Limiting
+    Triangle)
+
+    pattern == ''expanding_limiting_triangle''
+
+    '
+  constraint: "# \"Неудавшаяся\" (failure) волна — это волна, которая не смогла превысить\
+    \ конец предыдущей волны\n# (т.е. не вышла за ценовой уровень окончания предшествующей\
+    \ волны в ожидаемом направлении)\n\ndef is_failed(wave_label):\n    # Для волн\
+    \ треугольника: волна \"не удалась\", если её конец\n    # не превысил конец предыдущей\
+    \ волны в направлении движения\n    prev = previous_wave(wave_label)\n    if wave_direction(wave_label)\
+    \ == 'up':\n        return end_price(wave_label) < end_price(prev)\n    else:\n\
+    \        return end_price(wave_label) > end_price(prev)\n\n# Только волна-b или\
+    \ волна-d могут быть \"неудавшимися\"\n# Волны a, c, e НЕ могут быть \"неудавшимися\"\
+    \n\nif is_failed(wave_a):\n    rule_violated = true  # волна-a не может быть неудавшейся\n\
+    \nif is_failed(wave_c):\n    rule_violated = true  # волна-c не может быть неудавшейся\n\
+    \nif is_failed(wave_e):\n    rule_violated = true  # волна-e не может быть неудавшейся\n\
+    \n# wave_b и wave_d МОГУТ быть неудавшимися (но не обязаны)\n# is_failed(wave_b)\
+    \ => допустимо\n# is_failed(wave_d) => допустимо\n\n# Итоговое ограничение:\n\
+    for wave_label in [wave_a, wave_c, wave_e]:\n    assert not is_failed(wave_label)\n"
+  formalization_notes: '"Не удаться превысить конец предыдущей волны" (failure) означает,
+    что волна
+
+    не достигла ценового уровня окончания предшествующей волны в ожидаемом направлении.
+
+    В расширяющемся треугольнике каждая последующая волна обычно должна быть больше
+
+    предыдущей, поэтому failure — исключительная ситуация, допустимая только для b
+    и d.
+
+    Правило mandatory — если a, c или e "не удались", паттерн не может быть
+
+    расширяющимся ограничивающим треугольником.'
 aliases:
 - правило неудавшихся волн расширяющегося треугольника
 related_aku: []

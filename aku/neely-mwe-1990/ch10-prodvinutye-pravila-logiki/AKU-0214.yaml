@@ -24,11 +24,41 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: predicting next wave retracement based on energy rating
-  constraint: 'if |energy| == 0: next_wave_max = 1.0 * current ; if |energy| == 1:
-    next_wave_max = 0.9 * current ; if |energy| == 2: next_wave_max = 0.8 * current
-    ; if |energy| == 3: next_wave_max = 0.65 * current'
-  formalization_notes: null
+  applies_when: '# После завершения волны, для которой рассчитан рейтинг Энергии (energy_rating),
+
+    # прогнозируется максимальная длина следующей завершённой волны того же Порядка
+    (degree).
+
+    wave_completed = true
+
+    energy_rating = computed_energy_rating(evaluated_wave)  # значение из {-3, -2,
+    -1, 0, +1, +2, +3}
+
+    next_wave = next_completed_wave_of_same_degree(evaluated_wave)
+
+    '
+  constraint: "abs_energy = abs(energy_rating)\nevaluated_wave_length = price_length(evaluated_wave)\n\
+    \nif abs_energy == 0:\n  # Нулевой рейтинг не накладывает специальных ограничений\n\
+    \  # Следующая волна может быть от 0% до 100% длины предыдущей волны\n  next_wave_max_length\
+    \ = 1.0 * evaluated_wave_length\n  # (фактически — без жёсткого ограничения сверх\
+    \ общего диапазона 0–100%)\n\nelif abs_energy == 1:\n  # Следующая завершённая\
+    \ волна того же Порядка ≤ 90% длины оцениваемой волны\n  next_wave_max_length\
+    \ = 0.90 * evaluated_wave_length\n\nelif abs_energy == 2:\n  # Следующая завершённая\
+    \ волна того же Порядка ≤ 80% длины оцениваемой волны\n  next_wave_max_length\
+    \ = 0.80 * evaluated_wave_length\n\nelif abs_energy == 3:\n  # Следующая завершённая\
+    \ волна того же Порядка ≤ 60–70% длины оцениваемой волны\n  next_wave_max_length\
+    \ = 0.65 * evaluated_wave_length  # среднее от диапазона 60–70%\n\n# Проверка\
+    \ ограничения:\nprice_length(next_wave) <= next_wave_max_length\n"
+  formalization_notes: "1. Для energy_rating == 0 в verbatim_quote сказано \"не накладывает\
+    \ специальных ограничений\",\n   но в statement_ru указано \"от 0 до 100% длины\
+    \ предыдущей\". Формализовано как ≤ 100%.\n2. Для ±3 в источнике указан диапазон\
+    \ \"60–70%\", формализовано как 0.65 (среднее).\n   Разработчик может использовать\
+    \ 0.60 (консервативно) или 0.70 (либерально).\n3. \"Длина волны\" (price_length)\
+    \ — вертикальное ценовое расстояние от начала до конца волны.\n4. \"Следующая\
+    \ завершённая волна того же Порядка\" — ключевое условие: сравнение идёт\n   не\
+    \ с произвольной следующей волной, а именно с волной того же degree.\n5. Знак\
+    \ рейтинга (+/-) указывает направление энергии, но для данного ограничения\n \
+    \  используется абсолютное значение — ограничение симметрично."
 aliases: []
 related_aku: []
 contradicts_aku: []

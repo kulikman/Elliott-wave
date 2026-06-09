@@ -29,10 +29,46 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: one mandatory rule violated
-  constraint: 'if violated_rules_count == 1 AND context IN {multiwave_end, terminal_w5,
-    triangle}: allow_exception ; if violated_rules_count >= 2: reject_hypothesis'
-  formalization_notes: Треугольники и Терминалы — исключения практически из всех правил.
+  applies_when: '# Применяется при валидации любой волновой гипотезы,
+
+    # когда обнаружено нарушение одного или более "важных" (mandatory/conditional)
+    правил
+
+    violated_mandatory_rules = count_violated_rules(hypothesis, rule_strength=''mandatory_or_conditional'')
+
+    violated_mandatory_rules >= 1
+
+    '
+  constraint: "# Подсчитать количество нарушенных важных правил для данной гипотезы\n\
+    violated_count = count_violated_rules(hypothesis, rule_strength='mandatory_or_conditional')\n\
+    \n# Определить, находится ли волна в одном из \"исключительных\" контекстов\n\
+    exception_context = FALSE\n\n# A) Завершение мультиволны или более крупной фигуры\n\
+    if wave_completes_multiwave(current_wave) OR wave_completes_larger_pattern(current_wave):\n\
+    \    exception_context = TRUE\n\n# B) Волна-5 или c-волна Терминальной (Ending\
+    \ Diagonal) фигуры\nif parent_pattern == 'ending_diagonal':\n    if current_wave_position\
+    \ == 5 OR current_wave_position == 'c':\n        exception_context = TRUE\n\n\
+    # C) Волна, являющаяся Треугольником или завершающаяся Треугольником\n#    (Сужающийся\
+    \ или Расширяющийся)\nif current_wave_pattern IN ['contracting_triangle', 'expanding_triangle']:\n\
+    \    exception_context = TRUE\nif current_wave_ends_with_pattern IN ['contracting_triangle',\
+    \ 'expanding_triangle']:\n    exception_context = TRUE\n\n# Основная логика исключений\n\
+    if violated_count == 1 AND exception_context == TRUE:\n    # Допустимо: одно важное\
+    \ правило может не выполняться\n    allow_exception = TRUE\nelif violated_count\
+    \ >= 2:\n    # Недопустимо: одновременное нарушение двух и более важных правил\n\
+    \    reject_hypothesis(reason=\"two_or_more_mandatory_rules_violated_no_exception_allowed\"\
+    )\n    allow_exception = FALSE\nelif violated_count == 1 AND exception_context\
+    \ == FALSE:\n    # Нарушено одно правило, но нет исключительного контекста — нарушение\
+    \ не допускается\n    reject_hypothesis(reason=\"mandatory_rule_violated_without_exception_context\"\
+    )\n    allow_exception = FALSE\n"
+  formalization_notes: "1. Правило является мета-правилом: оно модифицирует применение\
+    \ всех остальных\n   mandatory/conditional правил, а не описывает конкретное ценовое\
+    \ ограничение.\n2. Понятие \"важное правило\" (important rule) не имеет точного\
+    \ перечня в данном AKU;\n   предполагается, что это правила со strength='mandatory'\
+    \ или 'conditional'.\n3. \"Необычные условия\" и \"важные точки разворота\" формализованы\
+    \ через три\n   конкретных контекста (A, B, C), перечисленных в verbatim_quote.\n\
+    4. Функции wave_completes_multiwave() и wave_completes_larger_pattern() требуют\n\
+    \   определения на уровне реализации — они зависят от иерархии степеней волн.\n\
+    5. Треугольники включают оба типа: сужающийся (contracting) и расширяющийся (expanding),\n\
+    \   как явно указано в verbatim_quote."
 aliases: []
 related_aku: []
 contradicts_aku: []

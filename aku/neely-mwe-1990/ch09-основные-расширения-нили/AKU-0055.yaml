@@ -30,10 +30,43 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: pattern IN corrective AND pattern != 'triangle'
-  constraint: count(same_degree_points touching parallel_trendlines) <= 3
-  formalization_notes: 4 возможные точки касания, но касаться параллельных линий могут
-    только 3.
+  applies_when: '# Правило применяется к Стандартным Коррекциям, исключая Треугольники
+
+    # Стандартные коррекции: Flat (все варианты), Zigzag (все варианты)
+
+    pattern.type IN [''flat'', ''zigzag'']
+
+    AND pattern.classification == ''standard_correction''
+
+    AND pattern.type != ''triangle''
+
+    '
+  constraint: "# Определяем 4 возможные точки касания параллельных линий тренда коррекции:\n\
+    # Для Flat/Zigzag (волны A-B-C) точки касания — это начало и конец каждой волны:\n\
+    #   point_0 = start of wave A\n#   point_A = end of wave A (= start of wave B)\n\
+    #   point_B = end of wave B (= start of wave C)\n#   point_C = end of wave C\n\
+    \n# Строим параллельный канал (две параллельные линии тренда)\n# через комбинации\
+    \ этих 4 точек\n\npoints = [point_0, point_A, point_B, point_C]\n\n# Считаем только\
+    \ точки одинакового Порядка (same degree)\nsame_degree_points = filter(points,\
+    \ p => p.degree == pattern.degree)\n\n# Считаем сколько из этих точек касаются\
+    \ параллельных линий тренда\ntouching_count = count(p IN same_degree_points WHERE\n\
+    \  p touches upper_parallel_trendline OR p touches lower_parallel_trendline\n\
+    )\n\n# Максимум 3 точки одинакового Порядка могут касаться параллельных линий\n\
+    IF touching_count <= 3:\n  # Нормальная Стандартная Коррекция — правило соблюдено\n\
+    \  pattern.is_standard_correction = TRUE\n\nIF touching_count == 4:\n  # Все 4\
+    \ точки одинакового Порядка касаются параллельных линий —\n  # значит эта коррекция\
+    \ является частью Сложной Нестандартной конфигурации\n  pattern.is_standard_correction\
+    \ = FALSE\n  pattern.is_part_of_complex_non_standard = TRUE\n"
+  formalization_notes: "1. Правило имеет двойную природу: это и ограничение (макс\
+    \ 3 касания для стандартной\n   коррекции), и диагностический критерий (4 касания\
+    \ => часть сложной конфигурации).\n2. Понятие \"касание параллельных линий тренда\"\
+    \ требует определения допуска (tolerance)\n   для алгоритмической реализации —\
+    \ точное касание на практике редко.\n3. \"Точки одинакового Порядка\" (same degree)\
+    \ — ключевое уточнение из verbatim_quote.\n   Если точки разного порядка, правило\
+    \ не применяется.\n4. Способ построения параллельного канала (через какие именно\
+    \ точки проводятся линии)\n   не уточнён в данном правиле — предположительно определяется\
+    \ в связанных AKU\n   (например AKU-0052).\n5. Правило conditional — это диагностический\
+    \ индикатор, а не абсолютный запрет."
 aliases:
 - правило точек касания коррекции
 related_aku:

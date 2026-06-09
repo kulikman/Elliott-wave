@@ -31,11 +31,50 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: full wave analysis procedure
-  constraint: 'algorithm: a→b→c→d→e→f→g→h→i→j(loop) ; each compacted wave = new monowave
-    for next level'
-  formalization_notes: ГЛАВНЫЙ АЛГОРИТМ методологии Нили. Pine реализует шаги a-h
-    в Уровнях 1-4.
+  applies_when: '# Применяется ко всему процессу волнового анализа по методологии
+    Нили.
+
+    # Запускается при наличии ценовых данных (массива моноволн).
+
+    analysis_started == true AND monowaves_available == true
+
+    '
+  constraint: "# ГЛАВНЫЙ АЛГОРИТМ НИЛИ — 10 шагов с рекурсивным циклом повышения уровня\
+    \ сложности\n\nfunction nely_full_analysis(price_data):\n    complexity_level\
+    \ = 0\n    \n    # ===== ШАГ A: Отметить конечные точки моноволн =====\n    #\
+    \ \"Отметить кружками конечные точки каждой отдельной моноволны\"\n    monowaves\
+    \ = identify_monowave_endpoints(price_data)\n    \n    # Рекурсивный цикл начинается\
+    \ с шага B\n    current_waves = monowaves\n    \n    while current_waves.length\
+    \ >= 3:  # минимум для группировки\n        \n        # ===== ШАГ B: Разместить\
+    \ Метки Движения (Неформальные правила) =====\n        # \"Изучить Правила соотношений\
+    \ длин волн (отката) и, используя\n        #  Неформальные Правила логики, тщательно\
+    \ разместить Метки Движения\"\n        for each wave in current_waves:\n     \
+    \       wave.structure_label = apply_retracement_rules(wave)  # Глава 3\n    \
+    \        wave.structure_label = refine_by_informal_logic(wave)  # Неформальные\
+    \ правила\n        \n        # ===== ШАГ C: Найти комбинации групповых структур\
+    \ =====\n        # \"Найти комбинации групповых структур смежных моноволн\"\n\
+    \        group_combinations = find_adjacent_structure_series(current_waves)\n\
+    \        # Серии A-E (стандартные) и F-H (нестандартные)\n        \n        #\
+    \ ===== ШАГ D: Определить Серию → перейти к Главе 5 =====\n        # \"Определив\
+    \ структурную серию, перейти к соответствующему разделу\"\n        for each group\
+    \ in group_combinations:\n            group.series_id = determine_series(group)\
+    \  # Глава 5\n            group.candidate_patterns = lookup_series_patterns(group.series_id)\n\
+    \        \n        # ===== ШАГ E: Проверить Основные правила построения =====\n\
+    \        for each group in group_combinations:\n            group.valid_patterns\
+    \ = filter_by_construction_rules(group.candidate_patterns)\n        \n       \
+    \ # ===== ШАГ F: Расставить Метки Движения + Условные правила =====\n        for\
+    \ each group in group_combinations:\n            group.structure_labels = assign_structure_labels(group.valid_patterns)\n\
+    \            group.structure_labels = apply_conditional_rules(group.structure_labels)\n\
+    \        \n        # ===== ШАГ G: Проверить Продвинутые Метки + Продвинутые Правила\
+    \ логики =====\n        for each group in group_combinations:\n            group.final_labels\
+    \ = apply_advanced_labels(group.structure_labels)\n            group.final_labels\
+    \ = apply_advanced_logic_rules(group.final_labels)\n        \n        # =====\
+    \ ШАГ H: Уплотнить до :3 или :5 =====\n        # \"Уплотнить (сжать) волну до\
+    \ ее базовой структуры (\":3\" или \":5\")\"\n        compacted_waves = []\n \
+    \       for each group in group_combinations:\n            compacted = compact_group_to_single_wave(group)\n\
+    \            compacted.base_structure = \":3\" if group.is_corrective else \"\
+    :5\"\n            compacted.start = group.first_"
+  formalization_notes: null
 aliases: []
 related_aku: []
 contradicts_aku: []

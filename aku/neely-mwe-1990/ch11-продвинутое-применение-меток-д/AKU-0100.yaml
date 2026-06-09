@@ -28,10 +28,42 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: pattern == 'expanding_triangle'
-  constraint: next_pattern NOT IN ('extended_1','extended_2','extended_3','elongated_c')
-    AND not ends_correction(['double','triple','combination'])
-  formalization_notes: null
+  applies_when: '# Правило применяется когда идентифицирован Расширяющийся Треугольник
+
+    pattern.type == ''expanding_triangle''
+
+    '
+  constraint: "# Часть 1: Расширяющийся Треугольник не может находиться непосредственно\
+    \ перед\n# любой \"мощной\" фигурой (powerful pattern)\n#\n# \"Непосредственно\
+    \ перед\" означает, что следующая за треугольником волна/фигура\n# не должна быть\
+    \ мощной.\n# Мощные фигуры: Растянутая 1-я волна, Растянутая 2-я волна, Растянутая\
+    \ 3-я волна,\n# Удлинённая c-волна.\n#\n# Если треугольник в позиции wave_4 импульса:\n\
+    #   next_wave (wave_5) не может быть частью импульса с extended_1, extended_2,\
+    \ extended_3\n#   — но треугольник предшествует wave_5, а extension относится\
+    \ ко всему импульсу,\n#   поэтому проверяем родительский импульс.\n#\n# Если треугольник\
+    \ в позиции wave_b коррекции:\n#   next_wave (wave_c) не может быть elongated_c\n\
+    #\n# Общая формулировка:\nfollowing_pattern = get_pattern_immediately_after(pattern)\n\
+    \npowerful_patterns = [\n  'impulse_with_extended_wave1',   # Растянутая 1-я волна\n\
+    \  'impulse_with_extended_wave2',   # Растянутая 2-я волна\n  'impulse_with_extended_wave3',\
+    \   # Растянутая 3-я волна\n  'elongated_c_wave'               # Удлинённая c-волна\n\
+    ]\n\nassert following_pattern.type NOT IN powerful_patterns\n\n# Часть 2: Расширяющийся\
+    \ Треугольник не может завершать (быть последним сегментом)\n# Двойную Коррекцию,\
+    \ Тройную Коррекцию или Комбинацию Коррекций \"Подвижная Тройка\"\n#\n# \"Завершать\"\
+    \ = быть финальным корректирующим паттерном в составной коррекции\nparent_pattern\
+    \ = get_parent_pattern(pattern)\n\nif parent_pattern.type == 'double_correction':\n\
+    \  # Треугольник не может быть последним элементом двойной коррекции\n  assert\
+    \ pattern != parent_pattern.last_corrective_segment\n\nif parent_pattern.type\
+    \ == 'triple_correction':\n  # Треугольник не может быть последним элементом тройной\
+    \ коррекции\n  assert pattern != parent_pattern.last_corrective_segment\n\nif\
+    \ parent_pattern.type == 'running_combination':\n  # \"Подвижная Тройка\" — Комбинация\
+    \ Коррекций подвижного типа\n  assert pattern != parent_pattern.last_corrective_segment\n"
+  formalization_notes: "1. \"Непосредственно перед мощной фигурой\" — треугольник\
+    \ предшествует фигуре,\n   но мощность (extended/elongated) — свойство родительского\
+    \ паттерна более\n   высокого порядка. Например, если треугольник стоит в wave_4,\
+    \ то проверяется,\n   не является ли весь импульс паттерном с растянутой 1/2/3\
+    \ волной.\n2. \"Подвижная Тройка\" (Running Triple) интерпретирована как running\
+    \ combination.\n   Точная терминология Нили может подразумевать конкретный подтип\
+    \ комбинации"
 aliases:
 - запрет расширяющегося треугольника перед мощными фигурами
 related_aku: []

@@ -24,9 +24,45 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: irregular flat identification
-  constraint: Wb >= 1.01 * Wa AND Wc >= 1.01 * Wb
-  formalization_notes: Добавлено в ходе аудита качества AKU
+  applies_when: '# Правило применяется при идентификации Неправильной Плоской коррекции
+    (Irregular Flat)
+
+    pattern == ''flat'' AND flat_type == ''irregular''
+
+    # Структура: a-b-c, где все три волны присутствуют
+
+    '
+  constraint: '# Длина волны-b должна быть не меньше 101% длины волны-a
+
+    length(wave_b) >= 1.01 * length(wave_a)
+
+
+    # Длина волны-c должна быть не меньше 101% длины волны-b
+
+    length(wave_c) >= 1.01 * length(wave_b)
+
+
+    # где length() — ценовое расстояние (амплитуда) волны
+
+    '
+  formalization_notes: 'Оба условия должны выполняться одновременно для квалификации
+    паттерна
+
+    как Неправильной Плоской коррекции.
+
+    length() означает абсолютное ценовое расстояние от начала до конца волны:
+
+    length(wave) = abs(wave.end_price - wave.start_price).
+
+    Из правила следует, что каждая последующая волна длиннее предыдущей:
+
+    wave_b > wave_a и wave_c > wave_b, что означает wave_c > wave_b > wave_a.
+
+    Пометка review_notes о возможной галлюцинации цитаты учтена —
+
+    однако statement_ru и verbatim_quote согласованы между собой,
+
+    формализация основана на их содержании.'
 aliases:
 - минимальные требования неправильной плоской
 related_aku: []

@@ -23,10 +23,43 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: classifying multiwave impulse
-  constraint: count(polywave IN {wave_1, wave_3, wave_5}) == 1 AND monowave_count({wave_1,wave_3,wave_5}
-    - polywave) == 2
-  formalization_notes: null
+  applies_when: '# Правило применяется при классификации паттерна как мультиволновый
+    импульс
+
+    pattern == ''impulse'' AND structural_degree == ''multiwave''
+
+    '
+  constraint: '# Определяем структурную сложность каждой нечётной волны
+
+    odd_waves = [wave_1, wave_3, wave_5]
+
+
+    # Подсчитываем количество поливолн среди нечётных волн
+
+    polywave_count = count(w for w in odd_waves if complexity(w) == ''polywave'')
+
+
+    # Подсчитываем количество моноволн среди нечётных волн
+
+    monowave_count = count(w for w in odd_waves if complexity(w) == ''monowave'')
+
+
+    # Ровно одна нечётная волна должна быть поливолной (сегментированной)
+
+    polywave_count == 1
+
+
+    # Две остальные нечётные волны должны быть моноволнами
+
+    AND monowave_count == 2
+
+    '
+  formalization_notes: "- \"Поливолна (сегментированная)\" означает волну, состоящую\
+    \ из нескольких моноволн,\n  т.е. имеющую внутреннюю структуру (подволны).\n-\
+    \ \"Моноволна\" — неделимая единица, не имеющая внутренней сегментации.\n- Правило\
+    \ касается именно мультиволнового уровня импульса: на этом уровне\n  ровно одна\
+    \ из нечётных волн повышается в сложности до поливолны,\n  а две другие остаются\
+    \ моноволнами.\n- Чётные волны (2 и 4) данным правилом не ограничиваются."
 aliases: []
 related_aku: []
 contradicts_aku: []

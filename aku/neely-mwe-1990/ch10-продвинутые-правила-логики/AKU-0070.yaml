@@ -23,9 +23,40 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: pattern == 'expanding_triangle' AND position == 'wave_b'
-  constraint: next_structure_contains('failure_c') == true
-  formalization_notes: 'Предиктивное правило: Неудавшаяся-с неизбежна.'
+  applies_when: '# Текущая завершённая фигура — Расширяющийся Треугольник
+
+    # и она находится в позиции b-волны объемлющей структуры
+
+    pattern == ''expanding_triangle''
+
+    AND position_in_parent == ''wave_b''
+
+    '
+  constraint: "# Волна c объемлющей структуры (следующая за данной b-волной)\n# должна\
+    \ быть Неудавшейся-с (Failure-C),\n# т.е. волна c не достигает конца волны a объемлющей\
+    \ структуры\n#\n# Для бычьего флэта (a вверх, b вниз, c вверх):\n#   end_price(parent.wave_c)\
+    \ < end_price(parent.wave_a)\n# Для медвежьего флэта (a вниз, b вверх, c вниз):\n\
+    #   end_price(parent.wave_c) > end_price(parent.wave_a)\n#\n# Обобщённо:\nparent.wave_c.is_failure\
+    \ == true\n# где is_failure означает, что волна c не достигает ценового уровня\n\
+    # окончания волны a в направлении движения волны c\nIF parent.direction == 'bullish':\n\
+    \    end_price(parent.wave_c) < end_price(parent.wave_a)\nELIF parent.direction\
+    \ == 'bearish':\n    end_price(parent.wave_c) > end_price(parent.wave_a)\n"
+  formalization_notes: 'Правило является предиктивным: если Расширяющийся Треугольник
+    завершён
+
+    в позиции b-волны, то волна c объемлющей коррективной структуры
+
+    (флэт или аналогичная) обязательно будет «неудавшейся» (Failure-C).
+
+    «Неудавшаяся-с» означает, что c-волна не достигает конца a-волны
+
+    по цене. Правило mandatory — при валидации структуры, если c-волна
+
+    не является failure, то либо разметка b-волны как расширяющегося
+
+    треугольника неверна, либо разметка c-волны неверна.
+
+    Термин «неизбежна» из verbatim_quote подтверждает mandatory статус.'
 aliases:
 - неудавшаяся-с после расширяющегося треугольника в b-волне
 related_aku: []

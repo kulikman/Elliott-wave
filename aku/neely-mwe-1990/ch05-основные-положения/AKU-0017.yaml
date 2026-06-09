@@ -24,7 +24,7 @@ source:
       '
     language: ru
 formalization:
-  status: formalized
+  status: draft
   applies_when: 'pattern == ''flat''
 
     AND price_length(wave_b) > 1.382 * price_length(wave_a)

@@ -24,10 +24,32 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: pattern == 'terminal_impulse' AND extended_wave == 1
-  constraint: retrace(wave_2) <= 0.618 * length(wave_1) AND 0.382 * length(wave_1)
-    <= length(wave_3) <= 0.618 * length(wave_1) AND length(wave_5) <= 0.99 * length(wave_3)
-  formalization_notes: null
+  applies_when: '# Паттерн — Терминальный Импульс (Ending Diagonal) с растянутой первой
+    волной
+
+    pattern == ''terminal_impulse'' AND extended_wave == 1
+
+    '
+  constraint: "# Длины волн измеряются по цене (price distance)\nlen_w1 = abs(end(wave_1)\
+    \ - start(wave_1))\nlen_w2 = abs(end(wave_2) - start(wave_2))  # откат волны-2\n\
+    len_w3 = abs(end(wave_3) - start(wave_3))\nlen_w5 = abs(end(wave_5) - start(wave_5))\n\
+    \n# Правило 1: Волна-2 не должна откатываться более чем на 61.8% волны-1\nlen_w2\
+    \ <= 0.618 * len_w1\n\n# Правило 2: Волна-3 не менее 38.2% волны-1\nlen_w3 >=\
+    \ 0.382 * len_w1\n\n# Правило 3: Волна-3 не должна быть намного больше 61.8% волны-1\n\
+    # Формулировка \"не намного больше\" — нечёткая; \n# как строгое mandatory ограничение\
+    \ формализуем верхнюю границу с допуском\n# (см. formalization_notes)\nlen_w3\
+    \ <= 0.618 * len_w1 * (1 + tolerance)\n# где tolerance — небольшой допуск, например\
+    \ 0.05–0.10 (5–10%)\n\n# Правило 4: Волна-5 не может быть более 99% волны-3\n\
+    len_w5 <= 0.99 * len_w3\n"
+  formalization_notes: "1. Формулировка «не должна быть намного больше 61.8%» для\
+    \ верхней границы волны-3\n   содержит нечёткий квантификатор «намного». Строго\
+    \ формализовать невозможно.\n   В constraint использован параметр tolerance, который\
+    \ нужно калибровать.\n   Нижняя граница (>= 38.2%) и верхний потолок волны-5 (<=\
+    \ 99% волны-3) — чёткие.\n2. Волна-2 измеряется как откат (retracement) от конца\
+    \ волны-1, \n   что эквивалентно len_w2 / len_w1 <= 0.618.\n3. В statement также\
+    \ упоминаются вероятностные диапазоны для волны-5 (38.2%–61.8% волны-3)\n   и\
+    \ пропорции волны-4, но они описаны как «с большой вероятностью» / «обычно»,\n\
+    \   поэтому не включены в mandatory constraint."
 aliases:
 - пропорции терминала с растянутой первой
 related_aku: []

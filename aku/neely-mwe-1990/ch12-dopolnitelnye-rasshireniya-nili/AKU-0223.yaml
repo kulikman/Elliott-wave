@@ -27,10 +27,46 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: wave_3 breaks trendline_0_2
-  constraint: 'wave_3 MUST NOT break trendline_0_2 ; if break AND no_alternation(w2,
-    w4): figure IS moving_double_three'
-  formalization_notes: 'Рис.12-2: ошибочная и правильная интерпретация.'
+  applies_when: '# Имеется предполагаемый импульс с завершёнными волнами 1, 2, 3,
+    4
+
+    # и нужно проверить валидность импульсной интерпретации
+
+    candidate_pattern == ''impulse''
+
+    AND wave_1 IS defined
+
+    AND wave_2 IS defined
+
+    AND wave_3 IS defined
+
+    AND wave_4 IS defined
+
+    '
+  constraint: "# 1. Построить настоящую линию тренда 0-2\n#    (от начала волны-1\
+    \ до конца волны-2)\ntrendline_0_2 = line(start=wave_1.start, end=wave_2.end)\n\
+    \n# 2. Основное правило: ни одна часть волны-3 не должна пробивать линию 0-2\n\
+    wave_3_breaks_trendline = any_point_of(wave_3) crosses trendline_0_2\n#    (пробитие\
+    \ = цена заходит на сторону линии, противоположную направлению импульса)\n\n#\
+    \ 3. Проверка чередования между W2 и W4\nhas_alternation = alternation_exists(wave_2,\
+    \ wave_4)\n#    (чередование по конструкции, глубине, сложности, времени)\n\n\
+    # 4. Логика определения:\nIF wave_3_breaks_trendline AND NOT has_alternation:\n\
+    \    # Импульсная интерпретация невалидна\n    # Фигура переклассифицируется как\
+    \ Подвижная Двойная Тройка (Moving Double Three)\n    reclassify_pattern = 'moving_double_three'\n\
+    \    # В этом случае предполагаемые W1-W2-W3-W4 — это части\n    # двойной коррективной\
+    \ комбинации (W-X-Y с X-волной)\n    impulse_interpretation_valid = FALSE\n\n\
+    IF NOT wave_3_breaks_trendline:\n    # Линия 0-2 не пробита — импульсная интерпретация\
+    \ остаётся допустимой\n    # (при соблюдении прочих правил)\n    impulse_interpretation_valid\
+    \ = TRUE  # по данному критерию\n"
+  formalization_notes: "- Правило содержит два связанных критерия: (a) пробитие линии\
+    \ тренда 0-2\n  волной-3 и (b) отсутствие чередования между W2 и W4. Оба должны\n\
+    \  выполняться одновременно для переклассификации в Moving Double Three.\n- \"\
+    Настоящая линия тренда 0-2\" = линия от точки 0 (начало W1) до конца W2.\n- Формализация\
+    \ alternation_exists() требует отдельного AKU с критериями\n  чередования (конструкция,\
+    \ сложность, глубина, время).\n- Понятие \"повышение не было достаточно значительным\
+    \ для волны-3\" \n  не имеет точного числового порога в verbatim_quote, поэтому\n\
+    \  формализовано косвенно через пробитие линии тренда и отсутствие чередования.\n\
+    - Ссылка на Рис.12-2 (ошибочная и правильная интерпретация) в тексте."
 aliases: []
 related_aku: []
 contradicts_aku: []

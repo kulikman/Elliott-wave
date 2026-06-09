@@ -28,9 +28,48 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: pattern == 'nonlimiting_triangle' AND role != 'x_wave'
-  constraint: completes_phase(larger_correction) == true
-  formalization_notes: null
+  applies_when: '# Обнаружен Неограничивающий Треугольник (Non-Limiting Triangle)
+
+    # и он НЕ находится в позиции x-волны
+
+    pattern.type == ''nonlimiting_triangle''
+
+    AND pattern.role != ''x_wave''
+
+    '
+  constraint: '# Правило 1: Неограничивающий Треугольник должен завершать фазу более
+    крупной Коррекции
+
+    # Т.е. он должен быть последним сегментом (финальной фазой) коррективного паттерна
+
+    # более высокого порядка
+
+    larger_pattern = pattern.parent
+
+    larger_pattern.classification == ''correction''
+
+    AND pattern == last_phase(larger_pattern)
+
+
+    # Правило 2 (следствие): всё более крупное движение можно сжать до простой тройки
+
+    # Это означает, что parent-паттерн, содержащий этот треугольник,
+
+    # должен быть компактифицируем (compactable) до структуры из 3 сегментов (a-b-c)
+
+    is_compactable_to_simple_correction(larger_pattern) == true
+
+    # simple correction = паттерн из 3 моноволн (тройка: a-b-c)
+
+    '
+  formalization_notes: "1. \"Завершать фазу более крупной Коррекции\" означает, что\
+    \ треугольник\n   должен быть финальным элементом коррективной структуры на уровень\
+    \ выше.\n   Например: волна C в зигзаге, волна Y в двойной тройке и т.п.\n2. \"\
+    Сжать до простой тройки\" — это свойство-следствие: если треугольник\n   корректно\
+    \ расположен, то весь parent-паттерн представим как 3-сегментная\n   коррекция\
+    \ (a-b-c). Это может использоваться как валидационная проверка.\n3. Исключение\
+    \ для x-волны явно указано в правиле — когда треугольник\n   является x-волной,\
+    \ данное правило не применяется."
 aliases:
 - правило завершения коррекции неограничивающим треугольником
 related_aku: []

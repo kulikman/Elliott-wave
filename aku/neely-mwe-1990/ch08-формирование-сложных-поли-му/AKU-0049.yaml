@@ -23,9 +23,42 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: pattern == 'impulse' AND extended_wave == 5
-  constraint: complexity(wave_4) > complexity(wave_2) AND duration(wave_4) > duration(wave_2)
-  formalization_notes: null
+  applies_when: '# Паттерн — импульс с растянутой волной 5
+
+    pattern == ''impulse''
+
+    AND extended_wave == 5
+
+    '
+  constraint: '# Волна-4 должна быть сложнее волны-2
+
+    complexity(wave_4) > complexity(wave_2)
+
+    # Волна-4 должна быть длительнее волны-2
+
+    AND duration(wave_4) > duration(wave_2)
+
+    '
+  formalization_notes: 'Метрика complexity (сложность) требует определения. Возможные
+    подходы:
+
+    - количество подволн (моноволн) внутри структуры
+
+    - глубина вложенности подволн
+
+    - тип коррекционного паттерна (например, зигзаг проще флэта, флэт проще треугольника)
+
+    Нили не даёт здесь точного определения "сложнее", но в контексте книги
+
+    сложность обычно означает большее количество подволн и/или более сложный
+
+    тип коррекционной структуры.
+
+    duration — количество баров (или единиц времени) от начала до конца волны.
+
+    Оба условия (сложность И длительность) должны выполняться одновременно —
+
+    это следует из союза "и" в verbatim_quote.'
 aliases:
 - правило сложности при растянутой пятой
 related_aku:

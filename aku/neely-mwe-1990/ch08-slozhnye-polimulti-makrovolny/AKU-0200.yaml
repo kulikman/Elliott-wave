@@ -25,11 +25,41 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: identifying extended wave in impulse
-  constraint: 'extended_wave = longest(wave_1, wave_3, wave_5) ; most_probable: extended(wave_3)
-    AND segmented(wave_5)'
-  formalization_notes: 'Рис.8-17: xs3+s5 самый частый. Рис.8-18: xs3+s5 независимо
-    (волна-3 растянута, волна-5 сегментирована).'
+  applies_when: '# Правило применяется при анализе импульсной фигуры (Impulse)
+
+    # когда нужно определить какая волна растянутая и какая сегментированная
+
+    pattern == ''impulse''
+
+    '
+  constraint: "# === ОПРЕДЕЛЕНИЕ: Растянутость и сегментированность — независимые\
+    \ свойства ===\n# Растянутая волна = самая длинная из трендовых волн импульса\n\
+    extended_wave = longest_by_price(wave_1, wave_3, wave_5)\n\n# Сегментированная\
+    \ волна = волна с наибольшим количеством внутренних сегментов\n# (многокомпонентная,\
+    \ но это НЕ обязательно та же волна что растянутая)\n# extended_wave и segmented_wave\
+    \ могут быть разными волнами\n\n# === ВЕРОЯТНОСТНОЕ РАНЖИРОВАНИЕ КОМБИНАЦИЙ ===\n\
+    # Комбинация 1 (самая распространённая):\n#   extended(wave_3) AND segmented(wave_5)\n\
+    #   обозначение: xs3 + s5\nprobability_rank_1 = (extended_wave == wave_3) AND\
+    \ (segmented_wave == wave_5)\n\n# Комбинация 2 (менее вероятная):\n#   extended(wave_1)\
+    \ AND segmented(wave_3)\nprobability_rank_2 = (extended_wave == wave_1) AND (segmented_wave\
+    \ == wave_3)\n\n# Комбинация 3 (наименее вероятная, скорее указывает на Терминал):\n\
+    #   extended(wave_1) AND segmented(wave_5)\nprobability_rank_3 = (extended_wave\
+    \ == wave_1) AND (segmented_wave == wave_5)\n\n# Если обнаружена комбинация rank_3,\
+    \ повысить вероятность\n# что фигура является Терминалом (Ending Diagonal), а\
+    \ не стандартным Импульсом\nif probability_rank_3:\n    increase_probability(pattern\
+    \ == 'terminal')\n\n# === КЛЮЧЕВОЕ ПРАВИЛО: независимость свойств ===\n# Растянутость\
+    \ (длина) и сегментированность (кол-во сегментов)\n# применяются независимо друг\
+    \ от друга\n# extended_wave != segmented_wave  допустимо (и является нормой)\n\
+    # extended_wave == segmented_wave  тоже допустимо\n"
+  formalization_notes: "1. Правило утверждает независимость двух свойств: длины (растянутость)\
+    \ \n   и количества сегментов (сегментированность). Это концептуальное правило,\n\
+    \   влияющее на интерпретацию, а не жёсткое числовое ограничение.\n2. Вероятностное\
+    \ ранжирование комбинаций (rank_1 > rank_2 > rank_3) \n   явно указано в statement_ru,\
+    \ но точные числовые вероятности не заданы.\n3. Указание на Терминал при комбинации\
+    \ rank_3 явно следует из statement_ru:\n   \"Наименее вероятно: волна-1 Растянутая\
+    \ + волна-5 сегментированная (скорее Терминал)\".\n4. Формализация сегментированности\
+    \ (segmented) требует определения порога\n   количества внутренних сегментов —\
+    \ это не уточнено в данном AKU."
 aliases: []
 related_aku: []
 contradicts_aku: []

@@ -26,10 +26,35 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: impulse hypothesis, checking wave 1 segmentation
-  constraint: is_segmented(wave_1) IMPLIES is_segmented(wave_2) OR is_terminal(impulse)
-  formalization_notes: 'Рис.8-15: типичные примеры сегментированных/несегментированных
-    пар.'
+  applies_when: '# Проверяется при анализе импульсной фигуры (не Терминальной),
+
+    # когда волна 1 демонстрирует сегментацию (является поливолной)
+
+    pattern == ''impulse''
+
+    AND is_segmented(wave_1)
+
+    '
+  constraint: "# ПРАВИЛО 1 (mandatory): Если волна 1 сегментирована, то волна 2 тоже\n\
+    # должна быть сегментирована — ЕСЛИ это не Терминальная фигура.\n#\n# is_segmented(wave)\
+    \ — волна является поливолной (subdivides into visible subwaves)\n# is_terminal(pattern)\
+    \ — фигура является Терминальным импульсом (Terminal Impulse)\n\nIF is_segmented(wave_1)\
+    \ THEN\n  IF NOT is_terminal(pattern) THEN\n    is_segmented(wave_2) == TRUE\n\
+    \  END\nEND\n\n# ПРАВИЛО 2 (preference / guideline для пар 1-2 и 3-4):\n# Предпочтительно,\
+    \ чтобы в каждой паре смежных волн одна была сегментированной,\n# а другая — нет\
+    \ (чередование по сложности / Intricacy).\n#\n# Для пары волн 1 и 2:\n# preferred:\
+    \ is_segmented(wave_1) XOR is_segmented(wave_2)\n#\n# Для пары волн 3 и 4 (аналогично):\n\
+    # preferred: is_segmented(wave_3) XOR is_segmented(wave_4)\n#\n# Примечание: XOR-предпочтение\
+    \ — это guideline, не mandatory constraint.\n# Mandatory часть — только запрет\
+    \ сегментации wave_1 без сегментации wave_2\n# (кроме Terminal).\n"
+  formalization_notes: "- \"Сегментированная\" волна = поливолна, т.е. волна, которая\
+    \ визуально\n  разбивается на подволны (subdivides) на текущем масштабе анализа.\n\
+    - Mandatory constraint касается только пары wave_1 / wave_2:\n  wave_1 не может\
+    \ сегментировать, если wave_2 не сегментирует\n  (исключение — Terminal Impulse).\n\
+    - Чередование сложности для пары wave_3 / wave_4 упомянуто как\n  аналогичное\
+    \ наблюдение (\"может наблюдаться таким же образом\"),\n  но не сформулировано\
+    \ как жёсткий запрет в verbatim_quote,\n  поэтому оставлено как preference.\n\
+    - Рис. 8-15 содержит типичные примеры сегментированных/несегментированных пар."
 aliases: []
 related_aku: []
 contradicts_aku: []

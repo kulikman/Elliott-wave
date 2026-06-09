@@ -23,9 +23,52 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: pattern == 'triangle'
-  constraint: length(wave_d) != max(length(a), length(b), length(c), length(d), length(e))
-  formalization_notes: null
+  applies_when: '# Правило применяется ко всем треугольным фигурам (contracting, expanding,
+    etc.)
+
+    pattern == ''triangle''
+
+    '
+  constraint: '# Волна-d не может быть крупнейшей волной треугольника
+
+    # "Крупнейшая" интерпретируется как наибольшая по ценовому расстоянию (length/price
+    distance)
+
+
+    lengths = [length(wave_a), length(wave_b), length(wave_c), length(wave_d), length(wave_e)]
+
+    max_length = max(lengths)
+
+
+    # Волна-d НЕ должна быть единственным максимумом (строго крупнейшей)
+
+    length(wave_d) < max_length
+
+
+    # Примечание: если wave_d равна другой волне и обе максимальны,
+
+    # wave_d не является "крупнейшей" (единственной наибольшей),
+
+    # но формулировка "ни при каких обстоятельствах" предполагает строгий запрет:
+
+    # wave_d не может даже разделять статус максимальной.
+
+    # Безопасная строгая интерпретация:
+
+    length(wave_d) != max_length
+
+    '
+  formalization_notes: 'Правило сформулировано категорично ("ни при каких обстоятельствах"),
+
+    что соответствует mandatory статусу. Под "крупнейшей" понимается
+
+    наибольшая по ценовому диапазону (price distance / length) волна.
+
+    Если wave_d равна по длине другой максимальной волне, строгая
+
+    интерпретация всё равно запрещает это, поскольку wave_d в таком
+
+    случае является одной из крупнейших.'
 aliases:
 - правило волны-d в треугольнике
 related_aku: []

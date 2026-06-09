@@ -25,11 +25,60 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: after moving correction (energy -3, upward wave)
-  constraint: next_wave IS extended_impulse ; length(next_impulse) > 1.618 * prev_impulse
-    ; NOT develops_into double_or_triple_three
-  formalization_notes: 'Важнейшее правило для торговли: Подвижная Коррекция предшествует
-    самым мощным импульсам.'
+  applies_when: '# Правило применяется после завершения Подвижной Коррекции (энергетический
+    рейтинг -3, направление вверх)
+
+    completed_pattern.type == ''moving_correction''
+
+    AND completed_pattern.energy_rating == -3
+
+    AND completed_pattern.direction == ''up''
+
+    '
+  constraint: '# 1. Следующая волна ДОЛЖНА быть Растянутой волной Импульса
+
+    #    ИЛИ Растянутой с-волной Зигзага/Плоской
+
+    next_wave = wave_after(completed_pattern)
+
+
+    next_wave.type == ''extended_impulse''
+
+    OR (next_wave.type IN [''zigzag'', ''flat''] AND next_wave.sub_wave(''c'').is_extended
+    == true)
+
+
+    # 2. Длина следующей импульсной волны должна быть БОЛЬШЕ 161.8% предыдущей импульсной
+    волны
+
+    prev_impulse = impulse_wave_before(completed_pattern)
+
+    length(next_wave) > 1.618 * length(prev_impulse)
+
+    # Зачастую 261.8% и более
+
+    # typical: length(next_wave) >= 2.618 * length(prev_impulse)
+
+
+    # 3. Подвижная Коррекция НЕ должна развиваться в Двойную или Тройную Тройку
+
+    #    (т.е. не может быть частью комбинации как x-волна или сегмент)
+
+    completed_pattern.is_part_of(''double_three'') == false
+
+    AND completed_pattern.is_part_of(''triple_three'') == false
+
+    '
+  formalization_notes: "- \"Предыдущая импульсная волна\" (prev_impulse) — это импульсная\
+    \ волна,\n  непосредственно предшествующая данной Подвижной Коррекции.\n- Правило\
+    \ описывает постэффект (post-pattern logic): что ДОЛЖНО произойти\n  после Подвижной\
+    \ Коррекции. Если условия не выполняются, маркировка\n  паттерна как Подвижной\
+    \ Коррекции некорректна.\n- Порог 161.8% — обязательный минимум из verbatim_quote\
+    \ (\"больше 161,8%\").\n  Значение 261.8% указано как типичное (\"зачастую\"),\
+    \ но не обязательное.\n- Запрет на развитие в Двойную/Тройную Тройку указан в\
+    \ statement_ru,\n  но отсутствует в verbatim_quote — возможно из другого фрагмента\
+    \ источника.\n- Направление \"вверх\" в applies_when взято из statement_ru (\"\
+    ↑\"),\n  но правило симметрично применимо и для направления вниз (зеркально)."
 aliases: []
 related_aku: []
 contradicts_aku: []

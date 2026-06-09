@@ -26,10 +26,42 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: after figure compaction
-  constraint: 'motion_labels VALID UNTIL compaction ; after compact: use base_structure
-    only ; min_waves_to_confirm = 3 (or 5 for impulse)'
-  formalization_notes: null
+  applies_when: '# Правило применяется в двух контекстах:
+
+    # 1. Когда волновая фигура завершена и происходит сжатие (compaction)
+
+    # 2. Когда идёт подсчёт волн для определения завершённости фигуры
+
+    figure_is_completed AND compaction_triggered
+
+    OR
+
+    counting_waves_for_figure_completion
+
+    '
+  constraint: "# Часть 1: После сжатия метки движения теряют значение\n# При сжатии\
+    \ (compaction) завершённой фигуры:\n#   - метки движения (1,2,3,4,5 или A,B,C)\
+    \ отбрасываются\n#   - сохраняется только базовая структура (:3 или :5)\n\ndef\
+    \ compact_figure(figure):\n    # После завершения фигуры на более крупном графике\n\
+    \    # значима только базовая структура\n    compacted_wave.structure = figure.base_structure\
+    \  # :3 or :5\n    compacted_wave.motion_labels = NULL  # метки больше не используются\n\
+    \    return compacted_wave\n\n# Часть 2: Минимальное количество волн для завершения\
+    \ фигуры\n# Нельзя считать фигуру завершённой, пока не сформировано\n# минимум\
+    \ 3 (а лучше 5) волн структурной серии\n\ndef is_figure_complete(structural_series):\n\
+    \    wave_count = count(structural_series.waves)\n    \n    # Минимальное обязательное\
+    \ условие\n    if wave_count < 3:\n        return FALSE  # завершение фигуры невозможно\n\
+    \    \n    # Для импульсных фигур предпочтительно 5 волн\n    if structural_series.expected_type\
+    \ == :5:\n        if wave_count < 5:\n            return FALSE\n    \n    return\
+    \ TRUE\n"
+  formalization_notes: "1. Правило содержит два связанных, но разных утверждения:\n\
+    \   (a) процедурное — о порядке работы (метки — последний шаг, \n       после\
+    \ сжатия используется только :3/:5)\n   (b) количественное — минимум 3 (или 5)\
+    \ волн для завершения фигуры\n2. Формулировка \"а может быть, и пять\" из verbatim_quote\
+    \ оставляет \n   неопределённость: когда именно требуется 5, а когда достаточно\
+    \ 3.\n   Принято допущение: 5 для импульсных (:5) фигур, 3 для коррективных (:3).\n\
+    3. Понятие \"структурная серия\" (structural_series) не имеет точного \n   определения\
+    \ в данном фрагменте — предполагается последовательность \n   волн одного уровня,\
+    \ формирующих фигуру."
 aliases: []
 related_aku: []
 contradicts_aku: []

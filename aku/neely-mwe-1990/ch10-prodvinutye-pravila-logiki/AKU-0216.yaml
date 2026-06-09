@@ -23,10 +23,42 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: after failed_c correction
-  constraint: 'next_wave(same_order) MUST reach start(failed_c) ; if ends_corrective_phase:
-    next_impulse > prev_impulse'
-  formalization_notes: null
+  applies_when: '# Паттерн типа Flat (плоская коррекция) завершился с Неудавшейся-с
+    (Failed-C)
+
+    # Энергетический рейтинг: -1 ↑ (слабый медвежий / бычий разворот)
+
+    # Неудавшаяся-с означает, что волна C не достигла конца волны A
+
+    pattern_just_completed == ''flat''
+
+    AND wave_c.is_failed == true  # волна C не достигла конца волны A
+
+    '
+  constraint: "# --- Правило 1: Обязательное для всех случаев ---\n# Следующая волна\
+    \ того же Порядка ДОЛЖНА достичь начального уровня Неудавшейся-с\n# (начальный\
+    \ уровень Неудавшейся-с = начало волны C = конец волны B)\nfailed_c = wave_c \
+    \ # волна C, которая является \"неудавшейся\"\nnext_wave = next_wave_of_same_degree(failed_c)\n\
+    \n# next_wave должна достичь начального уровня failed_c\n# Если failed_c направлена\
+    \ вниз (бычий контекст):\nIF failed_c.direction == DOWN:\n  high(next_wave) >=\
+    \ start_price(failed_c)\n# Если failed_c направлена вверх (медвежий контекст):\n\
+    IF failed_c.direction == UP:\n  low(next_wave) <= start_price(failed_c)\n\n# ---\
+    \ Правило 2: Дополнительное, если Неудавшаяся-с завершает коррективную фазу ---\n\
+    # Следующая Импульсная волна должна быть больше предыдущей однонаправленной Импульсной\n\
+    IF failed_c_ends_corrective_phase == true:\n  # prev_impulse = предыдущая импульсная\
+    \ волна того же направления,\n  #   что и next_impulse (однонаправленная)\n  next_impulse\
+    \ = next_impulse_wave_of_same_degree(failed_c)\n  prev_impulse = previous_impulse_wave_same_direction(next_impulse)\n\
+    \n  price_range(next_impulse) > price_range(prev_impulse)\n"
+  formalization_notes: "1. \"Начальный уровень\" Неудавшейся-с — это начало волны\
+    \ C (= конец волны B в Flat).\n2. \"Предыдущая однонаправленная Импульсная волна\"\
+    \ — импульсная волна того же\n   направления, что и следующая импульсная волна,\
+    \ предшествующая текущей\n   коррективной фазе. Точная идентификация зависит от\
+    \ контекста структуры\n   более высокого порядка.\n3. \"Завершает коррективную\
+    \ фазу\" — означает, что Flat с Неудавшейся-с является\n   последней коррекцией\
+    \ перед началом новой импульсной фазы (например, волна 2\n   или волна 4 в импульсе,\
+    \ или волна B в зигзаге более высокого порядка).\n4. Сравнение размеров импульсных\
+    \ волн — по абсолютному ценовому диапазону\n   (price_range = abs(end_price -\
+    \ start_price))."
 aliases: []
 related_aku: []
 contradicts_aku: []

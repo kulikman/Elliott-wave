@@ -26,10 +26,37 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: pattern == 'nonlimiting_expanding_triangle' AND is_last_phase(complex_correction)
-    AND position == 'post_pattern'
-  constraint: reaches(next_wave, start_level(triangle))
-  formalization_notes: null
+  applies_when: '# Завершён Неограничивающий Расширяющийся Треугольник (НРТ)
+
+    pattern.type == ''expanding_triangle''
+
+    AND pattern.limiting == false
+
+    # НРТ является последней фазой Сложной Коррекции
+
+    AND pattern.is_phase_of(''complex_correction'')
+
+    AND pattern.is_last_phase == true
+
+    '
+  constraint: "# Следующая за НРТ волна того же Порядка должна полностью откатиться\n\
+    # до исходного уровня (начала) треугольника\nnext_wave = next_wave_same_degree(pattern)\n\
+    triangle_start_level = price_at(pattern.start)\n\n# Для бычьего рынка (треугольник\
+    \ направлен вниз как коррекция):\n# следующая волна должна достичь или превысить\
+    \ начальный уровень треугольника\nif pattern.direction == 'down':\n    high(next_wave)\
+    \ >= triangle_start_level\n# Для медвежьего рынка (треугольник направлен вверх\
+    \ как коррекция):\n# следующая волна должна достичь или пробить вниз начальный\
+    \ уровень треугольника\nelif pattern.direction == 'up':\n    low(next_wave) <=\
+    \ triangle_start_level\n"
+  formalization_notes: 'Правило описано как mandatory ("должна откатиться полностью").
+
+    Книга отмечает что такая ситуация (НРТ как последняя фаза) маловероятна.
+
+    "Исходный уровень" интерпретируется как цена в точке начала треугольника (start
+    of pattern).
+
+    "Полностью откатиться" означает что цена должна достичь (>=/ <=) этого уровня,
+    а не просто приблизиться.'
 aliases:
 - полный откат после неограничивающего расширяющегося треугольника
 related_aku: []

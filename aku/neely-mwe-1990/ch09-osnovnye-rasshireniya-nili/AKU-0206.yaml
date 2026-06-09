@@ -27,11 +27,50 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: checking time durations of 3 consecutive same-order waves
-  constraint: 'NOT(time(w1) == time(w2) == time(w3)) ; patterns: A: t1==t2 => t3 >>
-    or << ; B: t2>>t1 => t3 IN {t1, 0.618*t1, 1.618*t1} ; C: t1!=t2!=t3 => fib_ratio(ti,tj)'
-  formalization_notes: Рис.9-3,9-4,9-5. Если три волны одинаковы → третий из них лишь
-    часть более крупной волны.
+  applies_when: '# Применяется к любым трём последовательно расположенным смежным
+    волнам одного Порядка
+
+    # Это универсальное правило для impulse, zigzag, flat и других паттернов
+
+
+    three_consecutive_same_order_waves_exist(w1, w2, w3)
+
+    # w1, w2, w3 — три смежные волны одного Порядка (например, волны 1-2-3, 2-3-4,
+    3-4-5,
+
+    # или A-B-C, или любые три подряд идущие волны одного уровня)
+
+
+    t1 = time_duration(w1)
+
+    t2 = time_duration(w2)
+
+    t3 = time_duration(w3)
+
+    '
+  constraint: "# ===== ОСНОВНОЕ ПРАВИЛО (mandatory) =====\n# Временные длительности\
+    \ трёх последовательных смежных волн одного Порядка\n# НЕ МОГУТ быть все три равны\
+    \ между собой\n\nNOT (t1 == t2 AND t2 == t3)\n\n# Примечание: равенство проверяется\
+    \ с допуском (tolerance),\n# типичный допуск для временного равенства ~1-3% или\
+    \ ±1 бар\n\nEQUAL_TOLERANCE = 0.03  # 3% допуск\n\ndef time_equal(ta, tb):\n \
+    \   return abs(ta - tb) / max(ta, tb) <= EQUAL_TOLERANCE\n\n# Формально:\nNOT\
+    \ (time_equal(t1, t2) AND time_equal(t2, t3))\n\n# Если все три равны — третья\
+    \ волна является лишь частью более крупной волны\n# (т.е. разметка неверна)\n\n\
+    # ===== ЗАВИСИМОСТЬ A =====\n# Если первые две длительности равны → третья значительно\
+    \ отличается\nif time_equal(t1, t2):\n    NOT time_equal(t3, t1)\n    # Часто\
+    \ t3 ≈ t1 + t2 (сумма первых двух)\n    # t3_expected = t1 + t2\n\n# ===== ЗАВИСИМОСТЬ\
+    \ B =====\n# Если вторая значительно длиннее первой → третья соотносится с первой\
+    \ по Фибоначчи\nSIGNIFICANTLY_LONGER_RATIO = 1.618  # порог \"значительно длиннее\"\
+    \n\nif t2 >= t1 * SIGNIFICANTLY_LONGER_RATIO:\n    # t3 должна быть приблизительно\
+    \ равна одному из:\n    #   100%  от t1  (t3 ≈ t1)\n    #   61.8% от t1  (t3 ≈\
+    \ 0.618 * t1)\n    #   161.8% от t1 (t3 ≈ 1.618 * t1)\n    FIB_TOLERANCE = 0.05\
+    \  # 5% допуск для Фибоначчи-соотношений\n    \n    t3_matches_fib = (\n     \
+    \   abs(t3 - t1)           / t1 <= FIB_TOLERANCE OR\n        abs(t3 - 0.618 *\
+    \ t1)   / (0.618 * t1) <= FIB_TOLERANCE OR\n        abs(t3 - 1.618 * t1)   / (1.618\
+    \ * t1) <= FIB_TOLERANCE\n    )\n    # t3_matches_fib SHOULD be true (ожидаемое,\
+    \ но не жёсткое ограничение)\n\n# ===== ЗАВИСИМОСТЬ C =====\n# Если все три попарно\
+    \ неравны → между ними ожидаются соотнош"
+  formalization_notes: null
 aliases: []
 related_aku: []
 contradicts_aku: []

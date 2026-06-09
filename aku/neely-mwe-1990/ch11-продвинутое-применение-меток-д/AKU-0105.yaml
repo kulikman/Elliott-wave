@@ -22,10 +22,54 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: pattern == 'expanding_limiting_horizontal_triangle'
-  constraint: complexity(wave_e) == max AND duration(wave_e) == max AND length(wave_e)
-    == max
-  formalization_notes: null
+  applies_when: 'pattern == ''expanding_limiting_horizontal_triangle''
+
+    '
+  constraint: '# Волна-e должна быть самой длительной в группе
+
+    duration(wave_e) > duration(wave_a)
+
+    AND duration(wave_e) > duration(wave_b)
+
+    AND duration(wave_e) > duration(wave_c)
+
+    AND duration(wave_e) > duration(wave_d)
+
+
+    # Волна-e должна быть самой интенсивной (наибольшей по ценовому расстоянию) в
+    группе
+
+    price_distance(wave_e) > price_distance(wave_a)
+
+    AND price_distance(wave_e) > price_distance(wave_b)
+
+    AND price_distance(wave_e) > price_distance(wave_c)
+
+    AND price_distance(wave_e) > price_distance(wave_d)
+
+
+    # Волна-e должна быть самой сложной в группе
+
+    complexity(wave_e) > complexity(wave_a)
+
+    AND complexity(wave_e) > complexity(wave_b)
+
+    AND complexity(wave_e) > complexity(wave_c)
+
+    AND complexity(wave_e) > complexity(wave_d)
+
+    '
+  formalization_notes: '"Интенсивность" интерпретирована как price_distance (ценовое
+    расстояние / длина волны),
+
+    что согласуется с контекстом (в пункте 2 говорится что каждая волна "крупнее"
+    предыдущей).
+
+    "Сложность" (complexity) — количество подволн или уровень вложенности структуры;
+
+    точная метрика зависит от реализации и не определена в исходном тексте формально.
+
+    Все три критерия (интенсивность, сложность, длительность) должны выполняться одновременно.'
 aliases:
 - правило волны-е горизонтального расширяющегося треугольника
 related_aku: []

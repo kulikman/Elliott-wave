@@ -26,11 +26,47 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: after trending impulse (any extension type)
-  constraint: 'next_wave NOT reach start(impulse) unless wave_5_or_c ; if extended_3:
-    retracement INTO wave_4_zone ; if extended_5: next_wave > 0.618 * length(wave_5)'
-  formalization_notes: 'Критично для торговли: после Растянутой 5-й всегда сильный
-    откат > 61.8% W5.'
+  applies_when: '# Правило применяется после завершённого Трендового Импульса (Trending
+    Impulse)
+
+    # к следующей волне того же Порядка (Degree)
+
+    pattern.type == ''impulse''
+
+    AND pattern.subtype == ''trending''
+
+    AND pattern.is_completed == true
+
+    AND next_wave_same_degree EXISTS
+
+    '
+  constraint: "# --- Часть 1: Общее правило для всех Трендовых Импульсов ---\n# Следующая\
+    \ волна того же Порядка НЕ должна достичь начального уровня Импульса,\n# ЕСЛИ\
+    \ ТОЛЬКО Импульс не является волной-5 или с-волной более крупной фигуры.\n\nimpulse_start\
+    \ = price_at(start(pattern))\nimpulse_end = price_at(end(pattern))\nis_wave5_of_larger\
+    \ = (pattern.position_in_parent == 5)\nis_waveC_of_larger = (pattern.position_in_parent\
+    \ == 'c')\n\nIF NOT is_wave5_of_larger AND NOT is_waveC_of_larger:\n    IF impulse_end\
+    \ > impulse_start:  # бычий импульс\n        low(next_wave_same_degree) > impulse_start\n\
+    \    ELSE:  # медвежий импульс\n        high(next_wave_same_degree) < impulse_start\n\
+    \n# --- Часть 2: Импульс с Растянутой 3-й ---\n# Откат до ценовой зоны волны-4\n\
+    \nIF pattern.extended_wave == 3:\n    w4_start = price_at(start(pattern.wave4))\n\
+    \    w4_end = price_at(end(pattern.wave4))\n    w4_zone_min = min(w4_start, w4_end)\n\
+    \    w4_zone_max = max(w4_start, w4_end)\n\n    # Следующая волна должна войти\
+    \ в ценовую зону W4\n    IF impulse_end > impulse_start:  # бычий\n        low(next_wave_same_degree)\
+    \ <= w4_zone_max\n        AND low(next_wave_same_degree) >= w4_zone_min\n    ELSE:\
+    \  # медвежий\n        high(next_wave_same_degree) >= w4_zone_min\n        AND\
+    \ high(next_wave_same_degree) <= w4_zone_max\n\n# --- Часть 3: Импульс с Растянутой\
+    \ 5-й ---\n# Следующая волна ДОЛЖНА быть > 61.8% длины волны-5\n# Единственный\
+    \ случай обязательного отката > 61.8% после Импульса\n\nIF pattern.extended_wave\
+    \ == 5:\n    w5_length = abs(price_at(end(pattern.wave5)) - price_at(start(pattern.wave5)))\n\
+    \    next_wave_length = abs(price_at(end(next_wave_same_degree)) - price_at(start(next_wave_same_degree)))\n\
+    \n    next_wave_length > 0.618 * w5_length\n"
+  formalization_notes: "1. Часть 2 (Растянутая 3-я): в statement сказано \"откат до\
+    \ ценовой зоны W4\",\n   формализовано как вход в ценовой диапазон W4. Не уточнено,\
+    \ должен ли откат\n   остаться строго внутри зоны W4 или может пройти сквозь неё\
+    \ — принято \"войти в зону\".\n2. Часть 3 (Растянутая 5-я): verbatim_quote явно\
+    \ подтверждает обязательность\n   отката > 61.8% длины W5 — это единственный такой\
+    \ случай среди растянутых волн.\n3. Для Растянутой 1-"
 aliases: []
 related_aku: []
 contradicts_aku: []

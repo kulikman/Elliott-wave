@@ -27,9 +27,32 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: pattern == 'triple_zigzag' AND parent IN ('flat', 'contracting_triangle')
-  constraint: not reaches(next_wave_same_degree, start_level(triple_zigzag))
-  formalization_notes: null
+  applies_when: '# Текущий паттерн — Тройной Зигзаг
+
+    pattern == ''triple_zigzag''
+
+    # Родительский паттерн — Плоская или Сужающийся Треугольник
+
+    AND parent_pattern IN (''flat'', ''contracting_triangle'')
+
+    '
+  constraint: "# Определяем следующую волну того же порядка (degree) что и тройной\
+    \ зигзаг\nnext_wave = next_wave_same_degree(triple_zigzag)\n\n# Начальный уровень\
+    \ тройного зигзага\ntz_start = start_price(triple_zigzag)\n\n# Следующая волна\
+    \ никогда не может откатиться до начального уровня тройного зигзага\nif direction(triple_zigzag)\
+    \ == 'down':\n    # Тройной зигзаг шёл вниз, следующая волна идёт вверх —\n  \
+    \  # она не должна достичь уровня начала тройного зигзага\n    high(next_wave)\
+    \ < tz_start\nelif direction(triple_zigzag) == 'up':\n    # Тройной зигзаг шёл\
+    \ вверх, следующая волна идёт вниз —\n    # она не должна достичь уровня начала\
+    \ тройного зигзага\n    low(next_wave) > tz_start\n"
+  formalization_notes: 'В verbatim_quote написано "начального Порядка" — вероятно,
+    опечатка/ошибка перевода,
+
+    по контексту и statement_ru имеется в виду "начального уровня" (start price level).
+
+    Правило применяется к волне, следующей за тройным зигзагом внутри того же
+
+    родительского паттерна и имеющей тот же порядок (degree), что и сам тройной зигзаг.'
 aliases:
 - правило отката тройного зигзага
 related_aku: []

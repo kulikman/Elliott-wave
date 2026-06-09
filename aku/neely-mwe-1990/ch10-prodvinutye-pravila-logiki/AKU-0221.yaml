@@ -27,11 +27,73 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: failed fifth wave detected
-  constraint: context IN {wave_5_of_larger_impulse, c_wave_one_degree_higher, rare_large_3_fails}
-    ; length(w1) APPROX length(w5) OR ratio = 0.618
-  formalization_notes: 'Рис.11-1: Неудавшаяся 5-я в конце 5-й волны. Рис.11-2: Неудавшаяся
-    5-я в с-волне.'
+  applies_when: '# Импульсная фигура имеет "неудавшуюся" (failed) пятую волну,
+
+    # т.е. W5 не превышает конец W3 по цене
+
+    pattern == ''impulse''
+
+    AND is_failed_fifth(w5)
+
+    # где is_failed_fifth означает: end_price(w5) не выходит за end_price(w3)
+
+    # в направлении тренда импульса
+
+    '
+  constraint: '# УСЛОВИЕ A: данный импульс сам является волной-5 более крупного импульса
+
+    parent_context == ''wave_5_of_larger_impulse''
+
+    # ИЛИ
+
+    # УСЛОВИЕ B: данный импульс является с-волной на один (и только один) порядок
+    выше
+
+    OR parent_context == ''c_wave_one_degree_higher''
+
+    # ИЛИ
+
+    # УСЛОВИЕ C (крайне редкое): более крупная W3 испытывает неудачу меньшей W5
+
+    OR (parent_context == ''wave_3_of_larger_impulse'' AND is_extremely_rare)
+
+
+    # Если ни одно из условий A, B, C не выполнено — неудавшаяся пятая ЗАПРЕЩЕНА
+
+    # failed_fifth_allowed = (condition_A OR condition_B OR condition_C)
+
+    # IF NOT failed_fifth_allowed THEN REJECT failed fifth
+
+
+    # Дополнительное наблюдение (почти всегда):
+
+    # W1 и W5 практически идентичны по цене и/или времени,
+
+    # либо их соотношение = 61.8%
+
+    # price_ratio = price_length(w5) / price_length(w1)
+
+    # time_ratio = time_length(w5) / time_length(w1)
+
+    # EXPECT:
+
+    #   price_ratio APPROX 1.0 OR time_ratio APPROX 1.0
+
+    #   OR price_ratio APPROX 0.618
+
+    #   OR time_ratio APPROX 0.618
+
+    '
+  formalization_notes: "1. Условие C (\"крайне редкие обстоятельства — более крупная\
+    \ W3 испытывает\n   Неудачу меньшей W5\") упомянуто в statement_ru, но не детализировано\n\
+    \   в verbatim_quote. Формализовано как отдельное условие с пометкой\n   is_extremely_rare\
+    \ — точные критерии \"крайней редкости\" не определены.\n2. Соотношение W1/W5\
+    \ по цене и/или времени (~1.0 или 0.618) описано\n   как \"почти всегда\", т.е.\
+    \ это сильное ожидание, но не абсолютный запрет.\n   Формализовано как EXPECT\
+    \ (soft constraint), а не жёсткое правило.\n3. Verbatim_quote подтверждает только\
+    \ условия A и B. Условие C и\n   соотношения W1/W5 взяты из statement_ru.\n4.\
+    \ \"На один (и только один) Порядок выше\" в условии B означает строго\n   parent_degree\
+    \ == current_degree + 1."
 aliases: []
 related_aku: []
 contradicts_aku: []

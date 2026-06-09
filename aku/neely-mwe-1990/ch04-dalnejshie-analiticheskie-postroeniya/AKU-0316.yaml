@@ -23,7 +23,7 @@ source:
       '
     language: ru
 formalization:
-  status: formalized
+  status: draft
   applies_when: '# Правило применяется при формировании поливолны из моноволн
 
     structure_level == ''polywave''

@@ -24,9 +24,29 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: expanding limiting horizontal triangle
-  constraint: Wa = smallest_segment ; each_subsequent_wave > previous
-  formalization_notes: Добавлено в ходе аудита качества AKU
+  applies_when: 'pattern == ''expanding_limiting_horizontal_triangle''
+
+    '
+  constraint: "# Волна-а является наименьшим сегментом треугольника\nwaves = [wave_a,\
+    \ wave_b, wave_c, wave_d, wave_e]\n\nFOR each w IN waves:\n  length(wave_a) <=\
+    \ length(w)\n\n# Каждая последующая волна немного крупнее предыдущей\n# (строго\
+    \ возрастающая последовательность длин)\nlength(wave_a) < length(wave_b)\nlength(wave_b)\
+    \ < length(wave_c)\nlength(wave_c) < length(wave_d)\nlength(wave_d) < length(wave_e)\n\
+    \n# Следствие: «неудавшихся» волн нет\n# (каждая волна превышает предыдущую, значит\
+    \ ни одна не может\n#  быть \"failure\", т.е. не достигшей уровня предыдущей)\n\
+    # Это автоматически обеспечивается строгим неравенством выше\n"
+  formalization_notes: '"Длина" (length) здесь — ценовое расстояние (price distance)
+    сегмента волны.
+
+    Правило "немного крупнее" формализовано как строгое неравенство (>),
+
+    без указания верхней границы превышения, т.к. в исходном тексте
+
+    конкретный диапазон не задан.
+
+    Отсутствие «неудавшихся» волн — логическое следствие строго возрастающей
+
+    последовательности длин, а не отдельное ограничение.'
 aliases:
 - правило горизонтального расширяющегося треугольника
 related_aku: []

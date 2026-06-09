@@ -24,10 +24,48 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: x_wave candidate is 2nd of 3 consecutive corrections
-  constraint: length(correction_2) >= 1.618 * length(correction_1) => correction_2
-    is x_wave
-  formalization_notes: Большая x-волна → Серия b (Таблица B стр.8-11).
+  applies_when: '# Имеем три идущих подряд компактных поливолновых Коррекции
+
+    # (compact polywave corrections) — обозначим их C1, C2, C3
+
+    corrections = get_three_consecutive_compact_polywave_corrections()
+
+    C1 = corrections[0]
+
+    C2 = corrections[1]
+
+    C3 = corrections[2]
+
+
+    is_compact_polywave_correction(C1) == true
+
+    AND is_compact_polywave_correction(C2) == true
+
+    AND is_compact_polywave_correction(C3) == true
+
+    AND are_consecutive(C1, C2, C3) == true
+
+    '
+  constraint: "# Условие: длина второй коррекции >= 161.8% длины первой\n# => вторая\
+    \ коррекция является x-волной (большой x-волной)\nIF length(C2) >= 1.618 * length(C1):\n\
+    \    C2.label = \"x-wave\"\n    C2.x_wave_type = \"large\"  # большая x-волна\
+    \ (>=161.8%)\n\n# Дополнительные характеристики (из statement):\n# 1. Уровни сложности\
+    \ всех трёх обычно одинаковы\n#    (это типичное наблюдение, не жёсткое ограничение)\n\
+    # typically: complexity(C1) == complexity(C2) == complexity(C3)\n\n# 2. Самая\
+    \ длинная из трёх — обычно последняя\n#    (это типичное наблюдение, не жёсткое\
+    \ ограничение)\n# typically: length(C3) >= length(C1) AND length(C3) >= length(C2)\n\
+    \n# Результат: C1 и C3 — компоненты комбинации (combination),\n# C2 (x-волна)\
+    \ их соединяет\n# Большая x-волна → Серия b (Таблица B стр.8-11)\n"
+  formalization_notes: "- \"Длина\" (length) = ценовое расстояние от начала до конца\
+    \ коррекции (price distance).\n- \"Компактная поливолновая Коррекция\" — коррективный\
+    \ паттерн поливолнового уровня,\n  занимающий относительно мало времени (compact).\
+    \ Точное определение \"compact\" \n  требует уточнения по контексту Neely.\n-\
+    \ Замечания про одинаковую сложность и \"самая длинная — последняя\" \n  сформулированы\
+    \ как типичные наблюдения (\"обычно\"), а не как mandatory constraints,\n  поэтому\
+    \ вынесены в комментарии, а не в жёсткие условия.\n- Большая x-волна (length >=\
+    \ 161.8% предшествующей коррекции) \n  соответствует Серии b по Таблице B (стр.\
+    \ 8-11).\n- Mandatory часть правила: именно условие >= 161.8% определяет, \n \
+    \ что C2 является x-волной."
 aliases: []
 related_aku: []
 contradicts_aku: []

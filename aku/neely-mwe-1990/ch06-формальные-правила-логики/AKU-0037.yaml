@@ -39,24 +39,25 @@ formalization:
     '
   constraint: "# Следующая за завершённой Коррекцией волна (post_pattern_wave)\n#\
     \ должна достичь начала волны-с (start of wave_c)\n# за время, не превышающее\
-    \ длительности волны-с\n\npost_pattern_wave = next_wave_after(pattern)\ntarget_price\
-    \ = start_price(wave_c)\ntime_limit = duration(wave_c)\n\n# Проверяем: за период\
-    \ от начала post_pattern_wave,\n# не превышающий duration(wave_c), цена должна\
-    \ достичь уровня начала wave_c\ntime_elapsed = time_from_start(post_pattern_wave)\n\
-    \n# Условие подтверждения:\n# Цена post_pattern_wave достигает start_price(wave_c)\
-    \ И\n# время, за которое это произошло, <= duration(wave_c)\nIF post_pattern_wave\
-    \ reaches target_price THEN\n  time_to_reach = time_when_price_reached(post_pattern_wave,\
-    \ target_price)\n  ASSERT time_to_reach <= time_limit\nELSE\n  # Если цена не\
-    \ достигла начала wave_c за отведённое время —\n  # второй этап подтверждения\
-    \ НЕ пройден\n  confirmation_step_2 = FAILED\n"
-  formalization_notes: "1. \"Начало волны-с\" интерпретируется как ценовой уровень\
-    \ start(wave_c),\n   т.е. точка соединения wave_b и wave_c.\n2. \"Длительность\
-    \ последней\" — длительность wave_c (duration в барах/времени).\n3. \"Следующая\
-    \ за Коррекцией волна\" — первая волна, начинающаяся после\n   завершения всего\
-    \ паттерна (flat/zigzag).\n4. Правило описывает именно второй этап подтверждения\
-    \ (post-pattern logic);\n   первый этап здесь не описан.\n5. Цитата помечена как\
-    \ не найденная дословно — возможна неточность в\n   формулировке, требуется верификация\
-    \ по оригиналу (стр. 6-2, рис. 6-2)."
+    \ длительности волны-с (duration of wave_c)\n\npost_pattern_wave = first_wave_after(pattern)\n\
+    target_price = price_at(start(wave_c))\ntime_limit = duration(wave_c)\n\n# Проверяем:\
+    \ в течение time_limit баров после окончания паттерна\n# цена post_pattern_wave\
+    \ должна достичь уровня начала wave_c\ntime_elapsed = 0\nreached = false\n\nFOR\
+    \ each bar IN post_pattern_wave:\n  time_elapsed += 1\n  IF price_reaches(bar,\
+    \ target_price):\n    reached = true\n    BREAK\n  IF time_elapsed > time_limit:\n\
+    \    BREAK\n\n# Условие подтверждения на втором этапе:\nIF reached AND time_elapsed\
+    \ <= time_limit:\n  confirmation_step_2 = PASSED\nELSE:\n  confirmation_step_2\
+    \ = FAILED\n  # Паттерн не подтверждён на втором этапе\n"
+  formalization_notes: "1. \"price_length(wave_b) < price_length(wave_a)\" — сравнение\
+    \ по ценовой длине (абсолютное расстояние start-end).\n2. \"Следующая за Коррекцией\
+    \ волна\" — первая волна, начинающаяся после окончания паттерна (post-pattern\
+    \ wave).\n3. \"Достичь начала волны-с\" — цена должна вернуться к уровню start(wave_c),\
+    \ т.е. к точке соединения wave_b и wave_c.\n4. \"За время, не превышающее длительности\
+    \ последней\" — \"последней\" относится к волне-с; \n   duration(wave_c) измеряется\
+    \ в барах (или единицах времени).\n5. Это правило описывает второй этап подтверждения\
+    \ (post-pattern confirmation);\n   первый этап в данном AKU не описан.\n6. Цитата\
+    \ помечена как не найденная дословно — возможна неточность в формулировке.\n \
+    \  Формализация основана на statement_ru и verbatim_quote как есть."
 created_by: claude
 created_at: '2026-06-02T17:57:59Z'
 requires_review: false

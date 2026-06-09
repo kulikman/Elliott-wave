@@ -23,9 +23,35 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: pattern == 'limiting_expanding_triangle' AND position == 'post_pattern'
-  constraint: not reaches(next_wave_same_degree, start_level(triangle))
-  formalization_notes: null
+  applies_when: '# Завершён паттерн "Ограничивающий Расширяющийся Треугольник"
+
+    # Ограничивающий = треугольник в позиции волны 4 или волны b
+
+    pattern == ''expanding_triangle''
+
+    AND triangle_type == ''limiting''  # позиция: wave_4 или wave_b
+
+    AND pattern_completed == true
+
+    '
+  constraint: "# Следующая волна того же Порядка (degree) не должна достичь\n# начального\
+    \ уровня треугольника (т.е. начала волны-a треугольника)\n\ntriangle_start_level\
+    \ = price_at(start(triangle))  # начало волны-a\n\nnext_wave = next_wave_same_degree(triangle)\n\
+    \n# Определяем направление: если треугольник был в позиции wave_4\n# восходящего\
+    \ импульса, то следующая волна (wave_5) идёт вверх,\n# и она не должна откатиться\
+    \ до начального уровня треугольника.\n# Аналогично для wave_b.\n\nif trend_direction_after_triangle\
+    \ == 'up':\n    # Следующая волна (и её подволны) не должна опуститься до start\
+    \ level\n    low(next_wave) > triangle_start_level\nelif trend_direction_after_triangle\
+    \ == 'down':\n    # Следующая волна не должна подняться до start level\n    high(next_wave)\
+    \ < triangle_start_level\n"
+  formalization_notes: "1. \"Начальный уровень\" треугольника — ценовой уровень начала\
+    \ всего\n   треугольника (начало волны-a).\n2. \"Следующая волна того же Порядка\"\
+    \ — волна, непосредственно следующая\n   за треугольником на том же уровне degree\
+    \ (например, wave_5 после\n   wave_4-треугольника, или wave_c после wave_b-треугольника).\n\
+    3. Правило сформулировано как \"не должна достичь\" (mandatory),\n   что означает\
+    \ строгое неравенство — цена не касается этого уровня.\n4. Направление проверки\
+    \ (low vs high) зависит от контекста —\n   от направления волны, следующей за\
+    \ треугольником."
 aliases:
 - постэффект ограничивающего расширяющегося треугольника
 related_aku: []

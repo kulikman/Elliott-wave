@@ -6,45 +6,70 @@ topic: triangle
 subtopics:
 - wave-identification
 - combination
-statement_ru: >
-  Неограничивающие Треугольники — 6 мест возникновения: (1) e-волна Горизонтального
+statement_ru: 'Неограничивающие Треугольники — 6 мест возникновения: (1) e-волна Горизонтального
   Треугольника; (2) последняя корр. фаза Двойной/Тройной Тройки; (3) последняя корр.
-  фаза Подвижной Двойной Плоской; (4) последняя корр. фаза Двойной/Тройной
-  Комбинации; (5) W5 Терминального Импульса; (6) x-волна сложной Коррекции
-  (единственный случай, когда НЕ завершает фигуру, а возникает в середине).
-  Любой Неограничивающий Треугольник (кроме x-волны) ДОЛЖЕН завершать фазу
-  более крупной Коррекции.
+  фаза Подвижной Двойной Плоской; (4) последняя корр. фаза Двойной/Тройной Комбинации;
+  (5) W5 Терминального Импульса; (6) x-волна сложной Коррекции (единственный случай,
+  когда НЕ завершает фигуру, а возникает в середине). Любой Неограничивающий Треугольник
+  (кроме x-волны) ДОЛЖЕН завершать фазу более крупной Коррекции.
+
+  '
 statement_en: null
 source:
   book_id: neely-mwe-1990
   page: 11-26
   chapter: 'Глава 11: Продвинутое применение Меток Движения'
   section: Треугольники / Неограничивающие
-  figure_id: '11-27,11-28,11-29,11-30,11-31,11-32'
+  figure_id: 11-27,11-28,11-29,11-30,11-31,11-32
   verbatim_quote:
-    text: >
-      ЗАМЕЧАНИЕ: любой Неограничивающий Треугольник (за исключением случая, когда
+    text: 'ЗАМЕЧАНИЕ: любой Неограничивающий Треугольник (за исключением случая, когда
       он х-волна) должен завершать фазу более крупной Коррекции. Если вы обнаружили
       один из них в какой-либо позиции (кроме позиции х-волны), то вы можете сжать
       все крупное движение до простой тройки... Вот некоторые обычные и необычные
       места возникновения Неограничивающих Треугольников: 1. Волна-е Горизонтального
       Треугольника 2. Последняя корректирующая фаза Двойной или Тройной Тройки...
+
+      '
     language: ru
 formalization:
   status: draft
-  applies_when: identifying Non-Limiting Triangle positions
-  constraint: >
-    non_limiting_positions = {
-      We_horizontal_triangle,
-      last_corrective_phase_double_triple_three,
-      last_corrective_phase_running_double_flat,
-      last_corrective_phase_double_triple_combination,
-      W5_terminal_impulse,
-      x_wave_complex_correction
-    } ;
-    IF position != x_wave THEN must_complete_larger_corrective_phase ;
-    x_wave = only_case_non_limiting_triangle_in_middle_of_figure
-  formalization_notes: 'Рис.11-27..11-32. Пункты 1-5 = завершает фигуру; пункт 6 = середина.'
+  applies_when: '# Когда идентифицирован паттерн как Неограничивающий Треугольник
+    (Non-Limiting Triangle)
+
+    pattern.type == ''triangle'' AND pattern.subtype == ''non_limiting''
+
+    '
+  constraint: "# Допустимые позиции для Неограничивающего Треугольника\nVALID_NON_LIMITING_TRIANGLE_POSITIONS\
+    \ = [\n  'wave_e_of_horizontal_triangle',           # (1) e-волна Горизонтального\
+    \ Треугольника\n  'last_corrective_phase_double_three',       # (2) последняя\
+    \ корр. фаза Двойной Тройки\n  'last_corrective_phase_triple_three',       # (2)\
+    \ последняя корр. фаза Тройной Тройки\n  'last_corrective_phase_running_double_flat',\
+    \ # (3) последняя корр. фаза Подвижной Двойной Плоской\n  'last_corrective_phase_double_combination',\
+    \ # (4) последняя корр. фаза Двойной Комбинации\n  'last_corrective_phase_triple_combination',\
+    \ # (4) последняя корр. фаза Тройной Комбинации\n  'wave_5_terminal_impulse',\
+    \                  # (5) W5 Терминального Импульса\n  'x_wave_complex_correction'\
+    \                 # (6) x-волна сложной Коррекции\n]\n\n# Правило 1: позиция должна\
+    \ быть из допустимого списка\nREQUIRE pattern.position IN VALID_NON_LIMITING_TRIANGLE_POSITIONS\n\
+    \n# Правило 2: если позиция НЕ x-волна, то треугольник ДОЛЖЕН завершать\n# фазу\
+    \ более крупной Коррекции (т.е. быть последним элементом)\nIF pattern.position\
+    \ != 'x_wave_complex_correction' THEN\n  REQUIRE pattern.completes_larger_corrective_phase\
+    \ == true\n  # Треугольник является финальным паттерном в более крупной коррективной\
+    \ структуре\nEND\n\n# Правило 3: x-волна — единственный случай, когда Неограничивающий\
+    \ Треугольник\n# НЕ завершает фигуру, а возникает в середине сложной коррекции\n\
+    IF pattern.position == 'x_wave_complex_correction' THEN\n  # Треугольник находится\
+    \ в середине фигуры, не завершает её\n  REQUIRE pattern.completes_larger_corrective_phase\
+    \ == false\nEND\n"
+  formalization_notes: 'Рис. 11-27..11-32. Перечислены 6 конкретных позиций.
+
+    Позиции 1-5 завершают более крупную коррективную фазу.
+
+    Позиция 6 (x-волна) — единственное исключение, треугольник в середине фигуры.
+
+    Определение "завершает фазу более крупной Коррекции" (completes_larger_corrective_phase)
+
+    требует контекста родительского паттерна — треугольник должен быть последним
+
+    подпаттерном в структуре более высокого порядка.'
 aliases: []
 related_aku:
 - AKU-0245

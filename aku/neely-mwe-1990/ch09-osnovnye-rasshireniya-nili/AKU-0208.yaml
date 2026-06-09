@@ -25,9 +25,46 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: selecting best wave hypothesis
-  constraint: 'best_hypothesis = argmax(rule_count_satisfied) ; reject_if: any_mandatory_rule_violated'
-  formalization_notes: null
+  applies_when: '# При выборе лучшей волновой гипотезы из набора кандидатов
+
+    # Применяется после того, как для каждой гипотезы выполнены все три этапа проверки
+
+    candidate_hypotheses.count > 0
+
+    '
+  constraint: "# Алгоритм проверки гипотезы (три этапа последовательно):\n#\n# Этап\
+    \ 1: Предварительный анализ (Preliminary Analysis)\n# Этап 2: Дальнейшие построения\
+    \ (Further Constructions)\n# Этап 3: Основные положения (Core Rules / Essential\
+    \ Construction Rules)\n\nfunction evaluate_hypothesis(hypothesis):\n    mandatory_rules\
+    \ = get_all_mandatory_rules(hypothesis)\n    conditional_rules = get_all_conditional_rules(hypothesis)\n\
+    \    \n    # Шаг 1: Проверить все обязательные правила на каждом этапе\n    for\
+    \ stage in [PRELIMINARY_ANALYSIS, FURTHER_CONSTRUCTIONS, CORE_RULES]:\n      \
+    \  stage_mandatory = filter_by_stage(mandatory_rules, stage)\n        for rule\
+    \ in stage_mandatory:\n            if not rule.is_satisfied(hypothesis):\n   \
+    \             hypothesis.rejected = true\n                return hypothesis  #\
+    \ Гипотеза отвергается немедленно\n    \n    # Шаг 2: Подсчитать количество выполненных\
+    \ условий (mandatory + conditional)\n    all_applicable_rules = mandatory_rules\
+    \ + conditional_rules\n    hypothesis.satisfied_count = 0\n    for rule in all_applicable_rules:\n\
+    \        if rule.is_satisfied(hypothesis):\n            hypothesis.satisfied_count\
+    \ += 1\n    hypothesis.total_rules = len(all_applicable_rules)\n    hypothesis.rejected\
+    \ = false\n    return hypothesis\n\n# Оценить все гипотезы\nfor h in candidate_hypotheses:\n\
+    \    evaluate_hypothesis(h)\n\n# Отфильтровать отвергнутые (нарушено хотя бы одно\
+    \ mandatory правило)\nvalid_hypotheses = [h for h in candidate_hypotheses if h.rejected\
+    \ == false]\n\n# Если нет валидных гипотез → выдвинуть альтернативную гипотезу\n\
+    if valid_hypotheses.count == 0:\n    raise NEED_ALTERNATIVE_HYPOTHESIS\n\n# Лучшая\
+    \ гипотеза = максимум выполненных условий\n# (все характерные признаки должны\
+    \ проявляться одновременно в комплексе)\nbest_hypothesis = argmax(valid_hypotheses,\
+    \ key = h.satisfied_count)\n"
+  formalization_notes: "1. Правило является мета-правилом (управляет процессом выбора\
+    \ гипотез, а не описывает\n   конкретное ценовое ограничение).\n2. Конкретный\
+    \ состав правил на каждом из трёх этапов (Предварительный анализ,\n   Дальнейшие\
+    \ построения, Основные положения) определяется другими AKU\n   и зависит от типа\
+    \ паттерна в гипотезе.\n3. Из verbatim_quote: \"надежная интерпретация должна\
+    \ удовлетворять условиям ВСЕХ\n   относящихся к делу правил\" — это означает,\
+    \ что в идеале satisfied_count == total_rules.\n   Но при выборе из нескольких\
+    \ гипотез побеждает та, у которой максимум выполненных условий.\n4. Разделение\
+    \ правил на mandatory и conditional важно: нарушение mandatory → отвержение,\n\
+    \   нарушение conditional → снижение рейтинга, но не отвержение."
 aliases: []
 related_aku: []
 contradicts_aku: []

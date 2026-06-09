@@ -24,10 +24,40 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: pattern == 'trend_impulse' AND position == 'post_pattern' AND role
-    NOT IN ('wave_5', 'wave_c')
-  constraint: not reaches(next_wave, start_level(impulse))
-  formalization_notes: null
+  applies_when: '# Завершён Трендовый Импульс (Trending Impulse)
+
+    pattern.type == ''impulse''
+
+    AND pattern.subtype == ''trending''
+
+    AND pattern.is_completed == true
+
+
+    # Импульс НЕ является волной-5 или волной-c более крупной фигуры
+
+    AND pattern.role_in_larger_pattern NOT IN (''wave_5'', ''wave_c'')
+
+
+    # Существует следующая волна после завершения импульса
+
+    AND next_wave_after(pattern) EXISTS
+
+    '
+  constraint: "# Следующая за Трендовым Импульсом волна не должна достичь\n# начального\
+    \ уровня этого импульса\n\nnext_wave = next_wave_after(pattern)\nimpulse_start\
+    \ = start_price(pattern)\n\nif pattern.direction == 'up':\n    # Импульс шёл вверх\
+    \ — следующая волна (коррекция вниз)\n    # не должна опуститься до начального\
+    \ уровня импульса\n    low(next_wave) > impulse_start\nelif pattern.direction\
+    \ == 'down':\n    # Импульс шёл вниз — следующая волна (коррекция вверх)\n   \
+    \ # не должна подняться до начального уровня импульса\n    high(next_wave) < impulse_start\n"
+  formalization_notes: "- \"Следующая волна\" — это ближайшая волна того же или более\
+    \ крупного\n  масштаба, начинающаяся от конца Трендового Импульса.\n- Правило\
+    \ является mandatory: нарушение означает, что либо паттерн\n  неверно идентифицирован\
+    \ как Трендовый Импульс, либо неверно\n  определена его роль в более крупной фигуре.\n\
+    - Исключение (роль wave_5 или wave_c) снимает это ограничение,\n  поскольку после\
+    \ завершающих волн более крупной фигуры глубокий\n  откат допустим.\n- \"Достичь\
+    \ начального уровня\" интерпретируется как строгое неравенство\n  (не должна коснуться\
+    \ уровня start_price)."
 aliases:
 - постэффект трендового импульса
 related_aku: []

@@ -6,13 +6,14 @@ topic: flat
 subtopics:
 - motion-labels
 - wave-identification
-statement_ru: >
-  Позиции Меток Движения для вариаций Плоских: Обыкновенная — любая 2, 4, a, b,
-  c/d/e Горизонтального Треугольника. Неправильная — аналогично. Удлинённая —
-  практически только как часть Треугольника (1/3/5 Терминала; a/b/c/d Гориз.Треуг.;
-  e Расширяющегося). Неправильная Неудавшаяся — 2, 4 (до Растянутой); b (до
-  Удлинённой c или Зигзага с c ≥ 161.8% a). Подвижная — только W2 (перед Растянутой
-  3-й), W4 (перед Растянутой 5-й — редко), b (перед Удлинённой c-волной).
+statement_ru: 'Позиции Меток Движения для вариаций Плоских: Обыкновенная — любая 2,
+  4, a, b, c/d/e Горизонтального Треугольника. Неправильная — аналогично. Удлинённая
+  — практически только как часть Треугольника (1/3/5 Терминала; a/b/c/d Гориз.Треуг.;
+  e Расширяющегося). Неправильная Неудавшаяся — 2, 4 (до Растянутой); b (до Удлинённой
+  c или Зигзага с c ≥ 161.8% a). Подвижная — только W2 (перед Растянутой 3-й), W4
+  (перед Растянутой 5-й — редко), b (перед Удлинённой c-волной).
+
+  '
 statement_en: null
 source:
   book_id: neely-mwe-1990
@@ -21,24 +22,53 @@ source:
   section: Коррекции / Плоские
   figure_id: null
   verbatim_quote:
-    text: >
-      Обыкновенная может возникать практически в любое время в последовательности,
-      где эта фигура должна быть корректирующой... Самая мощная Стандартная
-      Коррекция, Подвижная, налагает очень специфические требования на последующую
-      рыночную активность. Принципиально важно, что движение после Подвижной
-      коррекции растет (снижается) быстрее, чем волна (того же Порядка),
-      непосредственно предшествующая этой Подвижной Коррекции.
+    text: 'Обыкновенная может возникать практически в любое время в последовательности,
+      где эта фигура должна быть корректирующой... Самая мощная Стандартная Коррекция,
+      Подвижная, налагает очень специфические требования на последующую рыночную активность.
+      Принципиально важно, что движение после Подвижной коррекции растет (снижается)
+      быстрее, чем волна (того же Порядка), непосредственно предшествующая этой Подвижной
+      Коррекции.
+
+      '
     language: ru
 formalization:
   status: draft
-  applies_when: identifying flat correction type by position in wave structure
-  constraint: >
-    regular_flat: positions = {W2, W4, Wa, Wb, Wc_d_e_horizontal_triangle} ;
-    elongated_flat: positions = {W1_3_5_terminal, Wa_b_c_d_horiz_triangle, We_expanding} ;
-    irregular_failure: positions = {W2_W4_before_extension, Wb_before_elongated_c} ;
-    running_flat: positions = {W2_before_ext3, W4_before_ext5_rare, Wb_before_elongated_c} ;
-    running_flat POST: next_segment_must_be_longest_of_completed_figure
-  formalization_notes: 'стр.11-11..11-17. Удлинённая — важный сигнал раннего оповещения о Треугольнике.'
+  applies_when: "# Когда идентифицирована Плоская коррекция (Flat) и нужно определить,\n\
+    # какая именно вариация допустима в данной позиции волновой структуры\npattern_type\
+    \ == 'flat' AND flat_variation IN [\n  'regular', 'irregular', 'elongated', 'irregular_failure',\
+    \ 'running'\n]\n"
+  constraint: "# === ОБЫКНОВЕННАЯ ПЛОСКАЯ (Regular Flat) ===\n# Допустимые позиции:\
+    \ практически любая коррективная позиция\nIF flat_variation == 'regular':\n  allowed_positions\
+    \ = {\n    W2,                          # волна 2 импульса\n    W4,          \
+    \                # волна 4 импульса\n    Wa,                          # волна\
+    \ a треугольника или сложной коррекции\n    Wb,                          # волна\
+    \ b треугольника или сложной коррекции\n    Wc_of_horiz_triangle,        # волна\
+    \ c горизонтального треугольника\n    Wd_of_horiz_triangle,        # волна d горизонтального\
+    \ треугольника\n    We_of_horiz_triangle         # волна e горизонтального треугольника\n\
+    \  }\n  REQUIRE current_position IN allowed_positions\n\n# === НЕПРАВИЛЬНАЯ ПЛОСКАЯ\
+    \ (Irregular Flat) ===\n# Допустимые позиции: аналогично обыкновенной\nIF flat_variation\
+    \ == 'irregular':\n  allowed_positions = {\n    W2, W4, Wa, Wb,\n    Wc_of_horiz_triangle,\n\
+    \    Wd_of_horiz_triangle,\n    We_of_horiz_triangle\n  }\n  REQUIRE current_position\
+    \ IN allowed_positions\n\n# === УДЛИНЁННАЯ ПЛОСКАЯ (Elongated Flat) ===\n# Практически\
+    \ только как часть Треугольника\nIF flat_variation == 'elongated':\n  allowed_positions\
+    \ = {\n    W1_of_terminal,              # волна 1 Терминального импульса\n   \
+    \ W3_of_terminal,              # волна 3 Терминального импульса\n    W5_of_terminal,\
+    \              # волна 5 Терминального импульса\n    Wa_of_horiz_triangle,   \
+    \     # волна a горизонтального треугольника\n    Wb_of_horiz_triangle,      \
+    \  # волна b горизонтального треугольника\n    Wc_of_horiz_triangle,        #\
+    \ волна c горизонтального треугольника\n    Wd_of_horiz_triangle,        # волна\
+    \ d горизонтального треугольника\n    We_of_expanding_triangle     # волна e расширяющегося\
+    \ треугольника\n  }\n  REQUIRE current_position IN allowed_positions\n\n# ===\
+    \ НЕПРАВИЛЬНАЯ НЕУДАВШАЯСЯ ПЛОСКАЯ (Irregular Failure Flat) ===\nIF flat_variation\
+    \ == 'irregular_failure':\n  allowed_positions_impulse = { W2, W4 }\n  allowed_positions_corrective\
+    \ = { Wb }\n\n  IF current_position IN allowed_positions_impulse:\n    # Допустима\
+    \ перед Растянутой (extended) волной\n    REQUIRE next_wave_is_extended == TRUE\n\
+    \n  IF current_position == Wb:\n    # Допустима перед Удлинённой c-волной ИЛИ\
+    \ перед Зигзагом с c >= 161.8% a\n    REQUIRE (\n      next_wave_c_is_elongated\
+    \ == TRUE\n      OR (parent_pattern == 'zigzag' AND price_length(Wc) >= 1.618\
+    \ * price_length(Wa))\n    )\n\n# === ПОДВИЖНАЯ ПЛОСКАЯ (Running Flat) ===\nIF\
+    \ flat_variation == 'running':\n  allowed_positions = {\n    W2,"
+  formalization_notes: null
 aliases: []
 related_aku: []
 contradicts_aku: []

@@ -24,9 +24,34 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: pattern == 'zigzag' AND parent != 'triangle'
-  constraint: type(wave_b) != 'moving_correction'
-  formalization_notes: null
+  applies_when: '# Текущий паттерн — Зигзаг
+
+    pattern == ''zigzag''
+
+    AND current_wave == ''b''
+
+    # Исключение: зигзаг входит в состав Треугольника
+
+    AND parent_pattern != ''triangle''
+
+    '
+  constraint: '# Волна-b зигзага не должна быть Подвижной Коррекцией
+
+    is_moving_correction(wave_b) == false
+
+    '
+  formalization_notes: '"Подвижная Коррекция" (running/moving correction) — коррективный
+    паттерн,
+
+    в котором волна-b превышает начало волны-a, а волна-c не достигает конца волны-a
+
+    (т.е. коррекция "сдвигается" в направлении основного тренда).
+
+    Исключение действует только когда весь Зигзаг является частью Треугольника
+
+    (любого уровня вложенности в качестве ноги треугольника).
+
+    Проверка parent_pattern должна учитывать непосредственного родителя зигзага.'
 aliases:
 - запрет подвижной коррекции в волне-b зигзага
 related_aku: []

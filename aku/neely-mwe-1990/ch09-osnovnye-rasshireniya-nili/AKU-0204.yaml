@@ -26,11 +26,46 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: confirming impulse vs complex correction via channel touchpoints
-  constraint: 'count_touchpoints(channel, pivots_same_order) <= 4 ; if > 4: figure
-    IS correction NOT impulse'
-  formalization_notes: Рис.9-1. Применяется к Импульсам (Трендовым+Терминальным) и
-    Треугольникам.
+  applies_when: '# Применяется при верификации 5-волновой фигуры (Импульс, Терминал,
+    Треугольник)
+
+    # через канализацию — проверка количества точек касания двух параллельных линий
+    тренда
+
+    pattern.wave_count == 5
+
+    AND pattern.candidate_type IN [''impulse'', ''terminal_impulse'', ''contracting_triangle'',
+    ''expanding_triangle'']
+
+    AND channel IS defined  # две противоположные параллельные линии тренда построены
+
+    '
+  constraint: "# Определяем 6 возможных точек касания одного Порядка для 5-волновой\
+    \ фигуры:\n# Это начало и конец каждого из 5 сегментов = 6 уникальных pivot-точек:\n\
+    #   p0 = start(wave_1)\n#   p1 = end(wave_1) = start(wave_2)\n#   p2 = end(wave_2)\
+    \ = start(wave_3)\n#   p3 = end(wave_3) = start(wave_4)\n#   p4 = end(wave_4)\
+    \ = start(wave_5)\n#   p5 = end(wave_5)\npivots = [p0, p1, p2, p3, p4, p5]  #\
+    \ 6 точек одного Порядка\n\n# Канал: две противоположные параллельные линии тренда\
+    \ (upper_line, lower_line)\n# Точка \"касается\" линии, если расстояние до неё\
+    \ <= допустимой погрешности\ntouchpoints = 0\nFOR each pivot IN pivots:\n  IF\
+    \ touches(pivot, channel.upper_line, tolerance) OR touches(pivot, channel.lower_line,\
+    \ tolerance):\n    touchpoints += 1\n\n# ПРАВИЛО: максимум 4 точки касания для\
+    \ Импульсной фигуры\nIF touchpoints <= 4:\n  # Фигура МОЖЕТ быть Импульсом (или\
+    \ Треугольником) — правило не нарушено\n  PASS\nELSE:\n  # touchpoints > 4 (т.е.\
+    \ 5 или 6)\n  # Фигура НЕ является Импульсом → это Коррективная фигура\n  # (Двойной/Тройной\
+    \ Зигзаг или Комбинация)\n  pattern.candidate_type = 'correction'  # переклассифицировать\n\
+    \  REJECT pattern AS impulse\n  REJECT pattern AS terminal_impulse\n  # Рассматривать\
+    \ как: double_zigzag, triple_zigzag, or combination\n"
+  formalization_notes: "1. Источник: Глава 9, стр. 9-1, Рис. 9-1 (Расширения Нили).\n\
+    2. \"Одного и того же Порядка\" — все 6 pivot-точек должны быть одного Порядка\
+    \ (degree),\n   т.е. берутся непосредственные вершины 5-волновой структуры без\
+    \ подволн.\n3. Правило применяется к Импульсам (трендовым и терминальным) и Треугольникам.\n\
+    4. Канал строится по двум параллельным линиям; конкретный метод построения канала\n\
+    \   (какие точки определяют линии) зависит от типа фигуры и не специфицирован\
+    \ в данном правиле.\n5. Tolerance (допуск касания) не определён в источнике —\
+    \ требует калибровки.\n6. Если touchpoints > 4, фигура переклассифицируется в\
+    \ коррективную\n   (Двойной/Тройной Зигзаг или Комбинация), но конкретный подтип\
+    \ не определяется\n   данным правилом."
 aliases: []
 related_aku: []
 contradicts_aku: []

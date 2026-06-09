@@ -25,11 +25,101 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: identifying flat correction type via channel
-  constraint: 'flat_channel: parallel AND horizontal, passing through max(wave_a)
-    AND min(wave_a) ; flat_type determined by relative position of waves b and c within
-    channel'
-  formalization_notes: 'Рис.12-16a (стр.12-13): все разновидности Плоских.'
+  applies_when: '# Когда мы анализируем предполагаемую Плоскую коррекцию (Flat)
+
+    # и хотим определить её разновидность с помощью канала
+
+    pattern_candidate == ''flat''
+
+    AND wave_a IS completed
+
+    '
+  constraint: '# Шаг 1: Построение канала Плоской коррекции
+
+    # Определяем максимум и минимум волны-a
+
+    a_max = max(wave_a)  # наивысшая точка волны-a (high)
+
+    a_min = min(wave_a)  # наинизшая точка волны-a (low)
+
+
+    # Проводим две горизонтальные параллельные линии через эти точки
+
+    upper_channel_line = horizontal_line(a_max)
+
+    lower_channel_line = horizontal_line(a_min)
+
+
+    # Проверка свойств канала:
+
+    # 1) Линии должны быть горизонтальны (slope == 0)
+
+    assert slope(upper_channel_line) == 0
+
+    assert slope(lower_channel_line) == 0
+
+
+    # 2) Линии должны быть параллельны (следует автоматически из горизонтальности)
+
+    assert is_parallel(upper_channel_line, lower_channel_line)
+
+
+    # Шаг 2: Определение разновидности Плоской по положению волн b и c
+
+    # относительно канала
+
+    #
+
+    # b_end = endpoint(wave_b)
+
+    # c_end = endpoint(wave_c)
+
+    # b_extreme = extreme_in_direction_of_b(wave_b)
+
+    # c_extreme = extreme_in_direction_of_c(wave_c)
+
+    #
+
+    # Для бычьей Плоской (wave_a направлена вниз):
+
+    #   - Неудавшаяся-b (failure-b): b_end не достигает upper_channel_line
+
+    #   - Обыкновенная (common): b_end ≈ upper_channel_line AND c_end ≈ lower_channel_line
+
+    #   - Неудавшаяся-c (failure-c): c_end не достигает lower_channel_line
+
+    #   - Удлинённая (elongated): c_end пробивает lower_channel_line
+
+    #   - Неправильная (irregular): b_end пробивает upper_channel_line
+
+    #   - Двойная Неудавшаяся (double failure): b не достигает upper AND c не достигает
+    lower
+
+    #
+
+    # (Для медвежьей Плоской — зеркально)
+
+    #
+
+    # ПРИМЕЧАНИЕ: конкретные пороги "достигает" / "пробивает" / "не достигает"
+
+    # определяются визуально по рисункам 12-16a и не специфицированы числово в тексте.
+
+    '
+  formalization_notes: 'Правило построения канала (горизонтальные параллельные линии
+    через max/min волны-a)
+
+    формализуется полностью. Однако определение конкретной разновидности Плоской
+
+    (failure-b, failure-c, common, double failure, elongated, irregular и т.д.)
+
+    по положению волн b и c внутри канала описано только через рисунки 12-16a-1..8,
+
+    без точных числовых критериев в verbatim_quote. Поэтому классификация разновидностей
+
+    описана концептуально, но точная формализация требует данных из рисунков,
+
+    которые недоступны в текстовом виде.'
 aliases: []
 related_aku: []
 contradicts_aku: []

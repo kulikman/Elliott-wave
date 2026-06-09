@@ -23,9 +23,32 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: pattern == 'flat' AND subtype == 'irregular_failure'
-  constraint: not reaches(end(wave_c), start_level(wave_b)) AND length(wave_b) > length(wave_a)
-  formalization_notes: null
+  applies_when: 'pattern == ''flat'' AND subtype == ''irregular_failure''
+
+    '
+  constraint: "# Правило 1: Волна-b должна быть больше волны-а в ценовом отношении\n\
+    price_length(wave_b) > price_length(wave_a)\n# где price_length(wave) = abs(end_price(wave)\
+    \ - start_price(wave))\n\n# Правило 2: Волна-с не должна откатываться до начального\
+    \ уровня волны-b\n# Т.е. конец волны-с не достигает точки начала волны-b\n# Для\
+    \ бычьей плоской (коррекция вниз): волна-b идёт вниз, волна-с идёт вверх\n#  \
+    \ end_price(wave_c) < start_price(wave_b)\n# Для медвежьей плоской (коррекция\
+    \ вверх): волна-b идёт вверх, волна-с идёт вниз\n#   end_price(wave_c) > start_price(wave_b)\n\
+    \nif direction(wave_a) == DOWN:\n  # бычья плоская: a вниз, b вверх (выше начала\
+    \ a), c вниз\n  # волна-с не откатывается до начала волны-b (т.е. не падает так\
+    \ глубоко)\n  end_price(wave_c) > start_price(wave_b)\nelif direction(wave_a)\
+    \ == UP:\n  # медвежья плоская: a вверх, b вниз (ниже начала a), c вверх\n  #\
+    \ волна-с не откатывается до начала волны-b (т.е. не поднимается так высоко)\n\
+    \  end_price(wave_c) < start_price(wave_b)\n"
+  formalization_notes: 'price_length — ценовое расстояние (абсолютная разница цен
+    начала и конца волны).
+
+    "Не откатывается до начального уровня волны-b" означает, что конец волны-с
+
+    не достигает ценового уровня start_price(wave_b). Это и определяет "неудавшуюся"
+
+    (failure) природу паттерна — волна-с не завершает свою обычную задачу.
+
+    start_price(wave_b) == end_price(wave_a).'
 aliases:
 - правила неправильной неудавшейся плоской
 related_aku: []

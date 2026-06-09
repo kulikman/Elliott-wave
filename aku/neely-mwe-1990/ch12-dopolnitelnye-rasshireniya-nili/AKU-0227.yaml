@@ -26,10 +26,44 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: identifying extended wave from channel shape
-  constraint: channel_converging(upper,lower) => extended_wave_1 ; channel_parallel
-    => extended_wave_3 ; channel_diverging('megaphone') => extended_wave_5
-  formalization_notes: Рис.12-12 (Раст.1-й), 12-13 (Раст.3-й), 12-14 (Раст.5-й).
+  applies_when: '# Применяется при анализе завершённого импульса (5 волн)
+
+    # для определения типа растяжения по форме канала
+
+    pattern == ''impulse''
+
+    AND all_waves_completed(W1, W2, W3, W4, W5)
+
+    '
+  constraint: "# Построение канала импульса:\n# upper_trendline = линия тренда по\
+    \ экстремумам импульсных волн (W1, W3, W5)\n# lower_trendline = линия тренда по\
+    \ экстремумам коррективных волн (W2, W4)\n# (конкретные точки касания могут варьироваться)\n\
+    \n# Вычисляем расстояние между линиями в начале и конце фигуры\ndistance_start\
+    \ = distance_between(upper_trendline, lower_trendline, at: start_of_pattern)\n\
+    distance_end = distance_between(upper_trendline, lower_trendline, at: end_of_pattern)\n\
+    \n# --- Растяжение 1-й волны: канал сужается (клин) ---\nIF channel_is_converging(distance_start\
+    \ > distance_end):\n    # Канал напоминает Терминальное движение (клин/wedge)\n\
+    \    # W5 НЕ достигает верхней линии тренда\n    expected_extension = W1\n   \
+    \ end_of(W5) < upper_trendline_value_at(end_of(W5))\n\n# --- Растяжение 3-й волны:\
+    \ линии параллельны ---\nELIF channel_is_parallel(upper_trendline, lower_trendline):\n\
+    \    # Независимо от точек касания, линии всегда параллельны или почти параллельны\n\
+    \    # slope(upper_trendline) ≈ slope(lower_trendline)\n    expected_extension\
+    \ = W3\n    ABS(slope(upper_trendline) - slope(lower_trendline)) <= parallel_tolerance\n\
+    \n# --- Растяжение 5-й волны: канал расширяется (мегафон) ---\nELIF channel_is_diverging(distance_start\
+    \ < distance_end):\n    # Канал расширяется (\"мегафон\")\n    # W5 пересекает\
+    \ верхнюю линию тренда (\"ложный прорыв\")\n    expected_extension = W5\n    end_of(W5)\
+    \ > upper_trendline_value_at(end_of(W5))\n"
+  formalization_notes: "1. Правило связывает форму канала с типом растяжения, но verbatim_quote\n\
+    \   подтверждает явно только случаи растяжения 1-й (сужение, как Терминал)\n \
+    \  и 3-й (параллельность). Для растяжения 5-й (мегафон, ложный прорыв)\n   информация\
+    \ из statement_ru, но не из verbatim_quote.\n2. Конкретные точки касания для построения\
+    \ трендовых линий могут варьироваться\n   (см. рис. 12-12, 12-13, 12-14), что\
+    \ затрудняет однозначную алгоритмизацию.\n3. Понятие \"почти параллельны\" (parallel_tolerance)\
+    \ требует калибровки —\n   точный допуск в источнике не указан.\n4. \"Верхняя\
+    \ линия тренда\" предполагает восходящий импульс; для нисходящего\n   импульса\
+    \ логика зеркальна (upper/lower меняются местами).\n5. Правило является диагностическим\
+    \ (определение типа растяжения по каналу),\n   а не ограничительным в строгом\
+    \ смысле."
 aliases: []
 related_aku: []
 contradicts_aku: []

@@ -22,7 +22,7 @@ source:
       '
     language: ru
 formalization:
-  status: formalized
+  status: draft
   applies_when: '# Паттерн — усечённый зигзаг, проверяем соотношение волны-c к волне-a
 
     pattern == ''zigzag'' AND subtype == ''truncated''

@@ -25,10 +25,37 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: classifying multiwave correction
-  constraint: 'count(polywave '':5'') IN {1,2} AND if count==1: polywave('':5'') IS
-    c_wave AND polywave(b_wave) IS corrective'
-  formalization_notes: null
+  applies_when: '# Классифицируем мультиволновую коррекцию (multiwave correction)
+
+    # Мультиволна = фигура, состоящая из поливолн
+
+    pattern_type == ''multiwave'' AND pattern_class == ''corrective''
+
+    '
+  constraint: "# --- Правило 1: Количество пятёрок в мультиволновой коррекции ---\n\
+    # Среди поливолн, составляющих мультиволну, одна или две должны иметь структуру\
+    \ :5\nfives = [pw for pw in multiwave.polywaves if pw.structure == ':5']\nassert\
+    \ count(fives) in {1, 2}\n\n# --- Правило 2: Пятёрки должны быть явно сегментированы\
+    \ ---\n# Каждая поливолна со структурой :5 должна быть визуально (явно) сегментирована\n\
+    # т.е. её внутренняя структура должна быть разложена на подволны\nfor pw in fives:\n\
+    \    assert pw.is_explicitly_segmented == true\n\n# --- Правило 3: Если сегментирована\
+    \ только одна пятёрка ---\n# она должна быть c-волной Зигзага или Плоской\nif\
+    \ count(fives) == 1:\n    the_five = fives[0]\n    assert (\n        (multiwave.pattern\
+    \ in {'zigzag', 'flat'} AND the_five.role == 'c')\n    )\n\n# --- Правило 4 (высокая\
+    \ вероятность): b-волна мультиволны — коррективная поливолна ---\n# \"Очень высока\
+    \ вероятность\" — не абсолютный запрет, но сильное ожидание\nb_wave = multiwave.get_wave('b')\n\
+    if b_wave is not null:\n    assert b_wave.structure_class == 'corrective'  # STRONG_EXPECTATION,\
+    \ не absolute\n"
+  formalization_notes: "1. Правило 4 (b-волна коррективная) описано как \"очень высокая\
+    \ вероятность\",\n   а не абсолютный запрет. В verbatim_quote: \"Очень высока\
+    \ вероятность, что\n   b-волна мультиволны будет Коррективной поливолной.\" Это\
+    \ скорее strong guideline,\n   чем mandatory constraint. Однако AKU помечен как\
+    \ mandatory, поэтому оставлен\n   как assert, но с пометкой STRONG_EXPECTATION.\n\
+    2. \"Явно (визуально) сегментированы\" — интерпретировано как наличие явной\n\
+    \   внутренней разбивки поливолны на подволны (is_explicitly_segmented).\n3. Правило\
+    \ не уточняет, что происходит при count(fives)==2 — какие роли\n   должны занимать\
+    \ обе пятёрки. Из statement следует только ограничение\n   для случая count==1\
+    \ (c-волна Зигзага или Плоской)."
 aliases: []
 related_aku: []
 contradicts_aku: []

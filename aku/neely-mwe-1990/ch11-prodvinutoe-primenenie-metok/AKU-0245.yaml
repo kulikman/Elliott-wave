@@ -6,41 +6,69 @@ topic: triangle
 subtopics:
 - wave-identification
 - motion-labels
-statement_ru: >
-  Ограничивающие vs Неограничивающие Треугольники: Ограничивающие — e-волна
-  завершается задолго до вершины (apex); выброс ограничен самой широкой стороной
-  (±25%). Неограничивающие — рынок сужается прямо к точке пересечения (apex)
-  линий тренда; выброс неограничен. Вершина Ограничивающего: во временной зоне
-  20–40% длины Треугольника, прибавленной к концу e (тенденция к 38.2% = 0.618²).
-  Общие правила: d НИКОГДА не крупнейшая волна; 3 стороны не могут быть равны (±5%).
+statement_ru: 'Ограничивающие vs Неограничивающие Треугольники: Ограничивающие — e-волна
+  завершается задолго до вершины (apex); выброс ограничен самой широкой стороной (±25%).
+  Неограничивающие — рынок сужается прямо к точке пересечения (apex) линий тренда;
+  выброс неограничен. Вершина Ограничивающего: во временной зоне 20–40% длины Треугольника,
+  прибавленной к концу e (тенденция к 38.2% = 0.618²). Общие правила: d НИКОГДА не
+  крупнейшая волна; 3 стороны не могут быть равны (±5%).
+
+  '
 statement_en: null
 source:
   book_id: neely-mwe-1990
   page: 11-19
   chapter: 'Глава 11: Продвинутое применение Меток Движения'
   section: Треугольники / Сужающиеся / Ограничивающие
-  figure_id: '11-23,11-24,11-25'
+  figure_id: 11-23,11-24,11-25
   verbatim_quote:
-    text: >
-      Все Ограничивающие Треугольники имеют очень похожее строение. Одна из наиболее
-      важных их характеристик — волна-е, представляющая конец Треугольника,
-      завершается задолго до достижения вершины данного Треугольника... Вершина
-      Треугольника должна сформироваться во временной зоне, равной 20-40% временной
-      длины всего Треугольника, прибавленной к концу волны-е... В Ограничивающих
-      Треугольниках выброс обычно ограничен величиной самой широкой стороны
-      Треугольника (плюс/минус 25%).
+    text: 'Все Ограничивающие Треугольники имеют очень похожее строение. Одна из наиболее
+      важных их характеристик — волна-е, представляющая конец Треугольника, завершается
+      задолго до достижения вершины данного Треугольника... Вершина Треугольника должна
+      сформироваться во временной зоне, равной 20-40% временной длины всего Треугольника,
+      прибавленной к концу волны-е... В Ограничивающих Треугольниках выброс обычно
+      ограничен величиной самой широкой стороны Треугольника (плюс/минус 25%).
+
+      '
     language: ru
 formalization:
   status: draft
-  applies_when: triangle classification as Limiting vs Non-Limiting
-  constraint: >
-    limiting: e_wave ends well before apex ;
-    limiting: thrust <= widest_segment * 1.25 ;
-    limiting: apex_time = end_e + (0.20..0.40) * triangle_temporal_length ;
-    non_limiting: market converges to apex ;
-    non_limiting: thrust > widest_segment (unlimited) ;
-    general: Wd never largest ; no 3 sides equal (±5%)
-  formalization_notes: 'Рис.11-23..11-25, 11-27. Вершина тяготеет к 0.618² = 38.2%.'
+  applies_when: 'pattern == ''triangle'' AND subtype == ''contracting''
+
+    '
+  constraint: "# === Определение базовых величин ===\n# Вершина (apex) = точка пересечения\
+    \ линий тренда треугольника\napex_point = intersection(trendline_AC, trendline_BD)\n\
+    apex_time = time(apex_point)\n\n# Временная длина треугольника = от начала волны-a\
+    \ до конца волны-e\ntriangle_start_time = time(start(wave_a))\ntriangle_end_time\
+    \ = time(end(wave_e))\ntriangle_temporal_length = triangle_end_time - triangle_start_time\n\
+    \n# Самая широкая сторона треугольника (по цене)\nwidest_segment = max(price_range(wave_a),\
+    \ price_range(wave_b),\n                     price_range(wave_c), price_range(wave_d),\n\
+    \                     price_range(wave_e))\n\n# === Классификация: Ограничивающий\
+    \ (Limiting) vs Неограничивающий (Non-Limiting) ===\n\nIF triangle_type == 'limiting':\n\
+    \    # Волна-e завершается задолго до вершины\n    # (end_e значительно раньше\
+    \ apex_time)\n    REQUIRE time(end(wave_e)) << apex_time  # \"задолго до\"\n\n\
+    \    # Вершина формируется во временной зоне 20-40% длины треугольника после конца\
+    \ e\n    apex_zone_start = triangle_end_time + 0.20 * triangle_temporal_length\n\
+    \    apex_zone_end   = triangle_end_time + 0.40 * triangle_temporal_length\n \
+    \   REQUIRE apex_time >= apex_zone_start AND apex_time <= apex_zone_end\n    #\
+    \ Тенденция к 38.2% (= 0.618^2)\n\n    # Выброс (thrust) ограничен самой широкой\
+    \ стороной ±25%\n    thrust_length = price_range(post_triangle_thrust)\n    REQUIRE\
+    \ thrust_length <= widest_segment * 1.25\n    REQUIRE thrust_length >= widest_segment\
+    \ * 0.75\n\nELIF triangle_type == 'non_limiting':\n    # Рынок сужается прямо\
+    \ к точке пересечения (apex)\n    # end_e близко к apex_time\n    REQUIRE time(end(wave_e))\
+    \ ≈ apex_time\n\n    # Выброс неограничен\n    # (нет верхнего ограничения на\
+    \ thrust_length)\n\n# === Общие правила для всех треугольников ===\n\n# Волна-d\
+    \ НИКОГДА не является крупнейшей волной\nREQUIRE price_range(wave_d) < max(price_range(wave_a),\
+    \ price_range(wave_b),\n                                   price_range(wave_c),\
+    \ price_range(wave_e))\n\n# Три стороны не могут быть равны (±5%)\nsides = [price_range(wave_a),\
+    \ price_range(wave_b), price_range(wave_c),\n         price_range(wave_d), price_range(wave_e)]\n\
+    FOR each combination of 3 sides (side_i, side_j, side_k) from sides:\n    not_all_three_equal\
+    \ = NOT (\n        abs(side_i - side_j) / max(side_i, side_j) <= 0.05 AND\n  \
+    \      abs(side_j - side_k) / max(side_j, side_k) <= 0.05\n    )\n    REQUIRE\
+    \ not_all_three_equal\n"
+  formalization_notes: "1. \"Задолго до вершины\" (для limiting) — качественный критерий\
+    \ из verbatim_quote,\n   точный порог не указан. Косвенно определяется через правило\
+    \ apex_zone (20-40%).\n2. Тенденция apex к 38."
 aliases: []
 related_aku:
 - AKU-0246

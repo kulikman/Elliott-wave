@@ -34,7 +34,7 @@ formalization:
 
     AND triangle_is_complete == true
 
-    AND position == ''post_pattern_stage1''
+    AND post_pattern_stage == 1
 
     '
   constraint: '# Определяем линию тренда B-D
@@ -53,37 +53,33 @@ formalization:
 
     # Условие 1: эта волна должна достичь и пробить линию тренда B-D
 
-    price_breaks_trendline = crosses(post_wave.price_path, trendline_BD)
+    price_breaks_trendline = crosses(post_wave.price, trendline_BD)
 
 
     # Условие 2: пробитие должно произойти за время, не превышающее
 
     # длительности волны-е Треугольника
 
-    time_of_break = time_when(post_wave.price_path, crosses, trendline_BD)
+    time_of_break = time_when(crosses(post_wave.price, trendline_BD))
 
-    time_from_triangle_end = time_of_break - end_time(wave_e)
-
-    duration_constraint = time_from_triangle_end <= duration(wave_e)
+    time_since_triangle_end = time_of_break - end_time(wave_e)
 
 
-    # Оба условия должны выполняться
+    # Итоговое ограничение
 
     price_breaks_trendline == true
 
-    AND duration_constraint == true
+    AND time_since_triangle_end <= duration(wave_e)
 
     '
-  formalization_notes: "1. Линия тренда B-D проводится через концы (end) волн B и\
-    \ D, а не через начала.\n   Контекст явно указывает: \"В Треугольниках чертится\
-    \ линия тренда B-D, а не 0-В.\"\n2. \"Достичь и пробить\" означает, что цена должна\
-    \ не просто коснуться линии,\n   а пересечь её (cross through).\n3. Время отсчитывается\
-    \ от момента завершения волны-е (конец Треугольника)\n   до момента пробития линии\
-    \ тренда B-D.\n4. Правило применяется только к Сужающимся (contracting) Треугольникам.\n\
-    \   Для Расширяющихся Треугольников могут быть иные правила.\n5. Направление пробития\
-    \ зависит от направления Треугольника:\n   - если Треугольник бычий (thrust вверх),\
-    \ пробитие линии B-D вверх\n   - если Треугольник медвежий (thrust вниз), пробитие\
-    \ линии B-D вниз"
+  formalization_notes: "- Контекст явно указывает: \"В Треугольниках чертится линия\
+    \ тренда B-D, а не 0-B\".\n- \"Первая после завершения Треугольника волна\" —\
+    \ это волна-выброс (thrust),\n  следующая сразу за волной-е.\n- duration(wave_e)\
+    \ — временная длительность волны-е от её начала до конца.\n- Пробитие тrendline_BD\
+    \ означает, что цена пересекает проекцию линии B-D\n  в направлении выброса (вверх\
+    \ для бычьего, вниз для медвежьего треугольника).\n- Если условие не выполняется,\
+    \ идентификация паттерна как Сужающегося\n  Треугольника ставится под сомнение\
+    \ (не подтверждена на этапе 1)."
 created_by: claude
 created_at: '2026-06-02T17:57:59Z'
 requires_review: false
