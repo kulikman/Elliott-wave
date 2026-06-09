@@ -1,11 +1,12 @@
 id: AKU-0275
 type: heuristic
 strength: heuristic
-status: draft
+status: verified
 topic: trading-application
 subtopics:
 - trading-application
-statement_ru: Автор допускает попеременное добавление новых сделок в положительный замок сверху и снизу для увеличения прибыльных позиций в обоих направлениях.
+statement_ru: Автор допускает попеременное добавление новых сделок в положительный
+  замок сверху и снизу для увеличения прибыльных позиций в обоих направлениях.
 statement_en: null
 source:
   book_id: intraday-l02-positive-lock
@@ -14,7 +15,10 @@ source:
   section: Несколько советов
   figure_id: null
   verbatim_quote:
-    text: Вы можете попеременно добавлять в замок новые сделки сверху и снизу. Так вы без риска увеличите свои прибыльные позиции в обоих направлениях...Создание таких "гроздьев" сделок потребует некоторого терпения и настойчивости. Но, ваши старания будут вознаграждены .))
+    text: Вы можете попеременно добавлять в замок новые сделки сверху и снизу. Так
+      вы без риска увеличите свои прибыльные позиции в обоих направлениях...Создание
+      таких "гроздьев" сделок потребует некоторого терпения и настойчивости. Но, ваши
+      старания будут вознаграждены .))
     language: ru
 formalization:
   status: not_attempted
@@ -30,5 +34,8 @@ extends_aku: null
 supersedes_aku: null
 created_by: claude
 created_at: '2026-06-04T21:05:00Z'
-review_notes: 'Sprint 3 pool 2: heuristics. Высокорисковая торговая техника; слово "без риска" оставлено только как цитата автора, требует human review.'
-requires_review: true
+review_notes: 'Sprint 3 pool 2: heuristics. Высокорисковая торговая техника; слово
+  "без риска" оставлено только как цитата автора, требует human review.
+
+  Reviewed and approved by Anton 2026-06-09.'
+requires_review: false

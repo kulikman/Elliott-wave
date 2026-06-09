@@ -23,9 +23,54 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: figure is compact AND crosses its own start_level
-  constraint: apply_length_rules := false ; use base_structure(figure) instead
-  formalization_notes: null
+  applies_when: "# Фигура является компактной (результат процедуры compaction)\n#\
+    \ И пересекает свой собственный начальный уровень\nfigure.is_compact == true\n\
+    AND figure_crosses_own_start_level(figure) == true\n\n# Определение пересечения\
+    \ начального уровня:\ndef figure_crosses_own_start_level(fig):\n  start_level\
+    \ = fig.start.price\n  if fig.direction == UP:\n    # Для бычьей фигуры: какая-либо\
+    \ точка внутри фигуры уходит ниже старта\n    return any(w.end.price < start_level\
+    \ for w in fig.waves)\n  elif fig.direction == DOWN:\n    # Для медвежьей фигуры:\
+    \ какая-либо точка внутри фигуры уходит выше старта\n    return any(w.end.price\
+    \ > start_level for w in fig.waves)\n"
+  constraint: '# 1. НЕ применять правила соотношений длин (length ratio rules)
+
+    #    к подволнам этой компактной фигуры
+
+    skip_length_ratio_rules(figure) = true
+
+
+    # 2. Работать только с базовой Структурой (:3 или :5) этой фигуры
+
+    # Т.е. определить, является ли фигура трёхволновой (:3) или пятиволновой (:5),
+
+    # но НЕ проверять пропорции длин между её подволнами
+
+    analysis_target = figure.base_structure  # :3 or :5
+
+
+    # Пример: если compact figure содержит 5 подволн,
+
+    # фиксируем base_structure = :5, но НЕ проверяем:
+
+    #   - wave3.length >= wave1.length
+
+    #   - wave5.length vs wave3.length
+
+    #   - и прочие length ratio rules
+
+    '
+  formalization_notes: "1. \"Компактная ценовая фигура\" — фигура, полученная в результате\
+    \ процедуры\n   компактирования (compaction), т.е. группа моноволн, объединённых\
+    \ в одну\n   структурную единицу. Точное определение \"compact\" зависит от процедуры\n\
+    \   компактирования, описанной в других разделах книги.\n2. \"Пересекает свой\
+    \ собственный начальный уровень\" — цена в ходе развития\n   фигуры возвращается\
+    \ за ценовой уровень начала этой фигуры.\n3. \"Правила соотношений длин\" — правила,\
+    \ определяющие допустимые пропорции\n   между длинами подволн (например, волна\
+    \ 3 >= волна 1 и т.п.).\n4. \"Базовая Структура (:3/:5)\" — классификация фигуры\
+    \ как трёхволновой или\n   пятиволновой, без применения детальных правил пропорций\
+    \ подволн.\n5. Правило явно указывает: \"работайте только с базовой Структурой\"\
+    \ —\n   это означает, что сама классификация :3/:5 остаётся валидной,\n   запрещается\
+    \ лишь применение length ratio rules к внутренним подволнам."
 aliases: []
 related_aku: []
 contradicts_aku: []

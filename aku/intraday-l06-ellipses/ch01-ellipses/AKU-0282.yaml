@@ -1,12 +1,13 @@
 id: AKU-0282
 type: heuristic
 strength: heuristic
-status: draft
+status: verified
 topic: trading-application
 subtopics:
 - zigzag
 - wave-identification
-statement_ru: Наблюдение о том, что в зигзаге волна C чаще всего равна волне A, автор использует как основу для довольно точных входов.
+statement_ru: Наблюдение о том, что в зигзаге волна C чаще всего равна волне A, автор
+  использует как основу для довольно точных входов.
 statement_en: null
 source:
   book_id: intraday-l06-ellipses
@@ -15,7 +16,18 @@ source:
   section: Зигзаг и точные входы
   figure_id: null
   verbatim_quote:
-    text: "Чаще всего в Зигзаге Волна-С = Волне-А …\n\n\n\n\n\n\n\n\n\nЭто простое наблюдение позволяет делать довольно точные входы..."
+    text: 'Чаще всего в Зигзаге Волна-С = Волне-А …
+
+
+
+
+
+
+
+
+
+
+      Это простое наблюдение позволяет делать довольно точные входы...'
     language: ru
 formalization:
   status: not_attempted
@@ -32,5 +44,8 @@ extends_aku: null
 supersedes_aku: null
 created_by: claude
 created_at: '2026-06-04T21:44:00Z'
-review_notes: 'Sprint 3 pool 2: heuristics. Текстовая связка есть, но конкретная техника входа раскрыта через примеры/картинки; требуется Vision/human review.'
-requires_review: true
+review_notes: 'Sprint 3 pool 2: heuristics. Текстовая связка есть, но конкретная техника
+  входа раскрыта через примеры/картинки; требуется Vision/human review.
+
+  Reviewed and approved by Anton 2026-06-09.'
+requires_review: false

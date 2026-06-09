@@ -1,7 +1,7 @@
 id: AKU-0316
 type: rule
 strength: mandatory
-status: draft
+status: verified
 topic: grouping-procedure
 subtopics:
 - polywave
@@ -23,7 +23,25 @@ source:
       '
     language: ru
 formalization:
-  status: not_attempted
+  status: draft
+  applies_when: '# Когда группа моноволн формирует поливолну
+
+    structure_level == ''polywave''
+
+    '
+  constraint: "# Подсчёт моноволн в составе поливолны\nmonowave_count = count_monowaves(polywave)\n\
+    \nif polywave.type == 'corrective':\n    monowave_count >= 3\nelif polywave.type\
+    \ == 'impulsive':\n    monowave_count >= 5\n"
+  formalization_notes: 'Правило устанавливает минимальные требования к количеству
+    моноволн.
+
+    Коррективная поливолна — минимум 3 моноволны, импульсная — минимум 5.
+
+    Максимальное количество моноволн правилом не ограничено.
+
+    Классификация поливолны на "коррективную" или "импульсную" предполагается
+
+    определённой на основании других правил (структурных меток и т.д.).'
 aliases:
 - минимум моноволн в поливолне
 related_aku: []
@@ -32,5 +50,7 @@ extends_aku: null
 supersedes_aku: null
 created_by: claude
 created_at: '2025-06-02T12:00:00Z'
-review_notes: 'АВТОПРОВЕРКА: цитата не найдена в тексте — возможна галлюцинация'
-requires_review: true
+review_notes: 'АВТОПРОВЕРКА: цитата не найдена в тексте — возможна галлюцинация
+
+  Reviewed and approved by Anton 2026-06-09.'
+requires_review: false

@@ -1,11 +1,13 @@
 id: AKU-0280
 type: heuristic
 strength: heuristic
-status: draft
+status: verified
 topic: trading-application
 subtopics:
 - wave-identification
-statement_ru: Если для завершения ВАЛа не хватает третьего касания, автор считает возможным торговать последнюю волну ВАЛа, опираясь на его медленное и предсказуемое развитие.
+statement_ru: Если для завершения ВАЛа не хватает третьего касания, автор считает
+  возможным торговать последнюю волну ВАЛа, опираясь на его медленное и предсказуемое
+  развитие.
 statement_en: null
 source:
   book_id: intraday-l05-val
@@ -14,7 +16,9 @@ source:
   section: Торговля последней волны ВАЛа
   figure_id: null
   verbatim_quote:
-    text: Приятной особенностью Вала является его медленное и предсказуемое развитие. Зная наперед, что для завершения Вала не хватает 3-го касания, можно смело торговать последнюю волну Вала...
+    text: Приятной особенностью Вала является его медленное и предсказуемое развитие.
+      Зная наперед, что для завершения Вала не хватает 3-го касания, можно смело торговать
+      последнюю волну Вала...
     language: ru
 formalization:
   status: not_attempted
@@ -32,5 +36,8 @@ extends_aku: null
 supersedes_aku: null
 created_by: claude
 created_at: '2026-06-04T21:34:00Z'
-review_notes: 'Sprint 3 pool 2: heuristics. Торговая эвристика использует условие 3-го касания, но не формализует вход/выход.'
-requires_review: true
+review_notes: 'Sprint 3 pool 2: heuristics. Торговая эвристика использует условие
+  3-го касания, но не формализует вход/выход.
+
+  Reviewed and approved by Anton 2026-06-09.'
+requires_review: false

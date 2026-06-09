@@ -21,9 +21,37 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: rule(m1) == 3
-  constraint: structure(m1) in {':F3', ':c3', ':s5', '5', '(:sL3)', '[:L5]'}
-  formalization_notes: Граница Импульс/Коррекция.
+  applies_when: '# Правило 3 применяется когда соотношение m2/m1 = 61.8%
+
+    ratio_m2_m1 = length(m2) / length(m1)
+
+    applies = ratio_m2_m1 >= (0.618 - tolerance) AND ratio_m2_m1 <= (0.618 + tolerance)
+
+    '
+  constraint: "# Когда m2/m1 = 61.8%, структурный список m1:\n# {:F3, :c3, :s5, 5,\
+    \ (:sL3), [:L5]}\n#\n# Обозначения:\n#   :F3   — Flat-тройка (коррекция)\n#  \
+    \ :c3   — компактная тройка (коррекция)\n#   :s5   — малая пятёрка (импульс)\n\
+    #   5     — пятёрка (импульс)\n#   (:sL3) — малая удлинённая тройка (пониженная\
+    \ вероятность)\n#   [:L5]  — удлинённая пятёрка (наименьшая вероятность)\n#\n\
+    # Приоритет (от наиболее вероятного к наименее вероятному):\n#   Уровень 1 (без\
+    \ скобок, равноприоритетные): :F3, :c3, :s5, 5\n#   Уровень 2 (круглые скобки,\
+    \ пониженная вероятность): :sL3\n#   Уровень 3 (квадратные скобки, наименьшая\
+    \ вероятность): :L5\n\nprimary_candidates = [':F3', ':c3', ':s5', '5']\nreduced_probability\
+    \ = [':sL3']\nlowest_probability = [':L5']\n\nall_candidates = primary_candidates\
+    \ + reduced_probability + lowest_probability\n\nassert structure(m1) IN all_candidates\n\
+    \n# Для ранжирования при выборе:\nif structure(m1) IN primary_candidates:\n  \
+    \  confidence = \"normal\"\nelif structure(m1) IN reduced_probability:\n    confidence\
+    \ = \"reduced\"\nelif structure(m1) IN lowest_probability:\n    confidence = \"\
+    lowest\"\n"
+  formalization_notes: "1. Соотношение 61.8% является границей между Импульсом и Коррекцией,\n\
+    \   поэтому структура m1 наиболее неоднозначна — в списке присутствуют\n   как\
+    \ импульсные (5, :s5, [:L5]), так и коррекционные (:F3, :c3, (:sL3)) варианты.\n\
+    2. Круглые скобки () в оригинале означают пониженную вероятность,\n   квадратные\
+    \ скобки [] — наименьшую вероятность.\n   Фигурные скобки {} обрамляют весь список.\n\
+    3. Точное значение tolerance для 61.8% не указано в источнике.\n4. Правило является\
+    \ conditional — применяется только при выполнении условия\n   на соотношение m2/m1.\n\
+    5. Verbatim из источника: \"Правило 3 {:F3/:c3/:s5/5/(:sL3)/[:L5]}\"\n   — слэш\
+    \ разделяет альтернативные структурные метки."
 aliases: []
 related_aku: []
 contradicts_aku: []

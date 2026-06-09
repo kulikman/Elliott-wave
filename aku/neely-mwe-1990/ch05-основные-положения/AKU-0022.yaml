@@ -22,11 +22,34 @@ source:
       '
     language: ru
 formalization:
-  status: draft
-  applies_when: pattern == 'zigzag' AND subtype == 'truncated'
-  constraint: 0.382 * length(wave_a) <= length(wave_c) AND length(wave_c) < 0.618
-    * length(wave_a)
-  formalization_notes: null
+  status: formalized
+  applies_when: '# Паттерн — усечённый зигзаг, проверяем соотношение волны-c к волне-a
+
+    pattern == ''zigzag'' AND subtype == ''truncated''
+
+    '
+  constraint: '# Длина волны-c должна быть >= 38.2% длины волны-a
+
+    # И строго меньше 61.8% длины волны-a
+
+    length_c = length(wave_c)
+
+    length_a = length(wave_a)
+
+
+    length_c >= 0.382 * length_a AND length_c < 0.618 * length_a
+
+    '
+  formalization_notes: 'Правило определяет допустимый диапазон длины волны-c относительно
+    волны-a
+
+    для квалификации паттерна как усечённого зигзага.
+
+    Нижняя граница 38.2% включительна ("не может быть короче" = >=),
+
+    верхняя граница 61.8% исключительна ("должна быть короче" = <).
+
+    length() — ценовая длина (расстояние от начала до конца волны в ценовых единицах).'
 created_by: claude
 created_at: '2026-06-02T17:55:31Z'
 requires_review: false

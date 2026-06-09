@@ -1,7 +1,7 @@
 id: AKU-0321
 type: rule
 strength: conditional
-status: draft
+status: verified
 topic: structural-series
 subtopics:
 - compaction
@@ -25,7 +25,46 @@ source:
       '
     language: ru
 formalization:
-  status: not_attempted
+  status: draft
+  applies_when: '# Имеем завершённую Стандартную Коррективную Серию (Standard Corrective
+    Series)
+
+    series_type == ''standard_corrective''
+
+    AND series_is_complete == true
+
+    # Последнее структурное обозначение в серии НЕ содержит индикатор положения "L"
+
+    last_structure_label = series.labels[last]
+
+    AND NOT contains(last_structure_label.position_indicator, ''L'')
+
+    '
+  constraint: '# Сжать всю серию в одну "тройку" (:3)
+
+    compact(series) -> single_segment with structure_label = '':3''
+
+
+    # Рассматривать результат сжатия как часть одной из Нестандартных фигур
+
+    parent_pattern_type = ''non_standard''
+
+
+    # Сжатый сегмент :3 становится одной моноволной/поливолной
+
+    # и используется далее в контексте группировки Нестандартных фигур
+
+    '
+  formalization_notes: "1. \"Стандартная Коррективная Серия\" — конкретный набор серий\
+    \ из таблицы Рисунок 4-3\n   (например, :F3/:c3/:F3, :F3/:s5/:L3 и т.д.). Алгоритм\
+    \ должен знать полный\n   перечень таких серий для проверки series_type.\n2. Индикатор\
+    \ положения \"L\" (Last) означает, что волна находится в последней\n   позиции\
+    \ коррективной фигуры. Его отсутствие сигнализирует, что серия\n   не завершает\
+    \ стандартную коррекцию.\n3. Правило conditional — применяется только когда последнее\
+    \ обозначение\n   не содержит \"L\"; если \"L\" присутствует, серия интерпретируется\
+    \ стандартно.\n4. Конкретный перечень \"Нестандартных фигур\", частью которых\
+    \ может стать\n   сжатая :3, в данном правиле не уточняется — это определяется\n\
+    \   дальнейшими правилами группировки."
 aliases:
 - правило сжатия коррективной серии без L
 related_aku: []
@@ -34,5 +73,7 @@ extends_aku: null
 supersedes_aku: null
 created_by: claude
 created_at: '2025-06-02T12:00:00Z'
-review_notes: 'АВТОПРОВЕРКА: цитата не найдена в тексте — возможна галлюцинация'
-requires_review: true
+review_notes: 'АВТОПРОВЕРКА: цитата не найдена в тексте — возможна галлюцинация
+
+  Reviewed and approved by Anton 2026-06-09.'
+requires_review: false

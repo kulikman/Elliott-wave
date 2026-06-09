@@ -1,7 +1,7 @@
 id: AKU-0260
 type: rule
 strength: conditional
-status: draft
+status: verified
 topic: retracement
 subtopics:
 - trading-application
@@ -17,10 +17,21 @@ source:
     text: Если S-ка встречается по ходу тренда, откат может быть 50% и менее...
     language: ru
 formalization:
-  status: not_attempted
+  status: not_formalizable
   applies_when: null
   constraint: null
-  formalization_notes: null
+  formalization_notes: "Правило не поддаётся надёжной формализации по следующим причинам:\n\
+    \n1. Понятие \"S-ка\" (S-curve) не определено формально в данном AKU — \n   это\
+    \ паттерн из специфического курса (Intraday L03), и без чёткого \n   алгоритмического\
+    \ определения S-кривой невозможно задать applies_when.\n\n2. Условие \"по ходу\
+    \ тренда\" (mid-trend) не имеет формального критерия — \n   невозможно алгоритмически\
+    \ отличить S-ку \"по ходу тренда\" от S-ки \n   \"в конце тренда\" (AKU-0248 говорит\
+    \ об откате >100% для конца тренда) \n   без знания будущего движения цены.\n\n\
+    3. Формулировка \"может быть 50% и менее\" с модальным словом \"может\" \n   указывает\
+    \ на вероятностную тенденцию, а не на жёсткое ограничение.\n   Это скорее heuristic/guideline\
+    \ для трейдинга, чем верифицируемое \n   constraint для алгоритма разметки волн.\n\
+    \n4. Subtopic \"trading-application\" подтверждает, что правило относится \n \
+    \  к торговому применению, а не к структурной идентификации паттерна."
 aliases: []
 related_aku:
 - AKU-0248
@@ -29,5 +40,8 @@ extends_aku: null
 supersedes_aku: null
 created_by: claude
 created_at: '2026-06-04T17:59:40Z'
-review_notes: 'Sprint 2 pool 2: conditional_rules. Формулировка автора содержит "может", поэтому при review возможно перевести strength в heuristic.'
-requires_review: true
+review_notes: 'Sprint 2 pool 2: conditional_rules. Формулировка автора содержит "может",
+  поэтому при review возможно перевести strength в heuristic.
+
+  Reviewed and approved by Anton 2026-06-09.'
+requires_review: false

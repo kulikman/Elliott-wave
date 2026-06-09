@@ -21,7 +21,7 @@ source:
       '
     language: ru
 formalization:
-  status: draft
+  status: formalized
   applies_when: 'pattern == ''zigzag''
 
     '

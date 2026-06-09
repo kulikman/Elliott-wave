@@ -24,11 +24,34 @@ source:
       '
     language: ru
 formalization:
-  status: draft
-  applies_when: pattern == 'flat' AND length(wave_b) > 1.382 * length(wave_a)
-  constraint: not exceeds(end(wave_c), start_level(wave_b))
-  formalization_notes: start_level(wave_b) = конец волны-a. Касается только Плоской,
-    не Треугольника.
+  status: formalized
+  applies_when: '# Правило применяется к Плоской коррекции (Flat),
+
+    # когда волна-b превышает 138.2% длины волны-a
+
+    pattern == ''flat''
+
+    AND price_length(wave_b) > 1.382 * price_length(wave_a)
+
+    '
+  constraint: "# Волна-c НЕ должна превышать начальный уровень волны-b\n# Начальный\
+    \ уровень волны-b = конец волны-a = начало волны-b\n#\n# Для бычьей плоской (волна-a\
+    \ идёт вниз):\n#   wave_b идёт вверх, wave_c идёт вниз\n#   \"превысить начальный\
+    \ уровень wave_b\" означает wave_c не может уйти ниже start(wave_b)\n#   => end(wave_c)\
+    \ >= start(wave_b)\n#\n# Для медвежьей плоской (волна-a идёт вверх):\n#   wave_b\
+    \ идёт вниз, wave_c идёт вверх\n#   \"превысить начальный уровень wave_b\" означает\
+    \ wave_c не может уйти выше start(wave_b)\n#   => end(wave_c) <= start(wave_b)\n\
+    #\n# Обобщённо:\nif direction(wave_a) == 'down':  # бычья плоская\n  end(wave_c)\
+    \ >= start(wave_b)\nelif direction(wave_a) == 'up':  # медвежья плоская\n  end(wave_c)\
+    \ <= start(wave_b)\n#\n# Иными словами: wave_c не пробивает уровень start(wave_b)\
+    \ в направлении wave_c\n"
+  formalization_notes: "- start(wave_b) == end(wave_a) — это начальный уровень волны-b\n\
+    - \"Превысить начальный уровень wave_b\" означает, что wave_c не может пройти\n\
+    \  дальше (в своём направлении) точки начала wave_b\n- Правило явно указано только\
+    \ для Плоской коррекции; для Треугольника\n  такое поведение допускается, но данное\
+    \ правило к Треугольнику НЕ применяется\n- price_length() — ценовая длина волны\
+    \ (абсолютное значение разницы цен\n  между началом и концом волны)\n- Это mandatory\
+    \ правило: \"нет ни малейшего шанса\""
 created_by: claude
 created_at: '2026-06-02T17:55:31Z'
 requires_review: false

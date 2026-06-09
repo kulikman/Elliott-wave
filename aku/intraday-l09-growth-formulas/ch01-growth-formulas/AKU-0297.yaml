@@ -1,12 +1,14 @@
 id: AKU-0297
 type: heuristic
 strength: heuristic
-status: draft
+status: verified
 topic: time-projection
 subtopics:
 - price-projection
 - wave-degree
-statement_ru: При переходе к другому уровню мерности автор связывает изменение PTV с формулами роста и указывает, что корень из 3 позволяет вычислять PTV нового уровня мерности.
+statement_ru: При переходе к другому уровню мерности автор связывает изменение PTV
+  с формулами роста и указывает, что корень из 3 позволяет вычислять PTV нового уровня
+  мерности.
 statement_en: null
 source:
   book_id: intraday-l09-growth-formulas
@@ -15,7 +17,11 @@ source:
   section: PTV нового уровня мерности
   figure_id: null
   verbatim_quote:
-    text: PTV одинаковы на одном энергетическом уровне или иначе говоря -  на одном уровне Мерности...То есть во время Флэта...Но, при переходе к другому уровню Мерности, PTV меняется в соответствии с формулами Роста...Брэдли Коуэн заметил, что корень из 3-х (равный 1,73) позволяет довольно точно вычислить PTV нового уровня Мерности...
+    text: PTV одинаковы на одном энергетическом уровне или иначе говоря -  на одном
+      уровне Мерности...То есть во время Флэта...Но, при переходе к другому уровню
+      Мерности, PTV меняется в соответствии с формулами Роста...Брэдли Коуэн заметил,
+      что корень из 3-х (равный 1,73) позволяет довольно точно вычислить PTV нового
+      уровня Мерности...
     language: ru
 formalization:
   status: not_attempted
@@ -34,5 +40,8 @@ extends_aku: null
 supersedes_aku: null
 created_by: claude
 created_at: '2026-06-05T00:22:00Z'
-review_notes: 'Sprint 3 pool 2: heuristics. Число 1,73 сохранено как цитата; формализацию коэффициента делать только после human review.'
-requires_review: true
+review_notes: 'Sprint 3 pool 2: heuristics. Число 1,73 сохранено как цитата; формализацию
+  коэффициента делать только после human review.
+
+  Reviewed and approved by Anton 2026-06-09.'
+requires_review: false

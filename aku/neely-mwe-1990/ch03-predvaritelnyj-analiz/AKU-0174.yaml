@@ -23,9 +23,62 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: assigning :c3
-  constraint: position(:c3) NOT IN {first(seq), last(seq)}
-  formalization_notes: null
+  applies_when: '# Когда сегменту присваивается структурное обозначение :c3
+
+    segment.structure_label == '':c3''
+
+    '
+  constraint: '# Правило 1 (mandatory): :c3 не может быть первым или последним сегментом
+    последовательности
+
+    sequence = get_sequence(segment)
+
+    position = index_of(segment, sequence)
+
+    first_index = 0
+
+    last_index = length(sequence) - 1
+
+
+    assert position != first_index  # :c3 не может быть первым сегментом
+
+    assert position != last_index   # :c3 не может быть последним сегментом
+
+
+    # Правило 2 (наблюдение, не mandatory): после :c3 крупных/резких движений практически
+    не происходит
+
+    # Это эвристическое наблюдение ("практически никогда"), а не строгий запрет,
+
+    # поэтому формализуется только как мягкое ожидание:
+
+    #
+
+    # next_segment = sequence[position + 1]
+
+    # expect magnitude(next_segment) <= moderate  # не крупное/резкое движение
+
+    # (не является mandatory constraint — только индикатор для валидации/скоринга)
+
+    '
+  formalization_notes: 'Первая часть правила (позиция :c3 не первая и не последняя)
+    — строгий mandatory constraint,
+
+    формализуется однозначно.
+
+
+    Вторая часть ("после неё крупных и резких движений практически никогда не происходит")
+    —
+
+    это наблюдение с квалификатором "практически никогда", что делает его не абсолютным
+    запретом,
+
+    а скорее эвристикой/ожиданием. Формализовано как комментарий, но не как mandatory
+    assert,
+
+    поскольку в verbatim_quote используется "практически никогда", а не "никогда".
+
+    Также не определены точные критерии "крупного и резкого движения".'
 aliases: []
 related_aku: []
 contradicts_aku: []

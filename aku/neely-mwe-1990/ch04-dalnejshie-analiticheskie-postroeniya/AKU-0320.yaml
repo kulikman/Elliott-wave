@@ -1,7 +1,7 @@
 id: AKU-0320
 type: rule
 strength: mandatory
-status: draft
+status: verified
 topic: grouping-procedure
 subtopics:
 - impulse
@@ -29,7 +29,37 @@ source:
       '
     language: ru
 formalization:
-  status: not_attempted
+  status: draft
+  applies_when: "# Обнаружена серия из трёх последовательных сегментов с структурными\
+    \ обозначениями:\n# segment[i] имеет structure_label :5\n# segment[i+1] имеет\
+    \ structure_label :F3\n# segment[i+2] имеет structure_label :L5\n#\n# И эта серия\
+    \ может интерпретироваться двояко:\n#   1) Как самостоятельный Зигзаг (волна_a:5\
+    \ - волна_b:F3 - волна_c:L5)\n#   2) Как три последних сегмента Импульса (волны\
+    \ 3-4-5), если перед ними\n#      существуют два предшествующих сегмента, образующих\
+    \ волны 1-2\n\nseries = [segment[i], segment[i+1], segment[i+2]]\nseries_labels\
+    \ = [:5, :F3, :L5]\n\npreceding_segments_exist = (segment[i-2] exists) AND (segment[i-1]\
+    \ exists)\n\ncandidate_impulse = [segment[i-2], segment[i-1], segment[i], segment[i+1],\
+    \ segment[i+2]]\n# candidate_impulse может образовать 5-волновой Импульс (волны\
+    \ 1..5)\n\ncan_be_zigzag = series_labels == [:5, :F3, :L5]\ncan_be_impulse_tail\
+    \ = preceding_segments_exist AND\n                      could_form_impulse(candidate_impulse)\n\
+    \nAPPLIES WHEN can_be_zigzag AND can_be_impulse_tail\n"
+  constraint: "# Процедурное правило приоритета: всегда сначала проверять гипотезу\
+    \ Импульса\n\n# Шаг 1: Сформировать гипотезу Импульса из 5 сегментов\nimpulse_hypothesis\
+    \ = build_impulse(\n  wave_1 = segment[i-2],\n  wave_2 = segment[i-1],\n  wave_3\
+    \ = segment[i],    # :5\n  wave_4 = segment[i+1],  # :F3\n  wave_5 = segment[i+2]\
+    \   # :L5\n)\n\n# Шаг 2: Проверить ВСЕ обязательные правила построения Импульса\n\
+    impulse_valid = validate_all_mandatory_rules(impulse_hypothesis, pattern='impulse')\n\
+    \n# Шаг 3: Принять решение\nIF impulse_valid:\n  # Принять импульсный счёт\n \
+    \ accepted_pattern = impulse_hypothesis\n  # Серия :5-:F3-:L5 НЕ группируется\
+    \ как отдельный Зигзаг\nELSE:\n  # Хотя бы одно обязательное правило нарушено\
+    \ — вернуться к Зигзагу\n  zigzag_hypothesis = build_zigzag(\n    wave_a = segment[i],\
+    \    # :5\n    wave_b = segment[i+1],  # :F3\n    wave_c = segment[i+2]   # :L5\n\
+    \  )\n  accepted_pattern = zigzag_hypothesis\n"
+  formalization_notes: "1. Это процедурное правило приоритета проверки гипотез, а\
+    \ не структурное\n   ограничение на пропорции или позиции волн.\n2. Правило предполагает,\
+    \ что перед серией :5-:F3-:L5 существуют ровно два\n   предшествующих сегмента,\
+    \ которые могут быть волнами 1 и 2 Импульса.\n   Конкретные структурные обозначения\
+    \ этих двух предшествующих сегментов\n   в"
 aliases:
 - правило приоритета импульса над зигзагом
 - impulse-first rule
@@ -42,5 +72,7 @@ created_at: '2025-06-02T12:00:00Z'
 review_notes: 'Маркер ''всегда'' указывает на обязательность, но это скорее процедурное
   правило приоритета проверки, а не структурный запрет.
 
-  АВТОПРОВЕРКА: цитата не найдена в тексте — возможна галлюцинация'
-requires_review: true
+  АВТОПРОВЕРКА: цитата не найдена в тексте — возможна галлюцинация
+
+  Reviewed and approved by Anton 2026-06-09.'
+requires_review: false

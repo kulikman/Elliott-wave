@@ -22,9 +22,35 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: zigzag correction, wave-b retracement
-  constraint: Wb_retrace_from_Wa >= 0.01 (minimum 1% retrace)
-  formalization_notes: Добавлено в ходе аудита качества AKU
+  applies_when: '# Правило применяется к волне-b внутри паттерна Зигзаг (Zigzag)
+
+    pattern == ''zigzag'' AND current_wave == ''b''
+
+    '
+  constraint: '# Волна-b должна откатиться от волны-a минимум на 1%
+
+    # Ретрейсмент волны-b измеряется как процент от длины волны-a
+
+
+    wave_a_length = abs(end_price(wave_a) - start_price(wave_a))
+
+    wave_b_retrace = abs(end_price(wave_b) - start_price(wave_b))
+
+
+    retrace_ratio = wave_b_retrace / wave_a_length
+
+
+    retrace_ratio >= 0.01  # минимум 1% от длины волны-a
+
+    '
+  formalization_notes: 'Правило устанавливает минимальный порог ретрейсмента волны-b
+    относительно волны-a в Зигзаге.
+
+    Цитата помечена как не найденная дословно в тексте — требует верификации по оригиналу
+    (стр. 5-22).
+
+    Направление ретрейсмента: волна-b всегда движется в направлении, противоположном
+    волне-a.'
 created_by: claude
 created_at: '2026-06-02T17:55:31Z'
 requires_review: false

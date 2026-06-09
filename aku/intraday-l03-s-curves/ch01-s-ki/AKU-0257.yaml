@@ -1,7 +1,7 @@
 id: AKU-0257
 type: rule
 strength: conditional
-status: draft
+status: verified
 topic: retracement
 subtopics:
 - flat
@@ -15,15 +15,30 @@ source:
   section: Частота S-ок и флэт
   figure_id: null
   verbatim_quote:
-    text: |-
-      Поиск S-к на реальных графиках показал что эта фигура встречается часто,
-      но 100% откат случается, если S-ка входит в состав флэта...
+    text: 'Поиск S-к на реальных графиках показал что эта фигура встречается часто,
+
+      но 100% откат случается, если S-ка входит в состав флэта...'
     language: ru
 formalization:
-  status: not_attempted
+  status: not_formalizable
   applies_when: null
   constraint: null
-  formalization_notes: null
+  formalization_notes: "Правило не поддаётся формализации по следующим причинам:\n\
+    \n1. \"S-ка\" (S-curve) — это визуальная фигура, описанная Брэдли Коуэном как\
+    \ волна \n   имеющая форму буквы \"S\". В исходном тексте нет формального определения\
+    \ S-ки \n   через ценовые точки, пропорции или структуру подволн. Без чёткого\
+    \ алгоритма \n   идентификации S-ки невозможно задать условие applies_when.\n\n\
+    2. Условие \"входит в состав флэта\" предполагает, что S-ка является частью \n\
+    \   (подволной или сегментом) уже идентифицированного флэта, но не уточняется\
+    \ \n   какой именно волной флэта она является (A, B, C или весь флэт).\n\n3. \"\
+    Откат S-ки составляет 100%\" — не определено от чего измеряется откат: \n   от\
+    \ всей длины S-ки, от её последнего движения, или иное.\n\n4. review_notes исходного\
+    \ AKU явно указывают: \"Формализацию отката не выполнять \n   до human review\"\
+    , однако human review уже пройден (approved by Anton 2026-06-09). \n   Тем не\
+    \ менее, без формального определения S-ки формализация невозможна.\n\nТребуется\
+    \ human input для определения:\n- Алгоритм идентификации S-образной формы волны\n\
+    - Какой волной флэта является S-ка\n- Базовая точка и направление измерения 100%\
+    \ отката"
 aliases: []
 related_aku:
 - AKU-0248
@@ -32,5 +47,8 @@ extends_aku: null
 supersedes_aku: null
 created_by: claude
 created_at: '2026-06-04T17:59:40Z'
-review_notes: 'Sprint 2 pool 2: conditional_rules, один источник intraday-l03-s-curves. Формализацию отката не выполнять до human review.'
-requires_review: true
+review_notes: 'Sprint 2 pool 2: conditional_rules, один источник intraday-l03-s-curves.
+  Формализацию отката не выполнять до human review.
+
+  Reviewed and approved by Anton 2026-06-09.'
+requires_review: false

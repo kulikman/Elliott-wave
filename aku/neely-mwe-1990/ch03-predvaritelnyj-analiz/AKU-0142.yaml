@@ -23,11 +23,49 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: refining a length-ratio Rule by ratio(m0, m1)
-  constraint: condition_letter = lookup(rule_number, ratio(m0,m1)) using Fibonacci
-    breakpoints [0.382, 0.618, 1.000, 1.618, 2.618]
-  formalization_notes: Точное соответствие буква↔диапазон зависит от Правила; полная
-    таблица в ch03-length-ratio-rules.md.
+  applies_when: '# Применяется при уточнении Правила соотношений длин (Rule 1–7),
+
+    # когда для моноволны m1 уже определён номер Правила (rule_number)
+
+    # и известна длина предшествующей моноволны m0.
+
+    rule_number is defined for m1  # rule_number ∈ {1, 2, 3, 4, 5, 6, 7}
+
+    AND length(m0) is known
+
+    AND length(m1) is known
+
+    '
+  constraint: "# Вычисляем отношение длины m0 к длине m1\nratio = length(m0) / length(m1)\n\
+    \n# Пороги Фибоначчи, делящие диапазон на условия (буквы)\nfib_thresholds = [0.382,\
+    \ 0.618, 1.000, 1.618, 2.618]\n\n# Количество условий (букв) зависит от номера\
+    \ Правила:\n#   Правило 1: a, b, c, d          (4 условия)\n#   Правило 2: a,\
+    \ b, c, d, e       (5 условий)\n#   Правило 3: a, b, c, d, e, f    (6 условий)\n\
+    #   Правило 4: a, b, c, d, e       (5 условий)\n#   Правило 5: a, b, c, d    \
+    \      (4 условий)\n#   Правило 6: a, b, c, d          (4 условий)\n#   Правило\
+    \ 7: a, b, c, d          (4 условий)\n\nmax_conditions = {\n  1: ['a','b','c','d'],\n\
+    \  2: ['a','b','c','d','e'],\n  3: ['a','b','c','d','e','f'],\n  4: ['a','b','c','d','e'],\n\
+    \  5: ['a','b','c','d'],\n  6: ['a','b','c','d'],\n  7: ['a','b','c','d']\n}\n\
+    \nletters = max_conditions[rule_number]\n\n# Определяем индекс диапазона по порогам\
+    \ Фибоначчи\n# Диапазоны: ratio < 0.382, 0.382 ≤ ratio < 0.618, ..., ratio ≥ 2.618\n\
+    # Каждый Правило имеет свою таблицу соответствия диапазон → буква\n# (полная таблица\
+    \ в ch03-length-ratio-rules.md)\ncondition_letter = lookup_condition_table(rule_number,\
+    \ ratio, fib_thresholds)\n\n# lookup_condition_table возвращает одну из букв letters[]\n\
+    # на основе того, в какой интервал между fib_thresholds попадает ratio\nASSERT\
+    \ condition_letter IN letters\n"
+  formalization_notes: 'Точное соответствие «диапазон ratio → буква условия» различается
+
+    для каждого из 7 Правил. Данный AKU описывает только общий механизм:
+
+    ratio(m0/m1) + пороги Фибоначчи → буква условия.
+
+    Конкретные таблицы маппинга для каждого Правила должны быть
+
+    извлечены из отдельных AKU или из ch03-length-ratio-rules.md.
+
+    Без этих таблиц функция lookup_condition_table не может быть
+
+    полностью реализована на основании только данного правила.'
 aliases: []
 related_aku: []
 contradicts_aku: []

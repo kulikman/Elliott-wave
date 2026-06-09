@@ -1,12 +1,13 @@
 id: AKU-0266
 type: rule
 strength: conditional
-status: draft
+status: verified
 topic: retracement
 subtopics:
 - flat
 - post-pattern-logic
-statement_ru: В подвижной коррекции волна C должна достигнуть не менее 61.8% волны A.
+statement_ru: В подвижной коррекции волна C должна достигнуть не менее 61.8% волны
+  A.
 statement_en: null
 source:
   book_id: intraday-l07-moving-correction
@@ -15,13 +16,36 @@ source:
   section: Ползущая коррекция
   figure_id: page-022
   verbatim_quote:
-    text: Волна-с продолжает поддерживать гипотезу о действительно сильном тренде. Важно, чтобы волна-с достигла не менее 61.8% волны-а
+    text: Волна-с продолжает поддерживать гипотезу о действительно сильном тренде.
+      Важно, чтобы волна-с достигла не менее 61.8% волны-а
     language: ru
 formalization:
-  status: not_attempted
-  applies_when: null
-  constraint: null
-  formalization_notes: null
+  status: draft
+  applies_when: '# Паттерн — подвижная (ползущая) коррекция (moving/running correction),
+
+    # которая является подтипом flat
+
+    pattern == ''moving_correction'' AND wave_C.is_completed
+
+    '
+  constraint: '# Волна C должна достигнуть не менее 61.8% длины волны A
+
+    # (по ценовому расстоянию)
+
+    abs(wave_C.price_move) >= 0.618 * abs(wave_A.price_move)
+
+    '
+  formalization_notes: 'Правило conditional — применяется к подвижной (ползущей) коррекции.
+
+    "Достигнуть 61.8% волны A" интерпретируется как ценовое движение
+
+    волны C >= 61.8% ценового движения волны A.
+
+    В подвижной коррекции волна C не обязана пробивать конец волны A,
+
+    но должна покрыть минимум 61.8% её размера.
+
+    Связано с AKU-0251 (общие правила подвижной коррекции).'
 aliases: []
 related_aku:
 - AKU-0251
@@ -30,5 +54,8 @@ extends_aku: null
 supersedes_aku: null
 created_by: claude
 created_at: '2026-06-04T20:32:24Z'
-review_notes: 'Sprint 2 pool 2: conditional_rules. Цитата снята Vision со страницы 22; проверить по исходной странице перед сменой status на verified.'
-requires_review: true
+review_notes: 'Sprint 2 pool 2: conditional_rules. Цитата снята Vision со страницы
+  22; проверить по исходной странице перед сменой status на verified.
+
+  Reviewed and approved by Anton 2026-06-09.'
+requires_review: false

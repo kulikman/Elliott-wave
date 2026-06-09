@@ -1,11 +1,12 @@
 id: AKU-0287
 type: heuristic
 strength: heuristic
-status: draft
+status: verified
 topic: trading-application
 subtopics:
 - flat
-statement_ru: После описания фигуры разворота вверх автор считает возможным открыть сделку в конце подвижной плоской коррекции.
+statement_ru: После описания фигуры разворота вверх автор считает возможным открыть
+  сделку в конце подвижной плоской коррекции.
 statement_en: null
 source:
   book_id: intraday-l07-moving-correction
@@ -30,5 +31,8 @@ extends_aku: null
 supersedes_aku: null
 created_by: claude
 created_at: '2026-06-04T22:01:00Z'
-review_notes: 'Sprint 3 pool 2: heuristics. Вход в конце фигуры требует проверки по схеме/примеру.'
-requires_review: true
+review_notes: 'Sprint 3 pool 2: heuristics. Вход в конце фигуры требует проверки по
+  схеме/примеру.
+
+  Reviewed and approved by Anton 2026-06-09.'
+requires_review: false

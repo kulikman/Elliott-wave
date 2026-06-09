@@ -1,12 +1,13 @@
 id: AKU-0294
 type: heuristic
 strength: heuristic
-status: draft
+status: verified
 topic: time-projection
 subtopics:
 - trading-application
 - wave-degree
-statement_ru: Рассчитав точку смены мерности фрактала, автор ожидает заранее увидеть место разворота графика.
+statement_ru: Рассчитав точку смены мерности фрактала, автор ожидает заранее увидеть
+  место разворота графика.
 statement_en: null
 source:
   book_id: intraday-l08-fractal-dimension-shift
@@ -15,7 +16,8 @@ source:
   section: Прогноз разворота
   figure_id: null
   verbatim_quote:
-    text: Рассчитав точку Смены Мерности Фрактала вы увидите заранее место разворота графика! .))
+    text: Рассчитав точку Смены Мерности Фрактала вы увидите заранее место разворота
+      графика! .))
     language: ru
 formalization:
   status: not_attempted
@@ -33,5 +35,8 @@ extends_aku: null
 supersedes_aku: null
 created_by: claude
 created_at: '2026-06-05T00:10:00Z'
-review_notes: 'Sprint 3 pool 2: heuristics. Заявление о расчёте разворота требует Vision/human review и отдельной формализации после проверки.'
-requires_review: true
+review_notes: 'Sprint 3 pool 2: heuristics. Заявление о расчёте разворота требует
+  Vision/human review и отдельной формализации после проверки.
+
+  Reviewed and approved by Anton 2026-06-09.'
+requires_review: false

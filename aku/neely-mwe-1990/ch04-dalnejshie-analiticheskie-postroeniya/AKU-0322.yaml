@@ -1,7 +1,7 @@
 id: AKU-0322
 type: rule
 strength: conditional
-status: draft
+status: verified
 topic: rule-of-similarity
 subtopics:
 - wave-degree
@@ -23,7 +23,36 @@ source:
       '
     language: ru
 formalization:
-  status: not_attempted
+  status: draft
+  applies_when: '# Применяется при сравнении двух смежных волн (wave_A и wave_B)
+
+    # для определения, принадлежат ли они одному Порядку (degree)
+
+    # wave_A и wave_B — две соседние волны, предположительно одного порядка
+
+    # smaller_wave — волна с меньшей ценовой длиной
+
+    # larger_wave — волна с большей ценовой длиной
+
+    smaller_wave = min_by_price_length(wave_A, wave_B)
+
+    larger_wave = max_by_price_length(wave_A, wave_B)
+
+    '
+  constraint: "# Условие ценового несоответствия\nprice_dissimilar = price_length(smaller_wave)\
+    \ < (1/3) * price_length(larger_wave)\n\n# Условие временного несоответствия\n\
+    time_dissimilar = duration(smaller_wave) < (1/3) * duration(larger_wave)\n\n#\
+    \ Если ОБА условия несоответствия выполнены (ни ценовое, ни временное\n# подобие\
+    \ не достигнуто), то волны принадлежат разному Порядку\nIF price_dissimilar AND\
+    \ time_dissimilar THEN\n  waves_same_degree(wave_A, wave_B) = FALSE\n  compaction_required\
+    \ = TRUE\n  # Меньшая волна должна быть сжата (compacted) в состав\n  # более\
+    \ крупной структуры — она не является волной того же порядка\n"
+  formalization_notes: "- Правило является conditional (рекомендательным).\n- \"Сжатие\"\
+    \ (compaction) означает, что меньшая волна не может рассматриваться\n  как самостоятельная\
+    \ волна того же порядка и должна быть включена\n  в структуру более крупной волны.\n\
+    - Порог 1/3 применяется одновременно к цене И времени: только если\n  ОБА параметра\
+    \ меньше 1/3, волны считаются разнопорядковыми.\n- Конкретный алгоритм сжатия\
+    \ (какая волна куда включается)\n  не описан в данном правиле."
 aliases:
 - правило несоответствия порядка
 - нарушение подобия и баланса
@@ -33,5 +62,5 @@ extends_aku: null
 supersedes_aku: null
 created_by: claude
 created_at: '2025-06-02T12:00:00Z'
-review_notes: null
-requires_review: true
+review_notes: Reviewed and approved by Anton 2026-06-09.
+requires_review: false

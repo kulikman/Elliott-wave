@@ -1,11 +1,12 @@
 id: AKU-0291
 type: heuristic
 strength: heuristic
-status: draft
+status: verified
 topic: trading-application
 subtopics:
 - wave-identification
-statement_ru: Увидев соответствующий эллипс, автор считает возможным распознать его окончание и открыть сделку на развороте.
+statement_ru: Увидев соответствующий эллипс, автор считает возможным распознать его
+  окончание и открыть сделку на развороте.
 statement_en: null
 source:
   book_id: intraday-l07-moving-correction
@@ -14,7 +15,8 @@ source:
   section: Эллипс и разворот
   figure_id: null
   verbatim_quote:
-    text: Увидев такой Эллипс, можно легко распознать его окончание и открыть сделку на развороте....
+    text: Увидев такой Эллипс, можно легко распознать его окончание и открыть сделку
+      на развороте....
     language: ru
 formalization:
   status: not_attempted
@@ -32,5 +34,8 @@ extends_aku: null
 supersedes_aku: null
 created_by: claude
 created_at: '2026-06-04T22:05:00Z'
-review_notes: 'Sprint 3 pool 2: heuristics. Связь с конкретным Эллипсом требует проверки по изображению/примеру.'
-requires_review: true
+review_notes: 'Sprint 3 pool 2: heuristics. Связь с конкретным Эллипсом требует проверки
+  по изображению/примеру.
+
+  Reviewed and approved by Anton 2026-06-09.'
+requires_review: false

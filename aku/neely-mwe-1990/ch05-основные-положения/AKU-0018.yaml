@@ -23,10 +23,44 @@ source:
       '
     language: ru
 formalization:
-  status: draft
-  applies_when: pattern == 'triangle'
-  constraint: segment_count == 5 AND labels(segments) == ['a','b','c','d','e']
-  formalization_notes: null
+  status: formalized
+  applies_when: '# Правило применяется при идентификации любого Треугольника
+
+    pattern.type == ''triangle''
+
+    '
+  constraint: '# Треугольник должен содержать ровно 5 сегментов
+
+    segment_count(pattern) == 5
+
+
+    # Каждому сегменту присваивается буквенное обозначение в порядке появления
+
+    pattern.segments[0].label == ''a''
+
+    pattern.segments[1].label == ''b''
+
+    pattern.segments[2].label == ''c''
+
+    pattern.segments[3].label == ''d''
+
+    pattern.segments[4].label == ''e''
+
+
+    # Эквивалентная компактная запись:
+
+    # labels(pattern.segments) == [''a'', ''b'', ''c'', ''d'', ''e'']
+
+    '
+  formalization_notes: 'Правило устанавливает два аспекта:
+
+    1. Структурное ограничение: ровно 5 сегментов (ни больше, ни меньше)
+
+    2. Соглашение о маркировке: последовательное присвоение букв a-e
+
+    Применимо ко всем разновидностям треугольников (сужающийся, расширяющийся и т.д.),
+
+    так как statement говорит о "Треугольнике" в общем виде.'
 created_by: claude
 created_at: '2026-06-02T17:55:31Z'
 requires_review: false

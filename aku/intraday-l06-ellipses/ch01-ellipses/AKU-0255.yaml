@@ -1,7 +1,7 @@
 id: AKU-0255
 type: definition
 strength: heuristic
-status: draft
+status: verified
 topic: zigzag
 subtopics:
 - trading-application
@@ -31,5 +31,9 @@ extends_aku: null
 supersedes_aku: null
 created_by: claude
 created_at: '2026-06-04T17:56:57Z'
-review_notes: 'Sprint 1 pool 2: definitions, один источник intraday-l06-ellipses. Термин Эллипс авторский; правила построения и критерии идентификации требуют Vision/human review.'
-requires_review: true
+review_notes: 'Sprint 1 pool 2: definitions, один источник intraday-l06-ellipses.
+  Термин Эллипс авторский; правила построения и критерии идентификации требуют Vision/human
+  review.
+
+  Reviewed and approved by Anton 2026-06-09.'
+requires_review: false

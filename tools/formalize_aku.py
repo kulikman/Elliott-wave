@@ -90,7 +90,8 @@ def load_aku_for_formalization(book_id: str, aku_id: str | None) -> list[tuple[P
         if data.get("strength") not in {"mandatory", "conditional"}:
             continue
         form = data.get("formalization", {})
-        if form.get("status") not in {None, "not_attempted"}:
+        # draft = формализация начата но не завершена — тоже обрабатываем
+        if form.get("status") not in {None, "not_attempted", "draft"}:
             continue
         if aku_id and data.get("id") != aku_id:
             continue
@@ -161,11 +162,14 @@ def main() -> None:
             import yaml as _yaml
             import re
 
-            # Убираем markdown fence если есть
+            # Убираем markdown fence если есть (с переносом или без)
             text = response.strip()
-            fence_match = re.search(r"```(?:yaml)?\s*\n(.*?)```", text, re.DOTALL)
+            fence_match = re.search(r"```(?:yaml)?\s*\n?(.*?)```", text, re.DOTALL)
             if fence_match:
                 text = fence_match.group(1).strip()
+            # На случай если остались обратные кавычки в начале строки
+            text = re.sub(r"^```\w*\s*", "", text)
+            text = re.sub(r"```\s*$", "", text).strip()
 
             # Убираем ведущий ключ "formalization:" если есть
             parsed = _yaml.safe_load(text)

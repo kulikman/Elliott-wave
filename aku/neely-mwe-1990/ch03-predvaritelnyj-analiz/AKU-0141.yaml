@@ -25,12 +25,37 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: classifying monowave m1 by retracement ratio
-  constraint: rule = 1 if ratio(m2,m1) < 0.382 else 2 if ratio(m2,m1) < 0.618 else
-    3 if ratio(m2,m1) == 0.618 else 4 if ratio(m2,m1) < 1.000 else 5 if ratio(m2,m1)
-    < 1.618 else 6 if ratio(m2,m1) <= 2.618 else 7
-  formalization_notes: ratio(m2,m1) = вертикальная ценовая проекция m2 / проекция
-    m1. Не зависит от направления m1.
+  applies_when: '# Применяется при классификации любой моноволны m1
+
+    # для определения номера Правила (1–7) на основе соотношения длины m2 к m1
+
+    is_monowave(m1) AND exists(m2) AND m2 == next_monowave(m1)
+
+    '
+  constraint: "# Вычисляем отношение вертикальной ценовой проекции m2 к m1\nratio\
+    \ = abs(price_range(m2)) / abs(price_range(m1))\n\n# Определяем номер применяемого\
+    \ Правила\n# Границы включения/исключения строго по verbatim_quote:\n#   < 38.2%\
+    \          → Правило 1\n#   >= 38.2% и < 61.8% → Правило 2\n#   == 61.8%     \
+    \    → Правило 3\n#   > 61.8% и < 100%  → Правило 4\n#   >= 100% и < 161.8% →\
+    \ Правило 5\n#   >= 161.8% и <= 261.8% → Правило 6\n#   > 261.8%         → Правило\
+    \ 7\n\nif ratio < 0.382:\n    rule_number = 1\nelif ratio >= 0.382 AND ratio <\
+    \ 0.618:\n    rule_number = 2\nelif ratio == 0.618:\n    rule_number = 3\nelif\
+    \ ratio > 0.618 AND ratio < 1.000:\n    rule_number = 4\nelif ratio >= 1.000 AND\
+    \ ratio < 1.618:\n    rule_number = 5\nelif ratio >= 1.618 AND ratio <= 2.618:\n\
+    \    rule_number = 6\nelif ratio > 2.618:\n    rule_number = 7\n"
+  formalization_notes: "original_status: formalized. - ratio = abs(price_range(m2))\
+    \ / abs(price_range(m1)), где price_range — \n  вертикальная ценовая проекция\
+    \ моноволны (разница цен конца и начала по модулю).\n- Направление моноволны (вверх/вниз)\
+    \ не влияет на расчёт — используется абсолютное значение.\n- Сравнение ratio ==\
+    \ 0.618 (Правило 3) на практике требует допуска (tolerance),\n  например abs(ratio\
+    \ - 0.618) < epsilon, где epsilon — малая величина,\n  определяемая реализацией.\
+    \ В исходном тексте указано \"ровно 61,8%\".\n- Граница 38.2% включена в Правило\
+    \ 2 (\"от 38,2% включительно\").\n- Граница 61.8% НЕ включена в Правило 2 (\"\
+    до 61,8% не включая\") и НЕ включена в Правило 4 (\"между 61,8% и 100%\"), она\
+    \ выделена отдельно как Правило 3.\n- Граница 100% включена в Правило 5 (\"от\
+    \ 100% включительно\").\n- Граница 161.8% включена в Правило 6 (\"между 161,8%\
+    \ и 261,8%\"), НЕ в Правило 5 (\"до 161,8% не включая\").\n- Граница 261.8% включена\
+    \ в Правило 6 (\"включительно\")."
 aliases: []
 related_aku: []
 contradicts_aku: []

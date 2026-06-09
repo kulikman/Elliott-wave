@@ -1,11 +1,12 @@
 id: AKU-0292
 type: heuristic
 strength: heuristic
-status: draft
+status: verified
 topic: wave-identification
 subtopics:
 - trading-application
-statement_ru: Автор предлагает видеть фракталы на графике через обрамление волновых комбинаций границами эллипсов.
+statement_ru: Автор предлагает видеть фракталы на графике через обрамление волновых
+  комбинаций границами эллипсов.
 statement_en: null
 source:
   book_id: intraday-l08-fractal-dimension-shift
@@ -14,7 +15,8 @@ source:
   section: Фракталы и эллипсы
   figure_id: null
   verbatim_quote:
-    text: Фракталы можно увидеть на графике если волновые комбинации обрамить границами Эллипсов...
+    text: Фракталы можно увидеть на графике если волновые комбинации обрамить границами
+      Эллипсов...
     language: ru
 formalization:
   status: not_attempted
@@ -33,5 +35,8 @@ extends_aku: null
 supersedes_aku: null
 created_by: claude
 created_at: '2026-06-05T00:08:00Z'
-review_notes: 'Sprint 3 pool 2: heuristics. Визуальный метод идентификации фракталов через эллипсы; требует Vision/human review для алгоритмизации.'
-requires_review: true
+review_notes: 'Sprint 3 pool 2: heuristics. Визуальный метод идентификации фракталов
+  через эллипсы; требует Vision/human review для алгоритмизации.
+
+  Reviewed and approved by Anton 2026-06-09.'
+requires_review: false

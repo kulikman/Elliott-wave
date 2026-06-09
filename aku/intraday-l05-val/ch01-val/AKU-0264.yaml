@@ -1,7 +1,7 @@
 id: AKU-0264
 type: rule
 strength: conditional
-status: draft
+status: verified
 topic: wave-identification
 subtopics:
 - trading-application
@@ -17,10 +17,22 @@ source:
     text: Иногда Вал завершается на 2-м касании Дуги Поддержки (Сопротивленния)...
     language: ru
 formalization:
-  status: not_attempted
+  status: not_formalizable
   applies_when: null
   constraint: null
-  formalization_notes: null
+  formalization_notes: "Правило не поддаётся формализации по следующим причинам:\n\
+    \n1. Концепция \"ВАЛ\" (Val) — это специфический паттерн из авторской методологии\
+    \ \n   (Урок 5), включающий \"Дугу Поддержки/Сопротивления\" и \"касания\" этой\
+    \ дуги.\n   Формализация требует определения самой дуги (криволинейная линия поддержки/сопротивления),\n\
+    \   что не описано в данном AKU.\n\n2. Statement говорит \"иногда\" — это указание\
+    \ на возможное исключение из основного\n   правила (предположительно AKU-0250/AKU-0262,\
+    \ где ВАЛ завершается на 3-м касании).\n   Слово \"иногда\" не даёт никакого формализуемого\
+    \ условия — когда именно ВАЛ \n   завершается на 2-м касании вместо 3-го, не специфицировано.\n\
+    \n3. Verbatim quote не содержит количественных критериев, условий или признаков,\n\
+    \   по которым можно было бы алгоритмически отличить ВАЛ, завершающийся на 2-м\
+    \ \n   касании, от ВАЛа, который продолжится до 3-го касания.\n\n4. Правило по\
+    \ сути является предупреждением трейдеру о возможности раннего \n   завершения\
+    \ паттерна, а не алгоритмическим ограничением."
 aliases: []
 related_aku:
 - AKU-0250
@@ -30,5 +42,8 @@ extends_aku: null
 supersedes_aku: null
 created_by: claude
 created_at: '2026-06-04T20:21:43Z'
-review_notes: 'Sprint 2 pool 2: conditional_rules. Вероятное исключение/ослабление правила 3-х касаний; не заполнять contradicts_aku без human approval.'
-requires_review: true
+review_notes: 'Sprint 2 pool 2: conditional_rules. Вероятное исключение/ослабление
+  правила 3-х касаний; не заполнять contradicts_aku без human approval.
+
+  Reviewed and approved by Anton 2026-06-09.'
+requires_review: false

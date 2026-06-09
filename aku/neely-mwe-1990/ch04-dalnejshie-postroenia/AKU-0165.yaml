@@ -23,9 +23,56 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: standard corrective series whose last label lacks 'L' position indicator
-  constraint: compact(series) -> ':3' ; treat as part of nonstandard figure
-  formalization_notes: null
+  applies_when: '# Имеем завершённую Стандартную Коррективную Серию (Standard Corrective
+    Series)
+
+    # Стандартные коррективные серии — это серии структурных обозначений,
+
+    # соответствующие стандартным коррективным фигурам (flat, zigzag, triangle и т.д.)
+
+    series_type == ''standard_corrective_series''
+
+    AND series_is_complete == true
+
+
+    # Последнее структурное обозначение серии НЕ содержит индикатор положения "L"
+
+    last_label = series.structural_labels[last]
+
+    AND NOT contains_position_indicator(last_label, ''L'')
+
+    '
+  constraint: '# Вся серия должна быть сжата (compacted) в одну "тройку" (:3)
+
+    compacted_structure = compact(series) -> '':3''
+
+
+    # После сжатия серия рассматривается как часть одной из Нестандартных фигур
+
+    # (Non-Standard price pattern)
+
+    series.classification = ''nonstandard_pattern_component''
+
+
+    # Т.е.:
+
+    # 1. Заменить всю последовательность структурных обозначений серии
+
+    #    на единственное обозначение :3
+
+    # 2. Эта :3 далее участвует в построении Нестандартной фигуры
+
+    #    (не может быть самостоятельной стандартной коррекцией)
+
+    '
+  formalization_notes: "- \"Стандартная Коррективная Серия\" — конкретный набор серий\
+    \ из Таблицы 4-3 Нили\n  (например, :F3/:c3/:L5, :F3/:c3/:L3 и т.д.). Полный перечень\
+    \ серий\n  необходим для точной реализации проверки series_type.\n- \"Индикатор\
+    \ положения L\" означает, что структурное обозначение помечено\n  как находящееся\
+    \ в позиции \"L\" (Last — последняя волна фигуры).\n- Какие именно Нестандартные\
+    \ фигуры применимы — правило не уточняет;\n  это определяется другими правилами\
+    \ классификации.\n- Функция contains_position_indicator(label, 'L') проверяет\
+    \ наличие\n  суффикса/маркера 'L' в структурном обозначении (например, :L3, :L5)."
 aliases: []
 related_aku: []
 contradicts_aku: []

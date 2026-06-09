@@ -22,9 +22,36 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: rule(m1) == 6
-  constraint: structure(m1) := any ; resolve via position_indicator_sequences
-  formalization_notes: Большой откат m1 → структура неоднозначна.
+  applies_when: '# Правило 6 применяется когда отношение m2/m1 попадает в диапазон
+    [161.8%, 261.8%]
+
+    ratio_m2_m1 = length(m2) / length(m1)
+
+    ratio_m2_m1 >= 1.618 AND ratio_m2_m1 <= 2.618
+
+    '
+  constraint: "# При выполнении условия Правила 6:\n# 1. Для m1 допускается любая\
+    \ структурная метка (Structure Label)\nallowed_structures(m1) = ALL_STRUCTURES\
+    \  # {:F3, :c3, :s5, :L5, :L3, ...} — без ограничений\n\n# 2. Если ни одно из\
+    \ описаний (из других правил/контекстов) не подходит для m1,\n#    то структурную\
+    \ метку m1 следует определять через последовательности\n#    Индикаторов положения\
+    \ (Position Indicators, стр. 3-61)\nif no_description_matches(m1):\n    structure(m1)\
+    \ = resolve_via_position_indicator_sequences(m1)\n"
+  formalization_notes: 'Правило 6 — наименее ограничивающее из структурных правил:
+    большой откат (161.8%–261.8%)
+
+    делает структуру m1 полностью неоднозначной, допуская любую метку.
+
+    Фактический механизм разрешения неоднозначности — через последовательности Индикаторов
+
+    положения (Position Indicator sequences) — описан отдельно (стр. 3-61) и должен
+    быть
+
+    формализован в соответствующих AKU. Данное правило лишь указывает на fallback-механизм.
+
+    Конкретный алгоритм resolve_via_position_indicator_sequences() здесь не детализирован,
+
+    так как он не описан в verbatim_quote данного AKU.'
 aliases: []
 related_aku: []
 contradicts_aku: []

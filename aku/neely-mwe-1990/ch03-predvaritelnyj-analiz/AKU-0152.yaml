@@ -26,9 +26,41 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: reassessing a compact figure whose base structure fits no rule-condition
-  constraint: possible_missing_wave := true OR part_of_complex_formation := true
-  formalization_notes: Связь с пропавшими волнами (Гл.12) и сжатием (Гл.4).
+  applies_when: '# Контекст: переоценка (reassessment) ранее подтверждённой компактной
+    фигуры
+
+    figure.is_compact == true
+
+    AND figure.is_confirmed == true
+
+    AND phase == "reassessment"
+
+    # Базовая Структура фигуры не соответствует ни одному условию
+
+    # из правил соответствующего раздела (rule-matching)
+
+    AND match_base_structure(figure.base_structure, applicable_rules) == NO_MATCH
+
+    '
+  constraint: "# Два возможных исхода (не взаимоисключающие на этапе оценки,\n# но\
+    \ в итоге выбирается один):\n\n# Исход 1: В фигуре есть «пропавшая» (missing)\
+    \ волна\n# — несогласующиеся обозначения помещаются в квадратные скобки\nif figure_can_have_missing_wave(figure):\n\
+    \    figure.possible_missing_wave = true\n    for each label in figure.labels:\n\
+    \        if not label_is_consistent(label, figure.base_structure):\n         \
+    \   label.notation = \"[\" + label.value + \"]\"  # квадратные скобки\n\n# Исход\
+    \ 2: Фигура «не вписывается» в окружающие моноволны\n# — значит она часть Сложной\
+    \ конфигурации\nif not figure_fits_surrounding_monowaves(figure, surrounding_monowaves):\n\
+    \    figure.part_of_complex_formation = true\n"
+  formalization_notes: "original_status: partially_formalizable. Правило описывает\
+    \ два альтернативных диагностических исхода при неудаче\nсопоставления базовой\
+    \ Структуры компактной фигуры с правилами.\n\nНе полностью формализуемо по следующим\
+    \ причинам:\n1. \"Соответствующий раздел условий\" — конкретный набор правил зависит\
+    \ от\n   типа базовой Структуры (определяется контекстом Гл.3-5), здесь не перечислен.\n\
+    2. Критерий \"не вписывается в окружающие моноволны\" не определён точно\n   в\
+    \ данном statement — подразумевается анализ из последующих глав.\n3. Логика определения\
+    \ \"пропавшей волны\" раскрывается в Гл.12 (missing waves).\n4. Выбор между исходом\
+    \ 1 и исходом 2 требует дополнительного контекста,\n   не описанного в данном\
+    \ правиле."
 aliases: []
 related_aku: []
 contradicts_aku: []

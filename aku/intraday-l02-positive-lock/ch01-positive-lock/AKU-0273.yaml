@@ -1,12 +1,13 @@
 id: AKU-0273
 type: heuristic
 strength: heuristic
-status: draft
+status: verified
 topic: trading-application
 subtopics:
 - wave-identification
 - impulse-extension
-statement_ru: После завершения фигуры роста, в примере S-ки, автор рекомендует открывать несколько сделок вместо одной.
+statement_ru: После завершения фигуры роста, в примере S-ки, автор рекомендует открывать
+  несколько сделок вместо одной.
 statement_en: null
 source:
   book_id: intraday-l02-positive-lock
@@ -15,7 +16,10 @@ source:
   section: Пример 4
   figure_id: null
   verbatim_quote:
-    text: "Золото пошло вверх. По завершении Фигуры Роста (в нашем случае S-ки)\n\nлучше открывать несколько сделок..."
+    text: 'Золото пошло вверх. По завершении Фигуры Роста (в нашем случае S-ки)
+
+
+      лучше открывать несколько сделок...'
     language: ru
 formalization:
   status: not_attempted
@@ -33,5 +37,8 @@ extends_aku: null
 supersedes_aku: null
 created_by: claude
 created_at: '2026-06-04T21:03:00Z'
-review_notes: 'Sprint 3 pool 2: heuristics. Рекомендация по исполнению сделки после фигуры роста; связь с S-кой предварительная.'
-requires_review: true
+review_notes: 'Sprint 3 pool 2: heuristics. Рекомендация по исполнению сделки после
+  фигуры роста; связь с S-кой предварительная.
+
+  Reviewed and approved by Anton 2026-06-09.'
+requires_review: false

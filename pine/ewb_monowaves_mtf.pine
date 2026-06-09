@@ -564,6 +564,50 @@ confirmTriangle(array<float> ep, int i0) =>
     string msg = not r45 ? "не сужается (a/b/c/d)" : not r5e ? "e > c" : ""
     [ok, msg]
 
+// Проверяет Зигзаг 5-3-5: B/A < 0.618, C/A >= 0.618, C выходит за конец A (AKU-0166)
+// dir — направление волны A (up/down)
+confirmZigzag(array<float> ep, int i0, string dir) =>
+    float p0 = array.get(ep, i0)
+    float p1 = array.get(ep, i0 + 1)   // конец A
+    float p2 = array.get(ep, i0 + 2)   // конец B
+    float p3 = array.get(ep, i0 + 3)   // конец C
+    float wA = math.abs(p1 - p0)
+    float wB = math.abs(p2 - p1)
+    float wC = math.abs(p3 - p2)
+    // B/A < 0.618: B — слабый откат (ключевое отличие от Плоской где B >= 0.618)
+    bool r1 = wA > 0 and wB / wA < 0.618
+    // C/A >= 0.618: C не меньше 61.8% A
+    bool r2 = wA > 0 and wC / wA >= 0.618
+    // C выходит за конец A (C extends beyond A terminus)
+    bool r3 = dir == "up" ? p3 > p1 : p3 < p1
+    bool ok = r1 and r2 and r3
+    string msg = not r1 ? "B>=61.8%A (→Flat?)" : not r2 ? "C<61.8%A" : not r3 ? "C не выходит за A" : ""
+    [ok, msg]
+
+// Проверяет Терминальный Импульс (Ending Diagonal): 3-3-3-3-3 удовлетворяет
+// правилам Импульса (AKU-0177). Отличие от стандартного импульса:
+//   - Разрешается перекрытие W4/W1 (r5 не применяется)
+//   - Все волны — тройки (:3), не пятёрки
+// Используется для различения Терминала и Треугольника при 5×:3 паттерне.
+confirmTerminal(array<float> ep, int i0, string dir) =>
+    float p0px = array.get(ep, i0),     float p1px = array.get(ep, i0 + 1)
+    float p2px = array.get(ep, i0 + 2), float p3px = array.get(ep, i0 + 3)
+    float p4px = array.get(ep, i0 + 4)
+    float p5px = i0 + 5 < array.size(ep) ? array.get(ep, i0 + 5) : na
+    float lw1 = math.abs(p1px - p0px), float lw2 = math.abs(p2px - p1px)
+    float lw3 = math.abs(p3px - p2px), float lw4 = math.abs(p4px - p3px)
+    float lw5 = na(p5px) ? na : math.abs(p5px - p4px)
+    // W2 не пробивает старт W1
+    bool r1 = dir == "up" ? p2px > p0px : p2px < p0px
+    // W4 не пробивает старт W3
+    bool r2 = dir == "up" ? p4px > p2px : p4px < p2px
+    // W3 не самая короткая из W1/W3/W5
+    bool r3 = lw3 >= lw1 and (na(lw5) or lw3 >= lw5)
+    // Терминал допускает перекрытие W2/W4 — r5 НЕ проверяется
+    bool ok = r1 and r2 and r3
+    string msg = not r1 ? "W2>W1start" : not r2 ? "W4>W3start" : not r3 ? "W3<W1/W5" : ""
+    [ok, msg]
+
 // Возвращает направление по p0→p1
 figDirection(float p0px, float p1px) =>
     p1px > p0px ? "up" : "down"
@@ -1038,24 +1082,33 @@ matchFigure(array<int> s, array<int> eb, array<float> ep, color c) =>
                 compactFigure(s, eb, ep, n, 4, 5)  // 5 волн → :5
             drew := true
         else if v1 == 3 and v2 == 3 and v3 == 3 and v4 == 3 and v5 == 3
-            // Уровень 4: Треугольник (→:3) ИЛИ Терминал (→:5)
-            // AKU Гл.7 стр.7-1: Треугольник сжимается в :3, Терминальный Импульс — в :5
+            // Уровень 4: Треугольник (→:3) ИЛИ Терминальный Импульс (→:5)
+            // Различение по AKU-0177: применяем правила построения Импульса.
+            // Если проходят → Терминал (:5); если нет → Треугольник (:3).
             int pi0 = startIdx
             [triOK, triMsg] = confirmTriangle(ep, pi0)
-            // Терминал: те же 3-3-3-3-3 НО волны перекрываются и сужаются как клин
-            // Точное различение требует правил Гл.5 стр.5-2 (AKU-0177)
-            // В Pine v1: если подтверждён по сужению → помечаем как Треуг. (безопасная версия)
-            string nm = triOK ? "Треуг./Терминал ✅" : "Треуг.? ❌ " + triMsg
-            color fc = triOK ? color.new(color.purple, 20) : color.new(color.red, 20)
+            string termDir = figDirection(array.get(ep, pi0), array.get(ep, pi0 + 1))
+            [termOK, termMsg] = confirmTerminal(ep, pi0, termDir)
+            // Если обе проверки прошли — предпочтительно Терминал (импульсные правила строже)
+            // Если только сужение — Треугольник
+            bool confirmed = triOK or termOK
+            string nm = not confirmed  ? "Треуг./Терм.? ❌ " + triMsg :
+                 termOK and triOK ? "Терминал ✅ (alt:Треуг.)" :
+                 termOK            ? "Терминал ✅" :
+                                     "Треугольник ✅"
+            // Сжатие: :5 для Терминала, :3 для Треугольника (AKU Гл.7 стр.7-1)
+            int compactTarget = termOK ? 5 : 3
+            color fc = confirmed ? (termOK ? color.new(color.orange, 20) : color.new(color.purple, 20)) : color.new(color.red, 20)
             drawFig(nm, b0, b1, lo, hi, fc)
             labelSeg(eb, ep, n - 5, ":F3|:c3|:c3|:sL3|:L3", fc)
-            if triOK
-                // n >= 6: все 6 точек (0+a..e) доступны; при n=5 рисуем только 5 (0+a..d)
+            if confirmed
                 int triLabelCount = n >= 6 ? 6 : 5
                 string triLabels  = n >= 6 ? "0|a|b|c|d|e" : "0|a|b|c|d"
-                drawMotionLabels(eb, ep, pi0, triLabelCount, triLabels, color.purple)
-                // Сжатие: :3 для Треугольника, :5 для Терминала — пока :3 (безопасно)
-                compactFigure(s, eb, ep, n, 4, 3)
+                drawMotionLabels(eb, ep, pi0, triLabelCount, triLabels, termOK ? color.orange : color.purple)
+                float triLen = math.abs(array.get(ep, n-1) - array.get(ep, pi0))
+                int triDir = termDir == "up" ? 1 : -1
+                drawEnergy(b1, hi, termOK ? "terminal" : "triangle", triDir, triLen)
+                compactFigure(s, eb, ep, n, 4, compactTarget)
             drew := true
     if not drew and n >= 5
         // Нестандартные серии с x-волнами: Двойной Зигзаг / Двойная Коррекция (AKU-0187..0191)
@@ -1127,21 +1180,31 @@ matchFigure(array<int> s, array<int> eb, array<float> ep, color c) =>
                 drawEnergy(hfB1, hfHi, "impulse", hfDir == "up" ? 1 : -1, hfLen)
                 compactFigure(s, eb, ep, n, 4, 5)
                 drew := true
-            // Hybrid fallback для треугольника: структурный паттерн [0,0,0,0,0] или
+            // Hybrid fallback для треугольника/терминала: структурный паттерн [0,0,0,0,0] или
             // смешанный не совпадает с [3,3,3,3,3], но геометрия сужается.
+            // Применяем AKU-0177: различение Терминал/Треугольник по правилам Импульса.
             else if not drew
                 [htOK, htMsg] = confirmTriangle(ep, hfi0)
-                if htOK
+                string htDir = figDirection(hfP0, hfP1)
+                [htTermOK, htTermMsg] = confirmTerminal(ep, hfi0, htDir)
+                bool htConfirmed = htOK or htTermOK
+                if htConfirmed
                     int htB0 = array.get(eb, hfi0), int htB1 = array.get(eb, n - 1)
                     float htHi = hfP0, float htLo = hfP0
                     for i = hfi0 to n - 1
                         float p = array.get(ep, i)
                         htHi := math.max(htHi, p)
                         htLo := math.min(htLo, p)
-                    drawFig("Треуг./Терм. ✅ (hybrid)", htB0, htB1, htLo, htHi, color.new(color.purple, 20))
-                    labelSeg(eb, ep, n - 5, ":F3|:c3|:c3|:sL3|:L3", color.new(color.purple, 20))
-                    drawMotionLabels(eb, ep, hfi0, 6, "0|a|b|c|d|e", color.purple)
-                    compactFigure(s, eb, ep, n, 4, 3)
+                    // Различение по AKU-0177: если Терминал — сжатие :5, если Треугольник — :3
+                    string htNm = htTermOK and htOK ? "Терминал ✅ (hybrid, alt:Треуг.)" :
+                         htTermOK ? "Терминал ✅ (hybrid)" :
+                                    "Треугольник ✅ (hybrid)"
+                    int htCompact = htTermOK ? 5 : 3
+                    color htColor = htTermOK ? color.new(color.orange, 20) : color.new(color.purple, 20)
+                    drawFig(htNm, htB0, htB1, htLo, htHi, htColor)
+                    labelSeg(eb, ep, n - 5, ":F3|:c3|:c3|:sL3|:L3", htColor)
+                    drawMotionLabels(eb, ep, hfi0, 6, "0|a|b|c|d|e", htTermOK ? color.orange : color.purple)
+                    compactFigure(s, eb, ep, n, 4, htCompact)
                     drew := true
 
     if not drew and n >= 4
@@ -1176,8 +1239,24 @@ matchFigure(array<int> s, array<int> eb, array<float> ep, color c) =>
                      flatCA > 1.382  ? "flat_extended" : "flat"
                 drawEnergy(b1, hi, flatSubtype, int(flatDir), flatLen)
                 compactFigure(s, eb, ep, n, 2, 3)  // 3 волны → :3
-        // Зигзаг (5-3-5) подавлен: неотличим от хвоста Импульса без Индикаторов положения.
-        // Активировать после реализации полной логики F/c/L (Гл.3 стр.3-60+).
+        // Зигзаг 5-3-5 (AKU-0166): структура :5 → :3 → :5 (F5/c3/L5)
+        // B/A < 0.618 отличает Зигзаг от Плоской (где B/A >= 0.618).
+        // Ограничение: без Индикаторов Положения Гл.3 не отличить от хвоста Импульса.
+        // Активирован на уровне геометрии — помечать с предупреждением (D3 parity deviation).
+        if w1 == 5 and w2 == 3 and w3 == 5
+            int zzI0 = startIdx
+            string zzDir = figDirection(array.get(ep, zzI0), array.get(ep, zzI0 + 1))
+            [zzOK, zzMsg] = confirmZigzag(ep, zzI0, zzDir)
+            string zzNm = zzOK ? "Зигзаг ✅ (5-3-5)" : "Зигзаг? ❌ " + zzMsg
+            color zzColor = zzOK ? color.new(color.blue, 20) : color.new(color.red, 20)
+            drawFig(zzNm, b0, b1, lo, hi, zzColor)
+            labelSeg(eb, ep, n - 3, ":F5|:c3|:L5", zzColor)
+            if zzOK
+                drawMotionLabels(eb, ep, zzI0, 4, "0|A|B|C", color.blue)
+                float zzLen = math.abs(array.get(ep, n-1) - array.get(ep, zzI0))
+                float zzFadeDir = zzDir == "up" ? 1.0 : -1.0
+                drawEnergy(b1, hi, "zigzag", int(zzFadeDir), zzLen)
+                compactFigure(s, eb, ep, n, 2, 3)  // Зигзаг → :3 (коррекция)
 
 // ──────────────────── ПОРОГ РАЗВОРОТА (текущий ТФ) ───────────────
 revC = useATR ? ta.atr(atrLen) * atrMult : close * pctRev / 100.0

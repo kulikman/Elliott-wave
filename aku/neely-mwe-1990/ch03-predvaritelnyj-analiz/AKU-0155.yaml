@@ -23,9 +23,35 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: locating Elliott figure boundaries on the chart
-  constraint: end_label(elliott_figure) in {':L5', ':L3'}
-  formalization_notes: null
+  applies_when: '# При выделении границ ценовых фигур Эллиотта на графике
+
+    # (процедура сканирования графика слева направо для нахождения завершений фигур)
+
+    mode == ''figure_boundary_detection''
+
+    '
+  constraint: "# ПРАВИЛО 1: Любая ценовая фигура Эллиотта должна завершаться волной\
+    \ с меткой :L5 или :L3\n# Это обязательное условие вне зависимости от типа группировки\n\
+    last_wave = get_last_wave(elliott_figure)\nassert last_wave.label in [':L5', ':L3']\n\
+    \n# ПРАВИЛО 2 (процедура поиска): Для выделения фигур график сканируется слева\
+    \ направо,\n# и первая встреченная волна :L5 или :L3 с высокой вероятностью является\
+    \ точкой\n# завершения фигуры Эллиотта\nfunction find_figure_boundaries(waves_on_chart):\n\
+    \    figures = []\n    scan_start = 0\n    for i in range(scan_start, len(waves_on_chart)):\n\
+    \        wave = waves_on_chart[i]\n        if wave.label in [':L5', ':L3']:\n\
+    \            # Высока вероятность, что здесь завершается фигура Эллиотта\n   \
+    \         candidate_end = i\n            figure = extract_figure_ending_at(waves_on_chart,\
+    \ candidate_end)\n            figures.append(figure)\n            scan_start =\
+    \ candidate_end + 1  # продолжить поиск следующей фигуры\n    return figures\n"
+  formalization_notes: "1. Правило содержит два аспекта: (a) жёсткое ограничение —\
+    \ фигура ДОЛЖНА завершаться\n   волной :L5 или :L3; (b) эвристика поиска — первая\
+    \ найденная :L5/:L3 слева направо\n   «с высокой вероятностью» является завершением\
+    \ фигуры.\n2. Аспект (a) формализован как mandatory assert.\n3. Аспект (b) — это\
+    \ процедура/эвристика поиска, а не строгое правило. Формулировка\n   «высока вероятность»\
+    \ означает, что это не гарантия, а стартовая гипотеза,\n   которая может быть\
+    \ пересмотрена при дальнейшем анализе.\n4. Метки :L5 и :L3 — это структурные обозначения\
+    \ волн из предварительного анализа\n   (Глава 3 Нили), присваиваемые на основе\
+    \ соотношений длин соседних волн.\n5. Правило не уточняет, как именно определяются\
+    \ границы начала фигуры —\n   только точка завершения."
 aliases: []
 related_aku: []
 contradicts_aku: []

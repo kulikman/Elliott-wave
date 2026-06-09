@@ -27,9 +27,42 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: assigning x:c3 (x-wave linker)
-  constraint: position(x:c3) NOT IN {first, last} AND complexity(x:c3) <= complexity(preceding_completed_figure)
-  formalization_notes: null
+  applies_when: '# Когда сегменту присваивается структурное обозначение x:c3
+
+    # (центральная тройка в позиции x-волны, связывающая стандартные фигуры)
+
+    candidate_label == "x:c3"
+
+    '
+  constraint: "# ПРАВИЛО 1: x:c3 никогда не может быть первым или последним сегментом\
+    \ последовательности\nsegment_index = index_of(current_segment, sequence)\ntotal_segments\
+    \ = length(sequence)\n\nASSERT segment_index != 0                    # не первый\
+    \ сегмент\nASSERT segment_index != (total_segments - 1) # не последний сегмент\n\
+    \n# ПРАВИЛО 2: x:c3 возникает между Стандартными ценовыми фигурами Эллиотта\n\
+    preceding_figure = completed_pattern_before(current_segment)\nfollowing_figure\
+    \ = pattern_after(current_segment)\n\nASSERT is_standard_elliott_pattern(preceding_figure)\n\
+    ASSERT is_standard_elliott_pattern(following_figure)\n\n# ПРАВИЛО 3: Уровень сложности\
+    \ x:c3 не может быть выше уровня сложности\n# завершённой ценовой фигуры, предшествующей\
+    \ x:c3\nASSERT complexity(current_segment) <= complexity(preceding_figure)\n\n\
+    # ПРАВИЛО 4: Следующая фигура обычно на уровень ниже обеих окружающих\n# (это\
+    \ тенденция, не жёсткое ограничение — в verbatim_quote слово \"обычно\" отсутствует\n\
+    #  в цитате, но есть в statement_ru; не формализуется как mandatory)\n# SOFT_EXPECTATION:\
+    \ complexity(following_figure) == min(complexity(preceding_figure), complexity(following_surrounding?))\
+    \ - 1\n\n# ПРАВИЛО 5: Преобразование — :c3 можно преобразовать в x:c3, но не наоборот\n\
+    # Если сегмент ранее имел обозначение :c3, допустимо переназначить в x:c3\n# Если\
+    \ сегмент уже имеет обозначение x:c3, нельзя понизить до :c3\nIF previous_label(current_segment)\
+    \ == \":c3\":\n    ALLOW relabel to \"x:c3\"\nIF current_label(current_segment)\
+    \ == \"x:c3\":\n    DENY relabel to \":c3\"\n"
+  formalization_notes: "1. Правило о том, что \"следующая фигура обычно на уровень\
+    \ ниже обеих окружающих\"\n   присутствует в statement_ru, но в verbatim_quote\
+    \ не подтверждено дословно.\n   Слово \"обычно\" указывает на тенденцию, а не\
+    \ mandatory constraint,\n   поэтому оставлено как комментарий (SOFT_EXPECTATION),\
+    \ не как ASSERT.\n2. Функция complexity() возвращает числовой уровень сложности\
+    \ фигуры\n   (например, 0 = простейшая коррекция, 1 = более сложная и т.д.).\n\
+    3. Правило преобразования (:c3 -> x:c3 допустимо, обратное — нет)\n   относится\
+    \ к процессу переназначения меток, а не к валидации готовой разметки.\n4. Определение\
+    \ \"Стандартная ценовая фигура Эллиотта\" (is_standard_elliott_pattern)\n   требует\
+    \ внешнего справочника допустимых паттернов."
 aliases: []
 related_aku: []
 contradicts_aku: []

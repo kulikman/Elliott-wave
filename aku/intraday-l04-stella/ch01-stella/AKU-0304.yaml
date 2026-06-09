@@ -1,12 +1,13 @@
 id: AKU-0304
 type: exception
 strength: conditional
-status: draft
+status: verified
 topic: impulse-extension
 subtopics:
 - ending-diagonal
 - rule-of-overlap
-statement_ru: В терминальном импульсе в растянутой 5-й волне перекрытие волн 2 и 4 допустимо как исключение из общего правила импульсов.
+statement_ru: В терминальном импульсе в растянутой 5-й волне перекрытие волн 2 и 4
+  допустимо как исключение из общего правила импульсов.
 statement_en: null
 source:
   book_id: intraday-l04-stella
@@ -15,7 +16,8 @@ source:
   section: Терминальный импульс в растянутой 5-й
   figure_id: page-019
   verbatim_quote:
-    text: Перекрытие волн 2 и 4 допустимо в терминальном импульсе (исключение из общего правила импульсов)
+    text: Перекрытие волн 2 и 4 допустимо в терминальном импульсе (исключение из общего
+      правила импульсов)
     language: ru
 formalization:
   status: not_attempted
@@ -33,5 +35,8 @@ extends_aku: null
 supersedes_aku: null
 created_by: claude
 created_at: '2026-06-05T01:02:00Z'
-review_notes: 'Sprint 4 pool 2: exceptions. Основано на Vision-notes страницы 19; проверить по изображению перед верификацией.'
-requires_review: true
+review_notes: 'Sprint 4 pool 2: exceptions. Основано на Vision-notes страницы 19;
+  проверить по изображению перед верификацией.
+
+  Reviewed and approved by Anton 2026-06-09.'
+requires_review: false

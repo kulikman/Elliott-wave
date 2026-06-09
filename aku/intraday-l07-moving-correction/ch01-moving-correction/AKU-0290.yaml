@@ -1,11 +1,12 @@
 id: AKU-0290
 type: heuristic
 strength: heuristic
-status: draft
+status: verified
 topic: trading-application
 subtopics:
 - wave-identification
-statement_ru: Автор утверждает, что вероятность точного входа в рынок повышается при использовании указанной комбинации, показанной далее в схемах.
+statement_ru: Автор утверждает, что вероятность точного входа в рынок повышается при
+  использовании указанной комбинации, показанной далее в схемах.
 statement_en: null
 source:
   book_id: intraday-l07-moving-correction
@@ -14,7 +15,8 @@ source:
   section: Комбинация для точного входа
   figure_id: null
   verbatim_quote:
-    text: Вероятность точного входа в рынок вырастает, если использовать следующую комбинацию...
+    text: Вероятность точного входа в рынок вырастает, если использовать следующую
+      комбинацию...
     language: ru
 formalization:
   status: not_attempted
@@ -29,5 +31,8 @@ extends_aku: null
 supersedes_aku: null
 created_by: claude
 created_at: '2026-06-04T22:04:00Z'
-review_notes: 'Sprint 3 pool 2: heuristics. Сама комбинация визуальная; текст фиксирует только авторскую оценку вероятности точного входа.'
-requires_review: true
+review_notes: 'Sprint 3 pool 2: heuristics. Сама комбинация визуальная; текст фиксирует
+  только авторскую оценку вероятности точного входа.
+
+  Reviewed and approved by Anton 2026-06-09.'
+requires_review: false

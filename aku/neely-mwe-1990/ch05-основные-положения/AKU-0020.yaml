@@ -24,11 +24,33 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: pattern == 'triangle'
-  constraint: not breaks(wave_c, trendline(end(b), end(d))) AND not breaks(wave_e,
-    trendline(end(b), end(d)))
-  formalization_notes: Линия b-d — Базовая линия Треугольника. 'Общее правило' — редкие
-    исключения возможны.
+  applies_when: '# Правило применяется к любому Треугольнику (contracting, expanding,
+    etc.)
+
+    pattern == ''triangle''
+
+    '
+  constraint: "# Определяем Базовую линию Треугольника — трендлинию через концы волн\
+    \ b и d\nbaseline = trendline(end(wave_b), end(wave_d))\n\n# Ни одна часть волны\
+    \ c не должна пробивать (пересекать) линию b-d\nfor each point in wave_c:\n  price_at_point\
+    \ must not cross baseline at that time\n\n# Ни одна часть волны e не должна пробивать\
+    \ (пересекать) линию b-d\nfor each point in wave_e:\n  price_at_point must not\
+    \ cross baseline at that time\n\n# Формально:\n# not breaks(wave_c, baseline)\
+    \ AND not breaks(wave_e, baseline)\n#\n# где breaks(wave, line) == true, если\
+    \ любая ценовая точка волны\n# оказывается по другую сторону от линии относительно\
+    \ вершины\n# треугольника (волны a):\n#   - если треугольник сужается вниз (b-d\
+    \ линия сверху):\n#       breaks == any high in wave > baseline_value_at(time)\n\
+    #   - если треугольник сужается вверх (b-d линия снизу):\n#       breaks == any\
+    \ low in wave < baseline_value_at(time)\n"
+  formalization_notes: "1. Линия b-d называется \"Базовой линией\" (Base line) Треугольника.\n\
+    2. Формулировка \"в качестве общего правила\" указывает, что это mandatory правило,\n\
+    \   но в редких/исключительных случаях возможны незначительные нарушения.\n  \
+    \ Для алгоритма трактуем как строгое ограничение (mandatory).\n3. \"Пробитие\"\
+    \ (breaks) означает, что цена проходит сквозь линию —\n   т.е. оказывается на\
+    \ противоположной стороне от направления треугольника.\n4. Проверяются все ценовые\
+    \ данные внутри волн c и e (включая все подволны),\n   а не только их конечные\
+    \ точки.\n5. Волны a, b, d не упоминаются в ограничении — они формируют саму линию\n\
+    \   или находятся по другую сторону от неё."
 created_by: claude
 created_at: '2026-06-02T17:55:31Z'
 requires_review: false

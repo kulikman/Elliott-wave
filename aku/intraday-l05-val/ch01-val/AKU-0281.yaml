@@ -1,11 +1,13 @@
 id: AKU-0281
 type: heuristic
 strength: heuristic
-status: draft
+status: verified
 topic: trading-application
 subtopics:
 - wave-identification
-statement_ru: После замечания, что ВАЛ иногда завершается на втором касании дуги поддержки или сопротивления, автор рекомендует не упускать возможность торговать вторую волну ВАЛа.
+statement_ru: После замечания, что ВАЛ иногда завершается на втором касании дуги поддержки
+  или сопротивления, автор рекомендует не упускать возможность торговать вторую волну
+  ВАЛа.
 statement_en: null
 source:
   book_id: intraday-l05-val
@@ -32,5 +34,8 @@ extends_aku: null
 supersedes_aku: null
 created_by: claude
 created_at: '2026-06-04T21:35:00Z'
-review_notes: 'Sprint 3 pool 2: heuristics. Основано на соседнем условии про возможное завершение на 2-м касании; требует human review для точной привязки к схеме.'
-requires_review: true
+review_notes: 'Sprint 3 pool 2: heuristics. Основано на соседнем условии про возможное
+  завершение на 2-м касании; требует human review для точной привязки к схеме.
+
+  Reviewed and approved by Anton 2026-06-09.'
+requires_review: false

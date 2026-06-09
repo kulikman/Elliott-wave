@@ -1,12 +1,13 @@
 id: AKU-0293
 type: heuristic
 strength: heuristic
-status: draft
+status: verified
 topic: trading-application
 subtopics:
 - wave-degree
 - wave-identification
-statement_ru: Если смотреть на график как на фракталы разной мерности, автор считает точку смены мерности лучшим местом для открытия сделки.
+statement_ru: Если смотреть на график как на фракталы разной мерности, автор считает
+  точку смены мерности лучшим местом для открытия сделки.
 statement_en: null
 source:
   book_id: intraday-l08-fractal-dimension-shift
@@ -15,7 +16,8 @@ source:
   section: Точка смены мерности
   figure_id: null
   verbatim_quote:
-    text: Если на график смотреть как на фракталы разной мерности... то видно что лучшим местом для открытия сделки является точка смены мерности...
+    text: Если на график смотреть как на фракталы разной мерности... то видно что
+      лучшим местом для открытия сделки является точка смены мерности...
     language: ru
 formalization:
   status: not_attempted
@@ -32,5 +34,8 @@ extends_aku: null
 supersedes_aku: null
 created_by: claude
 created_at: '2026-06-05T00:09:00Z'
-review_notes: 'Sprint 3 pool 2: heuristics. Вход в точке смены мерности требует проверки расчёта точки по изображениям.'
-requires_review: true
+review_notes: 'Sprint 3 pool 2: heuristics. Вход в точке смены мерности требует проверки
+  расчёта точки по изображениям.
+
+  Reviewed and approved by Anton 2026-06-09.'
+requires_review: false

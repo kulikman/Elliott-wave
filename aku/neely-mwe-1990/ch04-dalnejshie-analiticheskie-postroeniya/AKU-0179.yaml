@@ -23,11 +23,66 @@ source:
       картина.
     language: ru
 formalization:
-  status: draft
-  applies_when: checking similarity for impulse vs correction hypothesis
-  constraint: 'if impulse_hypothesis: prefer time_similarity ; if correction_hypothesis:
-    prefer price_similarity'
-  formalization_notes: null
+  status: not_formalizable
+  applies_when: '# При оценке гипотезы о типе паттерна (импульс vs коррекция)
+
+    # и применении правила подобия к соседним волнам
+
+    pattern_type in [''impulse'', ''corrective'']
+
+    '
+  constraint: '# Правило описывает статистическую тенденцию ("чаще"), а не жёсткое
+    ограничение.
+
+    # Оно не запрещает ценовое подобие в импульсах или временное в коррекциях,
+
+    # а лишь указывает на преобладающий тип подобия.
+
+    #
+
+    # Концептуально (как эвристика для scoring/ранжирования гипотез):
+
+    #
+
+    # for each pair of adjacent_waves (wave_i, wave_i+1) in pattern:
+
+    #   time_similarity_score = evaluate_time_similarity(wave_i, wave_i+1)
+
+    #   price_similarity_score = evaluate_price_similarity(wave_i, wave_i+1)
+
+    #
+
+    # if pattern_type == ''impulse'':
+
+    #   # Временное подобие встречается чаще, чем ценовое
+
+    #   # При прочих равных, наличие time_similarity повышает вероятность импульса
+
+    #   hypothesis_score += weight * time_similarity_score
+
+    #   # Наличие price_similarity не запрещено, но менее типично
+
+    #
+
+    # if pattern_type == ''corrective'':
+
+    #   # Ценовое подобие преобладает над временным
+
+    #   # При прочих равных, наличие price_similarity повышает вероятность коррекции
+
+    #   hypothesis_score += weight * price_similarity_score
+
+    #   # Наличие time_similarity не запрещено, но менее типично
+
+    '
+  formalization_notes: "Правило не формализуемо как жёсткое (mandatory) ограничение\
+    \ по следующим причинам:\n1. Формулировка \"встречается чаще\" описывает статистическую\
+    \ тенденцию,\n   а не абсолютный запрет. Нет порога, при котором паттерн отвергается.\n\
+    2. Не определены конкретные критерии \"подобия\" (допустимые отклонения\n   по\
+    \ цене и времени) — это зависит от других AKU.\n3. Правило пригодно только как\
+    \ эвристика (soft scoring) при выборе\n   между конкурирующими гипотезами, но\
+    \ не как фильтр валидации.\n4. Несмотря на статус mandatory, verbatim_quote содержит\
+    \ только\n   статистическое наблюдение без императивного запрета."
 aliases: []
 related_aku: []
 contradicts_aku: []

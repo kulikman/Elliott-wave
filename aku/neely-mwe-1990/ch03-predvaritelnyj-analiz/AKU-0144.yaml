@@ -22,10 +22,31 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: ratio(m2, m1) == 0.618
-  constraint: structure(m1) is ambiguous (boundary :3/:5) -> resolve via ratio(m0,
-    m1) condition
-  formalization_notes: null
+  applies_when: '# Правило 3 применяется когда отношение m2/m1 равно 61.8%
+
+    ratio_m2_m1 = length(m2) / length(m1)
+
+    applies = is_approximately_equal(ratio_m2_m1, 0.618)
+
+    '
+  constraint: "# При ratio(m2/m1) == 61.8% структура m1 находится на границе\n# между\
+    \ Импульсной (:5) и Коррективной (:3) классификацией.\n# Однозначное определение\
+    \ структуры m1 невозможно без дополнительных данных.\n#\nIF is_approximately_equal(ratio_m2_m1,\
+    \ 0.618) THEN\n  # m1 помечается как неопределённая между :5 и :3\n  m1.structure_candidates\
+    \ = [:5, :3]\n  m1.structure_status = \"ambiguous_boundary\"\n\n  # Для разрешения\
+    \ неоднозначности требуется измерить m0/m1\n  ratio_m0_m1 = length(m0) / length(m1)\n\
+    \  m1.requires_resolution_via = \"ratio_m0_m1\"\n\n  # Конкретные пороги ratio(m0/m1)\
+    \ для выбора между :5 и :3\n  # определяются в подправилах Правила 3 (отдельные\
+    \ AKU)\n"
+  formalization_notes: "1. Правило констатирует факт неоднозначности при ratio ==\
+    \ 61.8%\n   и указывает на необходимость использования ratio(m0/m1) для разрешения.\n\
+    2. Конкретные условия (пороги m0/m1), по которым выбирается :5 или :3,\n   в данном\
+    \ AKU НЕ описаны — они содержатся в подправилах Правила 3\n   и должны быть формализованы\
+    \ в отдельных AKU.\n3. \"Точное равенство\" 61.8% на практике требует определения\
+    \ допуска\n   (tolerance), который в verbatim_quote не специфицирован.\n   Используется\
+    \ is_approximately_equal с подразумеваемым допуском.\n4. Данное правило является\
+    \ диспетчерским — оно не выносит финального\n   решения о структуре m1, а лишь\
+    \ фиксирует неоднозначность и\n   направляет к подправилам Правила 3."
 aliases: []
 related_aku: []
 contradicts_aku: []

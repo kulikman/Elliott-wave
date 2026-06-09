@@ -1,12 +1,13 @@
 id: AKU-0295
 type: heuristic
 strength: heuristic
-status: draft
+status: verified
 topic: time-projection
 subtopics:
 - price-projection
 - wave-degree
-statement_ru: Автор утверждает, что на одном энергетическом уровне размеры PTV практически одинаковы.
+statement_ru: Автор утверждает, что на одном энергетическом уровне размеры PTV практически
+  одинаковы.
 statement_en: null
 source:
   book_id: intraday-l09-growth-formulas
@@ -15,7 +16,9 @@ source:
   section: PTV на одном энергетическом уровне
   figure_id: null
   verbatim_quote:
-    text: Поэтому математически точные равнобедренные треугольники выглядят в искаженном виде...как будто на них смотрят с боку...Тем не менее, на одном энергетическом уровне размеры PVT практически ОДИНАКОВЫ...Это видно на примере Серебра...
+    text: Поэтому математически точные равнобедренные треугольники выглядят в искаженном
+      виде...как будто на них смотрят с боку...Тем не менее, на одном энергетическом
+      уровне размеры PVT практически ОДИНАКОВЫ...Это видно на примере Серебра...
     language: ru
 formalization:
   status: not_attempted
@@ -33,5 +36,8 @@ extends_aku: null
 supersedes_aku: null
 created_by: claude
 created_at: '2026-06-05T00:20:00Z'
-review_notes: 'Sprint 3 pool 2: heuristics. В источнике встречается написание PVT; сохранено в цитате, но alias связывает с PTV.'
-requires_review: true
+review_notes: 'Sprint 3 pool 2: heuristics. В источнике встречается написание PVT;
+  сохранено в цитате, но alias связывает с PTV.
+
+  Reviewed and approved by Anton 2026-06-09.'
+requires_review: false

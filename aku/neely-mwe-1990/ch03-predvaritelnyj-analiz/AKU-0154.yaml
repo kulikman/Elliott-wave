@@ -23,9 +23,40 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: isolating an Elliott figure between two boundary waves
-  constraint: wave_count(between boundary_waves) is odd AND >= 3
-  formalization_notes: null
+  applies_when: '# При выделении (группировке) конфигурации Эллиотта между двумя граничными
+    точками
+
+    # Граничные точки — это волны, помеченные как :L5 или :L3 (boundary waves)
+
+    # Процедура применяется после определения двух кандидатов на границы фигуры
+
+    grouping_phase == ''isolating_elliott_figure''
+
+    AND left_boundary is defined  # левая граничная точка (:L5 или :L3)
+
+    AND right_boundary is defined  # правая граничная точка (:L5 или :L3)
+
+    '
+  constraint: "# Подсчитать количество моноволн между двумя граничными точками (включая\
+    \ сами границы)\nwave_count = count_waves(from: left_boundary, to: right_boundary)\
+    \  # включая граничные волны\n\n# Количество волн в любой конфигурации Эллиотта\
+    \ должно быть нечётным\nIF wave_count % 2 == 1:\n    # Нечётное — границы фигуры\
+    \ определены корректно\n    figure_boundaries_valid = TRUE\nELSE:\n    # Чётное\
+    \ — текущая правая граница неверна\n    # Продолжить поиск другой граничной волны\
+    \ (:L5 или :L3)\n    # в обратном временном порядке (справа налево от текущей\
+    \ правой границы)\n    figure_boundaries_valid = FALSE\n    search_direction =\
+    \ RIGHT_TO_LEFT\n    new_right_boundary = find_next_boundary_wave(\n        start_from:\
+    \ right_boundary,\n        direction: RIGHT_TO_LEFT,\n        required_label:\
+    \ [:L5, :L3]\n    )\n    # После нахождения новой границы — повторить проверку\
+    \ на нечётность\n    REPEAT constraint check with new_right_boundary\n"
+  formalization_notes: "1. Правило относится к процедуре группировки (Grouping Procedure)\
+    \ из Главы 3.\n2. \"Закрашенные кружки\" в оригинале — это граничные точки фигуры,\
+    \ \n   соответствующие волнам с обозначениями :L5 или :L3.\n3. Направление поиска\
+    \ при чётном количестве — \"в обратном временном порядке\", \n   т.е. справа налево\
+    \ (от более поздних волн к более ранним).\n4. Минимальное нечётное количество\
+    \ волн в конфигурации — 3 (простейшая фигура).\n5. Не уточнено, что делать если\
+    \ при поиске справа налево \n   не найдена подходящая граничная волна, дающая\
+    \ нечётное количество."
 aliases: []
 related_aku: []
 contradicts_aku: []

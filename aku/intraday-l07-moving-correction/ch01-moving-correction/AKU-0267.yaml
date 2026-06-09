@@ -1,12 +1,13 @@
 id: AKU-0267
 type: rule
 strength: conditional
-status: draft
+status: verified
 topic: wave-identification
 subtopics:
 - flat
 - retracement
-statement_ru: Если волна C намного меньше 61.8% волны A, то B-волна, вероятно, ещё не завершена.
+statement_ru: Если волна C намного меньше 61.8% волны A, то B-волна, вероятно, ещё
+  не завершена.
 statement_en: null
 source:
   book_id: intraday-l07-moving-correction
@@ -18,10 +19,36 @@ source:
     text: если она намного меньше этой величины, b-волна, вероятно, еще не завершена
     language: ru
 formalization:
-  status: not_attempted
-  applies_when: null
-  constraint: null
-  formalization_notes: null
+  status: draft
+  applies_when: '# Контекст: анализируем структуру flat (плоская коррекция)
+
+    # Имеем предполагаемую волну B, внутри которой уже выделены подволны a, b, c
+
+    # Проверяем завершённость волны B по соотношению её внутренних подволн
+
+    pattern == ''flat''
+
+    AND current_wave == ''B''
+
+    AND B_wave.has_subwaves(''a'', ''b'', ''c'')
+
+    '
+  constraint: "# Вычисляем длину подволны c относительно подволны a внутри волны B\n\
+    ratio_c_to_a = abs(price_move(B.subwave_c)) / abs(price_move(B.subwave_a))\n\n\
+    # Если подволна c намного меньше 61.8% подволны a,\n# то волна B, вероятно, ещё\
+    \ не завершена\nIF ratio_c_to_a << 0.618 THEN\n  B_wave.likely_not_complete =\
+    \ TRUE\n  # Текущая разметка c как завершающей подволны B сомнительна;\n  # следует\
+    \ ожидать продолжения волны B\n"
+  formalization_notes: "1. Правило является диагностическим (conditional): оно сигнализирует\
+    \ о вероятной\n   незавершённости волны B, а не устанавливает жёсткий запрет.\n\
+    2. Выражение \"намного меньше 61.8%\" (<<) не имеет точного порога в источнике.\n\
+    \   Оператор \"<<\" означает \"значительно меньше\". Для реализации потребуется\n\
+    \   определить конкретный threshold, например ratio_c_to_a < 0.618 * 0.7 (т.е.\
+    \ < ~0.433),\n   но это интерпретация, не заданная явно в правиле.\n3. Контекст\
+    \ из AKU-0266 и источника (урок о ползущей коррекции): речь идёт о\n   внутренней\
+    \ структуре волны B в плоской коррекции, где подволны a, b, c —\n   это внутренние\
+    \ волны B-волны.\n4. \"Эта величина\" в verbatim_quote ссылается на 61.8% волны-a\
+    \ (из AKU-0266)."
 aliases: []
 related_aku:
 - AKU-0266
@@ -30,5 +57,8 @@ extends_aku: null
 supersedes_aku: null
 created_by: claude
 created_at: '2026-06-04T20:32:24Z'
-review_notes: 'Sprint 2 pool 2: conditional_rules. "Эта величина" ссылается на 61.8% волны-a из AKU-0266; требуется human review по изображению.'
-requires_review: true
+review_notes: 'Sprint 2 pool 2: conditional_rules. "Эта величина" ссылается на 61.8%
+  волны-a из AKU-0266; требуется human review по изображению.
+
+  Reviewed and approved by Anton 2026-06-09.'
+requires_review: false

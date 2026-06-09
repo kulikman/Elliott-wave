@@ -21,11 +21,57 @@ source:
       '
     language: ru
 formalization:
-  status: draft
-  applies_when: pattern == 'contracting_triangle'
-  constraint: has_fibonacci_ratio(among_segments) == true
-  formalization_notes: Требует определения 'fib-соотношение между сегментами' на уровне
-    распознавания.
+  status: not_formalizable
+  applies_when: 'pattern == ''contracting_triangle''
+
+    '
+  constraint: '# Правило требует, чтобы хотя бы одна пара сегментов (волн a-e) треугольника
+
+    # находилась в соотношении Фибоначчи друг к другу.
+
+    # Если ни одного соотношения Фибоначчи не найдено — паттерн невалиден.
+
+    #
+
+    # fibonacci_ratios = [0.382, 0.500, 0.618, 0.786, 1.000, 1.618, 2.618]
+
+    # tolerance = 0.02  # допуск — не определён в правиле
+
+    #
+
+    # segments = [wave_a, wave_b, wave_c, wave_d, wave_e]
+
+    # found_any_fib = false
+
+    # for i in range(len(segments)):
+
+    #     for j in range(len(segments)):
+
+    #         if i != j:
+
+    #             ratio = price_length(segments[i]) / price_length(segments[j])
+
+    #             for fib in fibonacci_ratios:
+
+    #                 if abs(ratio - fib) <= tolerance:
+
+    #                     found_any_fib = true
+
+    #
+
+    # assert found_any_fib == true
+
+    '
+  formalization_notes: "Правило не формализуемо в строгом смысле по следующим причинам:\n\
+    1. Не определено, какие именно пары сегментов должны проверяться \n   (смежные,\
+    \ все возможные, только определённые комбинации вроде a/b, b/c и т.д.)\n2. Не\
+    \ указан набор допустимых соотношений Фибоначчи \n   (0.618, 0.382, или также\
+    \ 0.786, 0.500, 1.618 и др.)\n3. Не указан допуск (tolerance) для определения\
+    \ \"соотношения Фибоначчи\"\n4. Не уточнено, достаточно ли одного соотношения\
+    \ среди всех пар \n   или требуется определённое минимальное количество\n5. Формулировка\
+    \ \"без соотношений Фибоначчи\" (множественное число) \n   может подразумевать\
+    \ необходимость нескольких таких соотношений\nБез этих уточнений формализация\
+    \ будет произвольной интерпретацией."
 aliases:
 - обязательность соотношений Фибоначчи в сужающихся треугольниках
 related_aku: []

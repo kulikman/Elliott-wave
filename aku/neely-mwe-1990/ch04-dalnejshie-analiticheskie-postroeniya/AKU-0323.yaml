@@ -1,7 +1,7 @@
 id: AKU-0323
 type: rule
 strength: conditional
-status: draft
+status: verified
 topic: rule-of-similarity
 subtopics:
 - wave-degree
@@ -28,7 +28,35 @@ source:
       '
     language: ru
 formalization:
-  status: not_attempted
+  status: draft
+  applies_when: '# Для любых двух последовательных (смежных) волн wave_A и wave_B
+
+    # которые являются кандидатами на принадлежность к одному Порядку (degree)
+
+    two_consecutive_waves_exist(wave_A, wave_B)
+
+    '
+  constraint: "# Вычисляем ценовые длины и временные длительности\nprice_A = abs(end_price(wave_A)\
+    \ - start_price(wave_A))\nprice_B = abs(end_price(wave_B) - start_price(wave_B))\n\
+    duration_A = end_time(wave_A) - start_time(wave_A)\nduration_B = end_time(wave_B)\
+    \ - start_time(wave_B)\n\nsmaller_price = min(price_A, price_B)\nlarger_price\
+    \ = max(price_A, price_B)\nsmaller_duration = min(duration_A, duration_B)\nlarger_duration\
+    \ = max(duration_A, duration_B)\n\n# Условие ценового подобия\nprice_similar =\
+    \ (larger_price > 0) AND (smaller_price >= larger_price / 3)\n\n# Условие временного\
+    \ подобия\ntime_similar = (larger_duration > 0) AND (smaller_duration >= larger_duration\
+    \ / 3)\n\n# Достаточно выполнения одного из двух условий\nwaves_are_similar =\
+    \ price_similar OR time_similar\n\n# Если waves_are_similar == TRUE:\n#   волны\
+    \ МОГУТ быть одного Порядка (необходимое, но НЕ достаточное условие)\n#   same_degree_possible\
+    \ = TRUE\n#\n# Если waves_are_similar == FALSE:\n#   волны НЕ могут быть одного\
+    \ Порядка (необходимое условие нарушено)\n#   same_degree_possible = FALSE\n\n\
+    IF NOT waves_are_similar THEN\n  waves_cannot_be_same_degree(wave_A, wave_B) \
+    \ # запрет на одинаковый Порядок\n"
+  formalization_notes: "Правило является необходимым, но не достаточным условием для\
+    \ определения\nодинакового Порядка двух волн. Это означает:\n- Нарушение (NOT\
+    \ similar) → волны точно НЕ одного Порядка (жёсткий запрет).\n- Выполнение (similar)\
+    \ → волны лишь МОГУТ быть одного Порядка, \n  но нужны дополнительные проверки\
+    \ для подтверждения.\nПравило conditional — это рекомендация Нили, а не абсолютный\
+    \ закон Эллиотта.\nФормализация отражает только логику из statement_ru и verbatim_quote."
 aliases:
 - правило подобия 1/3
 - rule of similarity and balance
@@ -38,5 +66,7 @@ extends_aku: null
 supersedes_aku: null
 created_by: claude
 created_at: '2025-06-02T12:00:00Z'
-review_notes: 'АВТОПРОВЕРКА: цитата не найдена в тексте — возможна галлюцинация'
-requires_review: true
+review_notes: 'АВТОПРОВЕРКА: цитата не найдена в тексте — возможна галлюцинация
+
+  Reviewed and approved by Anton 2026-06-09.'
+requires_review: false

@@ -27,10 +27,34 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: a :L5 completes a candidate zigzag with 2 preceding labels
-  constraint: test impulse_hypothesis FIRST; accept zigzag only if impulse violates
-    construction rules
-  formalization_notes: null
+  applies_when: "# Когда последний сегмент получает метку :L5 и три последних сегмента\n\
+    # образуют кандидата на Зигзаг (structure_labels == [:5, :F3, :L5])\ncandidate_zigzag\
+    \ = (segments[-3].label == ':5' AND\n                    segments[-2].label ==\
+    \ ':F3' AND\n                    segments[-1].label == ':L5')\ncandidate_zigzag\
+    \ == true\n"
+  constraint: "# Шаг 1: Взять два сегмента, предшествующих кандидату-Зигзагу,\n# \
+    \        и попытаться сформировать 5-волновой Импульс\n#         (предшествующие\
+    \ 2 сегмента = волны 1-2, Зигзаг-сегменты = волны 3-4-5)\npreceding_two = segments[-5:-3]\
+    \  # два структурных обозначения перед :5\nimpulse_candidate_waves = preceding_two\
+    \ + [segments[-3], segments[-2], segments[-1]]\n# impulse_candidate_waves должны\
+    \ образовать 5 волн Импульса\n\nimpulse_hypothesis_valid = check_all_impulse_construction_rules(impulse_candidate_waves)\n\
+    \n# Шаг 2: Приоритет гипотез\nif impulse_hypothesis_valid:\n    # Импульсная гипотеза\
+    \ удовлетворяет всем Правилам построения —\n    # принять Импульс, отклонить Зигзаг\n\
+    \    accept_interpretation = 'impulse'\n    reject_interpretation = 'zigzag'\n\
+    else:\n    # Импульсная гипотеза нарушает хотя бы одно Правило построения —\n\
+    \    # только тогда допустимо принять Зигзаг\n    accept_interpretation = 'zigzag'\n\
+    \n# ОБЯЗАТЕЛЬНО: Зигзаг НЕ может быть принят без предварительной\n# проверки и\
+    \ отклонения импульсной гипотезы\n# zigzag_allowed = NOT impulse_hypothesis_valid\n"
+  formalization_notes: "1. Правило требует наличия как минимум двух сегментов перед\
+    \ кандидатом-Зигзагом\n   для проверки импульсной гипотезы. Если предшествующих\
+    \ сегментов нет,\n   правило неприменимо (нечего проверять как волны 1-2 Импульса).\n\
+    2. \"Правила построения\" (construction rules) для Импульса — это отдельный набор\n\
+    \   AKU (правила соотношений волн, непересечения и т.д.), которые должны быть\n\
+    \   реализованы в функции check_all_impulse_construction_rules().\n3. Verbatim\
+    \ quote говорит \"два предшествующих Структурных обозначения\" —\n   это именно\
+    \ два сегмента (с их метками), непосредственно предшествующих\n   трём сегментам\
+    \ Зигзага.\n4. Это правило приоритета интерпретаций, а не правило валидации отдельного\
+    \ паттерна."
 aliases: []
 related_aku: []
 contradicts_aku: []

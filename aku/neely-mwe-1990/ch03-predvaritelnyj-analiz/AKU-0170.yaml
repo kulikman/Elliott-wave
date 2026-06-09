@@ -22,9 +22,33 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: rule(m1) == 7
-  constraint: structure(m1) := any ; resolve via position_indicator_sequences
-  formalization_notes: Очень большой откат m1.
+  applies_when: '# Правило 7 структурных списков: отношение m2/m1 > 261.8%
+
+    ratio_m2_m1 = length(m2) / length(m1)
+
+    ratio_m2_m1 > 2.618
+
+    '
+  constraint: "# При m2/m1 > 261.8% — m1 может иметь любую структурную метку\n# Это\
+    \ означает, что по соотношению длин нельзя ограничить структуру m1\nallowed_structures(m1)\
+    \ = ALL_STRUCTURES  # {:5, :s5, :L5, :L3, :F3, :3, :c3, ...}\n\n# Условие favor\
+    \ (предпочтительные метки):\n# Если ни одно конкретное описание из других правил\
+    \ не подходит,\n# предпочтение отдаётся следующим структурам:\nfavored_structures(m1)\
+    \ = [:5, :s5, :L5, :L3, :F3]\n\n# Если ни одно описание не подходит — разрешение\
+    \ через\n# последовательности Индикаторов положения (Position Indicators, стр.\
+    \ 3-61)\nif no_specific_description_matches(m1):\n    structure(m1) = resolve_via_position_indicator_sequences(m1)\n"
+  formalization_notes: 'Правило 7 — случай очень большого отката (m2 превышает m1
+    более чем в 2.618 раза).
+
+    Любая структура формально допустима, но favored (предпочтительные): :5, :s5, :L5,
+    :L3, :F3.
+
+    Механизм разрешения через "Индикаторы положения" (стр. 3-61) — отдельная процедура,
+
+    не описанная в данном AKU; требуется связь с AKU, описывающими Position Indicator
+    Sequences.
+
+    Список favored-структур извлечён из statement_ru.'
 aliases: []
 related_aku: []
 contradicts_aku: []

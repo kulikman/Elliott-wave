@@ -26,10 +26,43 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: assigning :L3 as last of five :3
-  constraint: 'position(:L3) == last_of_5_threes ; figure = essential_impulse_rules_hold
-    ? ''terminal'' : ''triangle'''
-  formalization_notes: null
+  applies_when: '# Волна имеет индикатор положения :L3
+
+    # И является последней из пяти последовательных моноволн-троек
+
+    position_indicator == '':L3''
+
+    AND is_last_of_five_consecutive_threes(current_wave)
+
+    # Пять последовательных троек = пять подряд моноволн, каждая из которых
+
+    # имеет Structure Label '':3'' (тройка)
+
+    # т.е. waves[i-4].structure == '':3''
+
+    #  AND waves[i-3].structure == '':3''
+
+    #  AND waves[i-2].structure == '':3''
+
+    #  AND waves[i-1].structure == '':3''
+
+    #  AND waves[i].structure == '':3''
+
+    '
+  constraint: "# Группа из пяти последовательных троек образует либо Терминал, либо\
+    \ Треугольник.\n# Различение: применить Основные Правила построения Импульса (Essential\
+    \ Construction Rules).\n\nfive_threes = [waves[i-4], waves[i-3], waves[i-2], waves[i-1],\
+    \ waves[i]]\n\n# Проверяем, выполняются ли правила построения основного импульса\n\
+    # для паттерна, образованного этими пятью тройками\nIF essential_impulse_construction_rules_hold(five_threes):\n\
+    \    pattern_type = 'terminal_impulse'\nELSE:\n    pattern_type = 'triangle'\n"
+  formalization_notes: "1. \"Основные Правила построения Импульса\" (Essential Construction\
+    \ Rules) \n   описаны в Главе 5, стр. 5-2. Их конкретный набор здесь не раскрыт\
+    \ — \n   формализация этих правил должна быть в отдельных AKU.\n2. :L3 аналогичен\
+    \ :sL3 по позиционному требованию (последняя из пяти троек),\n   но отличается\
+    \ по контексту применения (см. связанные AKU для :sL3).\n3. Правило не уточняет,\
+    \ как именно пять троек группируются в пятиволновую \n   структуру (какие из них\
+    \ становятся волнами 1-5), — это определяется \n   правилами построения из Главы\
+    \ 5."
 aliases: []
 related_aku: []
 contradicts_aku: []

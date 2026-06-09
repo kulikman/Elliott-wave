@@ -1,11 +1,12 @@
 id: AKU-0284
 type: heuristic
 strength: heuristic
-status: draft
+status: verified
 topic: trading-application
 subtopics:
 - wave-identification
-statement_ru: Автор указывает, что более крупная волновая фигура, например ВАЛ, может завершаться эллипсом, и это наблюдение можно использовать в торговле.
+statement_ru: Автор указывает, что более крупная волновая фигура, например ВАЛ, может
+  завершаться эллипсом, и это наблюдение можно использовать в торговле.
 statement_en: null
 source:
   book_id: intraday-l06-ellipses
@@ -14,7 +15,13 @@ source:
   section: Эллипс как завершение более крупной фигуры
   figure_id: null
   verbatim_quote:
-    text: "Эллипсом может завершаться более крупная волновая фигура, например ВАЛ...\n\n\n\n\nЭто наблюдение можно с успехом использовать в торговле"
+    text: 'Эллипсом может завершаться более крупная волновая фигура, например ВАЛ...
+
+
+
+
+
+      Это наблюдение можно с успехом использовать в торговле'
     language: ru
 formalization:
   status: not_attempted
@@ -33,5 +40,8 @@ extends_aku: null
 supersedes_aku: null
 created_by: claude
 created_at: '2026-06-04T21:46:00Z'
-review_notes: 'Sprint 3 pool 2: heuristics. Связь Эллипса и ВАЛа зафиксирована как торговое наблюдение; объединение с другими пулами не выполнялось.'
-requires_review: true
+review_notes: 'Sprint 3 pool 2: heuristics. Связь Эллипса и ВАЛа зафиксирована как
+  торговое наблюдение; объединение с другими пулами не выполнялось.
+
+  Reviewed and approved by Anton 2026-06-09.'
+requires_review: false

@@ -1,7 +1,7 @@
 id: AKU-0259
 type: rule
 strength: conditional
-status: draft
+status: verified
 topic: retracement
 subtopics:
 - trading-application
@@ -14,13 +14,43 @@ source:
   section: S-ка в конце тренда и Черный Лебедь
   figure_id: null
   verbatim_quote:
-    text: S-ка может располагаться в конце тренда. В этом случае её откат составляет более 100% !
+    text: S-ка может располагаться в конце тренда. В этом случае её откат составляет
+      более 100% !
     language: ru
 formalization:
-  status: not_attempted
-  applies_when: null
-  constraint: null
-  formalization_notes: null
+  status: draft
+  applies_when: '# S-образная фигура (S-curve) расположена в конце тренда
+
+    pattern == ''s_curve''
+
+    AND s_curve_position == ''end_of_trend''
+
+    '
+  constraint: '# Откат S-ки составляет более 100% от её собственного размера
+
+    # retracement_ratio = расстояние отката / высота S-ки
+
+    retracement_ratio(s_curve) > 1.0
+
+    '
+  formalization_notes: 'Правило conditional — описывает ожидаемое поведение, а не
+    жёсткое ограничение.
+
+    Основная сложность: алгоритмическое определение того, что S-ка расположена
+
+    именно "в конце тренда" — это требует внешнего контекста (например, завершение
+
+    импульсной структуры старшего таймфрейма, достижение уровня поддержки/сопротивления
+
+    и т.п.), что в verbatim_quote не детализировано.
+
+    Из контекста книги видно, что автор связывает >100% откат с коррекцией против
+
+    основного тренда и достижением уровней поддержки/сопротивления, но точные
+
+    критерии определения "конца тренда" не формализованы.
+
+    Брэдли Коуэн называл такую S-ку "Чёрным Лебедем" (alias).'
 aliases:
 - Черный Лебедь
 related_aku:
@@ -30,5 +60,8 @@ extends_aku: null
 supersedes_aku: null
 created_by: claude
 created_at: '2026-06-04T17:59:40Z'
-review_notes: 'Sprint 2 pool 2: conditional_rules. Название Черный Лебедь упомянуто рядом, но не включено в statement как строгое определение.'
-requires_review: true
+review_notes: 'Sprint 2 pool 2: conditional_rules. Название Черный Лебедь упомянуто
+  рядом, но не включено в statement как строгое определение.
+
+  Reviewed and approved by Anton 2026-06-09.'
+requires_review: false

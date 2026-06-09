@@ -26,11 +26,35 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: pattern == 'zigzag'
-  constraint: not touches(wave_c, parallel_line(through=end(wave_a), parallel_to=trendline(start(0),
-    end(B))))
-  formalization_notes: Касание параллельной линии → зигзаг есть часть более сложной
-    Коррекции.
+  applies_when: '# Правило применяется к завершённому зигзагу (a-b-c)
+
+    pattern == ''zigzag''
+
+    '
+  constraint: "# Построение канала зигзага:\n# 1. Базовая трендовая линия: от начала\
+    \ паттерна (точка 0) до конца волны-b (точка B)\nbase_line = trendline(start(pattern),\
+    \ end(wave_b))\n\n# 2. Параллельная трендовая линия: параллельна base_line, проведена\
+    \ через конец волны-a\nparallel_line = line_parallel_to(base_line, through=end(wave_a))\n\
+    \n# 3. Волна-c НЕ должна касаться параллельной линии\n#    (пробитие или недолёт\
+    \ допустимы, касание — нет)\nc_wave_endpoint = end(wave_c)\nc_wave_price_path\
+    \ = price_path(start(wave_c), end(wave_c))\n\n# Касание = цена достигает линии\
+    \ но не пробивает её значимо\ntouches_parallel = any point P in c_wave_price_path\
+    \ where:\n  abs(price(P) - value_of(parallel_line, at=time(P))) <= touch_threshold\n\
+    \n# Основное ограничение:\nIF touches_parallel:\n  # Зигзаг не является самостоятельным\
+    \ паттерном,\n  # а является частью более сложной коррекции.\n  # Переклассифицировать:\
+    \ данный зигзаг = сегмент внутри complex_correction\n  reclassify(pattern, as='part_of_complex_correction')\n\
+    \  # Счёт как самостоятельного зигзага недопустим\n  valid_as_standalone_zigzag\
+    \ = false\nELSE:\n  valid_as_standalone_zigzag = true\n"
+  formalization_notes: "1. Правило различает три состояния волны-c относительно параллельной\
+    \ линии:\n   - пробивает (допустимо)\n   - остаётся далеко (допустимо)\n   - касается\
+    \ (недопустимо как самостоятельный зигзаг)\n2. \"Касание\" (touch) vs \"пробитие\"\
+    \ (break) требует определения порога (touch_threshold).\n   В исходном тексте\
+    \ точный порог не указан — это параметр реализации.\n3. Правило не запрещает сам\
+    \ счёт волн как зигзаг, а требует переклассификации:\n   если есть касание, зигзаг\
+    \ должен рассматриваться как часть более сложной коррекции\n   (двойной/тройной\
+    \ зигзаг, двойная/тройная комбинация и т.п.).\n4. Проверяется весь ценовой путь\
+    \ волны-c (не только её конечная точка),\n   поскольку касание может произойти\
+    \ в любой момент движения волны-c."
 aliases:
 - правило касания параллельной линии в зигзаге
 related_aku: []

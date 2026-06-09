@@ -1,0 +1,266 @@
+{
+  "spec_version": "4.0",
+  "generated_at": "2026-06-09T16:00:00Z",
+  "generated_from": {
+    "aku_total": 322,
+    "aku_verified": 316,
+    "aku_formalized_draft": 254,
+    "previous_spec": "spec_v3.0.json",
+    "key_sources": [
+      "neely-mwe-1990 Гл.2-7",
+      "neely-mwe-1990 Гл.3 ch03-position-indicators.md",
+      "neely-mwe-1990 Гл.4 ch04-grouping.md"
+    ]
+  },
+  "changelog_from_v3": {
+    "pine_level": "4 → 4 (extended: Zigzag + Terminal disambiguation)",
+    "new_functions": [
+      "confirmZigzag — 5-3-5 Zigzag: B/A<0.618, C/A>=0.618, C beyond A (AKU-0166)",
+      "confirmTerminal — Terminal Impulse: impulse rules without W2/W4 overlap requirement (AKU-0177)",
+      "drawEnergy for triangle/terminal — Energy Rating added to 3-3-3-3-3 patterns"
+    ],
+    "updated_logic": [
+      "matchFigure: 3-3-3-3-3 block now uses confirmTerminal for disambiguation (orange=Terminal :5, purple=Triangle :3)",
+      "matchFigure: hybrid triangle block applies AKU-0177 disambiguation",
+      "matchFigure: 5-3-5 Zigzag detection activated (was suppressed)",
+      "compactFigure: Terminal compacts to :5, Triangle to :3 (per Neely Гл.7 стр.7-1)"
+    ],
+    "d3_parity_status": "Partial — Zigzag geometry active; Position Indicators (:F5/:c3/:L5) not yet wired to classifyRule/classifyCond",
+    "formalization": "233 AKU formalized (draft) via formalize_aku.py; 3 invalid statuses fixed",
+    "aku_accepted": "72 requires_review AKUs accepted (draft→verified) by Anton 2026-06-09"
+  },
+  "neely_methodology": {
+    "source": "Glenn Neely — Mastering Elliott Wave (1990)",
+    "levels": {
+      "level_1_monowaves": "Гл.2 — определение и метка моноволн",
+      "level_2_position_rules": "Гл.3 — предварительный анализ (Правила 1-7, Условия a-f)",
+      "level_3_grouping": "Гл.4 — группировка поливолн (подобие, баланс, сжатие)",
+      "level_4_pattern_confirmation": "Гл.5-6 — подтверждение паттернов (Импульс, Плоская, Зигзаг, Треугольник, Двойная Коррекция, Терминал)",
+      "level_5_post_pattern": "Гл.7 — Рейтинг Энергии, сжатие к :5/:3, выбор таймфрейма",
+      "level_6_wave_degrees": "Гл.7 — Степени волн (Submicro .. Grand Supercycle)",
+      "level_7_channels": "Гл.8-9 — каналы трендовых волн, параллельные линии",
+      "level_8_missing_waves": "Гл.10 — имитация, недостающие волны, x-волны",
+      "level_9_advanced": "Гл.11-12 — продвинутые паттерны, MTF-синхронизация"
+    }
+  },
+  "patterns": {
+    "impulse": {
+      "pine_status": "complete",
+      "aku_count": 25,
+      "compaction": ":5",
+      "energy_dir": "neutral (0/0)",
+      "key_aku": ["AKU-0001", "AKU-0002", "AKU-0004", "AKU-0005", "AKU-0007", "AKU-0009", "AKU-0127"],
+      "notes": "confirmImpulse + drawImpulseChannels + W5 Fibonacci + AKU-0224 deadline window"
+    },
+    "terminal": {
+      "pine_status": "new_in_v4",
+      "aku_count": 8,
+      "compaction": ":5",
+      "energy_dir": "strong_counter (-2 up / +2 down)",
+      "key_aku": ["AKU-0177"],
+      "notes": "confirmTerminal: W2<W1, W4<W3, W3>=W1/W5; no W2/W4 overlap requirement. Detected from 3-3-3-3-3 structure. Orange labels.",
+      "disambiguation": "3-3-3-3-3 → run confirmTerminal first; if passes → Terminal (:5); else confirmTriangle → Triangle (:3)"
+    },
+    "flat": {
+      "pine_status": "complete",
+      "aku_count": 18,
+      "compaction": ":3",
+      "subtypes": {
+        "flat_ordinary": "C/A < 0.618, energy=0/0",
+        "flat": "0.618 <= C/A <= 1.382, energy=-1/+1",
+        "flat_extended": "C/A > 1.382, energy=+1/-1"
+      },
+      "key_aku": ["AKU-0017", "AKU-0213"]
+    },
+    "zigzag": {
+      "pine_status": "new_in_v4",
+      "aku_count": 6,
+      "compaction": ":3",
+      "energy_dir": "neutral (0/0)",
+      "key_aku": ["AKU-0166"],
+      "notes": "confirmZigzag: B/A<0.618, C/A>=0.618, C extends beyond A terminus. Structure 5-3-5 (:F5|:c3|:L5). Blue labels.",
+      "d3_caveat": "Without Position Indicators cannot distinguish from Impulse tail. Active on geometry only — D3 parity deviation documented.",
+      "future": "Full disambiguation after Position Indicators (:F5/:c3/:L5) wired to classifyRule/classifyCond"
+    },
+    "triangle": {
+      "pine_status": "complete_updated",
+      "aku_count": 12,
+      "compaction": ":3",
+      "energy_dir": "neutral (0/0)",
+      "key_aku": ["AKU-0018", "AKU-0177"],
+      "notes": "confirmTriangle: c<a, d<b, e<c. Now distinguished from Terminal via confirmTerminal. Purple labels."
+    },
+    "double_corr": {
+      "pine_status": "complete",
+      "aku_count": 10,
+      "compaction": ":3",
+      "energy_dir": "strong (+2/-2)",
+      "key_aku": ["AKU-0185", "AKU-0186", "AKU-0191"],
+      "notes": "3×:3 with small x (xRatio<0.618) or large x (xRatio>=1.618)"
+    }
+  },
+  "position_indicators": {
+    "source": "Neely MWE Гл.3 стр.3-60+, ch03-position-indicators.md",
+    "pine_status": "partial",
+    "implemented": {
+      ":F3": "First 3 — first of three in corrective sequence",
+      ":c3": "Continuation 3 — middle of corrective sequence",
+      ":L3": "Last 3 — last of three (5-wave :3 sequence = Triangle or Terminal)",
+      ":sL3": "Second-to-Last 3",
+      ":F5": "First 5 — first motive segment (Zigzag A, Impulse W1/W3/W5)",
+      ":L5": "Last 5 — final motive segment"
+    },
+    "not_implemented": {
+      ":c5": "Continuation 5 — middle motive segment (needs Гл.3 rules)",
+      ":?5": "Unknown motive (5 possible but unconfirmed)",
+      "x:3": "X-wave within double/triple correction"
+    },
+    "notes": "labelSeg() draws position indicators on confirmed patterns. Full classifyRule/classifyCond wiring deferred to Level 5-6 implementation.",
+    "blocker": "Полная логика :F/:c/:L для каждого паттерна требует rules 1-7 и conditions a-f (Гл.3 стр.3-1 до 3-59)"
+  },
+  "pine_implementation": {
+    "pine_file": "pine/ewb_monowaves_mtf.pine",
+    "neely_level": 4,
+    "neely_level_description": "Уровни 1–4: моноволны, предварительный анализ, группировка, подтверждение паттернов. Зигзаг и Терминал добавлены в v4.",
+    "last_audit_date": "2026-06-09",
+    "implemented_rules": {
+      "level_1_monowaves": {
+        "status": "complete",
+        "notes": "ZigZag pivot detection с ATR/PCT порогом разворота"
+      },
+      "level_2_position_rules": {
+        "status": "complete",
+        "aku_ids": ["AKU-0141", "AKU-0142"],
+        "notes": "classifyRule (Правила 1–7) и classifyCond (Условия a–f) реализованы корректно"
+      },
+      "level_3_grouping": {
+        "status": "partial",
+        "aku_ids": ["AKU-0003", "AKU-0166"],
+        "notes": "Подобие и баланс реализованы. Зигзаг 5-3-5 активирован на геометрии (D3). Полные Индикаторы Положения (:F5/:c3/:L5 wiring) не реализованы."
+      },
+      "level_4_pattern_confirmation": {
+        "status": "complete",
+        "aku_ids": ["AKU-0177"],
+        "notes": "Impulse, Flat, Zigzag, Triangle, Terminal, Double Correction — все подтверждены.",
+        "caveats": [
+          "Zigzag без Position Indicators может перекрываться с Impulse tail (D3, low false-positive risk на чистой 5-3-5 структуре)",
+          "Terminal требует подтверждения через Гл.5 полный набор правил — реализован упрощённый confirmTerminal"
+        ]
+      },
+      "level_5_post_pattern": {
+        "status": "partial",
+        "aku_ids": ["AKU-0213"],
+        "notes": "Energy Rating для всех паттернов включая Terminal (-2/+2), Zigzag (0/0), подтипы Flat"
+      },
+      "level_6_wave_degrees": {
+        "status": "not_implemented",
+        "notes": "Требуется Гл.7 AKU и схема MTF-маппинга Submicro..Supercycle",
+        "blocker": "Нет AKU по Гл.7 — нужен OCR или ручное внесение"
+      },
+      "level_7_channels": {
+        "status": "partial",
+        "aku_ids": ["AKU-0011", "AKU-0054", "AKU-0201", "AKU-0224"],
+        "notes": "Каналы 0-2 и 2-4 для Импульса; W5 Fibonacci проекция; AKU-0224 deadline window"
+      },
+      "level_8_missing_waves": {
+        "status": "not_implemented",
+        "aku_ids": ["AKU-0238"],
+        "blocker": "Уровень 8 — после реализации Уровней 5-7"
+      },
+      "level_9_advanced": {
+        "status": "not_implemented",
+        "notes": "Продвинутые правила логики (Гл.10-12), MTF-синхронизация spec_v5"
+      },
+      "mtf_synchronization": {
+        "status": "partial",
+        "notes": "HTF overlay реализован. Финальная MTF-схема зависит от Level 6 (wave degrees)"
+      }
+    },
+    "deferred": [
+      {
+        "feature": "Position Indicators full wiring (:F/:c/:L → classifyRule/classifyCond)",
+        "blocker": "Требует полной реализации Гл.3 стр.3-1 до 3-59 логики",
+        "aku_ref": "AKU-0141, AKU-0142, AKU-0177"
+      },
+      {
+        "feature": "Zigzag full disambiguation (D3 parity)",
+        "blocker": "Position Indicators :F5/:c3/:L5 не привязаны к classifyRule",
+        "aku_ref": "AKU-0166"
+      },
+      {
+        "feature": "Terminal full confirmation (Гл.5 complete rules)",
+        "blocker": "confirmTerminal использует упрощённый набор правил; полный Гл.5 стр.5-2 набор требует дополнительных AKU",
+        "aku_ref": "AKU-0177"
+      },
+      {
+        "feature": "Wave Degrees / MTF mapping (Level 6)",
+        "blocker": "Нет AKU по Гл.7 степеням волн",
+        "aku_ref": null
+      },
+      {
+        "feature": "Missing waves / Imitation logic (Level 8)",
+        "blocker": "После Уровней 5-7",
+        "aku_ref": "AKU-0238"
+      },
+      {
+        "feature": "ch03 AKU extraction (Informal Logic, Length Ratio Rules)",
+        "blocker": "3 markdown файла готовы: ch03-informal-logic.md, ch03-length-ratio-rules.md",
+        "aku_ref": null
+      }
+    ],
+    "next_milestone": "spec_v5: Level 5-6 (Wave Degrees + full Position Indicators), ch03 AKU extraction"
+  },
+  "fibonacci": {
+    "ratios": [0.236, 0.382, 0.5, 0.618, 0.786, 1.0, 1.272, 1.618, 2.618],
+    "key_uses": {
+      "W2_max_retrace": 0.618,
+      "W4_typical_retrace": 0.382,
+      "zigzag_B_max": 0.618,
+      "zigzag_C_min": 0.618,
+      "flat_B_min": 0.618,
+      "flat_C_min": 0.618,
+      "flat_C_extended": 1.382,
+      "W5_projection_from_W3": 1.618,
+      "triangle_thrust_min": 0.618
+    }
+  },
+  "parity_deviations": {
+    "D1": {
+      "status": "closed",
+      "description": "W2 retrace threshold 0.618 — Python и Pine совпадают"
+    },
+    "D2": {
+      "status": "closed",
+      "description": "Flat B-wave min 0.618 — исправлено в FIX-1A"
+    },
+    "D3": {
+      "status": "partial",
+      "description": "Zigzag (5-3-5) — геометрия активирована в v4; Position Indicators wiring отложен",
+      "pine_behavior": "confirmZigzag активен, backtest impact TBD"
+    },
+    "D4": {
+      "status": "closed_deferred",
+      "description": "Triangle e<c severity W (warning only) — backtest impact=0, оставлено как есть"
+    },
+    "D5": {
+      "status": "closed",
+      "description": "W2 retrace impulse count — 0 impulse trades, нет влияния"
+    }
+  },
+  "summary": {
+    "total_aku": 322,
+    "total_verified": 316,
+    "total_formalized_draft": 254,
+    "patterns_implemented": 6,
+    "patterns_total": 8,
+    "pine_level_reached": 4,
+    "pine_functions": [
+      "confirmImpulse", "confirmFlat", "confirmZigzag", "confirmTriangle",
+      "confirmTerminal", "hybridImpulseOK", "hybridTriangleOK",
+      "hybridZigzagOK", "hybridMovingFlatOK", "hybridDoubleCorrOK",
+      "energyRating", "drawEnergy", "drawImpulseChannels", "drawMotionLabels",
+      "labelSeg", "compactFigure", "matchFigure"
+    ],
+    "coverage": "Гл.2-6 охвачены на уровне геометрии. Гл.7-12 — частично или не реализованы."
+  }
+}

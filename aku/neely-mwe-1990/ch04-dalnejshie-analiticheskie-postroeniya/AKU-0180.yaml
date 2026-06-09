@@ -22,11 +22,42 @@ source:
       волн, образующих Серию "F3-c3-L5".
     language: ru
 formalization:
-  status: draft
-  applies_when: starting wave grouping process
-  constraint: 'cycle_1: assign structural_labels → isolate groups of 3 or 5 → match
-    Structural Series A-E'
-  formalization_notes: null
+  status: partially_formalizable
+  applies_when: '# Применяется в начале процедуры группировки (Compaction),
+
+    # когда все моноволны на графике уже имеют структурные обозначения (Глава 3)
+
+    all_monowaves_have_structural_labels == true
+
+    AND grouping_cycle == 1
+
+    '
+  constraint: "# Цикл 1 процедуры группировки (Compaction):\n\n# Шаг 1: Присвоить\
+    \ структурные обозначения всем моноволнам\nfor each monowave in chart:\n    assign_structural_label(monowave)\
+    \  # по правилам Главы 3\n\n# Шаг 2: Выделить обособленные группы из 3 или 5 смежных\
+    \ моноволн\n# Группа \"обособлена\" = можно изолировать от соседних волн\nfor\
+    \ i in range(0, len(monowaves)):\n    # Попытка выделить группу из 3 моноволн\n\
+    \    group_3 = monowaves[i : i + 3]\n    structural_series_3 = extract_structural_series(group_3)\n\
+    \    # например \"F3-c3-L5\"\n    \n    # Попытка выделить группу из 5 моноволн\n\
+    \    group_5 = monowaves[i : i + 5]\n    structural_series_5 = extract_structural_series(group_5)\n\
+    \n# Шаг 3: Сопоставить полученную Структурную Серию\n# с одной из допустимых серий\
+    \ (A, B, C, D, E) из таблиц Глав 5-12\nfor each isolated_group in [group_3, group_5]:\n\
+    \    series = extract_structural_series(isolated_group)\n    matched_pattern =\
+    \ lookup_structural_series(series, tables_chapters_5_to_12)\n    \n    if matched_pattern\
+    \ != null:\n        # Проверить правила соответствующей главы (5-12)\n       \
+    \ validate_rules(isolated_group, matched_pattern)\n        \n        if validation_passed:\n\
+    \            # Группа идентифицирована как паттерн,\n            # может быть\
+    \ \"сжата\" (compacted) в одну волну следующего порядка\n            compact_group(isolated_group,\
+    \ matched_pattern)\n"
+  formalization_notes: "1. Правило описывает процедурный алгоритм (workflow), а не\
+    \ числовое ограничение,\n   поэтому полная формализация в виде простого constraint\
+    \ затруднена.\n2. Критерий \"обособленности\" (isolate) группы не определён формально\
+    \ в данном AKU —\n   он зависит от контекста структурных обозначений и смежных\
+    \ волн.\n3. Конкретные допустимые Структурные Серии (A-E) и правила проверки\n\
+    \   содержатся в Главах 5-12 и должны быть формализованы отдельно.\n4. Функция\
+    \ extract_structural_series() формирует строку вида \"F3-c3-L5\"\n   из последовательности\
+    \ структурных меток моноволн в группе.\n5. Verbatim quote подтверждает пример:\
+    \ серия \"F3-c3-L5\" выделена из группы волн."
 aliases: []
 related_aku: []
 contradicts_aku: []

@@ -1,11 +1,12 @@
 id: AKU-0289
 type: heuristic
 strength: heuristic
-status: draft
+status: verified
 topic: trading-application
 subtopics:
 - wave-identification
-statement_ru: Для тренда после ползущей коррекции автор предлагает искать место входа у линии прорыва по схемам.
+statement_ru: Для тренда после ползущей коррекции автор предлагает искать место входа
+  у линии прорыва по схемам.
 statement_en: null
 source:
   book_id: intraday-l07-moving-correction
@@ -30,5 +31,8 @@ extends_aku: null
 supersedes_aku: null
 created_by: claude
 created_at: '2026-06-04T22:03:00Z'
-review_notes: 'Sprint 3 pool 2: heuristics. Конкретные схемы находятся в изображениях; требуется Vision/human review.'
-requires_review: true
+review_notes: 'Sprint 3 pool 2: heuristics. Конкретные схемы находятся в изображениях;
+  требуется Vision/human review.
+
+  Reviewed and approved by Anton 2026-06-09.'
+requires_review: false

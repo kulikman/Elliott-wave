@@ -1,11 +1,13 @@
 id: AKU-0272
 type: heuristic
 strength: heuristic
-status: draft
+status: verified
 topic: trading-application
 subtopics:
 - wave-identification
-statement_ru: Сделки для положительного замка автор рекомендует открывать на M1-M5, чтобы своевременно доливаться, точнее входить на разворотах и снижать потери на стопах.
+statement_ru: Сделки для положительного замка автор рекомендует открывать на M1-M5,
+  чтобы своевременно доливаться, точнее входить на разворотах и снижать потери на
+  стопах.
 statement_en: null
 source:
   book_id: intraday-l02-positive-lock
@@ -14,7 +16,16 @@ source:
   section: Базовая техника
   figure_id: null
   verbatim_quote:
-    text: "Сделки для Положительного Замка лучше открывать на М1-М5.\n\n![](data:image/jpeg;base64...)\n\nЭто позволит своевременно «доливаться», открывать сделки точно\n\nна разворотах и минимизировать потери на стопах."
+    text: 'Сделки для Положительного Замка лучше открывать на М1-М5.
+
+
+      ![](data:image/jpeg;base64...)
+
+
+      Это позволит своевременно «доливаться», открывать сделки точно
+
+
+      на разворотах и минимизировать потери на стопах.'
     language: ru
 formalization:
   status: not_attempted
@@ -30,5 +41,8 @@ extends_aku: null
 supersedes_aku: null
 created_by: claude
 created_at: '2026-06-04T21:02:00Z'
-review_notes: 'Sprint 3 pool 2: heuristics. Это практическая рекомендация по таймфрейму и управлению входом, не формализованное волновое правило.'
-requires_review: true
+review_notes: 'Sprint 3 pool 2: heuristics. Это практическая рекомендация по таймфрейму
+  и управлению входом, не формализованное волновое правило.
+
+  Reviewed and approved by Anton 2026-06-09.'
+requires_review: false

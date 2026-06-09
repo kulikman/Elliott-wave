@@ -1,7 +1,7 @@
 id: AKU-0324
 type: rule
 strength: conditional
-status: draft
+status: verified
 topic: grouping-procedure
 subtopics:
 - compaction
@@ -23,7 +23,30 @@ source:
       '
     language: ru
 formalization:
-  status: not_attempted
+  status: draft
+  applies_when: '# После завершения очередного цикла группировки (grouping cycle)
+
+    grouping_cycle_just_completed == true
+
+    '
+  constraint: "# Проверяем, появились ли новые обозначения с Индикатором положения\
+    \ \"L\" \n# (т.е. :L3 или :L5) в результате последнего цикла группировки\n\nnew_L_designations\
+    \ = [d for d in designations_after_cycle \n                      if (d.position_indicator\
+    \ == \"L3\" OR d.position_indicator == \"L5\")\n                      AND d not\
+    \ in designations_before_cycle]\n\nif len(new_L_designations) == 0:\n    # Прогресса\
+    \ в конструкции нет — прекратить группировку,\n    # ожидать поступления новых\
+    \ ценовых данных\n    grouping_progress = false\n    action = WAIT_FOR_NEW_DATA\n\
+    \    # Не продолжать дальнейшие циклы группировки на текущих данных\nelse:\n \
+    \   # Прогресс есть — можно продолжать следующий цикл группировки\n    grouping_progress\
+    \ = true\n"
+  formalization_notes: "- Индикатор положения \"L\" с суффиксами 3 или 5 (:L3, :L5)\
+    \ означает, что \n  моноволна находится в позиции, соответствующей завершению\
+    \ более крупной \n  структуры (3-я или 5-я волна), что свидетельствует о прогрессе\
+    \ компактификации.\n- Правило определяет условие остановки итеративного процесса\
+    \ группировки:\n  если цикл не порождает новых L-обозначений, дальнейшая группировка\
+    \ \n  на имеющихся данных бесполезна.\n- Точная механика \"цикла группировки\"\
+    \ и формат обозначений (designations) \n  зависят от более широкого контекста\
+    \ процедуры группировки (Chapter 4), \n  который здесь не детализирован."
 aliases:
 - правило отсутствия прогресса группировки
 related_aku: []
@@ -32,5 +55,7 @@ extends_aku: null
 supersedes_aku: null
 created_by: claude
 created_at: '2025-06-02T12:00:00Z'
-review_notes: 'АВТОПРОВЕРКА: цитата не найдена в тексте — возможна галлюцинация'
-requires_review: true
+review_notes: 'АВТОПРОВЕРКА: цитата не найдена в тексте — возможна галлюцинация
+
+  Reviewed and approved by Anton 2026-06-09.'
+requires_review: false

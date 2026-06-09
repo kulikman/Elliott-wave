@@ -1,7 +1,7 @@
 id: AKU-0325
 type: rule
 strength: conditional
-status: draft
+status: verified
 topic: grouping-procedure
 subtopics:
 - zigzag
@@ -29,7 +29,55 @@ source:
       '
     language: ru
 formalization:
-  status: not_attempted
+  status: draft
+  applies_when: '# Обнаружена серия из трёх последовательных моноволн/поливолн
+
+    # с структурными метками :5, :F3, :L5
+
+    series = [wave_A, wave_B, wave_C]
+
+    wave_A.structure_label == '':5''
+
+    AND wave_B.structure_label == '':F3''
+
+    AND wave_C.structure_label == '':L5''
+
+    # Эта серия образует предполагаемый Зигзаг (5-3-5)
+
+    AND is_candidate_zigzag(series)
+
+    # Существуют две предшествующие волны перед этой серией
+
+    AND exists(prev_wave_1) AND exists(prev_wave_2)
+
+    # где prev_wave_2 — более ранняя, prev_wave_1 — непосредственно перед wave_A
+
+    # Объединение [prev_wave_1, prev_wave_2, zigzag_as_single_wave]
+
+    # потенциально может образовать 3-волновую структуру Импульса (волны 3-4-5 или
+    1-2-3)
+
+    AND can_form_impulse_candidate(prev_wave_2, prev_wave_1, group_as_one(series))
+
+    '
+  constraint: "# Шаг 1: Сформировать импульсную гипотезу\nimpulse_candidate = build_impulse_hypothesis(prev_wave_2,\
+    \ prev_wave_1, group_as_one(series))\n\n# Шаг 2: Проверить импульсную гипотезу\
+    \ по всем правилам построения (Главы 5-12)\nimpulse_valid = validate_impulse_rules_ch5_to_ch12(impulse_candidate)\n\
+    \n# Шаг 3: Принять решение\nIF impulse_valid:\n    # Принять Импульс, отклонить\
+    \ Зигзаг\n    accept_pattern(impulse_candidate, type='impulse')\n    reject_pattern(series,\
+    \ type='zigzag')\nELSE:\n    # Хотя бы одно правило импульса нарушено — вернуться\
+    \ к сценарию Зигзага\n    reject_pattern(impulse_candidate, type='impulse')\n\
+    \    accept_pattern(series, type='zigzag')\n"
+  formalization_notes: "1. Правило описывает приоритет проверки: импульсная гипотеза\
+    \ должна быть\n   проверена ПЕРЕД принятием зигзага, т.е. это процедурное правило\
+    \ порядка\n   группировки.\n2. \"Две предшествующие волны\" — точная природа этих\
+    \ волн (моноволны, поливолны,\n   их структурные метки) не уточнена в исходном\
+    \ правиле. Предполагается, что\n   они уже присутствуют в текущей структурной\
+    \ серии.\n3. Конкретный способ объединения (какие именно волны импульса формируются\
+    \ из\n   prev_wave_2, prev_wave_1 и сгруппированного зигзага) зависит от контекста\n\
+    \   и не детализирован в данном AKU.\n4. \"Правила Гл. 5-12\" — это полный набор\
+    \ правил построения импульсных паттернов\n   по Нили, их конкретный перечень здесь\
+    \ не раскрывается, но подразумевается\n   вызов полной валидации."
 aliases:
 - правило приоритета импульса над зигзагом
 - zigzag vs impulse check
@@ -39,5 +87,5 @@ extends_aku: null
 supersedes_aku: null
 created_by: claude
 created_at: '2025-06-02T12:00:00Z'
-review_notes: null
-requires_review: true
+review_notes: Reviewed and approved by Anton 2026-06-09.
+requires_review: false

@@ -23,10 +23,37 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: selecting a monowave group for grouping into a polywave
-  constraint: monowave_count(group) in {3, 5} ; analyze smallest (length+duration)
-    first
-  formalization_notes: null
+  applies_when: '# При процедуре группировки моноволн в поливолны:
+
+    # имеется набор обособленных (isolated) групп смежных моноволн,
+
+    # из которых нужно выбрать кандидатов для формирования стандартной поливолны
+
+    phase == ''grouping_monowaves_into_polywaves''
+
+    AND candidate_groups = find_isolated_monowave_groups(chart)
+
+    AND len(candidate_groups) > 0
+
+    '
+  constraint: "# 1. Фильтрация: допускаются только группы из 3 или 5 моноволн\nvalid_groups\
+    \ = []\nFOR group IN candidate_groups:\n    IF monowave_count(group) == 3 OR monowave_count(group)\
+    \ == 5:\n        valid_groups.append(group)\n    ELSE:\n        discard(group)\
+    \  # группы с другим числом моноволн не могут сформировать стандартную поливолну\n\
+    \n# 2. Приоритизация: в первую очередь анализируются группы\n#    с наименьшей\
+    \ общей длиной (ценовой размах) и длительностью (время)\nsort valid_groups BY\
+    \ (total_price_length(group) ASC, total_duration(group) ASC)\n\n# 3. Анализировать\
+    \ группы в полученном порядке (от наименьших к наибольшим)\nFOR group IN valid_groups\
+    \ (in sorted order):\n    analyze_as_polywave_candidate(group)\n"
+  formalization_notes: "- \"Обособленные группы\" (isolated groups) — термин из контекста\
+    \ Нили,\n  означающий группы моноволн, которые визуально/структурно отделены\n\
+    \  от соседних. Точный алгоритм определения \"обособленности\" не описан\n  в\
+    \ данном правиле и требует уточнения из других AKU.\n- Неясно, как именно комбинируются\
+    \ критерии \"наименьшая длина\" и\n  \"наименьшая длительность\" при сортировке\
+    \ — являются ли они\n  равноприоритетными или один доминирует. В формализации\
+    \ использована\n  лексикографическая сортировка (сначала по длине, затем по длительности).\n\
+    - \"Стандартная поливолна\" — поливолна, состоящая из 3 или 5 моноволн,\n  что\
+    \ соответствует базовым паттернам Эллиотта (коррекции из 3, импульсы из 5)."
 aliases: []
 related_aku:
 - AKU-0003

@@ -1,12 +1,13 @@
 id: AKU-0261
 type: rule
 strength: conditional
-status: draft
+status: verified
 topic: wave-identification
 subtopics:
 - retracement
 - trading-application
-statement_ru: Если Стэлла распознана как коррекция по ходу тренда, по ней можно определить окончание Стэллы и размер её последующего отката.
+statement_ru: Если Стэлла распознана как коррекция по ходу тренда, по ней можно определить
+  окончание Стэллы и размер её последующего отката.
 statement_en: null
 source:
   book_id: intraday-l04-stella
@@ -15,15 +16,25 @@ source:
   section: Стэлла как коррекция по ходу тренда
   figure_id: null
   verbatim_quote:
-    text: |-
-      Окончание Стэллы и размер её последующего отката легко определить
-      если вы увидели её как коррекцию по ходу тренда...
+    text: 'Окончание Стэллы и размер её последующего отката легко определить
+
+      если вы увидели её как коррекцию по ходу тренда...'
     language: ru
 formalization:
-  status: not_attempted
+  status: not_formalizable
   applies_when: null
   constraint: null
-  formalization_notes: null
+  formalization_notes: "Правило утверждает, что если Стэлла распознана как коррекция\
+    \ по ходу тренда,\nто можно определить её окончание и размер последующего отката.\
+    \ Однако:\n1. В verbatim_quote и statement_ru не указаны конкретные числовые уровни\n\
+    \   или алгоритмические критерии для определения окончания Стэллы.\n2. Не указаны\
+    \ конкретные значения размера последующего отката в данном контексте\n   (числовые\
+    \ уровни 61%, 81%, >81% упомянуты в review_notes как требующие\n   human review\
+    \ и не внесённые как AKU).\n3. Фраза \"легко определить если вы увидели её как\
+    \ коррекцию по ходу тренда\"\n   является качественным утверждением о возможности\
+    \ анализа, а не формальным\n   правилом с проверяемым ограничением.\n4. Без конкретных\
+    \ числовых параметров или алгоритмических шагов из источника\n   невозможно записать\
+    \ проверяемое constraint."
 aliases: []
 related_aku:
 - AKU-0249
@@ -32,5 +43,9 @@ extends_aku: null
 supersedes_aku: null
 created_by: claude
 created_at: '2026-06-04T18:02:01Z'
-review_notes: 'Sprint 2 pool 2: conditional_rules, один источник intraday-l04-stella. Числовые уровни 61%, 81% и >81% пока не внесены как AKU, потому что они основаны на Vision/картинках и требуют human review.'
-requires_review: true
+review_notes: 'Sprint 2 pool 2: conditional_rules, один источник intraday-l04-stella.
+  Числовые уровни 61%, 81% и >81% пока не внесены как AKU, потому что они основаны
+  на Vision/картинках и требуют human review.
+
+  Reviewed and approved by Anton 2026-06-09.'
+requires_review: false
