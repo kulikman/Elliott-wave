@@ -216,6 +216,55 @@ def test_confirm_triangle_e_wave():
     assert not any("e" in m.lower() for m in msgs), "no e check for 5-pivot triangle"
 
 
+def test_hybrid_impulse_rule67():
+    """Sprint 5 hybrid fallback: impulse with deep W2/W4 (Rule 6-7 in structure matcher)
+    должен находиться через _try_impulse / confirm_impulse напрямую, минуя структурный путь.
+    Rule 6-7 → base=0 в Pine → структурный [5,0,5,0,5] не матчит [5,3,5,3,5].
+    Python _try_impulse работает напрямую по ценам — тест проверяет этот путь.
+    """
+    # Глубокий W2 (80%W1) и глубокий W4 (80%W3) → Rule 6-7 в реальном детекторе,
+    # но геометрически это всё ещё корректный импульс (нет W2/W4 overlap, W3 не min)
+    # Up impulse: p0=100, p1=130 (W1=30), p2=106 (W2=24, 80%W1), p3=160 (W3=54),
+    #             p4=138 (W4=22, 41%W3), p5=185 (W5=47)
+    prices = [100, 130, 106, 160, 138, 185]
+    figs = match_figures(_manual_pivots(prices, [0, 1, -1, 1, -1, 1]))
+    impulses = [f for f in figs if f.type == "impulse"]
+    assert impulses, "Deep-W2 impulse must be found via hybrid geometry path"
+    assert impulses[0].direction == "up"
+
+    # Прямая проверка confirm_impulse (тот же путь что в hybridImpulseOK)
+    r = confirm_impulse(prices, "up")
+    errs = [c for c in r if c.severity == "E" and not c.ok]
+    assert not errs, f"Deep-W2 impulse should have no E-errors, got: {[e.msg for e in errs]}"
+
+    # Убеждаемся что W2 retrace check даёт warning (не error) — это D5
+    w2_check = next((c for c in r if c.aku == "AKU-0127"), None)
+    assert w2_check is not None and w2_check.severity == "W", \
+        "W2 > 61.8%W1 must be Warning (not Error) — D5 design decision"
+
+
+def test_hybrid_triangle_geometry():
+    """Треугольник с неизвестными структурами (все base=0) должен находиться
+    через confirmTriangle напрямую по ценам.
+    """
+    # Сужающийся треугольник: a=20, b=15, c=12, d=9, e=6
+    prices = [100, 120, 105, 117, 108, 114]
+    figs = match_figures(_manual_pivots(prices, [0, 1, -1, 1, -1, 1]))
+    triangles = [f for f in figs if f.type == "triangle"]
+    assert triangles, "Perfect contracting triangle must be found"
+
+    # D4 divergence: Python e<c = severity W (warning, не блокирует all_passed).
+    # Треугольник с e>c находится, но checks содержат failed W-check.
+    # Pine строже (hard bool) — задокументировано в pine_parity_audit.md.
+    prices_bad = [100, 120, 105, 117, 108, 122]  # e=14 > c=12
+    figs_bad = match_figures(_manual_pivots(prices_bad, [0, 1, -1, 1, -1, 1]))
+    bad_tris = [f for f in figs_bad if f.type == "triangle"]
+    assert bad_tris, "Triangle with e>c still found (Python: warning-only D4)"
+    e_warn = [c for c in bad_tris[0].checks if "e" in c.msg and not c.ok]
+    assert e_warn, "Must have failed e<c warning check"
+    assert e_warn[0].severity == "W", "D4: e<c must be W not E (backtest impact=0)"
+
+
 def test_classify_rule_boundaries():
     """Boundary cases for Rule Identifier."""
     cases = [

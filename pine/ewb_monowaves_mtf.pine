@@ -1127,6 +1127,22 @@ matchFigure(array<int> s, array<int> eb, array<float> ep, color c) =>
                 drawEnergy(hfB1, hfHi, "impulse", hfDir == "up" ? 1 : -1, hfLen)
                 compactFigure(s, eb, ep, n, 4, 5)
                 drew := true
+            // Hybrid fallback для треугольника: структурный паттерн [0,0,0,0,0] или
+            // смешанный не совпадает с [3,3,3,3,3], но геометрия сужается.
+            else if not drew
+                [htOK, htMsg] = confirmTriangle(ep, hfi0)
+                if htOK
+                    int htB0 = array.get(eb, hfi0), int htB1 = array.get(eb, n - 1)
+                    float htHi = hfP0, float htLo = hfP0
+                    for i = hfi0 to n - 1
+                        float p = array.get(ep, i)
+                        htHi := math.max(htHi, p)
+                        htLo := math.min(htLo, p)
+                    drawFig("Треуг./Терм. ✅ (hybrid)", htB0, htB1, htLo, htHi, color.new(color.purple, 20))
+                    labelSeg(eb, ep, n - 5, ":F3|:c3|:c3|:sL3|:L3", color.new(color.purple, 20))
+                    drawMotionLabels(eb, ep, hfi0, 6, "0|a|b|c|d|e", color.purple)
+                    compactFigure(s, eb, ep, n, 4, 3)
+                    drew := true
 
     if not drew and n >= 4
         int w1 = array.get(s, n - 3), int w2 = array.get(s, n - 2), int w3 = array.get(s, n - 1)
