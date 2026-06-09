@@ -315,11 +315,15 @@
         "notes": "Energy Rating для всех паттернов включая Terminal (-2/+2), Zigzag (0/0), подтипы Flat"
       },
       "level_6_wave_degrees": {
-        "status": "planned",
+        "status": "partial",
         "aku_ids": ["AKU-0349", "AKU-0350", "AKU-0351", "AKU-0352", "AKU-0353", "AKU-0354", "AKU-0355", "AKU-0356", "AKU-0357", "AKU-0358", "AKU-0359", "AKU-0365"],
-        "notes": "AKU готовы. Требуется реализация degree_from_timeframe() + mtfDegreeSync() в Pine. Степени: SubMicro→GSC (11 уровней).",
         "prerequisite_aku": ["AKU-0360", "AKU-0361", "AKU-0362"],
-        "blocker": "Разработка Pine Уровень 6 — вынесена в Epic E3"
+        "pine_commit": "71eb7ca",
+        "pine_functions": ["degreeIndexFromTF()", "degreeLabel()", "degreeSuffix()", "DEGREE_NAMES"],
+        "pine_inputs": ["showDeg", "degAutoTF", "degManual", "showDegOnHTF"],
+        "implemented": "degree labels on monowave/HTF labels + Wave degree row in panel",
+        "not_implemented": "mtfDegreeSync() — cross-TF degree propagation (деferred to spec_v6)",
+        "notes": "Степени SubMicro→GSC (11 уровней) реализованы в Pine. Input showDeg=false по умолчанию. HTF-метки автоматически +1 Порядок (AKU-0365)."
       },
       "level_7_channels": {
         "status": "partial",
