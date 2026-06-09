@@ -1,6 +1,6 @@
 {
   "spec_version": "3.0",
-  "generated_at": "2026-06-03T18:09:02Z",
+  "generated_at": "2026-06-09T12:22:36Z",
   "generated_from": {
     "books": [
       "neely-mwe-1990"
@@ -8,7 +8,8 @@
     "aku_total": 247,
     "aku_verified": 247,
     "chapters_covered": "2-12 (complete)",
-    "filter": "status=verified"
+    "filter": "status=verified",
+    "audit_applied": "2026-06-09 audit (commits 7a80e3c + 5fc51f2): 15 bugs fixed"
   },
   "neely_methodology": {
     "description": "9-уровневая иерархия анализа Нили (NeoWave)",
@@ -3027,5 +3028,173 @@
       "advanced": 4,
       "foundations": 51
     }
+  },
+  "pine_implementation": {
+    "pine_file": "pine/ewb_monowaves_mtf.pine",
+    "neely_level": 4,
+    "neely_level_description": "Уровни 1–4: моноволны, правила длин/условия, группировка, подтверждение паттернов",
+    "last_audit_date": "2026-06-09",
+    "last_audit_commit": "5fc51f2",
+    "audit_fixes": [
+      {
+        "sprint": "FIX-1A",
+        "line": 1838,
+        "description": "flatCandidate: порог B-волны 0.50 → 0.618 (минимум Нили для Плоской)",
+        "aku_ref": "Neely MWE Гл.5"
+      },
+      {
+        "sprint": "FIX-1B",
+        "line": 614,
+        "description": "hybridDoubleCorrOK: добавлена Y-волна с условием yr >= 0.618 (была неполная валидация)",
+        "aku_ref": null
+      },
+      {
+        "sprint": "FIX-1C",
+        "line": 643,
+        "description": "drawTradeSignal: TP/SL теперь используют actionTargetMult/actionStopMult (визуал совпадает с lastTradeTp/Sl)",
+        "aku_ref": null
+      },
+      {
+        "sprint": "FIX-1D",
+        "line": 584,
+        "description": "hybridFlatOK: добавлена проверка C/A >= 0.618",
+        "aku_ref": "Neely MWE Гл.5"
+      },
+      {
+        "sprint": "FIX-2A",
+        "line": 531,
+        "description": "confirmImpulse: r5 (W2/W4 non-overlap) стал обязательным в bool ok",
+        "aku_ref": "AKU-0009"
+      },
+      {
+        "sprint": "FIX-2B",
+        "line": 535,
+        "description": "r7 сообщение исправлено: W1≈W3≈W4 → W1≈W3≈W5 (lw4 ≠ W5)"
+      },
+      {
+        "sprint": "FIX-2C",
+        "line": 538,
+        "description": "confirmFlat: добавлена проверка C/A >= 0.618; исправлен комментарий",
+        "aku_ref": "Neely MWE Гл.5"
+      },
+      {
+        "sprint": "FIX-2D",
+        "line": 1064,
+        "description": "matchFigure Flat: n >= 3 → n >= 4 (при n=3 startIdx указывал на endA, не на origin)"
+      },
+      {
+        "sprint": "FIX-3A",
+        "line": 490,
+        "description": "drawImpulseChannels: W5 target = p3 + 1.618*(p3-p0), было p2 + 1.618*(p2-p0)",
+        "aku_ref": "AKU-0201"
+      },
+      {
+        "sprint": "FIX-3B",
+        "line": 507,
+        "description": "confirmImpulse: добавлен lw5 (guard array.size); r3 = W3>=W1 and W3>=W5; r7 проверяет W1/W3/W5",
+        "aku_ref": "AKU-0002"
+      },
+      {
+        "sprint": "FIX-3C",
+        "line": 1009,
+        "description": "AKU-0224: w5dur = tb5-tb4 (было tb4-tb3=длительность W4); дедлайн = tb5+w5dur; guard n>=6",
+        "aku_ref": "AKU-0224"
+      },
+      {
+        "sprint": "FIX-3D",
+        "line": 554,
+        "description": "confirmTriangle: добавлена проверка e<c (guard array.size); drawMotionLabels OOB fixed для n=5",
+        "aku_ref": "AKU-0018"
+      },
+      {
+        "sprint": "FIX-4A",
+        "line": 909,
+        "description": "energyRating: добавлены подтипы flat_ordinary (E=0) и flat_extended (E=+1/-1)",
+        "aku_ref": "AKU-0213"
+      },
+      {
+        "sprint": "FIX-4B (wiring)",
+        "line": 1116,
+        "description": "matchFigure Flat: подтип определяется по C/A; flat_ordinary/flat/flat_extended передаётся в drawEnergy",
+        "aku_ref": "AKU-0213"
+      },
+      {
+        "sprint": "OOB-fix",
+        "line": 1020,
+        "description": "drawMotionLabels для импульса при n=5: guard impLabelCount/impLabels (n>=6 ? 6:5)"
+      }
+    ],
+    "implemented_rules": {
+      "level_1_monowaves": {
+        "status": "complete",
+        "notes": "ZigZag pivot detection с ATR/PCT порогом разворота"
+      },
+      "level_2_position_rules": {
+        "status": "complete",
+        "aku_ids": [
+          "AKU-0141",
+          "AKU-0142"
+        ],
+        "notes": "classifyRule (Правила 1–7) и classifyCond (Условия a–f) реализованы корректно"
+      },
+      "level_3_grouping": {
+        "status": "partial",
+        "aku_ids": [
+          "AKU-0003"
+        ],
+        "notes": "Правило подобия и баланса реализовано; Индикаторы Положения (Гл.3 стр.3-60+) не реализованы → Зигзаг подавлен"
+      },
+      "level_4_pattern_confirmation": {
+        "status": "complete",
+        "notes": "Impulse, Flat, Triangle, Double Correction — подтверждение реализовано",
+        "caveats": [
+          "Terminal vs Triangle: оба детектируются как 3-3-3-3-3, compaction → :3 (безопасный режим); различение через AKU-0177 не реализовано",
+          "Zigzag (5-3-5) подавлен: неотличим от хвоста Импульса без Индикаторов Положения"
+        ]
+      },
+      "level_5_post_pattern": {
+        "status": "partial",
+        "aku_ids": [
+          "AKU-0213"
+        ],
+        "notes": "Energy Rating реализован для всех паттернов включая подтипы плоской (flat_ordinary/flat/flat_extended)"
+      },
+      "level_7_channels": {
+        "status": "partial",
+        "aku_ids": [
+          "AKU-0011",
+          "AKU-0054",
+          "AKU-0201",
+          "AKU-0224"
+        ],
+        "notes": "Каналы 0-2 и 2-4 для Импульса; W5 Fibonacci проекция; AKU-0224 временное окно"
+      },
+      "mtf_synchronization": {
+        "status": "partial",
+        "notes": "HTF overlay реализован; финальная спецификация зависит от spec_v4 с Уровнями 5-9"
+      }
+    },
+    "deferred": [
+      {
+        "feature": "Zigzag (5-3-5) detection",
+        "blocker": "Требуются Индикаторы Положения (Гл.3 стр.3-60+, AKU-0166); OCR глав 2-4 не завершён",
+        "aku_ref": "AKU-0166"
+      },
+      {
+        "feature": "Terminal vs Triangle disambiguation",
+        "blocker": "Требуется полная логика AKU-0177 (Гл.5 стр.5-2)",
+        "aku_ref": "AKU-0177"
+      },
+      {
+        "feature": "Missing waves / Imitation logic",
+        "blocker": "Уровень 8 — после реализации Уровней 5-7",
+        "aku_ref": "AKU-0238"
+      },
+      {
+        "feature": "OCR глав 2-4 → AKU",
+        "blocker": "Нет API кредитов"
+      }
+    ],
+    "next_milestone": "spec_v4: Уровни 5-9 после OCR глав 2-4 и реализации Индикаторов Положения"
   }
 }
