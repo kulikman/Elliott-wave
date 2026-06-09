@@ -1749,7 +1749,7 @@ if showFig and rc.ruleNo > 0
         array.shift(figEndBar)
         array.shift(figEndPx)
     if base > 0
-        [bool _mfDrew, string _mfType] = matchFigure(figStruct, figEndBar, figEndPx, colFig, mLblBarArr, mLblRefArr)
+        [_mfDrew, _mfType] = matchFigure(figStruct, figEndBar, figEndPx, colFig, mLblBarArr, mLblRefArr)
         patConfType := _mfType
 
 // ── Hybrid trade matcher: подтверждённые пивоты текущего ТФ ──
