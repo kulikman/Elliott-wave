@@ -150,28 +150,42 @@ def confirm_flat(prices: list[float]) -> list[CheckResult]:
         ok = r >= 0.618
         results.append(CheckResult(ok, "O" if ok else "E",
             f"B={r*100:.0f}%≥61.8%A" if ok else f"B={r*100:.0f}%<61.8%A", "AKU-0017"))
-    # AKU-0025: C ≈ A (within ±20%)
+    # Neely Гл.5: C ≥ 61.8%A (минимальный порог, как в Pine confirmFlat)
+    # Дополнительно: C ≈ A (80-120%) — нейтральная инфо-метка о подтипе
     if a > 0:
         r = c / a
-        ok = 0.8 <= r <= 1.2
-        results.append(CheckResult(ok, "O" if ok else "N",
-            f"C≈A ({r*100:.0f}%)" if ok else f"C/A={r*100:.0f}% расш/неуд?", "AKU-0025"))
+        c_min_ok = r >= 0.618
+        results.append(CheckResult(c_min_ok, "O" if c_min_ok else "E",
+            f"C={r*100:.0f}%≥61.8%A" if c_min_ok else f"C={r*100:.0f}%<61.8%A", "AKU-0025"))
+        # Subtype info (neutral)
+        c_approx_ok = 0.8 <= r <= 1.2
+        results.append(CheckResult(c_approx_ok, "N",
+            f"C≈A обыкн." if c_approx_ok else ("C>138%A расш." if r > 1.382 else "C<80%A неуд-с"), "AKU-0213"))
     return results
 
 
 # ─────────── TRIANGLE (AKU-0018) ──────────
 
 def confirm_triangle(prices: list[float]) -> list[CheckResult]:
-    """Triangle = 3-3-3-3-3. prices = [p0..p5], waves a,b,c,d,e."""
+    """Triangle = 3-3-3-3-3. prices = [p0..p5], waves a,b,c,d,e.
+    При len>=6 также проверяет e < c (как Pine confirmTriangle при n>=6).
+    """
     assert len(prices) >= 5
     w1 = abs(prices[1] - prices[0])
     w2 = abs(prices[2] - prices[1])
     w3 = abs(prices[3] - prices[2])
     w4 = abs(prices[4] - prices[3])
-    ok = w3 < w1 and w4 < w2
-    return [CheckResult(ok, "O" if ok else "W",
-        "W3<W1, W4<W2 сужается" if ok else
-        f"Не сужается W3/W1={w3/w1 if w1>0 else 0:.2f}", "AKU-0018")]
+    ok_cd = w3 < w1 and w4 < w2
+    results = [CheckResult(ok_cd, "O" if ok_cd else "W",
+        "c<a, d<b сужается" if ok_cd else
+        f"Не сужается c/a={w3/w1 if w1>0 else 0:.2f} d/b={w4/w2 if w2>0 else 0:.2f}", "AKU-0018")]
+    if len(prices) >= 6:
+        w5 = abs(prices[5] - prices[4])
+        ok_e = w5 < w3
+        results.append(CheckResult(ok_e, "O" if ok_e else "W",
+            f"e<c e/c={w5/w3 if w3>0 else 0:.2f}" if ok_e else
+            f"e≥c e/c={w5/w3 if w3>0 else 0:.2f}", "AKU-0018"))
+    return results
 
 
 def all_passed(results: list[CheckResult]) -> bool:

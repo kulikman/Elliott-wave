@@ -195,17 +195,21 @@ def _try_double_corr(pivots: list[Pivot], i: int) -> Figure | None:
     direction = "up" if pts[1].direction > 0 else "down"
     len1 = abs(prices[1] - prices[0])
     lenX = abs(prices[2] - prices[1])
+    lenY = abs(prices[3] - prices[2])
     if len1 <= 0:
         return None
     x_ratio = lenX / len1
-    # x must be small but not vanishing
+    y_ratio = lenY / len1
+    # x must be small but not vanishing; Y must be significant (≥61.8% W)
     if not (0.1 < x_ratio < 0.618):
+        return None
+    if y_ratio < 0.618:
         return None
     return Figure(
         type="double_corr", direction=direction,
         start_idx=pts[0].idx, end_idx=pts[-1].idx, pivots=pts,
         confirmed=True,
-        checks=[CheckResult(True, "O", f"x={x_ratio*100:.0f}%<61.8%", "AKU-0185")],
+        checks=[CheckResult(True, "O", f"x={x_ratio*100:.0f}%<61.8% y={y_ratio*100:.0f}%≥61.8%", "AKU-0185")],
         motion_labels=["0", "W", "X", "Y"],
         structure_labels=[":F3", "x:c3", ":F3"],
     )
