@@ -374,6 +374,7 @@ method step(ZZState s, float h, float l, float rev) =>
 
 // Отрисовка одной завершившейся моноволны
 drawMono(ZZResult r, color cUp, color cDn, int width, bool isHTF, color cHTF, bool lbl) =>
+    label monoL = na
     if r.confirmed and not na(r.prevBar)
         col = isHTF ? cHTF : (r.dir > 0 ? cUp : cDn)
         line.new(r.prevBar, r.prevPrice, r.bar, r.price,
@@ -382,11 +383,12 @@ drawMono(ZZResult r, color cUp, color cDn, int width, bool isHTF, color cHTF, bo
         if lbl
             prefix = isHTF ? "M" : "m"
             yloc_  = r.dir > 0 ? yloc.abovebar : yloc.belowbar
-            label.new(r.bar, r.price, prefix + str.tostring(r.idx),
+            monoL := label.new(r.bar, r.price, prefix + str.tostring(r.idx),
                  xloc = xloc.bar_index, yloc = yloc_,
                  style = r.dir > 0 ? label.style_label_down : label.style_label_up,
                  color = isHTF ? cHTF : (r.dir > 0 ? cUp : cDn),
                  textcolor = color.white, size = isHTF ? size.normal : size.small)
+    monoL
 
 waveDirText(int dir) =>
     dir > 0 ? "UP" : dir < 0 ? "DOWN" : "NEUTRAL"
@@ -475,6 +477,21 @@ labelSeg(array<int> eb, array<float> ep, int firstIdx, string lset, color c) =>
         label.new(array.get(eb, firstIdx + i), array.get(ep, firstIdx + i), array.get(parts, i),
              xloc = xloc.bar_index, yloc = yloc.price, style = label.style_label_up,
              color = color.new(c, 45), textcolor = color.white, size = size.tiny)
+
+// Ретроактивное обновление меток моноволн (m0/m1/...) добавляет Индикатор Положения
+// к уже нарисованным лейблам. mBars/mLbls — скользящее окно ссылок из drawMono.
+retroUpdatePI(array<int> eb, array<float> ep, int firstIdx, string piSet,
+              array<int> mBars, array<label> mLbls) =>
+    array<string> parts = str.split(piSet, "|")
+    int mSz = array.size(mBars)
+    for i = 0 to array.size(parts) - 1
+        int targetBar = array.get(eb, firstIdx + i)
+        string pi = array.get(parts, i)
+        for j = 0 to mSz - 1
+            if array.get(mBars, j) == targetBar
+                label lRef = array.get(mLbls, j)
+                label.set_text(lRef, label.get_text(lRef) + " " + pi)
+                break
 
 // Метки Движения (Motion Labels) — нумерация волн на подтверждённой фигуре.
 // Импульс: 1 2 3 4 5 на пивотах. Коррекция: A B C. Треугольник: a b c d e.
@@ -1061,7 +1078,8 @@ compactFigure(array<int> s, array<int> eb, array<float> ep,
 
 // Сопоставляет хвост последовательности базовых структур (5/3) со Структурными Сериями.
 // Приоритет 5-элементных шаблонов (Импульс/Треугольник) — правило 'Зигзаг или Импульс?'.
-matchFigure(array<int> s, array<int> eb, array<float> ep, color c) =>
+matchFigure(array<int> s, array<int> eb, array<float> ep, color c,
+            array<int> mBars, array<label> mLbls) =>
     int n = array.size(s)
     bool drew = false
     if n >= 5
@@ -1084,6 +1102,7 @@ matchFigure(array<int> s, array<int> eb, array<float> ep, color c) =>
             color fc = impOK ? color.new(color.green, 20) : color.new(color.red, 20)
             drawFig(nm, b0, b1, lo, hi, fc)
             labelSeg(eb, ep, n - 5, ":5|:F3|:5|:F3|:L5", fc)
+            retroUpdatePI(eb, ep, n - 5, ":5|:F3|:5|:F3|:L5", mBars, mLbls)
             if impOK
                 // AKU-0205: проверка соотношения длительностей волн (3 не могут быть равны)
                 int tb0 = array.get(eb, pi0),  int tb1 = array.get(eb, pi0+1)
@@ -1135,6 +1154,7 @@ matchFigure(array<int> s, array<int> eb, array<float> ep, color c) =>
             color fc = confirmed ? (termOK ? color.new(color.orange, 20) : color.new(color.purple, 20)) : color.new(color.red, 20)
             drawFig(nm, b0, b1, lo, hi, fc)
             labelSeg(eb, ep, n - 5, ":F3|:c3|:c3|:sL3|:L3", fc)
+            retroUpdatePI(eb, ep, n - 5, ":F3|:c3|:c3|:sL3|:L3", mBars, mLbls)
             if confirmed
                 int triLabelCount = n >= 6 ? 6 : 5
                 string triLabels  = n >= 6 ? "0|a|b|c|d|e" : "0|a|b|c|d"
@@ -1208,6 +1228,7 @@ matchFigure(array<int> s, array<int> eb, array<float> ep, color c) =>
                     hfLo := math.min(hfLo, p)
                 drawFig("Импульс ✅ (hybrid)", hfB0, hfB1, hfLo, hfHi, color.new(color.green, 20))
                 labelSeg(eb, ep, n - 5, ":5|:F3|:5|:F3|:L5", color.new(color.green, 20))
+                retroUpdatePI(eb, ep, n - 5, ":5|:F3|:5|:F3|:L5", mBars, mLbls)
                 drawImpulseChannels(eb, ep, hfi0, color.green)
                 drawMotionLabels(eb, ep, hfi0, 6, "0|1|2|3|4|5", color.green)
                 float hfLen = math.abs(hfP5 - hfP0)
@@ -1237,6 +1258,7 @@ matchFigure(array<int> s, array<int> eb, array<float> ep, color c) =>
                     color htColor = htTermOK ? color.new(color.orange, 20) : color.new(color.purple, 20)
                     drawFig(htNm, htB0, htB1, htLo, htHi, htColor)
                     labelSeg(eb, ep, n - 5, ":F3|:c3|:c3|:sL3|:L3", htColor)
+                    retroUpdatePI(eb, ep, n - 5, ":F3|:c3|:c3|:sL3|:L3", mBars, mLbls)
                     drawMotionLabels(eb, ep, hfi0, 6, "0|a|b|c|d|e", htTermOK ? color.orange : color.purple)
                     compactFigure(s, eb, ep, n, 4, htCompact)
                     drew := true
@@ -1259,6 +1281,7 @@ matchFigure(array<int> s, array<int> eb, array<float> ep, color c) =>
             color fc = flatOK ? color.new(color.teal, 20) : color.new(color.red, 20)
             drawFig(nm, b0, b1, lo, hi, fc)
             labelSeg(eb, ep, n - 3, ":F3|:c3|:?5", fc)
+            retroUpdatePI(eb, ep, n - 3, ":F3|:c3|:?5", mBars, mLbls)
             if flatOK
                 drawMotionLabels(eb, ep, n - 4, 4, "0|A|B|C", color.teal)
                 float flatDir = array.get(ep, n-3) > array.get(ep, n-4) ? 1.0 : -1.0
@@ -1285,12 +1308,18 @@ matchFigure(array<int> s, array<int> eb, array<float> ep, color c) =>
             color zzColor = zzOK ? color.new(color.blue, 20) : color.new(color.red, 20)
             drawFig(zzNm, b0, b1, lo, hi, zzColor)
             labelSeg(eb, ep, n - 3, ":F5|:c3|:L5", zzColor)
+            retroUpdatePI(eb, ep, n - 3, ":F5|:c3|:L5", mBars, mLbls)
             if zzOK
                 drawMotionLabels(eb, ep, zzI0, 4, "0|A|B|C", color.blue)
                 float zzLen = math.abs(array.get(ep, n-1) - array.get(ep, zzI0))
                 float zzFadeDir = zzDir == "up" ? 1.0 : -1.0
                 drawEnergy(b1, hi, "zigzag", int(zzFadeDir), zzLen)
                 compactFigure(s, eb, ep, n, 2, 3)  // Зигзаг → :3 (коррекция)
+
+// Скользящее окно ссылок на метки моноволн — используется retroUpdatePI
+// для добавления Индикаторов Положения к m0/m1/... после подтверждения фигуры.
+var array<int>   mLblBarArr = array.new<int>()
+var array<label> mLblRefArr = array.new<label>()
 
 // ──────────────────── ПОРОГ РАЗВОРОТА (текущий ТФ) ───────────────
 revC = useATR ? ta.atr(atrLen) * atrMult : close * pctRev / 100.0
@@ -1304,7 +1333,13 @@ var array<float> latestPivotPrices = array.new<float>()
 var array<label> latestPivotLabels = array.new<label>()
 ZZResult rc = zC.step(high, low, revC)
 if showC
-    drawMono(rc, colCUp, colCDn, wC, false, colH, showLbl)
+    label newMl = drawMono(rc, colCUp, colCDn, wC, false, colH, showLbl)
+    if not na(newMl)
+        array.push(mLblBarArr, rc.bar)
+        array.push(mLblRefArr, newMl)
+        while array.size(mLblBarArr) > 20
+            array.shift(mLblBarArr)
+            array.shift(mLblRefArr)
 if rc.confirmed and not na(rc.prevBar)
     if array.size(latestPivotBars) == 0
         array.push(latestPivotBars, rc.prevBar)
@@ -1389,7 +1424,7 @@ if showFig and rc.ruleNo > 0
         array.shift(figEndBar)
         array.shift(figEndPx)
     if base > 0
-        matchFigure(figStruct, figEndBar, figEndPx, colFig)
+        matchFigure(figStruct, figEndBar, figEndPx, colFig, mLblBarArr, mLblRefArr)
 
 // ── Hybrid trade matcher: подтверждённые пивоты текущего ТФ ──
 var array<int>   hybBar  = array.new<int>()
