@@ -628,9 +628,11 @@ confirmImpulse(array<float> ep, int i0, string dir) =>
     bool r1 = dir == "up" ? p2px > p0px : p2px < p0px
     // AKU-0005: W4 не пробивает старт W3
     bool r2 = dir == "up" ? p4px > p2px : p4px < p2px
-    // AKU-0002/0007: W3 не может быть самой короткой из W1/W3/W5
-    bool r3 = lw3 >= lw1 and (na(lw5) or lw3 >= lw5)
-    // AKU-0127: W2 <= 61.8% W1
+    // AKU-0002/0007: W3 не может быть САМОЙ КОРОТКОЙ. Нарушение — только если короче
+    // ОБЕИХ (W1 И W5). Консистентно с python/ewb/confirm.py:imp_w3_not_shortest.
+    bool r3 = na(lw5) ? lw3 >= lw1 : not (lw3 < lw1 and lw3 < lw5)
+    // AKU-0127: терминус W2 <= 61.8% W1 — эвристика качества (контекст стр.12-50,
+    // различение двойной Плоской), НЕ обязательный вентиль: легальная W2 = до ~99%.
     bool r4 = lw1 > 0 ? lw2 / lw1 <= 0.618 : true
     // AKU-0009: ценовые диапазоны W2 и W4 не перекрываются
     float w2lo = math.min(p1px, p2px), float w2hi = math.max(p1px, p2px)
@@ -642,12 +644,10 @@ confirmImpulse(array<float> ep, int i0, string dir) =>
     float minW = na(lw5) ? math.min(lw1, lw3) : math.min(lw1, math.min(lw3, lw5))
     float maxW = na(lw5) ? math.max(lw1, lw3) : math.max(lw1, math.max(lw3, lw5))
     bool r7 = maxW > 0 ? minW / maxW < 0.85 : true
-    // AKU-0009 mandatory для трендового импульса: перекрытие W2/W4 = не импульс
-    bool ok = r1 and r2 and r3 and r4 and r5
-    string msg = not r1 ? "W2>W1start" : not r2 ? "W4>W3start" :
-         not r3 ? "W3<W1" : not r4 ? "W2>61.8%W1" :
-         not r5 ? "W2/W4 overlap" : not r6 ? "⚠нет чередования" :
-         not r7 ? "⚠W1≈W3≈W5 (неверный старт?)" : ""
+    // Обязательные правила импульса: r1,r2,r3 (W3 не короче обеих),r5 (W2/W4 без перекрытия).
+    // r4/r6/r7 — эвристики качества, в ok НЕ входят (только предупреждения в msg).
+    bool ok = r1 and r2 and r3 and r5
+    string msg = not r1 ? "W2>W1start" : not r2 ? "W4>W3start" : not r3 ? "W3 самая короткая" : not r5 ? "W2/W4 overlap" : not r4 ? "⚠W2 терминус >61.8%W1" : not r6 ? "⚠нет чередования" : not r7 ? "⚠W1≈W3≈W5 (неверный старт?)" : ""
     [ok, msg]
 
 // Проверяет Плоскую: B >= 61.8%A и C >= 61.8%A (Neely MWE Гл.5)
@@ -713,11 +713,12 @@ confirmTerminal(array<float> ep, int i0, string dir) =>
     bool r1 = dir == "up" ? p2px > p0px : p2px < p0px
     // W4 не пробивает старт W3
     bool r2 = dir == "up" ? p4px > p2px : p4px < p2px
-    // W3 не самая короткая из W1/W3/W5
-    bool r3 = lw3 >= lw1 and (na(lw5) or lw3 >= lw5)
+    // W3 не САМАЯ КОРОТКАЯ (AKU-0002): нарушение только если короче ОБЕИХ.
+    // Терминал — сужающийся клин, где W3 часто средняя по длине: вентиль "W3 самая длинная" неверен.
+    bool r3 = na(lw5) ? lw3 >= lw1 : not (lw3 < lw1 and lw3 < lw5)
     // Терминал допускает перекрытие W2/W4 — r5 НЕ проверяется
     bool ok = r1 and r2 and r3
-    string msg = not r1 ? "W2>W1start" : not r2 ? "W4>W3start" : not r3 ? "W3<W1/W5" : ""
+    string msg = not r1 ? "W2>W1start" : not r2 ? "W4>W3start" : not r3 ? "W3 самая короткая" : ""
     [ok, msg]
 
 // Возвращает направление по p0→p1

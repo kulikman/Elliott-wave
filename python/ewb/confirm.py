@@ -37,8 +37,10 @@ def imp_w3_not_shortest(w1: float, w3: float, w5: float | None = None) -> CheckR
         ok = not (w3 < w1 and w3 < w5)
     else:
         ok = w3 >= w1
-    return CheckResult(ok, "O" if ok else "W",
-        "W3 не самая короткая" if ok else "W3<W1, проверь W5", "AKU-0002")
+    # AKU-0002 дословно: «если W3 короче обеих — счёт НЕВЕРЕН» → кардинальное (E),
+    # не warning. Консистентно с Pine confirmImpulse (r3 в обязательном ok).
+    return CheckResult(ok, "O" if ok else "E",
+        "W3 не самая короткая" if ok else "W3 самая короткая (счёт неверен)", "AKU-0002")
 
 
 def imp_w2_retrace(w1: float, w2: float) -> CheckResult:
