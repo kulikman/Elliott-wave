@@ -1,0 +1,38 @@
+id: AKU-0354
+type: definition
+strength: mandatory
+status: verified
+topic: complexity-rule
+subtopics:
+  - multiwave
+  - complexity-rule
+statement_ru: >
+  Мультиволна: Уровень Сложности = 2. Основное отличие от поливолны: как минимум одна
+  (и обычно только одна) пятёрка (":5") мультиволны — это самостоятельная импульсная
+  поливолна. Для определения Уровня Сложности: из импульсных фигур одинакового Порядка
+  выбрать самый сложный сегмент, прибавить его Уровень Сложности (1) к автоматическому
+  Уровню-1 → Уровень-2.
+  Коррективная мультиволна: Уровень Сложности 2 присваивается наиболее сложной
+  стандартной Коррекции в её составе.
+source:
+  book_id: neely-mwe-1990
+  page: 7-7
+  chapter: "Глава 7: Выводы"
+  section: "Правило сложности (Complexity Rule) — Мультиволны"
+  verbatim_quote:
+    text: >
+      Все мультиволны фигуры с Уровнем Сложности, равным двум. В чём заключается основное
+      отличие мультиволны от поливолны? В том, что как минимум одна (и обычно только одна)
+      пятёрка (":5") мультиволны это самостоятельная импульсная поливолна.
+    language: ru
+formalization:
+  status: draft
+  applies_when: |
+    wave.type == "multiwave"
+  result: |
+    max_impulse_complexity = max(seg.complexity for seg in wave.impulse_segments_same_degree)
+    wave.complexity_level = max_impulse_complexity + 1
+    # At least one impulse segment is polywave (complexity=1), so: 1+1=2
+requires_review: false
+created_by: claude
+created_at: "2026-06-09"

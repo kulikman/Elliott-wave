@@ -1,0 +1,43 @@
+id: AKU-0359
+type: definition
+strength: mandatory
+status: verified
+topic: wave-degree
+subtopics:
+  - wave-degree
+  - complexity-rule
+  - analysis-workflow
+statement_ru: >
+  Для объединения фигур они должны быть одного и того же Порядка.
+  Два метода определения одинакового Порядка: (1) сходство параметров Цены и/или Времени
+  (см. "Правило подобия и баланса", Гл.4, стр.4-3); (2) одинаковый Уровень Сложности.
+  Фигуры одинакового Порядка должны иметь одинаковую (или граничащую с ней) Сложность.
+  Исключение: редкие случаи Triple Combination Correction между центральной областью.
+source:
+  book_id: neely-mwe-1990
+  page: 7-13
+  chapter: "Глава 7: Выводы"
+  section: "О Порядке волн — Резюме"
+  verbatim_quote:
+    text: >
+      Чтобы две (или более) фигуры можно было объединить, они должны быть одного и того же
+      Порядка. Всегда, когда фигуры Эллиота объединяются, автоматически подразумевается, что
+      каждый сегмент является одного Порядка (но не обязательно одинаковой Сложности). Два
+      другой метод определения фигур "одинакового Порядка" основан на Уровне Сложности.
+      Фигуры, рассматриваемые как одного Порядка, должны иметь одинаковую (или граничащую
+      с ней) Сложность.
+    language: ru
+formalization:
+  status: draft
+  applies_when: |
+    wave_A.degree IS NOT NULL
+    AND wave_B.degree IS NOT NULL
+    AND attempting_to_combine(wave_A, wave_B)
+  result: |
+    can_combine = (
+      abs(wave_A.complexity_level - wave_B.complexity_level) <= 1
+      OR price_time_similar(wave_A, wave_B)
+    )
+requires_review: false
+created_by: claude
+created_at: "2026-06-09"

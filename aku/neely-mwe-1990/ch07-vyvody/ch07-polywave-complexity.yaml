@@ -1,0 +1,40 @@
+id: AKU-0353
+type: definition
+strength: mandatory
+status: verified
+topic: complexity-rule
+subtopics:
+  - polywave
+  - complexity-rule
+statement_ru: >
+  Поливолна: Уровень Сложности = 1 (минимум). Любая фигура с визуально различимыми
+  сегментами, соответствующая всем правилам, имеет Уровень Сложности автоматически
+  Уровень-1 или выше. Простая поливолна состоит только из 3 или 5 моноволн.
+  Для определения точного уровня: исследовать самый сложный импульсный сегмент;
+  если все импульсные сегменты — моноволны (уровень 0), то сложность поливолны = 0 + 1 = 1.
+source:
+  book_id: neely-mwe-1990
+  page: 7-5
+  chapter: "Глава 7: Выводы"
+  section: "Правило сложности (Complexity Rule) — Поливолны"
+  verbatim_quote:
+    text: >
+      Всегда, когда рынок заканчивается фигурой Эллиота, с визуально различимыми "сегментами"
+      и соответствующей всем известным правилам, уровень сложности должен быть автоматически как
+      Уровень-1 или выше. Другими словами, любой Уровень Сложности, превышающий таковой для
+      моноволны, – это Уровень-1 Сложности или выше. Простая поливолна состоит только из трёх
+      или пяти моноволн. Поскольку обе фигуры имеют "сегменты", их уровень сложности должен
+      равняться как минимум единице.
+    language: ru
+formalization:
+  status: draft
+  applies_when: |
+    wave.type == "polywave"
+    AND wave.has_visible_segments == true
+  result: |
+    max_impulse_complexity = max(seg.complexity for seg in wave.impulse_segments)
+    wave.complexity_level = max_impulse_complexity + 1
+    # For simple polywave (all mono segments): 0 + 1 = 1
+requires_review: false
+created_by: claude
+created_at: "2026-06-09"

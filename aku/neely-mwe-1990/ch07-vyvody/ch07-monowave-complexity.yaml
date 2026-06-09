@@ -1,0 +1,32 @@
+id: AKU-0352
+type: definition
+strength: mandatory
+status: verified
+topic: complexity-rule
+subtopics:
+  - monowave
+  - complexity-rule
+statement_ru: >
+  Моноволна: Уровень Сложности равен нулю. В отсутствие дальнейшего "сегментирования"
+  волны уровень её сложности равен нулю. В процессе определения Сложности всем
+  моноволнам приписывается математическая величина "0".
+source:
+  book_id: neely-mwe-1990
+  page: 7-5
+  chapter: "Глава 7: Выводы"
+  section: "Правило сложности (Complexity Rule) — Моноволны"
+  verbatim_quote:
+    text: >
+      Уровень сложности моноволны легко определить. В отсутствие дальнейшего "сегментирования"
+      волны уровень её сложности равен нулю. Когда приходится объединять моноволны в процессе
+      определения Сложности, всем моноволнам приписывается математическая величина "0".
+    language: ru
+formalization:
+  status: draft
+  applies_when: |
+    wave.type == "monowave"
+  result: |
+    wave.complexity_level = 0
+requires_review: false
+created_by: claude
+created_at: "2026-06-09"

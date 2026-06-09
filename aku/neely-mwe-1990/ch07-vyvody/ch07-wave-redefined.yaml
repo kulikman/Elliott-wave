@@ -1,0 +1,35 @@
+id: AKU-0358
+type: definition
+strength: mandatory
+status: verified
+topic: wave-degree
+subtopics:
+  - monowave
+  - wave-degree
+  - position-indicators
+statement_ru: >
+  Пересмотренное определение волны (после Гл.7): Волна — это расстояние между двумя
+  смежными Метками Движения "одного и того же Порядка". Это определение охватывает
+  фигуры каждого Порядка (моно-, поли-, мульти- и макроволны), в отличие от исходного
+  определения моноволны как движения между двумя соседними изменениями направления цены.
+source:
+  book_id: neely-mwe-1990
+  page: 7-14
+  chapter: "Глава 7: Выводы"
+  section: "Что такое волна (пересмотр термина)"
+  verbatim_quote:
+    text: >
+      Волна – это расстояние между двумя смежными Метками Движения "одного и того же Порядка".
+    language: ru
+formalization:
+  status: draft
+  applies_when: |
+    analysis.phase == "degree_assigned"
+  result: |
+    wave.definition = distance_between(
+      motion_label_N,
+      motion_label_N_plus_1
+    ) WHERE both_labels.degree == same_degree
+requires_review: false
+created_by: claude
+created_at: "2026-06-09"

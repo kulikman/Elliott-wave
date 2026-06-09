@@ -1,0 +1,42 @@
+id: AKU-0351
+type: definition
+strength: mandatory
+status: verified
+topic: complexity-rule
+subtopics:
+  - complexity-rule
+  - wave-degree
+statement_ru: >
+  Правило сложности (Complexity Rule) — стандарт для классификации участков (сегментов)
+  в пределах данной фигуры. Помогает объединению масштабированных фигур и определению
+  соответствующего Порядка сегмента. Уровень Сложности обозначается подчёркиванием
+  структурных меток: одно подчёркивание = Уровень-1, два = Уровень-2 и т.д.
+  Моноволны имеют Уровень Сложности = 0.
+source:
+  book_id: neely-mwe-1990
+  page: 7-4
+  chapter: "Глава 7: Выводы"
+  section: "Правило сложности (Complexity Rule)"
+  verbatim_quote:
+    text: >
+      Это правило – ещё один разработанный автором инструмент – служит стандартом для
+      классификации участков (сегментов) в пределах данной фигуры. Оно (правило) помогает
+      объединению масштабированных фигур и определению наименования соответствующего Порядка
+      сегмента. Уровень Сложности фигуры обозначается подчёркиванием структурных меток,
+      (чем больше подчёркивающих линий, тем выше Уровень Сложности завершённой фигуры).
+      Уровень-0. Одно подчёркивание означает Уровень Сложности-1; две линии – Уровень
+      Сложности-2 и т.д.
+    language: ru
+formalization:
+  status: draft
+  applies_when: |
+    figure.is_completed == true
+  result: |
+    figure.complexity_level = count(underlines_on_structural_label)
+    # 0 underlines = Level 0 (monowave)
+    # 1 underline = Level 1 (polywave)
+    # 2 underlines = Level 2 (multiwave)
+    # 3+ underlines = Level 3+ (macrowave)
+requires_review: false
+created_by: claude
+created_at: "2026-06-09"

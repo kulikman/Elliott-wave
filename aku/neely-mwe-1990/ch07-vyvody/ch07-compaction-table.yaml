@@ -1,0 +1,50 @@
+id: AKU-0350
+type: definition
+strength: mandatory
+status: verified
+topic: compaction
+subtopics:
+  - compaction
+  - structural-labels
+  - structural-series
+statement_ru: >
+  Таблица сжатия: 5-3-5-3-5 = Трендовый импульс = ":5"; 5-3-5 = Зигзаг = ":3";
+  3-3-5 = Плоская = ":3"; 3-3-3-3-3 = Треугольник = ":3";
+  3-3-3-3-3 = Терминальный импульс = ":5".
+  Все фигуры с х-волнами (немедленно после проведения процедуры их уплотнения) могут
+  быть сведены к тройке (":3").
+source:
+  book_id: neely-mwe-1990
+  page: 7-2
+  chapter: "Глава 7: Выводы"
+  section: "Процедура сжатия (уплотнения) волн"
+  verbatim_quote:
+    text: >
+      A. 5-3-5-3-5 = Трендовый импульс = ":5"
+      B. 5-3-5 = Зигзаг = ":3"
+      C. 3-3-5 = Плоская = ":3"
+      D. 3-3-3-3-3 = Треугольник = ":3"
+      E. 3-3-3-3-3 = Терминальный импульс = ":5"
+      F. Все фигуры с х-волнами (немедленно после проведения процедуры их уплотнения)
+         могут быть сведены к тройке (":3").
+    language: ru
+formalization:
+  status: draft
+  applies_when: |
+    figure.is_completed == true
+  result: |
+    IF figure.structural_series IN ["5-3-5-3-5"]:
+      compact = ":5"  # Trending Impulse
+    ELIF figure.structural_series == "5-3-5":
+      compact = ":3"  # Zigzag
+    ELIF figure.structural_series == "3-3-5":
+      compact = ":3"  # Flat
+    ELIF figure.structural_series == "3-3-3-3-3" AND is_triangle:
+      compact = ":3"  # Triangle
+    ELIF figure.structural_series == "3-3-3-3-3" AND is_terminal:
+      compact = ":5"  # Terminal Impulse
+    ELIF figure.has_x_wave:
+      compact = ":3"  # Complex correction with x-wave
+requires_review: false
+created_by: claude
+created_at: "2026-06-09"

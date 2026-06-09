@@ -1,0 +1,47 @@
+id: AKU-0357
+type: definition
+strength: mandatory
+status: verified
+topic: wave-degree
+subtopics:
+  - wave-degree
+  - wave-degree
+  - motion-labels
+statement_ru: >
+  Иерархия Порядков волн (от меньшего к большему): Субмикро (SMc) — Микро (Mc) —
+  Субмельчайший (SM) — Мельчайший (Mnut) — Минутный (Mnt) — Минорный (Mnr) —
+  Промежуточный (In) — Первичный (P) — Цикл (C) — Суперцикл (SC) — Большой Суперцикл (GSC).
+  Субмикро и Микро — дополнения Нили к классификации Эллиота.
+  Стартовая точка: монволны на графике с минимальным временным периодом = Субмельчайший Порядок.
+source:
+  book_id: neely-mwe-1990
+  page: 7-12
+  chapter: "Глава 7: Выводы"
+  section: "О Порядке волн — Наименование Порядка"
+  verbatim_quote:
+    text: >
+      СУБМИКРО* / МИКРО* / СУБМЕЛЬЧАЙШИЙ / МЕЛЬЧАЙШИЙ / МИНУТНЫЙ / МИНОРНЫЙ /
+      ПРОМЕЖУТОЧНЫЙ / ПЕРВИЧНЫЙ / ЦИКЛ / СУПЕРЦИКЛ / БОЛЬШОЙ СУПЕРЦИКЛ
+      *Дополнения к классификации Эллиота
+    language: ru
+formalization:
+  status: draft
+  applies_when: |
+    wave.degree IS NOT NULL
+  result: |
+    DEGREE_HIERARCHY = [
+      "SubMicro",    # SMc  — .i/.v / .a/.c
+      "Micro",       # Mc   — .1/.5 / .A/.C
+      "SubMinuette", # SM   — i/v / a/c
+      "Minuette",    # Mnut — 1/5 / A/C
+      "Minute",      # Mnt  — (i)/(v) / (a)/(c)
+      "Minor",       # Mnr  — (1)/(5) / (A)/(C)
+      "Intermediate",# In   — circle_i/circle_v / circle_a/circle_c
+      "Primary",     # P    — circle_1/circle_5 / circle_A/circle_C
+      "Cycle",       # C    — [i]/[v] / [a]/[c]
+      "Supercycle",  # SC   — [1]/[5] / [A]/[C]
+      "GrandSupercycle" # GSC — box_i/box_v / box_a/box_c
+    ]
+requires_review: false
+created_by: claude
+created_at: "2026-06-09"

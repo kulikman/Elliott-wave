@@ -1,0 +1,41 @@
+id: AKU-0355
+type: definition
+strength: mandatory
+status: verified
+topic: complexity-rule
+subtopics:
+  - macrowave
+  - complexity-rule
+statement_ru: >
+  Макроволна — любая фигура сложнее мультиволны. Уровень Сложности ≥ 3.
+  Минимальное структурное требование: как минимум одна мультиволна и одна поливолна
+  (обычно две поливолны). Для определения Уровня Сложности: применить "автоматическое"
+  правило (минимум Уровень-1), исследовать каждый импульсный сегмент одинакового Порядка
+  в составе макроволны, выбрать самый сложный (уровень ≥ 2), прибавить к автоматическому
+  Уровню-1 → Уровень-3 или выше.
+source:
+  book_id: neely-mwe-1990
+  page: 7-10
+  chapter: "Глава 7: Выводы"
+  section: "Правило сложности (Complexity Rule) — Макроволны"
+  verbatim_quote:
+    text: >
+      Макроволна – менее точный термин, чем три представленных ранее описания Сложности
+      поведения рынка. Минимальное требование к фигуре для отнесения к категории "макроволна" –
+      она (фигура) должна содержать как минимум одну мультиволну и одну поливолну (обычно будут
+      две поливолны). Поскольку рассматривалась простейшая макроволна, то все макроволны должны
+      иметь Уровень-3 Сложности или выше.
+    language: ru
+formalization:
+  status: draft
+  applies_when: |
+    wave.type == "macrowave"
+    AND wave.contains_multiwave == true
+    AND wave.contains_polywave == true
+  result: |
+    max_impulse_complexity = max(seg.complexity for seg in wave.impulse_segments_same_degree)
+    wave.complexity_level = max_impulse_complexity + 1
+    # min macrowave: multiwave segment (complexity=2) → 2+1=3
+requires_review: false
+created_by: claude
+created_at: "2026-06-09"
