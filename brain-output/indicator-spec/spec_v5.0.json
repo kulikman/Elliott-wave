@@ -1,0 +1,429 @@
+{
+  "spec_version": "5.0",
+  "generated_at": "2026-06-09T00:00:00Z",
+  "generated_from": {
+    "aku_total": 365,
+    "aku_verified": 356,
+    "aku_formalized_draft": 254,
+    "previous_spec": "spec_v4.0.json",
+    "key_sources": [
+      "neely-mwe-1990 Гл.2-7",
+      "ch07-vyvody AKU-0349..0365 (17 AKU)",
+      "neely-mwe-1990 Гл.3 ch03-position-indicators.md",
+      "neely-mwe-1990 Гл.4 ch04-grouping.md"
+    ]
+  },
+  "changelog_from_v4": {
+    "pine_level": "4 → 4 (no Pine changes; spec extended with Wave Degrees data)",
+    "new_sections": [
+      "wave_degrees — Complexity Rule + иерархия 11 Порядков + таблица Символов",
+      "compaction — полная таблица сжатия (AKU-0350) + правила процедуры (AKU-0360..0362)"
+    ],
+    "updated_sections": [
+      "pine_implementation.level_6_wave_degrees: blocker снят — AKU-0349..0365 готовы",
+      "deferred: Wave Degrees / MTF mapping — aku_ref обновлён",
+      "summary: AKU counts обновлены"
+    ],
+    "aku_added": "AKU-0349..0365 (17 AKU по Гл.7 — definitions + mandatory_rules)"
+  },
+  "neely_methodology": {
+    "source": "Glenn Neely — Mastering Elliott Wave (1990)",
+    "levels": {
+      "level_1_monowaves": "Гл.2 — определение и метка моноволн",
+      "level_2_position_rules": "Гл.3 — предварительный анализ (Правила 1-7, Условия a-f)",
+      "level_3_grouping": "Гл.4 — группировка поливолн (подобие, баланс, сжатие)",
+      "level_4_pattern_confirmation": "Гл.5-6 — подтверждение паттернов (Импульс, Плоская, Зигзаг, Треугольник, Двойная Коррекция, Терминал)",
+      "level_5_post_pattern": "Гл.7 — Рейтинг Энергии, сжатие к :5/:3, выбор таймфрейма",
+      "level_6_wave_degrees": "Гл.7 — Степени волн (Submicro..Grand Supercycle), Правило Сложности",
+      "level_7_channels": "Гл.8-9 — каналы трендовых волн, параллельные линии",
+      "level_8_missing_waves": "Гл.10 — имитация, недостающие волны, x-волны",
+      "level_9_advanced": "Гл.11-12 — продвинутые паттерны, MTF-синхронизация"
+    }
+  },
+  "patterns": {
+    "impulse": {
+      "pine_status": "complete",
+      "aku_count": 25,
+      "compaction": ":5",
+      "energy_dir": "neutral (0/0)",
+      "key_aku": ["AKU-0001", "AKU-0002", "AKU-0004", "AKU-0005", "AKU-0007", "AKU-0009", "AKU-0127"],
+      "notes": "confirmImpulse + drawImpulseChannels + W5 Fibonacci + AKU-0224 deadline window"
+    },
+    "terminal": {
+      "pine_status": "new_in_v4",
+      "aku_count": 8,
+      "compaction": ":5",
+      "energy_dir": "strong_counter (-2 up / +2 down)",
+      "key_aku": ["AKU-0177"],
+      "notes": "confirmTerminal: W2<W1, W4<W3, W3>=W1/W5; no W2/W4 overlap requirement. Detected from 3-3-3-3-3 structure. Orange labels.",
+      "disambiguation": "3-3-3-3-3 → run confirmTerminal first; if passes → Terminal (:5); else confirmTriangle → Triangle (:3)"
+    },
+    "flat": {
+      "pine_status": "complete",
+      "aku_count": 18,
+      "compaction": ":3",
+      "subtypes": {
+        "flat_ordinary": "C/A < 0.618, energy=0/0",
+        "flat": "0.618 <= C/A <= 1.382, energy=-1/+1",
+        "flat_extended": "C/A > 1.382, energy=+1/-1"
+      },
+      "key_aku": ["AKU-0017", "AKU-0213"]
+    },
+    "zigzag": {
+      "pine_status": "new_in_v4",
+      "aku_count": 6,
+      "compaction": ":3",
+      "energy_dir": "neutral (0/0)",
+      "key_aku": ["AKU-0166"],
+      "notes": "confirmZigzag: B/A<0.618, C/A>=0.618, C extends beyond A terminus. Structure 5-3-5 (:F5|:c3|:L5). Blue labels.",
+      "d3_caveat": "Without Position Indicators cannot distinguish from Impulse tail. Active on geometry only — D3 parity deviation documented.",
+      "future": "Full disambiguation after Position Indicators (:F5/:c3/:L5) wired to classifyRule/classifyCond"
+    },
+    "triangle": {
+      "pine_status": "complete_updated",
+      "aku_count": 12,
+      "compaction": ":3",
+      "energy_dir": "neutral (0/0)",
+      "key_aku": ["AKU-0018", "AKU-0177"],
+      "notes": "confirmTriangle: c<a, d<b, e<c. Now distinguished from Terminal via confirmTerminal. Purple labels."
+    },
+    "double_corr": {
+      "pine_status": "complete",
+      "aku_count": 10,
+      "compaction": ":3",
+      "energy_dir": "strong (+2/-2)",
+      "key_aku": ["AKU-0185", "AKU-0186", "AKU-0191"],
+      "notes": "3×:3 with small x (xRatio<0.618) or large x (xRatio>=1.618)"
+    }
+  },
+  "position_indicators": {
+    "source": "Neely MWE Гл.3 стр.3-60+, ch03-position-indicators.md",
+    "pine_status": "partial",
+    "implemented": {
+      ":F3": "First 3 — first of three in corrective sequence",
+      ":c3": "Continuation 3 — middle of corrective sequence",
+      ":L3": "Last 3 — last of three (5-wave :3 sequence = Triangle or Terminal)",
+      ":sL3": "Second-to-Last 3",
+      ":F5": "First 5 — first motive segment (Zigzag A, Impulse W1/W3/W5)",
+      ":L5": "Last 5 — final motive segment"
+    },
+    "not_implemented": {
+      ":c5": "Continuation 5 — middle motive segment (needs Гл.3 rules)",
+      ":?5": "Unknown motive (5 possible but unconfirmed)",
+      "x:3": "X-wave within double/triple correction"
+    },
+    "notes": "labelSeg() draws position indicators on confirmed patterns. Full classifyRule/classifyCond wiring deferred to Level 5-6 implementation.",
+    "blocker": "Полная логика :F/:c/:L для каждого паттерна требует rules 1-7 и conditions a-f (Гл.3 стр.3-1 до 3-59)"
+  },
+  "wave_degrees": {
+    "source": "Neely MWE Гл.7 стр.7-11..7-14",
+    "key_aku": ["AKU-0349", "AKU-0350", "AKU-0351", "AKU-0352", "AKU-0353", "AKU-0354", "AKU-0355", "AKU-0356", "AKU-0357", "AKU-0358", "AKU-0359", "AKU-0360", "AKU-0361", "AKU-0362", "AKU-0363", "AKU-0364", "AKU-0365"],
+    "pine_status": "not_implemented",
+    "complexity_rule": {
+      "description": "Правило сложности (Complexity Rule) — стандарт классификации Порядка сегментов (AKU-0351)",
+      "monowave": {
+        "complexity_level": 0,
+        "description": "Моноволна — нет сегментов. Сложность = 0 (AKU-0352)"
+      },
+      "polywave": {
+        "complexity_level": 1,
+        "description": "Поливолна — 3 или 5 моноволн. complexity = max_impulse_complexity + 1 = 0+1 = 1 (AKU-0353)"
+      },
+      "multiwave": {
+        "complexity_level": 2,
+        "description": "Мультиволна — min 1 импульсная поливолна. complexity = 1+1 = 2 (AKU-0354)"
+      },
+      "macrowave": {
+        "complexity_level": ">=3",
+        "description": "Макроволна — min 1 мультиволна + 1 поливолна. complexity = 2+1 = 3+ (AKU-0355)"
+      }
+    },
+    "compaction_table": {
+      "description": "Таблица сжатия любой фигуры к базовой структуре (AKU-0350)",
+      "5-3-5-3-5": ":5",
+      "5-3-5": ":3",
+      "3-3-5": ":3",
+      "3-3-3-3-3_triangle": ":3",
+      "3-3-3-3-3_terminal": ":5",
+      "x-wave_complex": ":3"
+    },
+    "degree_hierarchy": {
+      "description": "Иерархия 11 Порядков Нили от меньшего к большему (AKU-0357). Символы: Импульсы / Коррекции",
+      "degrees": [
+        {
+          "level": 1,
+          "name_ru": "Субмикро",
+          "name_en": "Sub-Micro",
+          "abbrev": "SMc",
+          "impulse_symbols": ".i — .v",
+          "correction_symbols": ".a — .c",
+          "neely_addition": true
+        },
+        {
+          "level": 2,
+          "name_ru": "Микро",
+          "name_en": "Micro",
+          "abbrev": "Mc",
+          "impulse_symbols": ".1 — .5",
+          "correction_symbols": ".A — .C",
+          "neely_addition": true
+        },
+        {
+          "level": 3,
+          "name_ru": "Субмельчайший",
+          "name_en": "Sub-Minuette",
+          "abbrev": "SM",
+          "impulse_symbols": "i — v",
+          "correction_symbols": "a — c",
+          "neely_addition": false,
+          "starting_degree": true,
+          "note": "Начальный Порядок для моноволн на минимальном таймфрейме (AKU-0365)"
+        },
+        {
+          "level": 4,
+          "name_ru": "Мельчайший",
+          "name_en": "Minuette",
+          "abbrev": "Mnut",
+          "impulse_symbols": "1 — 5",
+          "correction_symbols": "A — C",
+          "neely_addition": false
+        },
+        {
+          "level": 5,
+          "name_ru": "Минутный",
+          "name_en": "Minute",
+          "abbrev": "Mnt",
+          "impulse_symbols": "(i) — (v)",
+          "correction_symbols": "(a) — (c)",
+          "neely_addition": false
+        },
+        {
+          "level": 6,
+          "name_ru": "Минорный",
+          "name_en": "Minor",
+          "abbrev": "Mnr",
+          "impulse_symbols": "(1) — (5)",
+          "correction_symbols": "(A) — (C)",
+          "neely_addition": false
+        },
+        {
+          "level": 7,
+          "name_ru": "Промежуточный",
+          "name_en": "Intermediate",
+          "abbrev": "In",
+          "impulse_symbols": "①— ⑤",
+          "correction_symbols": "Ⓐ — Ⓒ",
+          "neely_addition": false
+        },
+        {
+          "level": 8,
+          "name_ru": "Первичный",
+          "name_en": "Primary",
+          "abbrev": "P",
+          "impulse_symbols": "①— ⑤ (double circle)",
+          "correction_symbols": "Ⓐ — Ⓒ (double circle)",
+          "neely_addition": false
+        },
+        {
+          "level": 9,
+          "name_ru": "Цикл",
+          "name_en": "Cycle",
+          "abbrev": "C",
+          "impulse_symbols": "[i] — [v]",
+          "correction_symbols": "[a] — [c]",
+          "neely_addition": false
+        },
+        {
+          "level": 10,
+          "name_ru": "Суперцикл",
+          "name_en": "Supercycle",
+          "abbrev": "SC",
+          "impulse_symbols": "[1] — [5]",
+          "correction_symbols": "[A] — [C]",
+          "neely_addition": false
+        },
+        {
+          "level": 11,
+          "name_ru": "Большой Суперцикл",
+          "name_en": "Grand Supercycle",
+          "abbrev": "GSC",
+          "impulse_symbols": "⬛i — ⬛v",
+          "correction_symbols": "⬛a — ⬛c",
+          "neely_addition": false
+        }
+      ]
+    },
+    "same_degree_rule": {
+      "description": "Для объединения фигур они должны быть одного Порядка (AKU-0359)",
+      "method_1": "Сходство параметров Цены и/или Времени (Правило подобия и баланса, Гл.4 стр.4-3)",
+      "method_2": "Одинаковый Уровень Сложности (разница ≤ 1)",
+      "exception": "Triple Combination Correction между центральными x-волнами"
+    },
+    "wave_definition_revised": {
+      "description": "Пересмотренное определение волны (AKU-0358)",
+      "definition": "Волна — это расстояние между двумя смежными Метками Движения 'одного и того же Порядка'",
+      "note": "Охватывает моно-, поли-, мульти- и макроволны в отличие от исходного определения (только моноволна)"
+    },
+    "mtf_mapping": {
+      "pine_status": "planned",
+      "description": "Маппинг Порядков на таймфреймы TradingView для MTF-синхронизации",
+      "conceptual_mapping": {
+        "SubMinuette": "1m–5m",
+        "Minuette": "15m",
+        "Minute": "1h",
+        "Minor": "4h",
+        "Intermediate": "D",
+        "Primary": "W",
+        "Cycle": "M"
+      },
+      "notes": "Маппинг приблизительный. Точное соответствие зависит от активности рынка и исторических данных. Реализация в Pine Уровень 6.",
+      "blocker": "Pine функции degree_from_timeframe() и mtfDegreeSync() — не реализованы"
+    }
+  },
+  "pine_implementation": {
+    "pine_file": "pine/ewb_monowaves_mtf.pine",
+    "neely_level": 4,
+    "neely_level_description": "Уровни 1–4: моноволны, предварительный анализ, группировка, подтверждение паттернов. Уровень 6 (Wave Degrees) запланирован на Pine v6.",
+    "last_audit_date": "2026-06-09",
+    "implemented_rules": {
+      "level_1_monowaves": {
+        "status": "complete",
+        "notes": "ZigZag pivot detection с ATR/PCT порогом разворота"
+      },
+      "level_2_position_rules": {
+        "status": "complete",
+        "aku_ids": ["AKU-0141", "AKU-0142"],
+        "notes": "classifyRule (Правила 1–7) и classifyCond (Условия a–f) реализованы корректно"
+      },
+      "level_3_grouping": {
+        "status": "partial",
+        "aku_ids": ["AKU-0003", "AKU-0166"],
+        "notes": "Подобие и баланс реализованы. Зигзаг 5-3-5 активирован на геометрии (D3). Полные Индикаторы Положения не реализованы."
+      },
+      "level_4_pattern_confirmation": {
+        "status": "complete",
+        "aku_ids": ["AKU-0177"],
+        "notes": "Impulse, Flat, Zigzag, Triangle, Terminal, Double Correction — все подтверждены.",
+        "caveats": [
+          "Zigzag без Position Indicators может перекрываться с Impulse tail (D3)",
+          "Terminal реализован через упрощённый confirmTerminal"
+        ]
+      },
+      "level_5_post_pattern": {
+        "status": "partial",
+        "aku_ids": ["AKU-0213"],
+        "notes": "Energy Rating для всех паттернов включая Terminal (-2/+2), Zigzag (0/0), подтипы Flat"
+      },
+      "level_6_wave_degrees": {
+        "status": "planned",
+        "aku_ids": ["AKU-0349", "AKU-0350", "AKU-0351", "AKU-0352", "AKU-0353", "AKU-0354", "AKU-0355", "AKU-0356", "AKU-0357", "AKU-0358", "AKU-0359", "AKU-0365"],
+        "notes": "AKU готовы. Требуется реализация degree_from_timeframe() + mtfDegreeSync() в Pine. Степени: SubMicro→GSC (11 уровней).",
+        "prerequisite_aku": ["AKU-0360", "AKU-0361", "AKU-0362"],
+        "blocker": "Разработка Pine Уровень 6 — вынесена в Epic E3"
+      },
+      "level_7_channels": {
+        "status": "partial",
+        "aku_ids": ["AKU-0011", "AKU-0054", "AKU-0201", "AKU-0224"],
+        "notes": "Каналы 0-2 и 2-4 для Импульса; W5 Fibonacci проекция; AKU-0224 deadline window"
+      },
+      "level_8_missing_waves": {
+        "status": "not_implemented",
+        "aku_ids": ["AKU-0238"],
+        "blocker": "Уровень 8 — после реализации Уровней 5-7"
+      },
+      "level_9_advanced": {
+        "status": "not_implemented",
+        "notes": "Продвинутые правила логики (Гл.10-12), MTF-синхронизация spec_v6"
+      },
+      "mtf_synchronization": {
+        "status": "partial",
+        "notes": "HTF overlay реализован. Финальная MTF-схема зависит от Pine Уровень 6 (wave degrees). Conceptual mapping готов в wave_degrees.mtf_mapping."
+      }
+    },
+    "deferred": [
+      {
+        "feature": "Position Indicators full wiring (:F/:c/:L → classifyRule/classifyCond)",
+        "blocker": "Требует полной реализации Гл.3 стр.3-1 до 3-59 логики",
+        "aku_ref": "AKU-0141, AKU-0142, AKU-0177"
+      },
+      {
+        "feature": "Zigzag full disambiguation (D3 parity)",
+        "blocker": "Position Indicators :F5/:c3/:L5 не привязаны к classifyRule",
+        "aku_ref": "AKU-0166"
+      },
+      {
+        "feature": "Terminal full confirmation (Гл.5 complete rules)",
+        "blocker": "confirmTerminal использует упрощённый набор правил",
+        "aku_ref": "AKU-0177"
+      },
+      {
+        "feature": "Wave Degrees / MTF mapping (Level 6) — Pine",
+        "blocker": "degree_from_timeframe() + mtfDegreeSync() не реализованы в Pine",
+        "aku_ref": "AKU-0356, AKU-0357, AKU-0365",
+        "data_ready": true,
+        "epic": "E3"
+      },
+      {
+        "feature": "Missing waves / Imitation logic (Level 8)",
+        "blocker": "После Уровней 5-7",
+        "aku_ref": "AKU-0238"
+      }
+    ],
+    "next_milestone": "spec_v6: Pine Уровень 6 (Wave Degrees MTF) + Position Indicators full wiring"
+  },
+  "fibonacci": {
+    "ratios": [0.236, 0.382, 0.5, 0.618, 0.786, 1.0, 1.272, 1.618, 2.618],
+    "key_uses": {
+      "W2_max_retrace": 0.618,
+      "W4_typical_retrace": 0.382,
+      "zigzag_B_max": 0.618,
+      "zigzag_C_min": 0.618,
+      "flat_B_min": 0.618,
+      "flat_C_min": 0.618,
+      "flat_C_extended": 1.382,
+      "W5_projection_from_W3": 1.618,
+      "triangle_thrust_min": 0.618
+    }
+  },
+  "parity_deviations": {
+    "D1": {
+      "status": "closed",
+      "description": "W2 retrace threshold 0.618 — Python и Pine совпадают"
+    },
+    "D2": {
+      "status": "closed",
+      "description": "Flat B-wave min 0.618 — исправлено в FIX-1A"
+    },
+    "D3": {
+      "status": "partial",
+      "description": "Zigzag (5-3-5) — геометрия активирована в v4; Position Indicators wiring отложен",
+      "pine_behavior": "confirmZigzag активен, backtest impact TBD"
+    },
+    "D4": {
+      "status": "closed_deferred",
+      "description": "Triangle e<c severity W (warning only) — backtest impact=0, оставлено как есть"
+    },
+    "D5": {
+      "status": "closed",
+      "description": "W2 retrace impulse count — 0 impulse trades, нет влияния"
+    }
+  },
+  "summary": {
+    "total_aku": 365,
+    "total_verified": 356,
+    "total_formalized_draft": 254,
+    "patterns_implemented": 6,
+    "patterns_total": 8,
+    "pine_level_reached": 4,
+    "wave_degrees_aku_ready": 17,
+    "pine_functions": [
+      "confirmImpulse", "confirmFlat", "confirmZigzag", "confirmTriangle",
+      "confirmTerminal", "hybridImpulseOK", "hybridTriangleOK",
+      "hybridZigzagOK", "hybridMovingFlatOK", "hybridDoubleCorrOK",
+      "energyRating", "drawEnergy", "drawImpulseChannels", "drawMotionLabels",
+      "labelSeg", "compactFigure", "matchFigure"
+    ],
+    "coverage": "Гл.2-7 покрыты AKU. Pine реализован на уровне геометрии (Уровни 1-4). Уровень 6 (Wave Degrees) — AKU готовы, Pine не реализован.",
+    "next_pine_epic": "E3 — Pine Уровень 6: degree_from_timeframe() + mtfDegreeSync() + степени на лейблах"
+  }
+}
