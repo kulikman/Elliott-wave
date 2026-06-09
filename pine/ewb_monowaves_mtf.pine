@@ -444,13 +444,21 @@ degreeLabel(int idx, int extra) =>
     array.get(DEGREE_NAMES, clampedIdx)
 
 // Возвращает строку-суффикс Порядка для лейбла моноволны
-// isHTF=true → Порядок на +1 выше текущего (после сжатия поливолна даёт следующий Порядок)
+// mtfDegreeSync (AKU-0357, AKU-0365): HTF-метки используют degreeIndexFromTF(htf),
+// а не эвристику +1 — точное соответствие Порядка реальному таймфрейму HTF overlay.
+// Если htf ТФ даёт тот же или меньший индекс (нестандартные настройки), fallback: +1.
 degreeSuffix(bool isHTF) =>
     if not showDeg
         ""
     else if degAutoTF
-        baseIdx = degreeIndexFromTF(timeframe.period)
-        " [" + degreeLabel(baseIdx, isHTF and showDegOnHTF ? 1 : 0) + "]"
+        curIdx = degreeIndexFromTF(timeframe.period)
+        if isHTF and showDegOnHTF
+            htfIdx = degreeIndexFromTF(htf)
+            // Используем htfIdx если он выше curIdx, иначе curIdx+1 (fallback)
+            useIdx = htfIdx > curIdx ? htfIdx : curIdx + 1
+            " [" + degreeLabel(useIdx, 0) + "]"
+        else
+            " [" + degreeLabel(curIdx, 0) + "]"
     else
         if isHTF and showDegOnHTF
             // найти индекс degManual и взять +1
@@ -3061,16 +3069,18 @@ if showTradePanel and barstate.islast
         table.cell(info, 1, 5, displayPatternNow, text_color = useLiveHypothesisDecision and not liveHypothesisReady ? color.black : color.white, bgcolor = hasLiveHypothesis ? hypColor(liveHypothesisProb, liveHypothesisTradeDir, liveHypothesisReady) : htfWave3BiasActive ? coreSignalColor("IMPULSE POST", htfWave3Dir) : color.new(color.gray, 70))
         table.cell(info, 0, 6, "TF plan", text_color = color.white, bgcolor = color.new(color.gray, 35))
         table.cell(info, 1, 6, tfPlanShort, text_color = color.white, bgcolor = color.new(color.gray, 70))
-        // Level 6: Wave Degree row (AKU-0357, AKU-0365)
+        // Level 6 mtfDegreeSync (AKU-0357, AKU-0365): показываем LTF и реальный HTF Порядок
         degClearStart = 7
         if showDeg
-            degIdx = degreeIndexFromTF(timeframe.period)
-            degCurr = degreeLabel(degIdx, 0)
-            degNext = degreeLabel(degIdx, 1)
+            curDegIdx = degreeIndexFromTF(timeframe.period)
+            htfDegIdx = degreeIndexFromTF(htf)
+            useHtfIdx = htfDegIdx > curDegIdx ? htfDegIdx : curDegIdx + 1
+            degCurr = degreeLabel(curDegIdx, 0)
+            degHtf  = degreeLabel(useHtfIdx, 0)
             table.cell(info, 0, 7, "Wave degree", text_color = color.white, bgcolor = color.new(color.navy, 30))
-            table.cell(info, 1, 7, degCurr + " → " + degNext,
+            table.cell(info, 1, 7, degCurr + " / " + degHtf,
                  text_color = color.white, bgcolor = color.new(color.navy, 50),
-                 tooltip = "Текущий ТФ: " + degCurr + " (моноволны)\nПосле сжатия: " + degNext + " (поливолны)\nAKU-0357, AKU-0365")
+                 tooltip = "LTF (" + timeframe.period + "): " + degCurr + "\nHTF (" + htf + "): " + degHtf + "\nAKU-0357, AKU-0365 mtfDegreeSync")
             degClearStart := 8
         for clearRow = degClearStart to 21
             table.cell(info, 0, clearRow, "", bgcolor = color.new(color.black, 100))
