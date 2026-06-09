@@ -1339,13 +1339,16 @@ compactFigure(array<int> s, array<int> eb, array<float> ep,
     if array.size(s) > 0
         array.set(s, array.size(s) - 1, baseStruct)
 
+// Массив для передачи типа подтверждённого паттерна из matchFigure → alertcondition (closure write)
+var array<string> _patConfArr = array.from("")
+
 // Сопоставляет хвост последовательности базовых структур (5/3) со Структурными Сериями.
 // Приоритет 5-элементных шаблонов (Импульс/Треугольник) — правило 'Зигзаг или Импульс?'.
 matchFigure(array<int> s, array<int> eb, array<float> ep, color c,
             array<int> mBars, array<label> mLbls) =>
     int n = array.size(s)
     bool drew = false
-    string figConfirmed = ""   // тип подтверждённого паттерна (для alertcondition)
+    // _patConfArr[0] — тип подтверждённого паттерна (var array из main scope, closure write)
     if n >= 5
         int v1 = array.get(s, n - 5), v2 = array.get(s, n - 4), v3 = array.get(s, n - 3)
         int v4 = array.get(s, n - 2), v5 = array.get(s, n - 1)
@@ -1386,7 +1389,7 @@ matchFigure(array<int> s, array<int> eb, array<float> ep, color c,
                 drawEnergy(b1, hi, "impulse", dir == "up" ? 1 : -1, impLen)
                 drawPostEffectTargets(eb, ep, pi0, "impulse", dir == "up" ? 1 : -1)  // Level 8
                 drawFibProjections(eb, ep, pi0, "impulse", dir == "up" ? 1 : -1)     // Level 10
-                figConfirmed := "impulse"
+                array.set(_patConfArr, 0, "impulse")
                 // AKU-0224: Реальная линия 2-4 — временное окно прорыва = длительность W5
                 // Рисуем вертикальную зону: конец W5 + длительность W5 = ожидаемый прорыв
                 // tb5 (конец W5) доступен только при n >= 6
@@ -1431,7 +1434,7 @@ matchFigure(array<int> s, array<int> eb, array<float> ep, color c,
                 drawEnergy(b1, hi, termOK ? "terminal" : "triangle", triDir, triLen)
                 drawPostEffectTargets(eb, ep, pi0, termOK ? "terminal" : "triangle", triDir)  // Level 8
                 drawFibProjections(eb, ep, pi0, termOK ? "terminal" : "triangle", triDir)     // Level 10
-                figConfirmed := termOK ? "terminal" : "triangle"
+                array.set(_patConfArr, 0, termOK ? "terminal" : "triangle")
                 compactFigure(s, eb, ep, n, 4, compactTarget)
             drew := true
     if not drew and n >= 5
@@ -1469,7 +1472,7 @@ matchFigure(array<int> s, array<int> eb, array<float> ep, color c,
                     drawEnergy(tcb1, tchi, "double_corr", tcDir, tcLen)
                     drawPostEffectTargets(eb, ep, tci0, "double_corr", tcDir)  // Level 9
                     compactFigure(s, eb, ep, n, 4, 3)  // 5 моноволн → :3 (AKU-0191)
-                    figConfirmed := "triple_corr"
+                    array.set(_patConfArr, 0, "triple_corr")
                     drew := true
         if not drew and n >= 3
             int cx1 = array.get(s, n - 3), cx2 = array.get(s, n - 2), cx3 = array.get(s, n - 1)
@@ -1500,7 +1503,7 @@ matchFigure(array<int> s, array<int> eb, array<float> ep, color c,
                     drawEnergy(db1, dhi, "double_corr", dcDir, dcLen)
                     drawPostEffectTargets(eb, ep, dstartIdx, "double_corr", dcDir)  // Level 9
                     compactFigure(s, eb, ep, n, 2, 3)  // → :3 (AKU-0191)
-                    figConfirmed := "double_corr"
+                    array.set(_patConfArr, 0, "double_corr")
                     drew := true
                 else if isBigX
                     drawFig("Двойн.Корр.? (большая x)", db0, db1, dlo, dhi, color.new(color.orange, 40))
@@ -1542,7 +1545,7 @@ matchFigure(array<int> s, array<int> eb, array<float> ep, color c,
                 drawEnergy(hfB1, hfHi, "impulse", hfDir == "up" ? 1 : -1, hfLen)
                 drawPostEffectTargets(eb, ep, hfi0, "impulse", hfDir == "up" ? 1 : -1)  // Level 8
                 drawFibProjections(eb, ep, hfi0, "impulse", hfDir == "up" ? 1 : -1)     // Level 10
-                figConfirmed := "impulse"
+                array.set(_patConfArr, 0, "impulse")
                 compactFigure(s, eb, ep, n, 4, 5)
                 drew := true
             // Hybrid fallback для треугольника/терминала: структурный паттерн [0,0,0,0,0] или
@@ -1573,7 +1576,7 @@ matchFigure(array<int> s, array<int> eb, array<float> ep, color c,
                     int htFigDir = htDir == "up" ? 1 : -1
                     drawPostEffectTargets(eb, ep, hfi0, htTermOK ? "terminal" : "triangle", htFigDir)  // Level 8
                     drawFibProjections(eb, ep, hfi0, htTermOK ? "terminal" : "triangle", htFigDir)     // Level 10
-                    figConfirmed := htTermOK ? "terminal" : "triangle"
+                    array.set(_patConfArr, 0, htTermOK ? "terminal" : "triangle")
                     compactFigure(s, eb, ep, n, 4, htCompact)
                     drew := true
 
@@ -1613,7 +1616,7 @@ matchFigure(array<int> s, array<int> eb, array<float> ep, color c,
                 if flatSubtype == "flat"
                     drawPostEffectTargets(eb, ep, pi0, "flat", int(flatDir))
                 drawFibProjections(eb, ep, pi0, "flat", int(flatDir))  // Level 10
-                figConfirmed := "flat"
+                array.set(_patConfArr, 0, "flat")
                 compactFigure(s, eb, ep, n, 2, 3)  // 3 волны → :3
         // Зигзаг 5-3-5 (AKU-0166): структура :5 → :3 → :5 (F5/c3/L5)
         // B/A < 0.618 отличает Зигзаг от Плоской (где B/A >= 0.618).
@@ -1634,9 +1637,9 @@ matchFigure(array<int> s, array<int> eb, array<float> ep, color c,
                 float zzFadeDir = zzDir == "up" ? 1.0 : -1.0
                 drawEnergy(b1, hi, "zigzag", int(zzFadeDir), zzLen)
                 drawFibProjections(eb, ep, zzI0, "zigzag", int(zzFadeDir))  // Level 10
-                figConfirmed := "zigzag"
+                array.set(_patConfArr, 0, "zigzag")
                 compactFigure(s, eb, ep, n, 2, 3)  // Зигзаг → :3 (коррекция)
-    [drew, figConfirmed]
+    drew
 
 // Скользящее окно ссылок на метки моноволн — используется retroUpdatePI
 // для добавления Индикаторов Положения к m0/m1/... после подтверждения фигуры.
@@ -1731,9 +1734,7 @@ if barstate.islast
 var array<int>   figStruct  = array.new<int>()
 var array<int>   figEndBar  = array.new<int>()
 var array<float> figEndPx   = array.new<float>()
-// Тип последнего подтверждённого паттерна — сбрасывается каждый бар, используется alertcondition
-var string patConfType = ""
-patConfType := ""
+array.set(_patConfArr, 0, "")
 if showFig and rc.ruleNo > 0
     // Используем уточнённый Индикатор Положения (Rule+Condition) для точного base
     [rcPrimFig, _rcListFig] = ruleCondToStruct(rc.ruleNo, rc.condLetter)
@@ -1749,8 +1750,7 @@ if showFig and rc.ruleNo > 0
         array.shift(figEndBar)
         array.shift(figEndPx)
     if base > 0
-        [_mfDrew, _mfType] = matchFigure(figStruct, figEndBar, figEndPx, colFig, mLblBarArr, mLblRefArr)
-        patConfType := _mfType
+        matchFigure(figStruct, figEndBar, figEndPx, colFig, mLblBarArr, mLblRefArr)
 
 // ── Hybrid trade matcher: подтверждённые пивоты текущего ТФ ──
 var array<int>   hybBar  = array.new<int>()
@@ -3263,13 +3263,13 @@ alertcondition(coreTriangleEvent, "EWB Core TRIANGLE THRUST", "EWB Neely Core tr
 alertcondition(coreZigzagEvent, "EWB Core ZIGZAG REVERSAL", "EWB Neely Core zigzag reversal context on {{ticker}} {{interval}}")
 alertcondition(coreMovingCorrEvent, "EWB Core MOVING CORR", "EWB Neely Core moving correction research signal on {{ticker}} {{interval}}")
 // ─── Level 10: Pattern confirmation alerts (AKU-0229..0237) ──────────────────
-alertcondition(patConfType == "impulse",     "EWB Pattern IMPULSE",     "Neely Impulse confirmed on {{ticker}} {{interval}}")
-alertcondition(patConfType == "terminal",    "EWB Pattern TERMINAL",    "Neely Terminal confirmed on {{ticker}} {{interval}}")
-alertcondition(patConfType == "triangle",    "EWB Pattern TRIANGLE",    "Neely Triangle confirmed on {{ticker}} {{interval}}")
-alertcondition(patConfType == "flat",        "EWB Pattern FLAT",        "Neely Flat confirmed on {{ticker}} {{interval}}")
-alertcondition(patConfType == "zigzag",      "EWB Pattern ZIGZAG",      "Neely Zigzag confirmed on {{ticker}} {{interval}}")
-alertcondition(patConfType == "double_corr", "EWB Pattern DOUBLE CORR", "Neely Double Correction confirmed on {{ticker}} {{interval}}")
-alertcondition(patConfType == "triple_corr", "EWB Pattern TRIPLE CORR", "Neely Triple Correction confirmed on {{ticker}} {{interval}}")
+alertcondition(array.get(_patConfArr, 0) == "impulse",     "EWB Pattern IMPULSE",     "Neely Impulse confirmed on {{ticker}} {{interval}}")
+alertcondition(array.get(_patConfArr, 0) == "terminal",    "EWB Pattern TERMINAL",    "Neely Terminal confirmed on {{ticker}} {{interval}}")
+alertcondition(array.get(_patConfArr, 0) == "triangle",    "EWB Pattern TRIANGLE",    "Neely Triangle confirmed on {{ticker}} {{interval}}")
+alertcondition(array.get(_patConfArr, 0) == "flat",        "EWB Pattern FLAT",        "Neely Flat confirmed on {{ticker}} {{interval}}")
+alertcondition(array.get(_patConfArr, 0) == "zigzag",      "EWB Pattern ZIGZAG",      "Neely Zigzag confirmed on {{ticker}} {{interval}}")
+alertcondition(array.get(_patConfArr, 0) == "double_corr", "EWB Pattern DOUBLE CORR", "Neely Double Correction confirmed on {{ticker}} {{interval}}")
+alertcondition(array.get(_patConfArr, 0) == "triple_corr", "EWB Pattern TRIPLE CORR", "Neely Triple Correction confirmed on {{ticker}} {{interval}}")
 alertcondition(liveHypothesisReadyEvent, "EWB Live Hypothesis Ready", "EWB live structure hypothesis is ready on {{ticker}} {{interval}}")
 
 string actionAlertFigType = lastTradeType == "Flat fade" ? "flat" : lastTradeType == "DoubleCorr fade" ? "double_corr" : "unknown"
