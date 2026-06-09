@@ -1,0 +1,35 @@
+id: AKU-0314
+type: definition
+strength: mandatory
+status: draft
+topic: polywave
+subtopics:
+- monowave
+- grouping-procedure
+statement_ru: 'Коррективная поливолна — это поливолна, требующая как минимум трёх
+  моноволн. Импульсная поливолна — это поливолна, требующая как минимум пяти моноволн.
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: 4-1
+  chapter: 'Глава 4: Дальнейшие аналитические построения'
+  section: Группы моноволн
+  figure_id: null
+  verbatim_quote:
+    text: 'Коррективная поливолна требует как минимум три моноволны. Импульсная поливолна
+      требует как минимум пять моноволн.
+
+      '
+    language: ru
+formalization:
+  status: not_attempted
+aliases: []
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2025-06-02T12:00:00Z'
+review_notes: 'АВТОПРОВЕРКА: цитата не найдена в тексте — возможна галлюцинация'
+requires_review: true

@@ -1,0 +1,35 @@
+id: AKU-0313
+type: definition
+strength: mandatory
+status: draft
+topic: structural-series
+subtopics:
+- grouping-procedure
+statement_ru: 'Структурная Серия — это определённая последовательность правильно позиционированных
+  Структурных обозначений, формирующих ценовую фигуру Эллиота.
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: 4-1
+  chapter: 'Глава 4: Дальнейшие аналитические построения'
+  section: Структурные Серии — Таблица (Рисунок 4-3)
+  figure_id: null
+  verbatim_quote:
+    text: 'Структурная Серия — определённая последовательность правильно позиционированных
+      Структурных обозначений, формирующих ценовую фигуру Эллиота.
+
+      '
+    language: ru
+formalization:
+  status: not_attempted
+aliases:
+- Structural Series
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2025-06-02T12:00:00Z'
+review_notes: 'АВТОПРОВЕРКА: цитата не найдена в тексте — возможна галлюцинация'
+requires_review: true
