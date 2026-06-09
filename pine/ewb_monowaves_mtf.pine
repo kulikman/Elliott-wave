@@ -1100,6 +1100,84 @@ drawEnergy(int b1, float p1, string figType, int dir, float figLen) =>
         line.new(b1, retLevel, b1 + 30, retLevel, xloc = xloc.bar_index,
              color = color.new(eCol, 40), width = 1, style = line.style_dotted)
 
+// ─── Level 8: Post-Effect Price Targets (AKU-0073,0075,0077,0216,0218,0219) ──
+// Рисует специфические ценовые цели после подтверждения фигуры.
+// i0 = индекс старта фигуры в ep; figDir = +1 (вверх) / -1 (вниз).
+drawPostEffectTargets(array<int> eb, array<float> ep, int i0, string figType, int figDir) =>
+    int   nPiv   = array.size(ep)
+    float p0     = array.get(ep, i0)              // старт фигуры
+    float pN     = array.get(ep, nPiv - 1)        // конец
+    int   bN     = array.get(eb, nPiv - 1)        // бар конца
+    int   b0fig  = array.get(eb, i0)              // бар старта
+    int   figDur = math.max(bN - b0fig, 1)
+    int   extLen = math.max(figDur / 2, 5)        // визуальная длина линий вправо
+
+    if figType == "impulse"
+        // AKU-0073/0219: следующая волна НЕ должна достичь p0 (не-обязательная зона)
+        line.new(bN, p0, bN + extLen, p0, xloc = xloc.bar_index,
+             color = color.new(color.gray, 55), width = 1, style = line.style_dotted)
+        label.new(bN + extLen, p0, "≠ W0",
+             xloc = xloc.bar_index, yloc = yloc.price,
+             style = label.style_label_left, color = color.new(color.gray, 35),
+             textcolor = color.white, size = size.tiny,
+             tooltip = "AKU-0073: следующая волна не должна достичь стартового уровня Импульса\n= " + str.tostring(p0, "#.####"))
+        // AKU-0075: Растянутая W3 (w3 > 1.618 × w1) → откат должен достичь зоны W4
+        if nPiv >= i0 + 5
+            float iw1 = math.abs(array.get(ep, i0+1) - array.get(ep, i0))
+            float iw3 = math.abs(array.get(ep, i0+3) - array.get(ep, i0+2))
+            if iw3 > 1.618 * iw1
+                float w4zone = array.get(ep, i0+4)
+                line.new(bN, w4zone, bN + extLen, w4zone, xloc = xloc.bar_index,
+                     color = color.new(color.yellow, 25), width = 2, style = line.style_dashed)
+                label.new(bN + extLen, w4zone, "W4 zone",
+                     xloc = xloc.bar_index, yloc = yloc.price,
+                     style = label.style_label_left, color = color.new(color.yellow, 15),
+                     textcolor = color.white, size = size.tiny,
+                     tooltip = "AKU-0075: Растянутая W3 → откат к зоне W4\n= " + str.tostring(w4zone, "#.####"))
+
+    else if figType == "terminal"
+        // AKU-0077/0220: следующая ДОЛЖНА достичь p0 не позже чем за 50% времени Терминала
+        int  deadline = bN + figDur / 2
+        float vRange  = math.abs(pN - p0) * 0.12
+        line.new(bN, p0, deadline, p0, xloc = xloc.bar_index,
+             color = color.new(color.red, 15), width = 2, style = line.style_solid)
+        line.new(deadline, p0 - vRange, deadline, p0 + vRange,
+             xloc = xloc.bar_index, color = color.new(color.red, 35),
+             width = 1, style = line.style_dotted)
+        label.new(deadline, p0, "MUST\n≤50%T",
+             xloc = xloc.bar_index, yloc = yloc.price,
+             style = label.style_label_left, color = color.new(color.red, 10),
+             textcolor = color.white, size = size.small,
+             tooltip = "AKU-0077/0220: следующая волна ДОЛЖНА достичь старта Терминала\n= " + str.tostring(p0, "#.####") + "\nСрок: ≤" + str.tostring(figDur / 2) + " баров (50% длительности)")
+
+    else if figType == "triangle"
+        // AKU-0218: выброс (thrust) ≥ самой широкой волны Треугольника, за пределы W-b
+        if nPiv >= i0 + 4
+            float tA = math.abs(array.get(ep, i0+1) - array.get(ep, i0))
+            float tB = math.abs(array.get(ep, i0+2) - array.get(ep, i0+1))
+            float tC = math.abs(array.get(ep, i0+3) - array.get(ep, i0+2))
+            float tD = nPiv >= i0 + 5 ? math.abs(array.get(ep, i0+4) - array.get(ep, i0+3)) : 0.0
+            float widest = math.max(tA, math.max(tB, math.max(tC, tD)))
+            float bWave   = array.get(ep, i0+2)  // конец волны-b
+            float thrustT = figDir > 0 ? bWave + widest : bWave - widest
+            line.new(bN, thrustT, bN + extLen, thrustT, xloc = xloc.bar_index,
+                 color = color.new(color.purple, 20), width = 2, style = line.style_dashed)
+            label.new(bN + extLen, thrustT, "Thrust",
+                 xloc = xloc.bar_index, yloc = yloc.price,
+                 style = label.style_label_left, color = color.new(color.purple, 10),
+                 textcolor = color.white, size = size.tiny,
+                 tooltip = "AKU-0218: Thrust ≥ ширина самой широкой волны Треугольника (" + str.tostring(widest, "#.##") + ")\nЦель: " + str.tostring(thrustT, "#.####"))
+
+    else if figType == "flat"
+        // AKU-0216: Неудавшаяся-с Плоская (C/A = 61.8%–138.2%) → следующая ДОЛЖНА достичь p0
+        line.new(bN, p0, bN + extLen, p0, xloc = xloc.bar_index,
+             color = color.new(color.teal, 20), width = 2, style = line.style_dashed)
+        label.new(bN + extLen, p0, "MUST\nreach",
+             xloc = xloc.bar_index, yloc = yloc.price,
+             style = label.style_label_left, color = color.new(color.teal, 10),
+             textcolor = color.white, size = size.tiny,
+             tooltip = "AKU-0216: Неудавшаяся-с Плоская → следующая волна ДОЛЖНА достичь старта\n= " + str.tostring(p0, "#.####"))
+
 // ─── Правило соотношения длительностей (AKU-0205, Гл.9 стр.9-4) ─────────────
 // 3 смежных волны одного Порядка не могут иметь одинаковую временную длину.
 // Возвращает true если нарушение (все три равны ±10%).
@@ -1185,6 +1263,7 @@ matchFigure(array<int> s, array<int> eb, array<float> ep, color c,
                 drawMotionLabels(eb, ep, pi0, impLabelCount, impLabels, color.green)
                 float impLen = math.abs(array.get(ep, n-1) - array.get(ep, pi0))
                 drawEnergy(b1, hi, "impulse", dir == "up" ? 1 : -1, impLen)
+                drawPostEffectTargets(eb, ep, pi0, "impulse", dir == "up" ? 1 : -1)  // Level 8
                 // AKU-0224: Реальная линия 2-4 — временное окно прорыва = длительность W5
                 // Рисуем вертикальную зону: конец W5 + длительность W5 = ожидаемый прорыв
                 // tb5 (конец W5) доступен только при n >= 6
@@ -1227,6 +1306,7 @@ matchFigure(array<int> s, array<int> eb, array<float> ep, color c,
                 float triLen = math.abs(array.get(ep, n-1) - array.get(ep, pi0))
                 int triDir = termDir == "up" ? 1 : -1
                 drawEnergy(b1, hi, termOK ? "terminal" : "triangle", triDir, triLen)
+                drawPostEffectTargets(eb, ep, pi0, termOK ? "terminal" : "triangle", triDir)  // Level 8
                 compactFigure(s, eb, ep, n, 4, compactTarget)
             drew := true
     if not drew and n >= 5
@@ -1298,6 +1378,7 @@ matchFigure(array<int> s, array<int> eb, array<float> ep, color c,
                 drawMotionLabels(eb, ep, hfi0, 6, "0|1|2|3|4|5", color.green)
                 float hfLen = math.abs(hfP5 - hfP0)
                 drawEnergy(hfB1, hfHi, "impulse", hfDir == "up" ? 1 : -1, hfLen)
+                drawPostEffectTargets(eb, ep, hfi0, "impulse", hfDir == "up" ? 1 : -1)  // Level 8
                 compactFigure(s, eb, ep, n, 4, 5)
                 drew := true
             // Hybrid fallback для треугольника/терминала: структурный паттерн [0,0,0,0,0] или
@@ -1360,6 +1441,9 @@ matchFigure(array<int> s, array<int> eb, array<float> ep, color c,
                      flatCA < 0.618  ? "flat_ordinary" :
                      flatCA > 1.382  ? "flat_extended" : "flat"
                 drawEnergy(b1, hi, flatSubtype, int(flatDir), flatLen)
+                // Level 8: AKU-0216 — только для Неудавшейся-с (C/A = 61.8%–138.2%)
+                if flatSubtype == "flat"
+                    drawPostEffectTargets(eb, ep, pi0, "flat", int(flatDir))
                 compactFigure(s, eb, ep, n, 2, 3)  // 3 волны → :3
         // Зигзаг 5-3-5 (AKU-0166): структура :5 → :3 → :5 (F5/c3/L5)
         // B/A < 0.618 отличает Зигзаг от Плоской (где B/A >= 0.618).
