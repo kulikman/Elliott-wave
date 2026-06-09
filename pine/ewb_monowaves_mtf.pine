@@ -1371,10 +1371,7 @@ matchFigure(array<int> s, array<int> eb, array<float> ep, color c,
             // Если обе проверки прошли — предпочтительно Терминал (импульсные правила строже)
             // Если только сужение — Треугольник
             bool confirmed = triOK or termOK
-            string nm = not confirmed  ? "Треуг./Терм.? ❌ " + triMsg :
-                 termOK and triOK ? "Терминал ✅ (alt:Треуг.)" :
-                 termOK            ? "Терминал ✅" :
-                                     "Треугольник ✅"
+            string nm = not confirmed ? "Треуг./Терм.? ❌ " + triMsg : termOK and triOK ? "Терминал ✅ (alt:Треуг.)" : termOK ? "Терминал ✅" : "Треугольник ✅"
             // Сжатие: :5 для Терминала, :3 для Треугольника (AKU Гл.7 стр.7-1)
             int compactTarget = termOK ? 5 : 3
             color fc = confirmed ? (termOK ? color.new(color.orange, 20) : color.new(color.purple, 20)) : color.new(color.red, 20)
@@ -1520,9 +1517,7 @@ matchFigure(array<int> s, array<int> eb, array<float> ep, color c,
                         htHi := math.max(htHi, p)
                         htLo := math.min(htLo, p)
                     // Различение по AKU-0177: если Терминал — сжатие :5, если Треугольник — :3
-                    string htNm = htTermOK and htOK ? "Терминал ✅ (hybrid, alt:Треуг.)" :
-                         htTermOK ? "Терминал ✅ (hybrid)" :
-                                    "Треугольник ✅ (hybrid)"
+                    string htNm = htTermOK and htOK ? "Терминал ✅ (hybrid, alt:Треуг.)" : htTermOK ? "Терминал ✅ (hybrid)" : "Треугольник ✅ (hybrid)"
                     int htCompact = htTermOK ? 5 : 3
                     color htColor = htTermOK ? color.new(color.orange, 20) : color.new(color.purple, 20)
                     drawFig(htNm, htB0, htB1, htLo, htHi, htColor)
@@ -1564,9 +1559,7 @@ matchFigure(array<int> s, array<int> eb, array<float> ep, color c,
                 float flatWA = math.abs(array.get(ep, n-3) - array.get(ep, n-4))
                 float flatWC = math.abs(array.get(ep, n-1) - array.get(ep, n-2))
                 float flatCA = flatWA > 0 ? flatWC / flatWA : na
-                string flatSubtype = na(flatCA) ? "flat" :
-                     flatCA < 0.618  ? "flat_ordinary" :
-                     flatCA > 1.382  ? "flat_extended" : "flat"
+                string flatSubtype = na(flatCA) ? "flat" : flatCA < 0.618 ? "flat_ordinary" : flatCA > 1.382 ? "flat_extended" : "flat"
                 drawEnergy(b1, hi, flatSubtype, int(flatDir), flatLen)
                 // Level 8: AKU-0216 — только для Неудавшейся-с (C/A = 61.8%–138.2%)
                 if flatSubtype == "flat"
