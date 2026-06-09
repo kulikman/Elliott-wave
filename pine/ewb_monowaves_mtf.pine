@@ -60,6 +60,20 @@ activeWaveWidth = input.int(2, "Толщина активной волны", gro
 grpL    = "Метки"
 showLbl = input.bool(false, "Нумеровать моноволны (m0, m1, ...)", group = grpL)
 
+// ─── Уровень 6: Степени волн (AKU-0357, spec_v5) ───────────────────────────
+grpDeg  = "Степени волн — Level 6 (AKU-0356..0365)"
+showDeg = input.bool(false, "Показывать Порядок (степень) на метках моноволн", group = grpDeg,
+     tooltip = "Добавляет Порядок Нили (SM/Mnut/Mnt/Mnr/In/P/C/SC/GSC) к лейблу моноволны. " +
+     "По умолчанию: автоматически из таймфрейма графика (AKU-0365: monowaves on min TF = Sub-Minuette).")
+degAutoTF = input.bool(true, "Авто-Порядок из таймфрейма", group = grpDeg,
+     tooltip = "Вкл: степень определяется по текущему ТФ (AKU-0365). " +
+     "Выкл: выбрать вручную ниже.")
+degManual = input.string("SM", "Порядок вручную", group = grpDeg,
+     options = ["SMc", "Mc", "SM", "Mnut", "Mnt", "Mnr", "In", "P", "C", "SC", "GSC"],
+     tooltip = "SubMicro/Micro/Sub-Minuette/Minuette/Minute/Minor/Intermediate/Primary/Cycle/Supercycle/GrandSupercycle")
+showDegOnHTF = input.bool(true, "Показывать Порядок на HTF-метках", group = grpDeg,
+     tooltip = "HTF-метки получают Порядок на одну ступень выше текущего ТФ (Гл.7 стр.7-13).")
+
 grpS    = "Правило подобия и баланса (AKU-0003, Уровень 3)"
 showSim = input.bool(false, "Помечать смену Порядка между моноволнами", group = grpS,
      tooltip = "Правило Нили: две смежные моноволны могут быть одного Порядка, " +
@@ -383,7 +397,9 @@ drawMono(ZZResult r, color cUp, color cDn, int width, bool isHTF, color cHTF, bo
         if lbl
             prefix = isHTF ? "M" : "m"
             yloc_  = r.dir > 0 ? yloc.abovebar : yloc.belowbar
-            monoL := label.new(r.bar, r.price, prefix + str.tostring(r.idx),
+            // Level 6: добавляем суффикс Порядка (AKU-0357, AKU-0365)
+            degSfx = degreeSuffix(isHTF)
+            monoL := label.new(r.bar, r.price, prefix + str.tostring(r.idx) + degSfx,
                  xloc = xloc.bar_index, yloc = yloc_,
                  style = r.dir > 0 ? label.style_label_down : label.style_label_up,
                  color = isHTF ? cHTF : (r.dir > 0 ? cUp : cDn),
@@ -401,6 +417,47 @@ chartTfRank() =>
      timeframe.isdaily ? 4 :
      timeframe.isweekly ? 5 :
      timeframe.ismonthly ? 6 : 7
+
+// ─── Level 6: Wave Degree helpers (AKU-0356, AKU-0357, AKU-0365) ──────────────
+// Таблица Порядков Нили (spec_v5 wave_degrees.degree_hierarchy):
+//   0=SMc  1=Mc  2=SM  3=Mnut  4=Mnt  5=Mnr  6=In  7=P  8=C  9=SC  10=GSC
+// Маппинг ТФ → индекс: monowaves на минимальном ТФ = Sub-Minuette (AKU-0365)
+var array<string> DEGREE_NAMES = array.from("SMc","Mc","SM","Mnut","Mnt","Mnr","In","P","C","SC","GSC")
+
+degreeIndexFromTF(string tf) =>
+    tfMult = timeframe.in_seconds(tf)
+    // < 5 min → SubMicro(0), < 10m → Micro(1), <30m → SM(2), <120m → Mnut(3),
+    // <480m(8h) → Mnt(4), <1440m(D) → Mnr(5), <7×D(W) → In(6), <30×D(M) → P(7), else C(8)
+    tfMult < 300   ? 0 :
+     tfMult < 600   ? 1 :
+     tfMult < 1800  ? 2 :
+     tfMult < 7200  ? 3 :
+     tfMult < 28800 ? 4 :
+     tfMult < 86400 ? 5 :
+     tfMult < 604800 ? 6 :
+     tfMult < 2592000 ? 7 :
+     tfMult < 31536000 ? 8 : 9
+
+degreeLabel(int idx, int extra) =>
+    // extra=0 → текущий TF; extra=1 → HTF (на 1 выше, AKU-0365 post-compaction)
+    clampedIdx = math.min(idx + extra, array.size(DEGREE_NAMES) - 1)
+    array.get(DEGREE_NAMES, clampedIdx)
+
+// Возвращает строку-суффикс Порядка для лейбла моноволны
+// isHTF=true → Порядок на +1 выше текущего (после сжатия поливолна даёт следующий Порядок)
+degreeSuffix(bool isHTF) =>
+    if not showDeg
+        ""
+    else if degAutoTF
+        baseIdx = degreeIndexFromTF(timeframe.period)
+        " [" + degreeLabel(baseIdx, isHTF and showDegOnHTF ? 1 : 0) + "]"
+    else
+        if isHTF and showDegOnHTF
+            // найти индекс degManual и взять +1
+            manualIdx = array.indexof(DEGREE_NAMES, degManual)
+            manualIdx >= 0 ? " [" + degreeLabel(manualIdx, 1) + "]" : " [" + degManual + "+]"
+        else
+            " [" + degManual + "]"
 
 contextTfEnabled(int tfRank, int currentRank) =>
     showHtfWaveMap and tfRank > currentRank and tfRank <= currentRank + htfContextLevels
@@ -3004,7 +3061,18 @@ if showTradePanel and barstate.islast
         table.cell(info, 1, 5, displayPatternNow, text_color = useLiveHypothesisDecision and not liveHypothesisReady ? color.black : color.white, bgcolor = hasLiveHypothesis ? hypColor(liveHypothesisProb, liveHypothesisTradeDir, liveHypothesisReady) : htfWave3BiasActive ? coreSignalColor("IMPULSE POST", htfWave3Dir) : color.new(color.gray, 70))
         table.cell(info, 0, 6, "TF plan", text_color = color.white, bgcolor = color.new(color.gray, 35))
         table.cell(info, 1, 6, tfPlanShort, text_color = color.white, bgcolor = color.new(color.gray, 70))
-        for clearRow = 7 to 21
+        // Level 6: Wave Degree row (AKU-0357, AKU-0365)
+        degClearStart = 7
+        if showDeg
+            degIdx = degreeIndexFromTF(timeframe.period)
+            degCurr = degreeLabel(degIdx, 0)
+            degNext = degreeLabel(degIdx, 1)
+            table.cell(info, 0, 7, "Wave degree", text_color = color.white, bgcolor = color.new(color.navy, 30))
+            table.cell(info, 1, 7, degCurr + " → " + degNext,
+                 text_color = color.white, bgcolor = color.new(color.navy, 50),
+                 tooltip = "Текущий ТФ: " + degCurr + " (моноволны)\nПосле сжатия: " + degNext + " (поливолны)\nAKU-0357, AKU-0365")
+            degClearStart := 8
+        for clearRow = degClearStart to 21
             table.cell(info, 0, clearRow, "", bgcolor = color.new(color.black, 100))
             table.cell(info, 1, clearRow, "", bgcolor = color.new(color.black, 100))
     else
