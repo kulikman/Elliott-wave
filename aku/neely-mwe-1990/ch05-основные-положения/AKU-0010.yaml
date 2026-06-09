@@ -20,7 +20,7 @@ source:
       перекрываться
     language: ru
 formalization:
-  status: formalized
+  status: draft
   applies_when: '# Правило применяется к Терминальным Импульсам (Ending Diagonals,
     структура 3-3-3-3-3)
 
@@ -57,8 +57,8 @@ formalization:
     overlap > 0
 
     '
-  formalization_notes: 'Зеркальное правило к AKU-0009 (запрет перекрытия в трендовых
-    импульсах).
+  formalization_notes: 'original_status: formalized. Зеркальное правило к AKU-0009
+    (запрет перекрытия в трендовых импульсах).
 
     Verbatim: «ценовые проекции длин волн 2 и 4 Терминальных Импульсов должны
 

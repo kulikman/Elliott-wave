@@ -1,0 +1,79 @@
+id: AKU-0329
+type: rule
+strength: conditional
+status: verified
+topic: informal-logic-rules
+subtopics:
+- structural-labels
+- combination
+statement_ru: 'Если компактная фигура «не вписывается» в окружение (не соответствует
+  условиям и не содержит пропавших волн), то она является частью Сложной конфигурации
+  (Complex formation).
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: 3-33
+  chapter: 'Chapter 3: Preliminary Analysis'
+  section: Неформальные Правила логики (Pre-Constructive Rules of Logic) — Применение/переоценка
+  figure_id: null
+  verbatim_quote:
+    text: 'Если компактная фигура «не вписывается» в окружение — она часть Сложной
+      конфигурации (Complex formation).
+
+      '
+    language: ru
+formalization:
+  status: not_formalizable
+  applies_when: '# Применяется когда компактная (compact) фигура проверена на соответствие
+
+    # окружающему контексту и на наличие пропавших (missing) волн
+
+    compact_pattern = current_pattern
+
+    is_compact = (compact_pattern.type == ''compact'')
+
+    '
+  constraint: '# Если компактная фигура:
+
+    #   1) не соответствует условиям окружения (fails environment fit checks)
+
+    #   2) не содержит пропавших волн (no missing waves detected)
+
+    # то она является частью Сложной конфигурации (Complex formation)
+
+    #
+
+    # if is_compact
+
+    #    AND NOT fits_environment(compact_pattern, surrounding_context)
+
+    #    AND NOT has_missing_waves(compact_pattern):
+
+    #      compact_pattern.parent_structure = ''complex_formation''
+
+    #      compact_pattern.is_part_of_complex = true
+
+    '
+  formalization_notes: "Правило не поддаётся строгой формализации по следующим причинам:\n\
+    \n1. Понятие «не вписывается в окружение» (fails environment fit) не определено\n\
+    \   формально в данном AKU — это агрегированный результат проверки множества\n\
+    \   других правил (условий окружения), которые не перечислены здесь.\n\n2. Понятие\
+    \ «не содержит пропавших волн» (no missing waves) также является\n   результатом\
+    \ отдельного анализа, критерии которого не специфицированы\n   в данном правиле.\n\
+    \n3. Понятие «компактная фигура» (compact pattern) требует формального\n   определения\
+    \ из других AKU.\n\n4. Правило по сути является fallback/default-правилом: если\
+    \ все прочие\n   проверки провалились — классифицируй как часть Complex formation.\n\
+    \   Для его реализации нужен полный список проверок, которые должны\n   быть исчерпаны\
+    \ перед применением этого правила.\n\nЭто мета-правило логики принятия решений,\
+    \ а не конкретное числовое\nили структурное ограничение."
+aliases:
+- правило сложной конфигурации
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2025-06-02T12:00:00Z'
+review_notes: Reviewed and approved by Anton 2026-06-09.
+requires_review: false

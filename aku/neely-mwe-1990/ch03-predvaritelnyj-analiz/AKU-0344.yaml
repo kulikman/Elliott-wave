@@ -1,0 +1,38 @@
+id: AKU-0344
+type: heuristic
+strength: heuristic
+status: verified
+topic: informal-logic-rules
+subtopics:
+- structural-labels
+- position-indicators
+statement_ru: 'При большом откате m2 (более 161.8% от m1, Правила 6–7) структура m1
+  неоднозначна — возможна любая структурная метка. Для определения наиболее вероятного
+  обозначения обычно требуется обращение к последовательностям Индикаторов положения.
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: 3-32
+  chapter: 'Chapter 3: Preliminary Analysis'
+  section: Неформальные Правила логики (Pre-Constructive Rules of Logic)
+  figure_id: null
+  verbatim_quote:
+    text: 'большой откат (Правила 6-7, m2 > 161.8% m1) → структура неоднозначна, требуются
+      Индикаторы положения.
+
+      '
+    language: ru
+formalization:
+  status: not_attempted
+aliases:
+- большой откат — неоднозначность
+- large retracement ambiguity
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2025-06-02T12:00:00Z'
+review_notes: Reviewed and approved by Anton 2026-06-09.
+requires_review: false

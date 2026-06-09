@@ -32,37 +32,33 @@ formalization:
 
     position_indicator == '':L3''
 
-    AND is_last_of_five_consecutive_threes(current_wave)
+    AND waves[i].structure_label == '':3''
 
-    # Пять последовательных троек = пять подряд моноволн, каждая из которых
+    AND waves[i-1].structure_label == '':3''
 
-    # имеет Structure Label '':3'' (тройка)
+    AND waves[i-2].structure_label == '':3''
 
-    # т.е. waves[i-4].structure == '':3''
+    AND waves[i-3].structure_label == '':3''
 
-    #  AND waves[i-3].structure == '':3''
-
-    #  AND waves[i-2].structure == '':3''
-
-    #  AND waves[i-1].structure == '':3''
-
-    #  AND waves[i].structure == '':3''
+    AND waves[i-4].structure_label == '':3''
 
     '
   constraint: "# Группа из пяти последовательных троек образует либо Терминал, либо\
-    \ Треугольник.\n# Различение: применить Основные Правила построения Импульса (Essential\
-    \ Construction Rules).\n\nfive_threes = [waves[i-4], waves[i-3], waves[i-2], waves[i-1],\
-    \ waves[i]]\n\n# Проверяем, выполняются ли правила построения основного импульса\n\
-    # для паттерна, образованного этими пятью тройками\nIF essential_impulse_construction_rules_hold(five_threes):\n\
-    \    pattern_type = 'terminal_impulse'\nELSE:\n    pattern_type = 'triangle'\n"
-  formalization_notes: "1. \"Основные Правила построения Импульса\" (Essential Construction\
-    \ Rules) \n   описаны в Главе 5, стр. 5-2. Их конкретный набор здесь не раскрыт\
-    \ — \n   формализация этих правил должна быть в отдельных AKU.\n2. :L3 аналогичен\
-    \ :sL3 по позиционному требованию (последняя из пяти троек),\n   но отличается\
-    \ по контексту применения (см. связанные AKU для :sL3).\n3. Правило не уточняет,\
-    \ как именно пять троек группируются в пятиволновую \n   структуру (какие из них\
-    \ становятся волнами 1-5), — это определяется \n   правилами построения из Главы\
-    \ 5."
+    \ Треугольник.\n# Различение: применить Основные Правила построения Импульса (Глава\
+    \ 5, стр. 5-2).\n\nfive_threes = [waves[i-4], waves[i-3], waves[i-2], waves[i-1],\
+    \ waves[i]]\n\nIF essential_impulse_construction_rules_hold(five_threes):\n  \
+    \  pattern_type = 'terminal_impulse'\nELSE:\n    pattern_type = 'triangle'\n\n\
+    # Других вариантов нет: пять последовательных троек = Терминал ИЛИ Треугольник\n\
+    pattern_type IN ['terminal_impulse', 'triangle']\n"
+  formalization_notes: "1. «Основные Правила построения Импульса» (Essential Construction\
+    \ Rules)\n   описаны в Главе 5, стр. 5-2. Их конкретный набор здесь не раскрыт\
+    \ —\n   формализация этих правил должна быть в отдельных AKU.\n2. :L3 аналогичен\
+    \ :sL3 по позиционному требованию (последняя из пяти троек).\n   Verbatim: «Равно\
+    \ как и \":sL3\", \":L3\" должна быть последней из пяти\n   последовательных \"\
+    троек\"».\n3. Правило не уточняет, как именно пять троек группируются в пятиволновую\n\
+    \   структуру (какие из них становятся волнами 1-5) — это определяется\n   правилами\
+    \ построения из Главы 5.\n4. Функция essential_impulse_construction_rules_hold()\
+    \ — внешняя зависимость,\n   требующая отдельной формализации."
 aliases: []
 related_aku: []
 contradicts_aku: []

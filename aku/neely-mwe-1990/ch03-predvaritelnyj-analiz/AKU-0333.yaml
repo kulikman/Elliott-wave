@@ -1,0 +1,65 @@
+id: AKU-0333
+type: rule
+strength: conditional
+status: verified
+topic: informal-logic-rules
+subtopics:
+- structural-labels
+- compaction
+statement_ru: 'При применении Неформальных Правил логики к компактным ценовым фигурам,
+  пересекающим свой собственный начальный уровень, не следует применять эти Правила
+  напрямую — необходимо работать только с базовой Структурой таких фигур.
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: 3-33
+  chapter: 'Chapter 3: Preliminary Analysis'
+  section: Неформальные Правила логики — Правило преобразования обозначений
+  figure_id: null
+  verbatim_quote:
+    text: 'не применять эти Правила к компактным ценовым фигурам, пересекающим свой
+      собственный начальный уровень — работать только с базовой Структурой таких фигур.
+
+      '
+    language: ru
+formalization:
+  status: draft
+  applies_when: "# Правило применяется когда:\n# 1. Мы собираемся применить Неформальные\
+    \ Правила логики (Informal Logic Rules)\n# 2. К ценовой фигуре, которая является\
+    \ компактной (результат compaction)\n# 3. И эта фигура пересекает свой собственный\
+    \ начальный уровень\n\napplying_informal_logic_rules == true\nAND pattern.is_compacted\
+    \ == true\nAND pattern_crosses_own_start_level(pattern) == true\n\n# Определение:\
+    \ фигура пересекает свой начальный уровень,\n# если цена в ходе развития фигуры\
+    \ возвращается к уровню начала\n# фигуры или проходит через него\ndef pattern_crosses_own_start_level(pattern):\n\
+    \  start_price = pattern.start_price\n  for segment in pattern.segments:\n   \
+    \ if segment.high >= start_price AND segment.low <= start_price:\n      return\
+    \ true\n  return false\n"
+  constraint: "# НЕ применять Неформальные Правила логики напрямую к компактной фигуре,\n\
+    # пересекающей свой начальный уровень.\n# Вместо этого — декомпактировать и работать\
+    \ с базовой Структурой.\n\nif pattern.is_compacted AND pattern_crosses_own_start_level(pattern):\n\
+    \  # ЗАПРЕЩЕНО:\n  # apply_informal_logic_rules(pattern)\n\n  # ТРЕБУЕТСЯ:\n \
+    \ base_structure = decompact(pattern)  # получить базовую структуру до компактирования\n\
+    \  apply_informal_logic_rules(base_structure)\n"
+  formalization_notes: "1. \"Компактная ценовая фигура\" (compacted pattern) — фигура,\
+    \ полученная\n   в результате процедуры компактирования (compaction), когда несколько\n\
+    \   моноволн объединяются в одну структурную единицу.\n2. \"Базовая Структура\"\
+    \ (base Structure) — структура до компактирования,\n   т.е. исходные составляющие\
+    \ моноволны/поливолны.\n3. \"Пересекает свой собственный начальный уровень\" —\
+    \ цена в процессе\n   развития фигуры возвращается к ценовому уровню начала фигуры\n\
+    \   или проходит через него.\n4. Правило conditional — это рекомендация (\"не\
+    \ следует\"), а не абсолютный запрет.\n5. Функция decompact() (get_base_structure)\
+    \ зависит от контекста\n   компактирования и не детализирована в данном правиле.\n\
+    6. Правило не уточняет, что делать если базовая структура тоже\n   пересекает\
+    \ свой начальный уровень — предполагается что базовая\n   структура уже не является\
+    \ компактной."
+aliases:
+- ограничение для компактных фигур
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2025-06-02T12:00:00Z'
+review_notes: Reviewed and approved by Anton 2026-06-09.
+requires_review: false

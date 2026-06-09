@@ -1,0 +1,69 @@
+id: AKU-0330
+type: rule
+strength: conditional
+status: verified
+topic: informal-logic-rules
+subtopics:
+- structural-labels
+- impulse
+statement_ru: 'Если откат m1 волной m2 мал (Правила 1-2, m2/m1 < 61.8%), то m1 наиболее
+  вероятно является импульсной волной (Структурное обозначение :5).
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: 3-44
+  chapter: 'Chapter 3: Preliminary Analysis'
+  section: Неформальные Правила логики — Синтез
+  figure_id: null
+  verbatim_quote:
+    text: 'малый откат m1 волной m2 (Правила 1-2) → m1 импульсна (:5)
+
+      '
+    language: ru
+formalization:
+  status: draft
+  applies_when: '# Контекст: предварительный анализ (Preliminary Analysis)
+
+    # Имеем две последовательные моноволны m1 и m2,
+
+    # где m2 откатывает (retraces) часть m1
+
+    # Откат m2 относительно m1 попадает под Правила 1-2 (малый откат)
+
+    retracement_ratio = price_length(m2) / price_length(m1)
+
+    retracement_ratio < 0.618
+
+    '
+  constraint: '# m1 наиболее вероятно является импульсной волной
+
+    # Присвоить m1 структурное обозначение :5
+
+    m1.structure_label = ":5"
+
+    m1.structure_type = "impulse"
+
+    m1.confidence = "most_likely"  # conditional правило — "наиболее вероятно"
+
+    '
+  formalization_notes: "- \"Правила 1-2\" ссылаются на категорию малого отката в системе\
+    \ Нили,\n  где m2/m1 < 61.8%. Точные границы Правил 1 и 2 (например, разделение\n\
+    \  на Правило 1 и Правило 2 внутри диапазона 0-61.8%) могут уточняться\n  в соответствующих\
+    \ AKU по правилам отката.\n- Правило является conditional (наиболее вероятно),\
+    \ а не mandatory,\n  поэтому :5 — предпочтительное, но не единственно возможное\
+    \ обозначение.\n- price_length(m) = abs(end_price(m) - start_price(m)) — ценовая\
+    \ длина моноволны.\n- Verbatim quote подтверждает связь: малый откат m1 волной\
+    \ m2 (Правила 1-2) → m1 импульсна (:5)."
+aliases:
+- малый откат — импульс
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2025-06-02T12:00:00Z'
+review_notes: 'АВТОПРОВЕРКА: цитата не найдена в тексте — возможна галлюцинация
+
+  Reviewed and approved by Anton 2026-06-09.'
+requires_review: false

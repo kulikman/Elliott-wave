@@ -37,30 +37,34 @@ formalization:
 
     # Базовая Структура фигуры не соответствует ни одному условию
 
-    # из правил соответствующего раздела (rule-matching)
+    # из правил соответствующего раздела
 
-    AND match_base_structure(figure.base_structure, applicable_rules) == NO_MATCH
+    AND match_base_structure(figure.base_structure, get_applicable_rules(figure))
+    == NO_MATCH
 
     '
-  constraint: "# Два возможных исхода (не взаимоисключающие на этапе оценки,\n# но\
-    \ в итоге выбирается один):\n\n# Исход 1: В фигуре есть «пропавшая» (missing)\
-    \ волна\n# — несогласующиеся обозначения помещаются в квадратные скобки\nif figure_can_have_missing_wave(figure):\n\
-    \    figure.possible_missing_wave = true\n    for each label in figure.labels:\n\
-    \        if not label_is_consistent(label, figure.base_structure):\n         \
-    \   label.notation = \"[\" + label.value + \"]\"  # квадратные скобки\n\n# Исход\
-    \ 2: Фигура «не вписывается» в окружающие моноволны\n# — значит она часть Сложной\
-    \ конфигурации\nif not figure_fits_surrounding_monowaves(figure, surrounding_monowaves):\n\
-    \    figure.part_of_complex_formation = true\n"
-  formalization_notes: "original_status: partially_formalizable. Правило описывает\
-    \ два альтернативных диагностических исхода при неудаче\nсопоставления базовой\
-    \ Структуры компактной фигуры с правилами.\n\nНе полностью формализуемо по следующим\
-    \ причинам:\n1. \"Соответствующий раздел условий\" — конкретный набор правил зависит\
-    \ от\n   типа базовой Структуры (определяется контекстом Гл.3-5), здесь не перечислен.\n\
-    2. Критерий \"не вписывается в окружающие моноволны\" не определён точно\n   в\
-    \ данном statement — подразумевается анализ из последующих глав.\n3. Логика определения\
-    \ \"пропавшей волны\" раскрывается в Гл.12 (missing waves).\n4. Выбор между исходом\
-    \ 1 и исходом 2 требует дополнительного контекста,\n   не описанного в данном\
-    \ правиле."
+  constraint: "# Правило описывает два альтернативных диагностических исхода.\n# Выбор\
+    \ между ними зависит от анализа окружения фигуры.\n\n# Исход 1: «Пропавшая» (missing)\
+    \ волна\n# Условие: фигура сама по себе допускает наличие пропущенной волны\n\
+    # (детали — Гл.12, missing waves)\nif figure_may_contain_missing_wave(figure):\n\
+    \    figure.has_missing_wave = true\n    # Несогласующиеся обозначения помещаются\
+    \ в квадратные скобки\n    for label in figure.labels:\n        if not label_consistent_with_structure(label,\
+    \ figure.base_structure):\n            label.display = \"[\" + label.value + \"\
+    ]\"\n\n# Исход 2: Фигура «не вписывается» в окружающие моноволны\n# — значит она\
+    \ является частью Сложной конфигурации\nif not figure_fits_surrounding_context(figure,\
+    \ figure.surrounding_monowaves):\n    figure.part_of_complex_configuration = true\n"
+  formalization_notes: "original_status: partially_formalizable. Частично формализуемо.\
+    \ Причины неполной формализации:\n1. «Соответствующий раздел условий» — конкретный\
+    \ набор правил для\n   match_base_structure зависит от типа базовой Структуры\
+    \ (Гл.3–5),\n   в данном statement не перечислен.\n2. Критерий «не вписывается\
+    \ в окружающие моноволны» не определён\n   точно в данном правиле — подразумевается\
+    \ контекстный анализ\n   из последующих глав.\n3. Логика определения «пропавшей\
+    \ волны» раскрывается в Гл.12\n   (missing waves), здесь лишь упоминается возможность.\n\
+    4. Выбор между исходом 1 и исходом 2 требует дополнительного\n   контекста, не\
+    \ описанного в данном правиле. Из verbatim_quote\n   следует, что это два разных\
+    \ сценария, но критерий выбора\n   между ними не эксплицирован.\n5. Функции figure_may_contain_missing_wave()\
+    \ и\n   figure_fits_surrounding_context() — заглушки, требующие\n   реализации\
+    \ на основе правил из других глав."
 aliases: []
 related_aku: []
 contradicts_aku: []

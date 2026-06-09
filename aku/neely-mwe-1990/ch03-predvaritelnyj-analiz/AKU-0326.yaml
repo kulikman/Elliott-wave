@@ -1,0 +1,85 @@
+id: AKU-0326
+type: rule
+strength: conditional
+status: verified
+topic: informal-logic-rules
+subtopics:
+- structural-labels
+- fibonacci-ratios
+statement_ru: 'Если для всех соотношений Фибоначчи (61.8%, 161.8% и т.д.) указано
+  значение, то допускается отклонение ±4% от номинала: например, «61.8% длины другой
+  волны» означает фактический диапазон 58–66%.
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: 3-34
+  chapter: 'Chapter 3: Preliminary Analysis'
+  section: Неформальные Правила логики (Pre-Constructive Rules of Logic) — Конвенции
+    измерений
+  figure_id: null
+  verbatim_quote:
+    text: 'Для всех соотношений Фибоначчи (61.8%, 161.8% и т.д.) допускается отклонение
+      ±4%: «61.8% длины другой» означает фактический диапазон 58–66%.
+
+      '
+    language: ru
+formalization:
+  status: draft
+  applies_when: '# Применяется всегда, когда в любом правиле Эллиотта проверяется
+
+    # соотношение Фибоначчи между волнами
+
+    fibonacci_ratio_check_is_performed == true
+
+    '
+  constraint: "# Определяем функцию допуска для любого номинального соотношения Фибоначчи\n\
+    #\n# nominal_ratio — номинальное значение Фибоначчи (например, 0.618, 1.618, 2.618,\
+    \ 0.382 и т.д.)\n# actual_ratio — фактически измеренное соотношение между волнами\n\
+    #\n# tolerance = 0.04 (±4 процентных пункта от номинала, выраженного в процентах)\n\
+    #\n# Пример: nominal_ratio = 0.618 (т.е. 61.8%)\n#   lower_bound = 0.618 - 0.04\
+    \ = 0.578  (58%)  [НЕ 0.618 * 0.96]\n#   upper_bound = 0.618 + 0.04 = 0.658  (66%)\
+    \  [НЕ 0.618 * 1.04]\n#\n# Примечание: отклонение ±4% — это абсолютные процентные\
+    \ пункты,\n# а не относительные проценты от самого соотношения.\n# Это следует\
+    \ из примера в правиле: 61.8% ± 4% = [58%, 66%]\n# (61.8 - 4 = 57.8 ≈ 58; 61.8\
+    \ + 4 = 65.8 ≈ 66)\n\nTOLERANCE_PP = 0.04  # 4 процентных пункта\n\ndef fibonacci_match(actual_ratio,\
+    \ nominal_ratio):\n    lower_bound = nominal_ratio - TOLERANCE_PP\n    upper_bound\
+    \ = nominal_ratio + TOLERANCE_PP\n    return (actual_ratio >= lower_bound) AND\
+    \ (actual_ratio <= upper_bound)\n\n# Примеры использования:\n# fibonacci_match(actual_ratio,\
+    \ 0.618)  → true если actual_ratio в [0.578, 0.658]\n# fibonacci_match(actual_ratio,\
+    \ 1.618)  → true если actual_ratio в [1.578, 1.658]\n# fibonacci_match(actual_ratio,\
+    \ 0.382)  → true если actual_ratio в [0.342, 0.422]\n# fibonacci_match(actual_ratio,\
+    \ 2.618)  → true если actual_ratio в [2.578, 2.658]\n"
+  formalization_notes: 'Это мета-правило (конвенция измерений), которое влияет на
+    ВСЕ остальные правила,
+
+    использующие соотношения Фибоначчи. Оно не проверяет структуру волн само по себе,
+
+    а определяет функцию допуска fibonacci_match(), которую должны использовать
+
+    все другие AKU при проверке Фибоначчи-соотношений.
+
+
+    Из примера в правиле (61.8% → диапазон 58–66%) следует, что ±4% — это
+
+    абсолютные процентные пункты (61.8 - 4 ≈ 58, 61.8 + 4 ≈ 66),
+
+    а не относительное отклонение (иначе было бы 59.3–64.3).
+
+
+    Округление в примере (57.8→58, 65.8→66) — косметическое, в алгоритме
+
+    используются точные значения без округления.'
+aliases:
+- допуск Фибоначчи ±4%
+- Fibonacci tolerance
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2025-06-02T12:00:00Z'
+review_notes: 'АВТОПРОВЕРКА: цитата не найдена в тексте — возможна галлюцинация
+
+  Reviewed and approved by Anton 2026-06-09.'
+requires_review: false

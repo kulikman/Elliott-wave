@@ -21,33 +21,33 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: '# Применяется всегда, когда в правиле или проверке гипотезы требуется
+  applies_when: '# Применяется всегда, когда какое-либо правило требует измерить "длину
+    волны"
 
-    # измерить "длину волны" и при этом явно НЕ указан тип измерения
+    # и при этом тип измерения (ценовой или временной) явно НЕ указан.
 
-    # (ценовой или временной).
-
-    measurement_required == true AND dimension_not_specified == true
+    measurement_type_not_explicitly_specified == true
 
     '
-  constraint: "# По умолчанию \"длина волны\" означает ценовую длину (price length),\n\
-    # а не временную (time length).\n#\n# Определение:\n#   price_length(wave) = abs(price_end(wave)\
-    \ - price_start(wave))\n#   time_length(wave)  = time_end(wave) - time_start(wave)\n\
-    #\n# Конвенция по умолчанию:\ndef wave_length(wave, dimension=None):\n    if dimension\
-    \ is not None:\n        if dimension == \"price\":\n            return price_length(wave)\n\
-    \        elif dimension == \"time\":\n            return time_length(wave)\n \
-    \   else:\n        # По умолчанию — ценовая длина\n        return price_length(wave)\n\
-    \n# Эквивалентно:\n# length(wave) := price_length(wave)  когда dimension не указан\n"
-  formalization_notes: 'original_status: formalized. Это не ограничение на структуру
-    волн, а конвенция измерения (meta-rule),
+  constraint: "# Конвенция по умолчанию: \"длина волны\" означает ценовую длину (price\
+    \ length).\n#\n# Определения:\n#   price_length(wave) = abs(price_end(wave) -\
+    \ price_start(wave))\n#   time_length(wave)  = time_end(wave) - time_start(wave)\n\
+    #\n# Функция длины волны:\ndef wave_length(wave, dimension=None):\n    if dimension\
+    \ == \"price\":\n        return abs(price_end(wave) - price_start(wave))\n   \
+    \ elif dimension == \"time\":\n        return time_end(wave) - time_start(wave)\n\
+    \    else:\n        # По умолчанию — ценовая длина\n        return abs(price_end(wave)\
+    \ - price_start(wave))\n#\n# Иными словами:\n# length(wave) := abs(price_end(wave)\
+    \ - price_start(wave))  когда dimension не указан\n"
+  formalization_notes: 'original_status: formalized. Это мета-правило (конвенция измерения),
+    а не ограничение на структуру волн.
 
-    определяющая интерпретацию термина "длина волны" во всех остальных правилах.
+    Оно определяет интерпретацию термина "длина волны" во всех остальных правилах.
 
-    При реализации в коде это означает, что функция измерения длины волны
+    При реализации в коде: любая функция, принимающая "длину волны" без явного
 
-    по умолчанию должна возвращать abs(price_end - price_start),
+    указания dimension, должна использовать price_length.
 
-    если явно не запрошено временное измерение.'
+    Verbatim: "по умолчанию измеряется ценовая длина волны".'
 aliases: []
 related_aku: []
 contradicts_aku: []

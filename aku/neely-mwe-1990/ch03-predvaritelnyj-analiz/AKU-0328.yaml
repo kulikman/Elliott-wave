@@ -1,0 +1,109 @@
+id: AKU-0328
+type: rule
+strength: conditional
+status: verified
+topic: informal-logic-rules
+subtopics:
+- missing-waves
+- structural-labels
+statement_ru: 'Если базовая Структура переоцениваемой компактной фигуры не соответствует
+  ни одному из перечисленных условий Правил, то в фигуре может быть «пропавшая» (missing)
+  волна; такие несогласующиеся обозначения помещаются в квадратные скобки.
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: 3-33
+  chapter: 'Chapter 3: Preliminary Analysis'
+  section: Неформальные Правила логики (Pre-Constructive Rules of Logic) — Применение/переоценка
+  figure_id: null
+  verbatim_quote:
+    text: 'Если базовая Структура переоцениваемой компактной фигуры не соответствует
+      ни одному из перечисленных условий — в фигуре может быть «пропавшая» волна (см.
+      Гл.12, стр. 12-34); такие несогласующиеся обозначения помещаются в квадратные
+      скобки.
+
+      '
+    language: ru
+formalization:
+  status: not_formalizable
+  applies_when: '# Правило применяется при переоценке (reappraisal) компактной фигуры
+    (compact pattern),
+
+    # когда базовая Структура (base Structure labels) этой фигуры проверяется
+
+    # на соответствие перечисленным условиям Правил (Rules of Logic).
+
+    '
+  constraint: '# Невозможно формализовать как конкретное ограничение, потому что:
+
+    # 1. Правило ссылается на "перечисленные условия Правил" — это совокупность ВСЕХ
+
+    #    правил логики (Rules of Logic), а не конкретное условие.
+
+    # 2. "Пропавшая волна" (missing wave) — это концепция, описанная в Гл.12 стр.12-34,
+
+    #    которая требует отдельной формализации.
+
+    # 3. Правило описывает ПРОЦЕДУРУ (что делать при несоответствии), а не ОГРАНИЧЕНИЕ:
+
+    #    - если base_structure НЕ соответствует НИ ОДНОМУ набору условий Rules_of_Logic
+    ->
+
+    #      пометить несогласующиеся обозначения квадратными скобками [label]
+
+    #      и предположить наличие missing wave
+
+    #
+
+    # Концептуальный псевдокод процедуры:
+
+    #
+
+    # function reappraise_compact_pattern(pattern):
+
+    #   base_structure = get_base_structure(pattern)
+
+    #   matches_any_rule = false
+
+    #   for each rule_set in ALL_RULES_OF_LOGIC:
+
+    #     if base_structure matches rule_set.conditions:
+
+    #       matches_any_rule = true
+
+    #       break
+
+    #   if NOT matches_any_rule:
+
+    #     # Фигура может содержать "пропавшую" волну
+
+    #     pattern.may_have_missing_wave = true
+
+    #     for each label in base_structure:
+
+    #       if label does not conform to any known valid condition:
+
+    #         label.display = "[" + label.value + "]"  # квадратные скобки
+
+    #     # Далее см. процедуру missing waves (Гл.12, стр.12-34)
+
+    '
+  formalization_notes: "Правило не формализуемо как единичное ограничение, поскольку:\n\
+    1. Оно описывает процедурное действие (пометить квадратными скобками, предположить\n\
+    \   missing wave), а не числовое или структурное ограничение.\n2. Условие срабатывания\
+    \ — \"не соответствует НИ ОДНОМУ из перечисленных условий\" —\n   требует знания\
+    \ ВСЕЙ совокупности Rules of Logic, что является мета-правилом.\n3. Детали механизма\
+    \ \"missing wave\" описаны в другом месте книги (Гл.12, стр.12-34)\n   и не раскрыты\
+    \ в данном statement.\n4. Понятие \"несогласующиеся обозначения\" (какие именно\
+    \ labels не согласуются)\n   зависит от контекста конкретной проверки."
+aliases:
+- правило пропавшей волны при переоценке
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2025-06-02T12:00:00Z'
+review_notes: Reviewed and approved by Anton 2026-06-09.
+requires_review: false

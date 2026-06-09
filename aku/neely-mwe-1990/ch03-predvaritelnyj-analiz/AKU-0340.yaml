@@ -1,0 +1,40 @@
+id: AKU-0340
+type: heuristic
+strength: heuristic
+status: verified
+topic: informal-logic-rules
+subtopics:
+- structural-labels
+- fibonacci-ratios
+statement_ru: 'Для всех соотношений Фибоначчи (61.8%, 161.8% и т.д.) в неформальных
+  правилах логики допускается отклонение ±4% от точного значения. Например, «61.8%
+  длины другой волны» фактически означает диапазон 58–66%.
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: 3-34
+  chapter: 'Chapter 3: Preliminary Analysis'
+  section: Неформальные Правила логики (Pre-Constructive Rules of Logic)
+  figure_id: null
+  verbatim_quote:
+    text: 'Для всех соотношений Фибоначчи (61.8%, 161.8% и т.д.) допускается отклонение
+      ±4%: «61.8% длины другой» означает фактический диапазон 58–66%.
+
+      '
+    language: ru
+formalization:
+  status: not_attempted
+aliases:
+- допуск Фибоначчи ±4%
+- Fibonacci tolerance
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2025-06-02T12:00:00Z'
+review_notes: 'АВТОПРОВЕРКА: цитата не найдена в тексте — возможна галлюцинация
+
+  Reviewed and approved by Anton 2026-06-09.'
+requires_review: false

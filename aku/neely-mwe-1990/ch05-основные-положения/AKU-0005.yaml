@@ -20,7 +20,7 @@ source:
       сегмента.
     language: ru
 formalization:
-  status: formalized
+  status: draft
   applies_when: 'pattern == ''impulse'' AND wave_4_completed
 
     '
@@ -32,8 +32,8 @@ formalization:
     elif direction == 'down':\n  # Нисходящий импульс: волна 4 корректирует вверх\n\
     \  # Максимум волны 4 не должен подняться до или выше начала волны 3\n  high(wave_4)\
     \ < start_price(wave_3)\n"
-  formalization_notes: 'Verbatim: "Четвертый сегмент никогда не должен достигать начального
-    уровня третьего сегмента."
+  formalization_notes: 'original_status: formalized. Verbatim: "Четвертый сегмент
+    никогда не должен достигать начального уровня третьего сегмента."
 
     Слово "никогда не должен достигать" трактуется как строгое неравенство (strict
     inequality):

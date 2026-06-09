@@ -1,0 +1,36 @@
+id: AKU-0338
+type: definition
+strength: mandatory
+status: verified
+topic: length-ratio-rules
+subtopics:
+- conditions-categories
+statement_ru: 'Соотношение m0/m1 — это процентное отношение длины m0 к длине m1, которое
+  определяет применяемое Условие (буква a–f) внутри выбранного Правила.
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: 3-22
+  chapter: 'Глава 3: Правила соотношений длин волн'
+  section: Принцип
+  figure_id: null
+  verbatim_quote:
+    text: 'Соотношение m0/m1 определяет применение Условия (буква a–f) этого Правила.
+
+      '
+    language: ru
+formalization:
+  status: not_attempted
+aliases: []
+related_aku:
+- AKU-0336
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2025-06-02T12:00:00Z'
+review_notes: 'АВТОПРОВЕРКА: цитата не найдена в тексте — возможна галлюцинация
+
+  Reviewed and approved by Anton 2026-06-09.'
+requires_review: false

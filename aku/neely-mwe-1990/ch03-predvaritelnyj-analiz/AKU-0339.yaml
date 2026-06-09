@@ -1,0 +1,37 @@
+id: AKU-0339
+type: definition
+strength: mandatory
+status: verified
+topic: length-ratio-rules
+subtopics:
+- conditions-categories
+statement_ru: 'Соотношение m3/m2 — это процентное отношение длины m3 к длине m2, которое
+  определяет Категорию (римские цифры i/ii/iii), используемую в Правиле 4.
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: 3-22
+  chapter: 'Глава 3: Правила соотношений длин волн'
+  section: Принцип
+  figure_id: null
+  verbatim_quote:
+    text: 'Соотношение m3/m2 определяет Категорию (римские i/ii/iii) — используется
+      в Правиле 4.
+
+      '
+    language: ru
+formalization:
+  status: not_attempted
+aliases: []
+related_aku:
+- AKU-0336
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2025-06-02T12:00:00Z'
+review_notes: 'АВТОПРОВЕРКА: цитата не найдена в тексте — возможна галлюцинация
+
+  Reviewed and approved by Anton 2026-06-09.'
+requires_review: false

@@ -24,24 +24,24 @@ source:
     language: ru
 formalization:
   status: draft
-  applies_when: '# Когда группа моноволн формирует поливолну
+  applies_when: '# Когда группа моноволн образует поливолну
 
     structure_level == ''polywave''
 
     '
   constraint: "# Подсчёт моноволн в составе поливолны\nmonowave_count = count_monowaves(polywave)\n\
-    \nif polywave.type == 'corrective':\n    monowave_count >= 3\nelif polywave.type\
-    \ == 'impulsive':\n    monowave_count >= 5\n"
-  formalization_notes: 'Правило устанавливает минимальные требования к количеству
-    моноволн.
+    \nif polywave.type == 'corrective':\n    assert monowave_count >= 3\nelif polywave.type\
+    \ == 'impulsive':\n    assert monowave_count >= 5\n"
+  formalization_notes: 'original_status: formalized. Правило устанавливает минимальные
+    требования к количеству моноволн в поливолне.
 
     Коррективная поливолна — минимум 3 моноволны, импульсная — минимум 5.
 
     Максимальное количество моноволн правилом не ограничено.
 
-    Классификация поливолны на "коррективную" или "импульсную" предполагается
+    Классификация поливолны на "коррективную" или "импульсную" определяется
 
-    определённой на основании других правил (структурных меток и т.д.).'
+    на основании других правил (структурных меток и т.д.) и здесь предполагается известной.'
 aliases:
 - минимум моноволн в поливолне
 related_aku: []

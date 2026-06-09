@@ -29,35 +29,36 @@ formalization:
 
     ratio_m2_m1 = abs(m2) / abs(m1)
 
-    ratio_m2_m1 > 0.618 AND ratio_m2_m1 < 1.0
+    applies = ratio_m2_m1 > 0.618 AND ratio_m2_m1 < 1.0
 
     '
-  constraint: "# Определить Условие (a-e) на основе контекста (см. ch03-informal-logic.md)\n\
-    # Затем назначить структурный список для m1 согласно Условию:\n\nif condition\
-    \ == 'a':\n    # {:F3, :c3, :s5, [:sL3]}\n    # Фигурные скобки = обязательные,\
-    \ квадратные = менее вероятные\n    structure_list_m1 = [':F3', ':c3', ':s5']\n\
-    \    less_likely_m1    = [':sL3']\n    primary_label_m1  = ':F3'\n\nelif condition\
-    \ == 'b':\n    # {:F3, :c3, :s5, (:sL3), (x:c3), [:L5]}\n    # Круглые скобки\
-    \ = возможные при определённых обстоятельствах\n    structure_list_m1 = [':F3',\
-    \ ':c3', ':s5']\n    possible_m1       = [':sL3', 'x:c3']\n    less_likely_m1\
-    \    = [':L5']\n    primary_label_m1  = ':F3'\n\nelif condition == 'c':\n    #\
-    \ {:c3, (:F3), (x:c3)}\n    structure_list_m1 = [':c3']\n    possible_m1     \
-    \  = [':F3', 'x:c3']\n    less_likely_m1    = []\n    primary_label_m1  = ':c3'\n\
-    \nelif condition == 'd':\n    # {:F3, (:c3), (x:c3)}\n    structure_list_m1 =\
-    \ [':F3']\n    possible_m1       = [':c3', 'x:c3']\n    less_likely_m1    = []\n\
-    \    primary_label_m1  = ':F3'\n\nelif condition == 'e':\n    # {:F3, (x:c3),\
-    \ [:c3]}\n    structure_list_m1 = [':F3']\n    possible_m1       = ['x:c3']\n\
-    \    less_likely_m1    = [':c3']\n    primary_label_m1  = ':F3'\n\n# Итоговое\
-    \ назначение:\n# m1.candidate_labels = structure_list_m1 + possible_m1 + less_likely_m1\n\
-    # m1.primary_label = primary_label_m1\n# m1.label_confidence:\n#   structure_list_m1\
-    \ -> high\n#   possible_m1       -> medium\n#   less_likely_m1    -> low\n"
+  constraint: "# Определить Условие (a-e) на основе внешней логики (контекст соседних\
+    \ моноволн).\n# Критерии выбора Условия не описаны в данном AKU — они определяются\n\
+    # отдельной процедурой из ch03-informal-logic.md.\n#\n# После определения Условия\
+    \ — назначить структурный список для m1:\n#\n# Обозначения уровней уверенности:\n\
+    #   {} — standard (high confidence)\n#   () — possible (medium confidence, при\
+    \ определённых обстоятельствах)\n#   [] — less_likely (low confidence)\n\nif condition\
+    \ == 'a':\n    # {:F3, :c3, :s5, [:sL3]}\n    m1.standard     = [':F3', ':c3',\
+    \ ':s5']\n    m1.possible     = []\n    m1.less_likely  = [':sL3']\n    m1.primary_label\
+    \ = ':F3'\n\nelif condition == 'b':\n    # {:F3, :c3, :s5, (:sL3), (x:c3), [:L5]}\n\
+    \    m1.standard     = [':F3', ':c3', ':s5']\n    m1.possible     = [':sL3', 'x:c3']\n\
+    \    m1.less_likely  = [':L5']\n    m1.primary_label = ':F3'\n\nelif condition\
+    \ == 'c':\n    # {:c3, (:F3), (x:c3)}\n    m1.standard     = [':c3']\n    m1.possible\
+    \     = [':F3', 'x:c3']\n    m1.less_likely  = []\n    m1.primary_label = ':c3'\n\
+    \nelif condition == 'd':\n    # {:F3, (:c3), (x:c3)}\n    m1.standard     = [':F3']\n\
+    \    m1.possible     = [':c3', 'x:c3']\n    m1.less_likely  = []\n    m1.primary_label\
+    \ = ':F3'\n\nelif condition == 'e':\n    # {:F3, (x:c3), [:c3]}\n    m1.standard\
+    \     = [':F3']\n    m1.possible     = ['x:c3']\n    m1.less_likely  = [':c3']\n\
+    \    m1.primary_label = ':F3'\n\n# Итоговое назначение:\nm1.candidate_labels =\
+    \ m1.standard + m1.possible + m1.less_likely\n\n# Уровни уверенности для каждой\
+    \ метки:\nfor label in m1.standard:\n    m1.label_confidence[label] = 'high'\n\
+    for label in m1.possible:\n    m1.label_confidence[label] = 'medium'\nfor label\
+    \ in m1.less_likely:\n    m1.label_confidence[label] = 'low'\n"
   formalization_notes: "1. Условия a-e определяются внешней логикой (ch03-informal-logic.md),\n\
     \   основанной на соотношениях длин и структуре соседних моноволн.\n   Конкретные\
-    \ критерии выбора Условия не описаны в данном AKU.\n2. Обозначения в скобках из\
-    \ verbatim_quote:\n   {} — стандартные (обязательные) метки,\n   () — возможные\
-    \ при определённых обстоятельствах,\n   [] — менее вероятные.\n3. Вероятная (primary)\
-    \ метка: :F3 для всех Условий кроме 'c',\n   где primary = :c3 (согласно statement_ru).\n\
-    4. Префикс 'x:' означает x-волну (соединительная волна в сложных коррекциях)."
+    \ критерии выбора Условия НЕ описаны в данном AKU.\n2. Обозначения из verbatim_quote:\n\
+    \   {} — стандартные (обязательные) метки,\n   () — возможные при определённых\
+    \ обстоятельствах,\n   [] — менее вероятные"
 aliases: []
 related_aku: []
 contradicts_aku: []

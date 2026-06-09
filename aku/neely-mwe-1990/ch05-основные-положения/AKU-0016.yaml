@@ -21,7 +21,7 @@ source:
       '
     language: ru
 formalization:
-  status: formalized
+  status: draft
   applies_when: 'pattern == ''zigzag''
 
     '
@@ -30,7 +30,8 @@ formalization:
     \ зигзага (направление вниз): конец волны-с ниже конца волны-а\n\nif direction\
     \ == 'up':\n    end(wave_c) > end(wave_a)\nelif direction == 'down':\n    end(wave_c)\
     \ < end(wave_a)\n"
-  formalization_notes: 'Правило допускает минимальное превышение ("пусть даже ненамного"),
+  formalization_notes: 'original_status: formalized. Правило допускает минимальное
+    превышение ("пусть даже ненамного"),
 
     то есть строгое неравенство без минимального порога.
 

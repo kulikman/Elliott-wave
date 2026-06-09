@@ -1,0 +1,72 @@
+id: AKU-0332
+type: rule
+strength: conditional
+status: verified
+topic: informal-logic-rules
+subtopics:
+- structural-labels
+- position-indicators
+statement_ru: 'Если откат m1 волной m2 превышает 161.8% (Правила 6-7), то структура
+  m1 неоднозначна (возможна ЛЮБАЯ Структура) и для определения требуются Индикаторы
+  положения.
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: 3-44
+  chapter: 'Chapter 3: Preliminary Analysis'
+  section: Неформальные Правила логики — Синтез
+  figure_id: null
+  verbatim_quote:
+    text: 'большой откат (Правила 6-7, m2 > 161.8% m1) → структура неоднозначна, требуются
+      Индикаторы положения.
+
+      '
+    language: ru
+formalization:
+  status: draft
+  applies_when: '# Откат m2 относительно m1 превышает 161.8%
+
+    # Это соответствует Правилам 6-7 предварительного анализа
+
+    retracement_ratio = price_length(m2) / price_length(m1)
+
+    retracement_ratio > 1.618
+
+    '
+  constraint: "# Следствие 1: Структура m1 неоднозначна — допускается ЛЮБАЯ структура\n\
+    m1.possible_structures = ALL_STRUCTURES\nm1.structure_ambiguous = true\n\n# Следствие\
+    \ 2: Для определения конкретной структуры m1 требуются Индикаторы положения\n\
+    m1.requires_position_indicators = true\n\n# Без применения Индикаторов положения\
+    \ структура m1 не может быть определена\nIF NOT position_indicators_applied(m1):\n\
+    \    m1.structure = UNDETERMINED\n"
+  formalization_notes: 'Правило устанавливает два следствия при большом откате (>161.8%):
+
+    1. Структура m1 неоднозначна (возможна любая структура).
+
+    2. Для разрешения неоднозначности необходимы Индикаторы положения.
+
+
+    Конкретный набор ALL_STRUCTURES и логика Индикаторов положения
+
+    определяются в других AKU и не специфицированы в данном правиле.
+
+
+    "Правила 6-7" — ссылка на правила предварительного анализа,
+
+    где retracement m2 > 161.8% m1.
+
+
+    Правило является conditional — оно задаёт общий принцип,
+
+    а не жёсткое ограничение на конкретные паттерны.'
+aliases:
+- большой откат — неоднозначность
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2025-06-02T12:00:00Z'
+review_notes: Reviewed and approved by Anton 2026-06-09.
+requires_review: false

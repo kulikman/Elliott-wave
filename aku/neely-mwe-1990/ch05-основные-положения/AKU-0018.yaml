@@ -23,7 +23,7 @@ source:
       '
     language: ru
 formalization:
-  status: formalized
+  status: draft
   applies_when: '# Правило применяется при идентификации любого Треугольника
 
     pattern.type == ''triangle''
@@ -52,7 +52,7 @@ formalization:
     # labels(pattern.segments) == [''a'', ''b'', ''c'', ''d'', ''e'']
 
     '
-  formalization_notes: 'Правило устанавливает два аспекта:
+  formalization_notes: 'original_status: formalized. Правило устанавливает два аспекта:
 
     1. Структурное ограничение: ровно 5 сегментов (ни больше, ни меньше)
 

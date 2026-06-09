@@ -261,6 +261,40 @@ classifyCond(int rule, float m0, float m1) =>
 ruleToStructure(int rule) =>
     rule == 1 or rule == 2 ? ":5" : (rule == 3 or rule == 4 or rule == 5) ? ":F3" : rule >= 6 ? "?" : ""
 
+// Уточнённый Индикатор Положения по Правилу + Условию (Гл.3 стр.3-32..3-57).
+// Учитывает условие для Правила 4 (Условие c → :c3 вместо :F3).
+// Возвращает: первичную метку | полный Структурный список.
+ruleCondToStruct(int rule, string cond) =>
+    string primary = ""
+    string full_list = ""
+    if rule == 1
+        primary   := ":5"
+        full_list := "{:5 / (:c3) / (x:c3) / [:sL3] / [:s5]}"
+    else if rule == 2
+        primary   := ":5"
+        full_list := "{:5 / (:sL3) / [:c3] / [:s5]}"
+    else if rule == 3
+        primary   := ":F3/:c3"
+        full_list := "{:F3 / :c3 / :s5 / 5 / (:sL3) / [:L5]}"
+    else if rule == 4
+        // Условие c → первичная :c3; остальные → :F3
+        primary   := cond == "c" ? ":c3" : ":F3"
+        full_list := cond == "a" ? "{:F3/:c3/:s5/[:sL3]}" :
+                     cond == "b" ? "{:F3/:c3/:s5/(:sL3)/(x:c3)/[:L5]}" :
+                     cond == "c" ? "{:c3/(:F3)/(x:c3)}" :
+                     cond == "d" ? "{:F3/(:c3)/(x:c3)}" :
+                                   "{:F3/(x:c3)/[:c3]}"
+    else if rule == 5
+        primary   := ":F3"
+        full_list := "{:F3/:c3/:5/:L5/(:L3)}"
+    else if rule == 6
+        primary   := ":?"
+        full_list := "{любая структура — см. Индикаторы положения стр.3-61}"
+    else if rule == 7
+        primary   := ":?"
+        full_list := "{:5/:s5/:L5/:L3/:F3 — см. Индикаторы положения стр.3-61}"
+    [primary, full_list]
+
 // ──────────────────────── ДЕТЕКТОР МОНОВОЛН ──────────────────────
 // Reversal-ZigZag: моноволна завершается, когда цена развернулась
 // от экстремума более чем на `rev` (порог разворота).
@@ -1289,15 +1323,17 @@ if showC and showSim and rc.simChecked and not rc.similar
          tooltip = "Смежные моноволны разного Порядка (правило подобия AKU-0003): " +
          "кандидат на сжатие/перегруппировку")
 // Классификация моноволны по Определителю Правил (Уровень 2, AKU-0141/0142)
+// Использует ruleCondToStruct для уточнённого Индикатора Положения (Гл.3 стр.3-32..3-57)
 if showC and showClass and rc.ruleNo > 0
-    string lbl = "П" + str.tostring(rc.ruleNo) + rc.condLetter + " " + ruleToStructure(rc.ruleNo)
+    [rcPrimary, rcFullList] = ruleCondToStruct(rc.ruleNo, rc.condLetter)
+    string lbl = "П" + str.tostring(rc.ruleNo) + rc.condLetter + " " + rcPrimary
     label.new(rc.prevBar, rc.prevPrice, lbl,
          xloc = xloc.bar_index, yloc = yloc.price,
          style = label.style_label_left, color = color.new(colClass, 20),
          textcolor = color.white, size = size.tiny,
-         tooltip = "Определитель Правил: m2/m1 -> Правило " + str.tostring(rc.ruleNo) +
-         ", m0/m1 -> Условие '" + rc.condLetter + "'. Вероятная структура m1: " +
-         ruleToStructure(rc.ruleNo) + " (Нили, Гл.3)")
+         tooltip = "Правило " + str.tostring(rc.ruleNo) + rc.condLetter +
+         " → Инд.Положения: " + rcPrimary + "\nВсе кандидаты: " + rcFullList +
+         "\n(m2/m1→Правило; m0/m1→Условие; Нили Гл.3)")
 
 float activeCAmp = not na(zC.pivotPrice) ? math.abs(close - zC.pivotPrice) : na
 string activeCDir = waveDirText(zC.dir)
@@ -1339,8 +1375,12 @@ var array<int>   figStruct  = array.new<int>()
 var array<int>   figEndBar  = array.new<int>()
 var array<float> figEndPx   = array.new<float>()
 if showFig and rc.ruleNo > 0
-    string st = ruleToStructure(rc.ruleNo)
-    int base = st == ":5" ? 5 : st == ":F3" ? 3 : 0
+    // Используем уточнённый Индикатор Положения (Rule+Condition) для точного base
+    [rcPrimFig, _rcListFig] = ruleCondToStruct(rc.ruleNo, rc.condLetter)
+    // base: 5 = импульсная волна (:5), 3 = коррективная (:F3/:c3/:L3/etc), 0 = неизвестно
+    int base = str.contains(rcPrimFig, ":5") ? 5 :
+               (str.contains(rcPrimFig, ":F3") or str.contains(rcPrimFig, ":c3") or
+                str.contains(rcPrimFig, ":L3") or str.contains(rcPrimFig, ":s")) ? 3 : 0
     array.push(figStruct, base)
     array.push(figEndBar, rc.prevBar)
     array.push(figEndPx, rc.prevPrice)

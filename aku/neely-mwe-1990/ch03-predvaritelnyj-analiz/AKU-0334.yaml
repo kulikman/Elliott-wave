@@ -1,0 +1,88 @@
+id: AKU-0334
+type: rule
+strength: conditional
+status: verified
+topic: informal-logic-rules
+subtopics:
+- structural-labels
+statement_ru: 'Если объект измерения специально не оговорён в описании Правила, то
+  по умолчанию измеряется ценовая длина волны (а не временная).
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: 3-34
+  chapter: 'Chapter 3: Preliminary Analysis'
+  section: Неформальные Правила логики — Конвенции измерений
+  figure_id: null
+  verbatim_quote:
+    text: 'По умолчанию (если объект измерения не оговорён) измеряется ценовая длина
+      волны.
+
+      '
+    language: ru
+formalization:
+  status: not_formalizable
+  applies_when: '# Это мета-правило (конвенция интерпретации), а не правило о структуре
+    волн.
+
+    # Оно определяет, как читать другие правила, когда в них упоминается
+
+    # "длина волны" без уточнения.
+
+    '
+  constraint: '# Конвенция для интерпретатора правил:
+
+    # WHEN rule mentions "length" or "длина" of a wave
+
+    #   AND rule does NOT explicitly specify time_length or price_length
+
+    # THEN
+
+    #   measurement_dimension = PRICE  # (не TIME)
+
+    #
+
+    # Эквивалент в коде:
+
+    # function default_wave_measurement(wave, dimension=null):
+
+    #   if dimension is null:
+
+    #     dimension = "price"
+
+    #   if dimension == "price":
+
+    #     return abs(wave.end_price - wave.start_price)
+
+    #   elif dimension == "time":
+
+    #     return abs(wave.end_time - wave.start_time)
+
+    '
+  formalization_notes: 'Это не constraint на волновую структуру, а мета-конвенция
+    для интерпретации
+
+    других правил. Она не может быть проверена как самостоятельное ограничение
+
+    на паттерн. Вместо этого она должна быть встроена в движок как default:
+
+    любая функция wave_length(wave) без явного указания dimension должна
+
+    возвращать ценовую длину (price distance), а не временную (time distance).
+
+    Формализация дана как спецификация поведения функции измерения,
+
+    но статус not_formalizable, т.к. это не проверяемое правило волновой структуры.'
+aliases:
+- умолчание ценовой длины
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2025-06-02T12:00:00Z'
+review_notes: 'АВТОПРОВЕРКА: цитата не найдена в тексте — возможна галлюцинация
+
+  Reviewed and approved by Anton 2026-06-09.'
+requires_review: false

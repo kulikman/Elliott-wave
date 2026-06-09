@@ -21,7 +21,7 @@ source:
       быть самым коротким из трех этих сегментов.
     language: ru
 formalization:
-  status: formalized
+  status: draft
   applies_when: '# Правило применяется при проверке любой фигуры на импульсность
 
     pattern == ''impulse''
@@ -51,8 +51,8 @@ formalization:
     #     invalidate(''impulse'')
 
     '
-  formalization_notes: 'Verbatim: "третий не обязательно должен быть самым длинным,
-    но он никогда не может
+  formalization_notes: 'original_status: formalized. Verbatim: "третий не обязательно
+    должен быть самым длинным, но он никогда не может
 
     быть самым коротким из трех этих сегментов."
 

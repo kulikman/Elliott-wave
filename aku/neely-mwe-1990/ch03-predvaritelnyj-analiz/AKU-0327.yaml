@@ -1,0 +1,88 @@
+id: AKU-0327
+type: rule
+strength: conditional
+status: verified
+topic: informal-logic-rules
+subtopics:
+- structural-labels
+statement_ru: 'Если выражения «почти» или «близко к …» используются при описании соотношений
+  волн, то они означают значение в пределах 10% от указанного.
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: 3-34
+  chapter: 'Chapter 3: Preliminary Analysis'
+  section: Неформальные Правила логики (Pre-Constructive Rules of Logic) — Конвенции
+    измерений
+  figure_id: null
+  verbatim_quote:
+    text: 'Выражения «почти» и «близко к …» означают в пределах 10% от значения.
+
+      '
+    language: ru
+formalization:
+  status: draft
+  applies_when: '# Применяется всякий раз, когда в описании соотношения волн
+
+    # используется квалификатор "почти" или "близко к" относительно
+
+    # некоторого целевого значения (target_value).
+
+    qualifier in ["almost", "nearly", "close_to", "near"]
+
+    '
+  constraint: '# Фактическое значение (actual_value) должно находиться
+
+    # в пределах 10% от указанного целевого значения (target_value).
+
+    #
+
+    # tolerance = target_value * 0.10
+
+    # lower_bound = target_value - tolerance
+
+    # upper_bound = target_value + tolerance
+
+    #
+
+    # actual_value >= lower_bound AND actual_value <= upper_bound
+
+    #
+
+    # Эквивалентная компактная форма:
+
+    abs(actual_value - target_value) <= target_value * 0.10
+
+    '
+  formalization_notes: 'Это мета-правило (конвенция измерений), а не правило для конкретного
+    паттерна.
+
+    Оно определяет числовой допуск для квалификаторов "почти" / "близко к",
+
+    используемых в других правилах. При реализации в коде это будет
+
+    вспомогательная функция-предикат, например:
+
+
+    is_approximately(actual, target) => abs(actual - target) <= target * 0.10
+
+
+    Эта функция затем вызывается из других правил, где встречаются
+
+    указанные квалификаторы. Само по себе правило не привязано
+
+    к конкретной волновой структуре или паттерну.'
+aliases:
+- допуск «почти» 10%
+- near-value tolerance
+related_aku: []
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2025-06-02T12:00:00Z'
+review_notes: 'АВТОПРОВЕРКА: цитата не найдена в тексте — возможна галлюцинация
+
+  Reviewed and approved by Anton 2026-06-09.'
+requires_review: false

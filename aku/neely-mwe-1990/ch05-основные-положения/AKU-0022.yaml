@@ -22,7 +22,7 @@ source:
       '
     language: ru
 formalization:
-  status: formalized
+  status: draft
   applies_when: '# Паттерн — усечённый зигзаг, проверяем соотношение волны-c к волне-a
 
     pattern == ''zigzag'' AND subtype == ''truncated''
@@ -40,8 +40,8 @@ formalization:
     length_c >= 0.382 * length_a AND length_c < 0.618 * length_a
 
     '
-  formalization_notes: 'Правило определяет допустимый диапазон длины волны-c относительно
-    волны-a
+  formalization_notes: 'original_status: formalized. Правило определяет допустимый
+    диапазон длины волны-c относительно волны-a
 
     для квалификации паттерна как усечённого зигзага.
 

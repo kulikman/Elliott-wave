@@ -21,7 +21,7 @@ source:
       сегмента.
     language: ru
 formalization:
-  status: formalized
+  status: draft
   applies_when: 'pattern == ''impulse'' AND wave_2_completed == true
 
     '
@@ -33,8 +33,8 @@ formalization:
     \  # Импульс вниз: волна 1 падает, волна 2 корректирует вверх\n  # Волна 2 не\
     \ должна подняться до или выше начала волны 1\n  high(wave_2) < price(start(wave_1))\n\
     \n# Если условие нарушено — импульсный счёт невозможен (mandatory rule)\n"
-  formalization_notes: 'Правило является абсолютным (mandatory): при нарушении импульсный
-    счёт невозможен.
+  formalization_notes: 'original_status: formalized. Правило является абсолютным (mandatory):
+    при нарушении импульсный счёт невозможен.
 
     Verbatim: "Этот второй сегмент никогда не может достигать начального уровня первого
     сегмента."

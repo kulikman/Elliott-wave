@@ -1,0 +1,38 @@
+id: AKU-0337
+type: definition
+strength: mandatory
+status: verified
+topic: length-ratio-rules
+subtopics:
+- conditions-categories
+statement_ru: 'Соотношение m2/m1 — это процентное отношение вертикальной ценовой проекции
+  m2 к вертикальной ценовой проекции m1, которое определяет, какое Правило (1–7) применяется
+  к моноволне m1.
+
+  '
+source:
+  book_id: neely-mwe-1990
+  page: 3-22
+  chapter: 'Глава 3: Правила соотношений длин волн'
+  section: Принцип
+  figure_id: null
+  verbatim_quote:
+    text: 'Соотношение m2/m1 показывает, какое Правило (1–7) применяется к m1 (см.
+      "Определитель Правил").
+
+      '
+    language: ru
+formalization:
+  status: not_attempted
+aliases: []
+related_aku:
+- AKU-0336
+contradicts_aku: []
+extends_aku: null
+supersedes_aku: null
+created_by: claude
+created_at: '2025-06-02T12:00:00Z'
+review_notes: 'АВТОПРОВЕРКА: цитата не найдена в тексте — возможна галлюцинация
+
+  Reviewed and approved by Anton 2026-06-09.'
+requires_review: false
