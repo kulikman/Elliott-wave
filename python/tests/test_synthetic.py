@@ -368,6 +368,41 @@ def test_epic1_struct_consistency_unit():
     print(f"[epic1    ] ✓ impulse compatibility={score:.2f} (W2/W4 base:3 via Rule6 list)\n")
 
 
+def test_epic2_w2_deep_relabel():
+    """EPIC 2: глубокий откат W2 → переразметка W1 в :3 (сценарий коррекция)."""
+    from ewb.confirm import imp_w2_deep_relabel
+    # Мелкий откат: W1 остаётся :5
+    shallow = imp_w2_deep_relabel(100, 50)   # 50% ≤ 61.8%
+    assert shallow.ok, "shallow W2 should keep W1 as :5"
+    # Глубокий откат 80%: warning-relabel
+    deep = imp_w2_deep_relabel(100, 80)
+    assert not deep.ok and deep.severity == "W"
+    # W2 длиннее W1 (120%): сильная переразметка
+    over = imp_w2_deep_relabel(100, 120)
+    assert not over.ok and over.severity == "E"
+    print("[epic2    ] ✓ W2 50%→:5  80%→relabel(W)  120%→relabel(E)\n")
+
+
+def test_epic2_figure_carries_relabel_flag():
+    """EPIC 2: импульс с глубокой W2 несёт w2_relabel_corrective=True."""
+    from ewb.figures import _try_impulse
+    from ewb.monowaves import Pivot
+    # Импульс с очень глубокой W2: 100→120→102→140→130→160 (W2=18 на W1=20 → 90%)
+    prices = [100, 120, 102, 140, 130, 160]
+    pts = [Pivot(idx=i*10, price=p, direction=(1 if i % 2 == 1 else -1))
+           for i, p in enumerate(prices)]
+    fig = _try_impulse(pts, 0)
+    assert fig is not None
+    assert fig.w2_relabel_corrective, "deep W2 should flag corrective relabel"
+    # Мелкая W2: 100→120→114→140→130→160 (W2=6 на W1=20 → 30%)
+    prices2 = [100, 120, 114, 140, 130, 160]
+    pts2 = [Pivot(idx=i*10, price=p, direction=(1 if i % 2 == 1 else -1))
+            for i, p in enumerate(prices2)]
+    fig2 = _try_impulse(pts2, 0)
+    assert fig2 is not None and not fig2.w2_relabel_corrective
+    print("[epic2    ] ✓ deep-W2 impulse flagged corrective, shallow not\n")
+
+
 if __name__ == "__main__":
     print("=" * 60)
     print("Synthetic tests")
@@ -375,6 +410,8 @@ if __name__ == "__main__":
     test_epic0_structural_lists()
     test_epic1_struct_score_computed()
     test_epic1_struct_consistency_unit()
+    test_epic2_w2_deep_relabel()
+    test_epic2_figure_carries_relabel_flag()
     test_epic0_classify_fills_struct_list()
     test_classify_rule_boundaries()
     test_confirm_impulse_pure_math()

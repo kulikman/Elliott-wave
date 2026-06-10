@@ -20,7 +20,7 @@ from .rules import structure_to_base
 
 from .confirm import (
     confirm_impulse, confirm_zigzag, confirm_flat, confirm_triangle,
-    all_passed, CheckResult,
+    imp_w2_deep_relabel, all_passed, CheckResult,
 )
 
 
@@ -36,6 +36,7 @@ class Figure:
     motion_labels: list[str] = field(default_factory=list)
     structure_labels: list[str] = field(default_factory=list)
     struct_score: float = 0.0   # EPIC 1: совместимость с Логикой Структуры Гл.3 (0..1)
+    w2_relabel_corrective: bool = False  # EPIC 2: глубокий откат W2 → W1=:3, сценарий коррекция
 
     @property
     def start_price(self) -> float: return self.pivots[0].price
@@ -52,6 +53,7 @@ class Figure:
             "start_idx": self.start_idx, "end_idx": self.end_idx,
             "duration": self.duration, "amplitude": self.amplitude,
             "confirmed": self.confirmed, "struct_score": round(self.struct_score, 3),
+            "w2_relabel_corrective": self.w2_relabel_corrective,
             "n_checks": len(self.checks),
             "n_errors": sum(1 for c in self.checks if c.severity == "E" and not c.ok),
             "n_warnings": sum(1 for c in self.checks if c.severity == "W" and not c.ok),
@@ -124,12 +126,21 @@ def _try_impulse(pivots: list[Pivot], i: int) -> Figure | None:
     checks = confirm_impulse(prices, direction)
     confirmed = all_passed(checks)
 
+    # EPIC 2: Логика Структуры — глубокий откат W2 переразмечает W1 в :3.
+    w1 = abs(prices[1] - prices[0])
+    w2 = abs(prices[2] - prices[1])
+    relabel = imp_w2_deep_relabel(w1, w2)
+    w2_corrective = not relabel.ok
+    if w2_corrective:
+        checks = checks + [relabel]   # фиксируем диагностику в чек-листе
+
     return Figure(
         type="impulse", direction=direction,
         start_idx=pts[0].idx, end_idx=pts[-1].idx,
         pivots=pts, confirmed=confirmed, checks=checks,
         motion_labels=["0", "1", "2", "3", "4", "5"],
         structure_labels=[":5", ":F3", ":5", ":F3", ":L5"],
+        w2_relabel_corrective=w2_corrective,
     )
 
 

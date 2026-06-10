@@ -53,6 +53,26 @@ def imp_w2_retrace(w1: float, w2: float) -> CheckResult:
         f"W2={r*100:.1f}%≤61.8%" if ok else f"W2={r*100:.1f}%>61.8%", "AKU-0127")
 
 
+def imp_w2_deep_relabel(w1: float, w2: float) -> CheckResult:
+    """EPIC 2 — Логика Структуры (Гл.3, AKU-0330-0332): если W2 откатывает
+    >61.8% W1, то то, что мы пометили W1 (как :5), вероятно НЕ завершённая
+    пятёрка, а тройка (:3). Это значит — мы в коррекции, а не в импульсе.
+
+    Возвращает severity "E" (relabel) когда откат глубокий — НЕ как нарушение
+    геометрии, а как сигнал переинтерпретации для торгового слоя (EPIC 3).
+    Глубина >100% (W2 длиннее W1) — почти наверняка коррекция.
+    """
+    if w1 <= 0:
+        return CheckResult(True, "N", "W1=0", "AKU-0330")
+    r = w2 / w1
+    if r <= 0.618:
+        return CheckResult(True, "O", f"W2={r*100:.0f}%≤61.8% → W1 вероятно :5", "AKU-0330")
+    # глубокий откат — W1 переразмечается в :3
+    sev = "E" if r > 1.0 else "W"
+    return CheckResult(False, sev,
+        f"W2={r*100:.0f}%>61.8% → W1 вероятно :3, сценарий КОРРЕКЦИЯ", "AKU-0331")
+
+
 def imp_alternation(w2: float, w4: float) -> CheckResult:
     """AKU-0126: W2/W4 must alternate (different by >20%)."""
     if w2 <= 0:
