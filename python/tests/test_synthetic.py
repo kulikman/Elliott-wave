@@ -515,6 +515,42 @@ def test_epic5_predict_w4_type():
     print(f"[epic5    ] ✓ predict W4 type; figure.predicted_w4_type={fig.predicted_w4_type}\n")
 
 
+def test_epic6_post_impulse_projection():
+    """EPIC 6: после импульса вверх — коррекция вниз к зоне W4..W2."""
+    from ewb.post_pattern import project_next_move
+    from ewb.figures import Figure
+    from ewb.monowaves import Pivot
+    prices = [100, 120, 110, 145, 135, 165]   # impulse up, W4=135, W2=110
+    pts = [Pivot(idx=i*10, price=p, direction=(1 if i % 2 == 1 else -1))
+           for i, p in enumerate(prices)]
+    fig = Figure(type="impulse", direction="up", start_idx=0, end_idx=50,
+                 pivots=pts, confirmed=True)
+    nm = project_next_move(fig)
+    assert nm is not None and nm.direction == "down"
+    assert nm.target_lo == 110 and nm.target_hi == 135   # W2..W4 zone
+    assert nm.invalidation == 165                        # W5 end
+    print(f"[epic6    ] ✓ post-impulse: {nm.direction} to [{nm.target_lo},{nm.target_hi}] "
+          f"invalid>{nm.invalidation}\n")
+
+
+def test_epic6_post_zigzag_projection():
+    """EPIC 6: после зигзага — разворот, откат >61.8% волны-c (AKU-0023)."""
+    from ewb.post_pattern import project_next_move
+    from ewb.figures import Figure
+    from ewb.monowaves import Pivot
+    # zigzag down: 100→80(A)→90(B)→70(C). C len = 20, retrace 0.618*20=12.36
+    prices = [100, 80, 90, 70]
+    pts = [Pivot(idx=i*10, price=p, direction=(-1 if i % 2 == 1 else 1))
+           for i, p in enumerate(prices)]
+    fig = Figure(type="zigzag", direction="down", start_idx=0, end_idx=30,
+                 pivots=pts, confirmed=True)
+    nm = project_next_move(fig)
+    assert nm is not None and nm.direction == "up"
+    # target = C_end + 0.618*C_len = 70 + 12.36 = 82.36
+    assert abs(nm.target_hi - 82.36) < 0.1
+    print(f"[epic6    ] ✓ post-zigzag: up to {nm.target_hi:.2f} (>61.8% of C)\n")
+
+
 if __name__ == "__main__":
     print("=" * 60)
     print("Synthetic tests")
@@ -530,6 +566,8 @@ if __name__ == "__main__":
     test_epic4_primary_tp_selection()
     test_epic5_alternation_by_type()
     test_epic5_predict_w4_type()
+    test_epic6_post_impulse_projection()
+    test_epic6_post_zigzag_projection()
     test_epic0_classify_fills_struct_list()
     test_classify_rule_boundaries()
     test_confirm_impulse_pure_math()
