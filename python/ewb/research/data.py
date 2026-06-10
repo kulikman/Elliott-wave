@@ -46,14 +46,9 @@ def _resample_ohlc(df: pd.DataFrame, rule: str, include_volume: bool) -> pd.Data
     return out[cols].resample(rule).agg(agg).dropna()
 
 
-def download_ohlc(ticker: str, interval: str, period: str,
-                  include_volume: bool = False,
-                  min_rows: int = 50) -> pd.DataFrame | None:
-    """Download OHLC from yfinance and normalize columns.
-
-    Supports "4h"/"2h" (resampled from 1h) and "1w" (alias of 1wk) on top of
-    yfinance's native intervals.
-    """
+def _download_yfinance(ticker: str, interval: str, period: str,
+                       include_volume: bool, min_rows: int) -> pd.DataFrame | None:
+    """Fallback path: yfinance with 4h/2h resampling and 1w->1wk aliasing."""
     iv = str(interval).lower()
     try:
         if iv in _RESAMPLE_FROM:
@@ -66,6 +61,30 @@ def download_ohlc(ticker: str, interval: str, period: str,
         df = yf.download(ticker, period=period, interval=yf_iv,
                          progress=False, auto_adjust=True, threads=False)
     except Exception as exc:
-        log.warning("download_ohlc failed for %s/%s/%s: %s", ticker, interval, period, exc)
+        log.warning("yfinance download failed for %s/%s/%s: %s", ticker, interval, period, exc)
         return None
     return normalize_ohlc(df, include_volume=include_volume, min_rows=min_rows)
+
+
+def download_ohlc(ticker: str, interval: str, period: str,
+                  include_volume: bool = False,
+                  min_rows: int = 50) -> pd.DataFrame | None:
+    """Download OHLC, routed by asset class.
+
+    Crypto -> Binance (keyless, native 1h/4h/1d/1w). Stocks -> Tiingo (needs
+    TIINGO_API_KEY). yfinance is the fallback for both when the primary
+    provider returns nothing (or the Tiingo key is absent).
+    """
+    iv = str(interval).lower()
+    try:
+        from ewb.research import providers as _prov
+        if _prov.is_crypto(ticker):
+            df = _prov.download_binance_ohlc(ticker, iv, period, min_rows=min_rows)
+        else:
+            df = _prov.download_tiingo_ohlc(ticker, iv, period, min_rows=min_rows)
+        if df is not None:
+            return df
+    except Exception as exc:  # pragma: no cover - defensive, keep fallback alive
+        log.warning("provider download failed for %s/%s: %s — falling back to yfinance",
+                    ticker, interval, exc)
+    return _download_yfinance(ticker, interval, period, include_volume, min_rows)

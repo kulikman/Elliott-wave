@@ -1379,16 +1379,24 @@ def fetch_prices(tickers: list[str], timeout: float = 8.0) -> dict[str, float | 
     if not tickers:
         return {}
     import concurrent.futures
+
+    def _get_price(sym: str) -> tuple[str, float | None]:
+        # Provider first (Binance/Tiingo), yfinance fallback.
+        try:
+            from ewb.research.providers import last_price
+            px = last_price(sym)
+            if px:
+                return sym.upper(), float(px)
+        except Exception:
+            pass
+        try:
+            import yfinance as yf
+            return sym.upper(), yf.Ticker(sym).fast_info.last_price
+        except Exception:
+            return sym.upper(), None
+
+    result: dict[str, float | None] = {}
     try:
-        import yfinance as yf
-
-        def _get_price(sym: str) -> tuple[str, float | None]:
-            try:
-                return sym.upper(), yf.Ticker(sym).fast_info.last_price
-            except Exception:
-                return sym.upper(), None
-
-        result: dict[str, float | None] = {}
         with concurrent.futures.ThreadPoolExecutor(max_workers=min(len(tickers), 8)) as ex:
             futs = {ex.submit(_get_price, t): t for t in tickers}
             done, _ = concurrent.futures.wait(futs, timeout=timeout)

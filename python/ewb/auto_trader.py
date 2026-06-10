@@ -192,10 +192,17 @@ def write_state(state: dict[str, Any]) -> None:
 
 
 def current_price(ticker: str) -> float | None:
+    # Provider first (Binance/Tiingo), yfinance fallback.
+    try:
+        from ewb.research.providers import last_price
+        px = last_price(ticker)
+        if px and math.isfinite(px):
+            return float(px)
+    except Exception:
+        pass
     try:
         import yfinance as yf
-        info = yf.Ticker(ticker).fast_info
-        px = info.last_price
+        px = yf.Ticker(ticker).fast_info.last_price
         return float(px) if px and math.isfinite(px) else None
     except Exception:
         return None
@@ -204,19 +211,7 @@ def current_price(ticker: str) -> float | None:
 def current_prices(tickers: list[str]) -> dict[str, float | None]:
     if not tickers:
         return {}
-    try:
-        import yfinance as yf
-        batch = yf.Tickers(" ".join(tickers))
-        result: dict[str, float | None] = {}
-        for sym in tickers:
-            try:
-                px = batch.tickers[sym.upper()].fast_info.last_price
-                result[sym.upper()] = float(px) if px and math.isfinite(px) else None
-            except Exception:
-                result[sym.upper()] = None
-        return result
-    except Exception:
-        return {t.upper(): None for t in tickers}
+    return {t.upper(): current_price(t) for t in tickers}
 
 
 def rr(entry: float, stop: float, target: float) -> float:
@@ -233,18 +228,6 @@ def rr(entry: float, stop: float, target: float) -> float:
 # forward and exit at the first bar that hits SL or TP, otherwise at the close of
 # the timeout bar. Every exit price is thus checkable against the chart.
 
-# yfinance native intervals + how many native bars make one trade bar.
-_YF_INTERVAL = {
-    "1d":  ("1d", 1),
-    "1w":  ("1wk", 1),
-    "1wk": ("1wk", 1),
-    "4h":  ("1h", 4),
-    "1h":  ("1h", 1),
-    "30m": ("30m", 1),
-    "15m": ("15m", 1),
-}
-
-
 def historical_exit(
     ticker: str,
     interval: str,
@@ -259,30 +242,22 @@ def historical_exit(
 
     SL/TP exits use the stop/target level (the price the order would fill at);
     timeout exits use the close of the timeout bar. Returns None if no usable
-    history is available (caller should then leave the trade open).
+    history is available (caller should then leave the trade open). Data comes
+    from the same provider layer as the scanner (Binance/Tiingo, yfinance
+    fallback) so exit prices match what the chart shows.
     """
-    try:
-        import yfinance as yf
-    except Exception:
-        return None
+    from ewb.research.data import download_ohlc
 
-    yf_int, scale = _YF_INTERVAL.get(str(interval), ("1d", 1))
+    interval = str(interval)
     entry_ts = pd.Timestamp(entry_ts)
     if entry_ts.tzinfo is None:
         entry_ts = entry_ts.tz_localize("UTC")
 
-    start = (entry_ts - pd.Timedelta(days=2)).date()
-    end   = (utc_now() + pd.Timedelta(days=2)).date()
-    try:
-        df = yf.download(ticker, start=str(start), end=str(end), interval=yf_int,
-                         progress=False, auto_adjust=True, threads=False)
-    except Exception:
-        return None
+    # Enough history to cover entry -> now with a buffer.
+    days = max(7, (utc_now() - entry_ts).days + 5)
+    df = download_ohlc(ticker, interval, f"{days}d", min_rows=0)
     if df is None or df.empty:
         return None
-    if isinstance(df.columns, pd.MultiIndex):
-        df.columns = [c[0] for c in df.columns]
-    df.columns = [str(c).lower() for c in df.columns]
     if not {"high", "low", "close"}.issubset(df.columns):
         return None
 
@@ -292,8 +267,7 @@ def historical_exit(
     if after.empty:
         return None
 
-    max_native = max(1, timeout_bars * scale)
-    walk = after.iloc[:max_native]
+    walk = after.iloc[:max(1, timeout_bars)]
     is_long = str(side).lower() in ("long", "buy")
 
     for ts, bar in walk.iterrows():
@@ -312,7 +286,7 @@ def historical_exit(
 
     last_ts = walk.index[-1]
     last_close = float(walk.iloc[-1]["close"])
-    reason = "timeout" if len(after) >= max_native else "open_end"
+    reason = "timeout" if len(after) >= timeout_bars else "open_end"
     return last_ts, last_close, reason
 
 
