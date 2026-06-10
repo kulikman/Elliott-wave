@@ -174,7 +174,6 @@ def nav(active: str) -> str:
         ("Signals", "/signals"),
         ("Trades", "/trades"),
         ("Portfolio", "/portfolio"),
-        ("Backtest", "/backtest"),
         ("Settings", "/settings"),
     ]
     links = []
@@ -972,19 +971,7 @@ def trade_detail_page(signal_id: str) -> HTMLResponse:
 
 @app.get("/backtest", response_class=HTMLResponse)
 def backtest() -> HTMLResponse:
-    data = dashboard_payload()
-    historical = data["backtest"].get("portfolio", {})
-    forward = data["forward_summary"]
-    rows = [
-        ["Historical baseline", historical.get("trades", 0), pct(historical.get("winrate")), pct(historical.get("expectancy")), fmt(historical.get("profit_factor")), pct(historical.get("max_drawdown"))],
-        ["Forward closed", forward.get("trades", 0), pct(forward.get("winrate")), pct(forward.get("expectancy")), fmt(forward.get("profit_factor")), pct(forward.get("max_drawdown"))],
-    ]
-    body = f"""
-    <div class="topbar"><div><h2>Backtest vs Forward</h2><div class="muted">Reality check before any bot or capital scaling.</div></div></div>
-    {table(["Scope", "Trades", "Winrate", "Expectancy", "PF", "Drawdown"], rows)}
-    <div class="band">Rule: fewer than 30 closed forward trades means observe only. PF below 1.1 or negative expectancy means block automation.</div>
-    """
-    return layout("Backtest", "Backtest", body)
+    return RedirectResponse("/settings#backtest", status_code=302)
 
 
 @app.get("/settings", response_class=HTMLResponse)
@@ -993,6 +980,16 @@ def settings() -> HTMLResponse:
     profiles = read_profiles().get("profiles", {})
     risk_settings = read_risk_settings()
     tickers = watchlist.get("tickers", [])
+
+    # Backtest section data
+    data = dashboard_payload()
+    historical = data["backtest"].get("portfolio", {})
+    forward = data["forward_summary"]
+    bt_rows = [
+        ["Historical baseline", historical.get("trades", 0), pct(historical.get("winrate")), pct(historical.get("expectancy")), fmt(historical.get("profit_factor")), pct(historical.get("max_drawdown"))],
+        ["Forward closed",      forward.get("trades", 0),    pct(forward.get("winrate")),    pct(forward.get("expectancy")),    fmt(forward.get("profit_factor")),    pct(forward.get("max_drawdown"))],
+    ]
+
     profile_rows = []
     for key, profile in profiles.items():
         profile_rows.append([
@@ -1010,6 +1007,10 @@ def settings() -> HTMLResponse:
         ])
     body = f"""
     <div class="topbar"><div><h2>Settings</h2><div class="muted">Watchlist profiles for long-term, swing, intraday and crypto modes.</div></div></div>
+    <h3 id="backtest">Backtest vs Forward</h3>
+    {table(["Scope", "Trades", "Winrate", "Expectancy", "PF", "Drawdown"], bt_rows)}
+    <div class="band" style="margin-top:0">Правило: меньше 30 закрытых forward-сделок — только наблюдение. PF &lt; 1.1 или отрицательная expectancy — автоматизацию не включать.</div>
+    <h3>Активный вотчлист</h3>
     <div class="band">
       <strong>Interval:</strong> {html_escape(watchlist.get("interval", "-"))}<br>
       <strong>Actions:</strong> {html_escape(", ".join(watchlist.get("actions", [])))}<br>
