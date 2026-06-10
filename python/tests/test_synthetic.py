@@ -328,11 +328,53 @@ def test_epic0_classify_fills_struct_list():
     print(f"[epic0    ] ✓ {len(classified)} пивотов получили struct_list/struct_label\n")
 
 
+def test_epic1_struct_score_computed():
+    """EPIC 1: match_figures заполняет struct_score (совместимость с Логикой Структуры)."""
+    pivots_target = [100, 120, 110, 140, 130, 160]
+    df = _build_ohlc_from_pivots(pivots_target, bars_per_seg=30, jitter=0.005)
+    pivots = detect_monowaves(df, atr_period=14, atr_mult=1.0)
+    classify_pivots(pivots)
+    figs = match_figures(pivots)
+    assert figs, "expected at least one figure"
+    for f in figs:
+        assert 0.0 <= f.struct_score <= 1.0
+    # У импульса struct_score должен быть > 0 (база совместима со списками)
+    impulses = [f for f in figs if f.type == "impulse"]
+    if impulses:
+        assert impulses[0].struct_score > 0.0, "impulse struct_score should be >0"
+    print(f"[epic1    ] ✓ figs={[(f.type, round(f.struct_score,2)) for f in figs]}\n")
+
+
+def test_epic1_struct_consistency_unit():
+    """EPIC 1: _structural_consistency — совместимость через членство в списке."""
+    from ewb.figures import _structural_consistency, Figure
+    from ewb.rules import rule_to_structure_list
+    from ewb.monowaves import Pivot
+
+    # Собираем импульс-фигуру вручную, проставляем struct_list пивотам.
+    # W2/W4 (корректирующие) дают Правило 6-7, но база :3 в списке присутствует.
+    pts = [Pivot(idx=i, price=p, direction=(1 if i % 2 == 1 else -1))
+           for i, p in enumerate([100, 120, 110, 140, 130, 160])]
+    # Расставим struct_list: волны 1,3,5 (импульсные) → Правило 1 (:5),
+    # волны 2,4 (коррекция перед большой волной) → Правило 6 (:5 топ, но :L3/:F3 тоже есть)
+    for k in range(1, 6):
+        rule = 6 if k in (2, 4) else 1
+        pts[k].struct_list = rule_to_structure_list(rule)
+    fig = Figure(type="impulse", direction="up", start_idx=0, end_idx=5,
+                 pivots=pts, structure_labels=[":5", ":F3", ":5", ":F3", ":L5"])
+    score = _structural_consistency(fig)
+    # Все пять баз должны быть совместимы (даже W2/W4 через :L3 в списке Пр.6)
+    assert score > 0.5, f"expected compatible impulse, got {score}"
+    print(f"[epic1    ] ✓ impulse compatibility={score:.2f} (W2/W4 base:3 via Rule6 list)\n")
+
+
 if __name__ == "__main__":
     print("=" * 60)
     print("Synthetic tests")
     print("=" * 60)
     test_epic0_structural_lists()
+    test_epic1_struct_score_computed()
+    test_epic1_struct_consistency_unit()
     test_epic0_classify_fills_struct_list()
     test_classify_rule_boundaries()
     test_confirm_impulse_pure_math()

@@ -16,6 +16,7 @@ Greedy non-overlapping selection with priority: impulse > triangle > flat
 from __future__ import annotations
 from dataclasses import dataclass, field
 from .monowaves import Pivot
+from .rules import structure_to_base
 
 from .confirm import (
     confirm_impulse, confirm_zigzag, confirm_flat, confirm_triangle,
@@ -34,6 +35,7 @@ class Figure:
     checks: list[CheckResult] = field(default_factory=list)
     motion_labels: list[str] = field(default_factory=list)
     structure_labels: list[str] = field(default_factory=list)
+    struct_score: float = 0.0   # EPIC 1: совместимость с Логикой Структуры Гл.3 (0..1)
 
     @property
     def start_price(self) -> float: return self.pivots[0].price
@@ -49,12 +51,47 @@ class Figure:
             "type": self.type, "direction": self.direction,
             "start_idx": self.start_idx, "end_idx": self.end_idx,
             "duration": self.duration, "amplitude": self.amplitude,
-            "confirmed": self.confirmed, "n_checks": len(self.checks),
+            "confirmed": self.confirmed, "struct_score": round(self.struct_score, 3),
+            "n_checks": len(self.checks),
             "n_errors": sum(1 for c in self.checks if c.severity == "E" and not c.ok),
             "n_warnings": sum(1 for c in self.checks if c.severity == "W" and not c.ok),
             "pivot_prices": [p.price for p in self.pivots],
             "pivot_indices": [p.idx for p in self.pivots],
         }
+
+
+def _structural_consistency(fig: Figure) -> float:
+    """EPIC 1 — Логика Структуры (Гл.3): совместимость гипотезы фигуры со
+    структурными списками пивотов.
+
+    Для каждой волны k фигура ожидает базу :5 или :3 (structure_labels[k]).
+    Каждый пивот несёт struct_list — ПОЛНЫЙ список легальных позиционных меток
+    (AKU-0148-0170) с весами скобок. Проверяем: присутствует ли ожидаемая база
+    в списке возможностей пивота, и с каким весом.
+
+    Это «совместимость», а не «топ-выбор»: корректирующая W2 перед большой W3
+    даёт Правило 6-7, но база :3 всё равно присутствует в списке (с весом скобок).
+    Возвращает 0..1 — средневзвешенную совместимость по всем волнам.
+    """
+    labels = fig.structure_labels
+    if not labels:
+        return 0.0
+    matched = 0.0
+    total = 0.0
+    for k, exp in enumerate(labels):
+        piv = fig.pivots[k + 1]          # волна k заканчивается на pivots[k+1]
+        exp_base = structure_to_base(exp)
+        if exp_base == 0:
+            continue
+        total += 1.0
+        if not piv.struct_list:
+            continue                      # нет классификации (краевой пивот) — пропуск
+        best = 0.0
+        for lbl, w in piv.struct_list:
+            if structure_to_base(lbl) == exp_base:
+                best = max(best, w)
+        matched += best
+    return matched / total if total > 0 else 0.0
 
 
 def _directions_alternate(pivots: list[Pivot], start: int, count: int) -> bool:
@@ -215,10 +252,14 @@ def _try_double_corr(pivots: list[Pivot], i: int) -> Figure | None:
 
 
 # Priority for greedy selection. Higher score wins.
+# EPIC 1: structural consistency (struct_score) bucketed into the tie-break so
+# a structurally-compatible figure beats a structurally-contradicted one of the
+# same type/confirmation, without overriding geometry confirmation.
 def _figure_score(f: Figure) -> tuple:
     type_rank = {"impulse": 5, "triangle": 4, "flat": 3,
                  "double_corr": 2, "zigzag": 1}
-    return (int(f.confirmed), type_rank.get(f.type, 0), -f.start_idx)
+    struct_bucket = round(f.struct_score * 4)   # 0..4, coarse to avoid noise
+    return (int(f.confirmed), type_rank.get(f.type, 0), struct_bucket, -f.start_idx)
 
 
 def match_figures(pivots: list[Pivot]) -> list[Figure]:
@@ -238,6 +279,7 @@ def match_figures(pivots: list[Pivot]) -> list[Figure]:
                    _try_zigzag, _try_double_corr):
             fig = fn(pivots, i)
             if fig is not None:
+                fig.struct_score = _structural_consistency(fig)  # EPIC 1
                 candidates.append((i, fig))
 
     # Phase 2: greedy non-overlap (operating on pivot indices, not bar indices)
@@ -247,9 +289,10 @@ def match_figures(pivots: list[Pivot]) -> list[Figure]:
         # find pivot index range
         size = 6 if fig.type in ("impulse", "triangle") else 4
         indexed.append((i, i + size - 1, fig))
-    # Sort by score desc, then by start asc
+    # Sort by score desc (confirmed, type_rank, struct_bucket), then by start asc
     indexed.sort(key=lambda t: (-_figure_score(t[2])[0],
-                                 -_figure_score(t[2])[1], t[0]))
+                                 -_figure_score(t[2])[1],
+                                 -_figure_score(t[2])[2], t[0]))
 
     used = [False] * n
     selected: list[Figure] = []
