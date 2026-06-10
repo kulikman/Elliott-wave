@@ -328,8 +328,11 @@ method step(ZZState s, float h, float l, float rev) =>
         if h > s.extPrice
             s.extPrice := h
             s.extBar   := bar_index
-        // Разворот вниз → подтверждаем максимум как пивот
-        if l < s.extPrice - rev
+        // Разворот вниз → подтверждаем максимум как пивот.
+        // s.extBar != bar_index: нельзя подтверждать разворот на том же баре,
+        // где поставлен экстремум (иначе одна «толстая» свеча с размахом > rev
+        // даёт ложный внутрибаровый пивот, и соседние пивоты c/d садятся на один бар).
+        if l < s.extPrice - rev and s.extBar != bar_index
             r.confirmed := true
             r.price     := s.extPrice
             r.bar       := s.extBar
@@ -348,8 +351,9 @@ method step(ZZState s, float h, float l, float rev) =>
         if l < s.extPrice
             s.extPrice := l
             s.extBar   := bar_index
-        // Разворот вверх → подтверждаем минимум как пивот
-        if h > s.extPrice + rev
+        // Разворот вверх → подтверждаем минимум как пивот (та же защита от
+        // внутрибарового подтверждения, см. ветку вверх).
+        if h > s.extPrice + rev and s.extBar != bar_index
             r.confirmed := true
             r.price     := s.extPrice
             r.bar       := s.extBar
