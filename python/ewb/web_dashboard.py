@@ -312,6 +312,8 @@ def as_timestamp(value: Any) -> pd.Timestamp | None:
         ts = pd.Timestamp(value)
     except Exception:
         return None
+    if pd.isna(ts):
+        return None
     if ts.tzinfo is None:
         ts = ts.tz_localize("UTC")
     return ts.tz_convert("UTC")
@@ -529,6 +531,8 @@ def action_board_rows(limit: int = 20, filters: dict[str, Any] | None = None) ->
     filters = filters or {}
     report = read_json(SIGNALS_DIR / "daily_report.json")
     risk_settings = read_risk_settings()
+    forward = forward_frame()
+    seq = seq_numbers(forward)
     rows: list[list[Any]] = []
     for signal in report.get("signals", [])[:limit]:
         action = str(signal.get("recommended_action", "wait")).lower()
@@ -553,6 +557,7 @@ def action_board_rows(limit: int = 20, filters: dict[str, Any] | None = None) ->
         )
         action_cell = tradingview_link(signal.get("ticker", "")) + accept_signal_form(signal)
         rows.append([
+            '<span class="muted">—</span>',
             decision_pill(decision),
             html_escape(signal.get("ticker", "")),
             decision_pill(action),
@@ -568,12 +573,13 @@ def action_board_rows(limit: int = 20, filters: dict[str, Any] | None = None) ->
             age_text(signal.get("entry_ts")),
             action_cell + f'<div class="muted">{html_escape(reason)}</div>',
         ])
-    forward = forward_frame()
     open_trades = forward[forward["status"] == "open"].copy() if not forward.empty else pd.DataFrame()
     sort_col = "entry_ts" if "entry_ts" in open_trades.columns else None
     sorted_open = open_trades.sort_values(sort_col, ascending=False) if sort_col else open_trades
     for _, row in sorted_open.iterrows():
-        signal_id = html_escape(row.get("signal_id", ""))
+        sid = str(row.get("signal_id", ""))
+        signal_id = html_escape(sid)
+        num = seq.get(sid, "")
         rr = rr_value(row.get("entry_px"), row.get("stop_px"), row.get("target_px"))
         if not passes_action_filters(
             decision="HOLD",
@@ -592,6 +598,7 @@ def action_board_rows(limit: int = 20, filters: dict[str, Any] | None = None) ->
             settings=risk_settings,
         )
         rows.insert(0, [
+            f'<a class="code" href="/trades/{signal_id}" title="{signal_id}"><strong>{num}</strong></a>',
             pill("ДЕРЖАТЬ", "open"),
             html_escape(row.get("ticker", "")),
             decision_pill(row.get("side", "")),
@@ -658,11 +665,14 @@ def alert_event_rows(limit: int = 30) -> list[list[Any]]:
         for row in read_jsonl(FORWARD_LOG)
         if row.get("event_type") == "signal"
     ]
+    seq = seq_numbers(forward_frame())
     rows = []
     for row in reversed(signals[-limit:]):
-        signal_id = html_escape(row.get("signal_id", ""))
+        sid = str(row.get("signal_id", ""))
+        signal_id = html_escape(sid)
+        num = seq.get(sid, "")
         rows.append([
-            f'<a class="code" href="/trades/{signal_id}">{signal_id}</a>',
+            f'<a class="code" href="/trades/{signal_id}" title="{signal_id}"><strong>{num}</strong></a>',
             html_escape(row.get("ticker", "")),
             html_escape(row.get("interval", "")),
             decision_pill(row.get("side", "")),
@@ -746,7 +756,7 @@ def dashboard() -> HTMLResponse:
     <div class="grid">{metric_html}</div>
     <div class="band"><strong>Рабочее решение:</strong> {html_escape(daily.get("decision_reason", "Запустите пайплайн стратегии, чтобы получить свежее решение."))}</div>
     <h3>Доска действий</h3>
-    {table(["Решение", "Тикер", "Сторона", "ТФ", "Паттерн", "P", "RR", "Кол-во", "Риск", "Вход", "SL", "TP", "Возраст", "Действие"], action_board_rows(12))}
+    {table(["#", "Решение", "Тикер", "Сторона", "ТФ", "Паттерн", "P", "RR", "Кол-во", "Риск", "Вход", "SL", "TP", "Возраст", "Действие"], action_board_rows(12))}
     <h3>Авто-трейдер</h3>
     {auto_trader_widget()}
     <h3>Что дальше</h3>
@@ -788,7 +798,7 @@ def action_board(
       <label>Мин. RR<input name="min_rr" value="{html_escape(min_rr)}" placeholder="1.0"></label>
       <button class="btn" type="submit">Фильтр</button>
     </form>
-    {table(["Решение", "Тикер", "Сторона", "ТФ", "Паттерн", "P", "RR", "Кол-во", "Риск", "Вход", "SL", "TP", "Возраст", "Действие"], action_board_rows(50, filters))}
+    {table(["#", "Решение", "Тикер", "Сторона", "ТФ", "Паттерн", "P", "RR", "Кол-во", "Риск", "Вход", "SL", "TP", "Возраст", "Действие"], action_board_rows(50, filters))}
     <div class="band">
       <strong>Как читать:</strong> ПРОВЕРИТЬ — открыть график и подтвердить HTF/волновой контекст перед входом.
       ДЕРЖАТЬ — есть открытая forward-сделка для управления. НАБЛЮДАТЬ/СВЕРИТЬ — не входить без ручной проверки.

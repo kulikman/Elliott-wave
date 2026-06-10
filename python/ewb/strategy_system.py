@@ -450,7 +450,10 @@ def forward_trades(events: list[dict[str, Any]]) -> pd.DataFrame:
     out = pd.DataFrame(rows)
     for col in ("entry_ts", "exit_ts", "recorded_at"):
         if col in out.columns:
-            out[col] = pd.to_datetime(out[col], utc=True, errors="coerce")
+            # format="mixed": entry_ts may mix tz-aware (Binance, +00:00) and
+            # naive (Tiingo/yfinance) strings; parse each element independently
+            # so neither becomes NaT.
+            out[col] = pd.to_datetime(out[col], utc=True, errors="coerce", format="mixed")
     return out
 
 
