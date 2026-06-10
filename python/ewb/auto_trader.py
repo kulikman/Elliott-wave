@@ -74,7 +74,6 @@ logging.basicConfig(
     format="%(asctime)s  %(levelname)-7s %(message)s",
     handlers=[
         logging.StreamHandler(sys.stdout),
-        logging.FileHandler(LOG_FILE, encoding="utf-8"),
     ],
 )
 log = logging.getLogger("auto_trader")

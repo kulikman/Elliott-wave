@@ -173,7 +173,6 @@ def nav(active: str) -> str:
         ("Action Board", "/action-board"),
         ("Signals", "/signals"),
         ("Trades", "/trades"),
-        ("History", "/history"),
         ("Portfolio", "/portfolio"),
         ("Backtest", "/backtest"),
         ("Settings", "/settings"),
@@ -815,33 +814,68 @@ def trade_rows(frame: pd.DataFrame, include_settle: bool) -> list[list[Any]]:
 
 
 @app.get("/trades", response_class=HTMLResponse)
-def trades() -> HTMLResponse:
+def trades(tab: str = "open") -> HTMLResponse:
     frame = forward_frame()
-    open_trades = frame[frame["status"] == "open"].copy() if not frame.empty else pd.DataFrame()
+    open_trades  = frame[frame["status"] == "open"].copy()   if not frame.empty else pd.DataFrame()
+    closed_trades = frame[frame["status"] == "closed"].copy() if not frame.empty else pd.DataFrame()
+
+    tab_open_cls   = "tab-btn active" if tab == "open"    else "tab-btn"
+    tab_hist_cls   = "tab-btn active" if tab == "history" else "tab-btn"
+
+    if tab == "history":
+        tab_content = table(
+            ["ID", "Ticker", "TF", "Side", "Pattern", "Entry", "SL", "TP", "Return", "Exit"],
+            trade_rows(closed_trades, False),
+        )
+    else:
+        tab_content = f"""
+        {table(["ID", "Ticker", "TF", "Side", "Pattern", "Entry", "SL", "TP", "Status", "Exit", "Quick"],
+               trade_rows(open_trades, True))}
+        <h3 style="margin:1.5rem 0 .5rem">Закрыть вручную</h3>
+        <form class="band form-grid" method="post" action="/trades/settle">
+          <label>Signal ID<input name="signal_id" required></label>
+          <label>Время выхода<input name="exit_ts" placeholder="2026-06-07T16:00:00Z" required></label>
+          <label>Цена выхода<input name="exit_px" required></label>
+          <label>Причина<select name="exit_reason">
+            <option>tp</option><option>sl</option><option>time</option>
+            <option>manual</option><option>cancelled</option>
+          </select></label>
+          <button class="btn" type="submit">Закрыть</button>
+        </form>"""
+
+    open_cnt   = len(open_trades)
+    closed_cnt = len(closed_trades)
+
     body = f"""
-    <div class="topbar"><div><h2>Open Trades</h2><div class="muted">Paper/live positions reconstructed from TradingView alerts.</div></div></div>
-    {table(["ID", "Ticker", "TF", "Side", "Pattern", "Entry", "SL", "TP", "Status", "Exit", "Quick"], trade_rows(open_trades, True))}
-    <h3>Manual Close</h3>
-    <form class="band form-grid" method="post" action="/trades/settle">
-      <label>Signal ID<input name="signal_id" required></label>
-      <label>Exit time<input name="exit_ts" placeholder="2026-06-07T16:00:00Z" required></label>
-      <label>Exit price<input name="exit_px" required></label>
-      <label>Reason<select name="exit_reason"><option>tp</option><option>sl</option><option>time</option><option>manual</option><option>cancelled</option></select></label>
-      <button class="btn" type="submit">Settle</button>
-    </form>
+    <div class="topbar"><div><h2>Trades</h2>
+      <div class="muted">Бумажные позиции — открытые и история.</div>
+    </div></div>
+    <div style="display:flex;gap:.5rem;margin:1rem 1.5rem .5rem;border-bottom:1px solid #2a2e39;">
+      <a href="/trades?tab=open"
+         class="{tab_open_cls}"
+         style="padding:.5rem 1.2rem;text-decoration:none;font-weight:600;
+                border-bottom:{'3px solid #2962ff' if tab=='open' else '3px solid transparent'};
+                color:{'#fff' if tab=='open' else '#9ba3af'};">
+        Открытые <span style="background:#2962ff22;color:#2962ff;border-radius:9px;
+                              padding:1px 8px;font-size:.75rem;margin-left:4px;">{open_cnt}</span>
+      </a>
+      <a href="/trades?tab=history"
+         class="{tab_hist_cls}"
+         style="padding:.5rem 1.2rem;text-decoration:none;font-weight:600;
+                border-bottom:{'3px solid #2962ff' if tab=='history' else '3px solid transparent'};
+                color:{'#fff' if tab=='history' else '#9ba3af'};">
+        История <span style="background:#2a2e39;color:#9ba3af;border-radius:9px;
+                              padding:1px 8px;font-size:.75rem;margin-left:4px;">{closed_cnt}</span>
+      </a>
+    </div>
+    {tab_content}
     """
     return layout("Trades", "Trades", body)
 
 
 @app.get("/history", response_class=HTMLResponse)
 def history() -> HTMLResponse:
-    frame = forward_frame()
-    closed = frame[frame["status"] == "closed"].copy() if not frame.empty else pd.DataFrame()
-    body = f"""
-    <div class="topbar"><div><h2>History</h2><div class="muted">Closed forward trades and outcomes.</div></div></div>
-    {table(["ID", "Ticker", "TF", "Side", "Pattern", "Entry", "SL", "TP", "Return", "Exit", ""], trade_rows(closed, False))}
-    """
-    return layout("History", "History", body)
+    return RedirectResponse("/trades?tab=history", status_code=302)
 
 
 @app.get("/trades/{signal_id}", response_class=HTMLResponse)
@@ -1228,18 +1262,29 @@ def write_portfolio(holdings: list[dict]) -> None:
     PORTFOLIO_FILE.write_text(json.dumps(holdings, indent=2, ensure_ascii=False), encoding="utf-8")
 
 
-def fetch_prices(tickers: list[str]) -> dict[str, float | None]:
+def fetch_prices(tickers: list[str], timeout: float = 8.0) -> dict[str, float | None]:
     if not tickers:
         return {}
+    import concurrent.futures
     try:
         import yfinance as yf
-        result: dict[str, float | None] = {}
-        batch = yf.Tickers(" ".join(tickers))
-        for sym in tickers:
+
+        def _get_price(sym: str) -> tuple[str, float | None]:
             try:
-                result[sym.upper()] = batch.tickers[sym.upper()].fast_info.last_price
+                return sym.upper(), yf.Ticker(sym).fast_info.last_price
             except Exception:
-                result[sym.upper()] = None
+                return sym.upper(), None
+
+        result: dict[str, float | None] = {}
+        with concurrent.futures.ThreadPoolExecutor(max_workers=min(len(tickers), 8)) as ex:
+            futs = {ex.submit(_get_price, t): t for t in tickers}
+            done, _ = concurrent.futures.wait(futs, timeout=timeout)
+            for f in done:
+                sym, px = f.result()
+                result[sym] = px
+            for f in futs:
+                if f not in done:
+                    result[futs[f].upper()] = None
         return result
     except Exception:
         return {t.upper(): None for t in tickers}
