@@ -292,12 +292,16 @@ ruleToStructure(int rule) =>
 // Учитывает условие для Правила 4 (Условие c → :c3 вместо :F3).
 // EPIC 0: Правила 6-7 → :F3 (W2/W4 перед W3, AKU-0169/0170).
 ruleCondToStruct(int rule, string cond) =>
-    rule == 1 or rule == 2 ? ":5" :
-    rule == 3              ? ":F3/:c3" :
-    rule == 4              ? (cond == "c" ? ":c3" : ":F3") :
-    rule == 5              ? ":F3" :
-    rule == 6 or rule == 7 ? ":F3" :
-                             ""
+    string _p = ""
+    if rule == 1 or rule == 2
+        _p := ":5"
+    else if rule == 3
+        _p := ":F3/:c3"
+    else if rule == 4
+        _p := cond == "c" ? ":c3" : ":F3"
+    else if rule == 5 or rule == 6 or rule == 7
+        _p := ":F3"
+    _p
 
 
 // ──────────────────────── ДЕТЕКТОР МОНОВОЛН ──────────────────────
