@@ -22,9 +22,10 @@ import pickle
 import subprocess
 import sys
 import time
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from pathlib import Path
 from typing import Any
+from zoneinfo import ZoneInfo
 
 import pandas as pd
 import yaml
@@ -58,6 +59,9 @@ MAX_OPEN       = 5              # max concurrent open paper trades
 TIMEOUT_BARS   = 30             # close trade after N bars if still open
 RETRAIN_EVERY  = 20             # retrain ML after every N closed trades
 
+# NYSE/NASDAQ session: Mon-Fri 09:30–16:00 ET
+ET = ZoneInfo("America/New_York")
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s  %(levelname)-7s %(message)s",
@@ -73,6 +77,46 @@ log = logging.getLogger("auto_trader")
 
 def utc_now() -> datetime:
     return datetime.now(timezone.utc)
+
+
+def market_status(interval: str = "1d") -> str:
+    """Return 'open', 'post_close', or 'closed'.
+
+    For daily TF we care about 'post_close' (16:00-20:00 ET) — the candle is
+    finalised and we can evaluate TP/SL against today's close.
+    For intraday TF we need 'open' (09:30-16:00 ET).
+    """
+    now_et = datetime.now(ET)
+    weekday = now_et.weekday()   # 0=Mon … 4=Fri
+    if weekday >= 5:             # weekend
+        return "closed"
+    t = now_et.time()
+    from datetime import time as _time
+    market_open  = _time(9, 30)
+    market_close = _time(16, 0)
+    post_close   = _time(20, 0)
+    if t < market_open:
+        return "closed"          # pre-market
+    if t < market_close:
+        return "open"
+    if t < post_close:
+        return "post_close"      # after-hours, daily candle finalised
+    return "closed"
+
+
+def should_trade(interval: str) -> tuple[bool, str]:
+    """Return (allowed, reason) for current time and interval."""
+    status = market_status(interval)
+    if interval in ("1d", "1w"):
+        # Daily/weekly: evaluate TP/SL once after session closes
+        if status in ("open", "post_close"):
+            return True, status
+        return False, f"market {status} — waiting for US session"
+    else:
+        # Intraday: only during open session
+        if status == "open":
+            return True, "open"
+        return False, f"market {status} — intraday only trades during session"
 
 
 def read_watchlist() -> dict[str, Any]:
@@ -390,6 +434,17 @@ def one_pass() -> None:
     interval = wl.get("interval", "1d")
     state    = read_state()
 
+    allowed, reason = should_trade(interval)
+    if not allowed:
+        log.info("Session check: %s — skipping open/close (scan only)", reason)
+        # Still run scan to pre-load signals for when session opens
+        run_scan(tickers, interval)
+        state["last_scan"] = utc_now_iso()
+        write_state(state)
+        return
+
+    log.info("Session check: %s ✓", reason)
+
     # 1. Scan
     signals = run_scan(tickers, interval)
     state["last_scan"] = utc_now_iso()
@@ -399,7 +454,7 @@ def one_pass() -> None:
     events  = read_jsonl(FORWARD_LOG)
     opened  = try_open_trades(signals, events)
 
-    # 3. Close trades on TP/SL/timeout
+    # 3. Close trades on TP/SL/timeout (only with real finalised prices)
     events  = read_jsonl(FORWARD_LOG)        # reload after writes
     closed  = try_close_trades(events)
 
