@@ -190,6 +190,15 @@ minHtfWave3Prob = input.float(65.0, "Min HTF W3 probability, %", group = grpHtfW
      tooltip = "Минимальная вероятность, при которой HTF W3 становится рабочим bias для младшего ТФ.")
 htfWave3LevelBars = input.int(160, "HTF W3 level length, bars", group = grpHtfW3, minval = 20, maxval = 500)
 
+// ─── EPIC 3+4: LTF Wave-3 entry engine (зеркало python/ewb/wave3.py) ────────
+grpLtfW3 = "LTF Wave-3 entry (EPIC 3+4)"
+showLtfW3 = input.bool(true, "Показывать LTF W3 сетапы на графике", group = grpLtfW3,
+     tooltip = "EPIC 3 (AKU Гл.5): W1=:5 подтверждена, W2 откатила 38.2-61.8% и не пробила W1-старт → вход на пробое W1-конца.\nEPIC 4 (AKU-0011): цель — проекция канала 0-2 если в диапазоне TP1..TP3, иначе fib 1.618×W1.")
+ltfW3UseChannel = input.bool(true, "Channel TP 0-2 (EPIC 4, AKU-0011)", group = grpLtfW3,
+     tooltip = "Канальная проекция 0-2 как первичная цель W3 (если попадает в [TP1,TP3]). Иначе — fib 1.618×W1.")
+ltfW3MinRetrace = input.float(38.2, "Мин. откат W2, %", group = grpLtfW3, minval = 20.0, maxval = 55.0, step = 0.1)
+ltfW3MaxRetrace = input.float(61.8, "Макс. откат W2, %", group = grpLtfW3, minval = 55.0, maxval = 80.0, step = 0.1)
+
 grpAlerts = "Alerts / звук"
 enableActionSoundAlerts = input.bool(true, "Sound alert: Action BUY/SELL", group = grpAlerts,
      tooltip = "Для звука в TradingView создайте Alert: Condition = Any alert() function call, затем выберите Sound в настройках alert.")
@@ -306,12 +315,24 @@ ruleCondToStruct(int rule, string cond) =>
         primary   := ":F3"
         full_list := "{:F3/:c3/:5/:L5/(:L3)}"
     else if rule == 6
-        primary   := ":?"
-        full_list := "{любая структура — см. Индикаторы положения стр.3-61}"
+        // EPIC 0 (AKU-0169): любая структура; для figStruct используем :F3 (base=3) —
+        // Rule 6 чаще всего = W2/W4 перед большой W3 → коррекционный контекст.
+        primary   := ":F3"
+        full_list := "{:5 / :s5 / :L5 / :L3 / (:F3) / (:c3) — Правило 6, Инд.Положения стр.3-61}"
     else if rule == 7
-        primary   := ":?"
-        full_list := "{:5/:s5/:L5/:L3/:F3 — см. Индикаторы положения стр.3-61}"
+        // EPIC 0 (AKU-0170): favor :5 по тексту, но для figStruct base=3 (W2/W4 перед расш. W3).
+        primary   := ":F3"
+        full_list := "{:5 / :s5 / :L5 / :L3 / (:F3) / (:c3) — Правило 7, Инд.Положения стр.3-61}"
     [primary, full_list]
+
+// EPIC 0 — числовая база правила для структурного score (AKU-0148-0170).
+// 5 = импульсная база (:5/:s5/:L5), 3 = коррекционная (:F3/:c3/etc), 0 = граница/неизв.
+structBase(int rule, string cond) =>
+    rule == 1 or rule == 2 ? 5 :
+     rule == 3 ? 0 :          // граница импульс/коррекция — обе базы легальны
+     rule == 4 or rule == 5 ? 3 :   // :F3/:c3 primary (AKU-0167/0168)
+     rule == 6 or rule == 7 ? 3 :   // EPIC 0 fix: :F3 (W2/W4 перед W3, AKU-0169/0170)
+     0
 
 // ──────────────────────── ДЕТЕКТОР МОНОВОЛН ──────────────────────
 // Reversal-ZigZag: моноволна завершается, когда цена развернулась
@@ -1330,11 +1351,36 @@ matchFigure(array<int> s, array<int> eb, array<float> ep, color c,
                          yloc = yloc.price, style = label.style_label_down,
                          color = color.new(color.orange, 20), textcolor = color.white, size = size.tiny)
                 drawImpulseChannels(eb, ep, pi0, color.green)
+                // EPIC 2: W2 > 61.8% W1 → переразметка W1 как :3 (AKU-0330-0332)
+                float _iW1 = math.abs(array.get(ep,pi0+1) - array.get(ep,pi0))
+                float _iW2 = math.abs(array.get(ep,pi0+2) - array.get(ep,pi0+1))
+                float _iW2r = _iW1 > 0 ? _iW2 / _iW1 : 0.0
+                if _iW2r > 0.618
+                    label.new(array.get(eb,pi0+2), array.get(ep,pi0+2),
+                         "⚠ W2=" + str.tostring(math.round(_iW2r*100)) + "%\n→ W1=:3 (EPIC 2)",
+                         xloc = xloc.bar_index, yloc = yloc.price,
+                         style = label.style_label_up, color = color.new(color.orange, 15),
+                         textcolor = color.white, size = size.tiny,
+                         tooltip = "EPIC 2 (AKU-0330): W2=" + str.tostring(math.round(_iW2r*100)) + "% > 61.8% W1\n→ W1 вероятно :3, а не :5 (сценарий КОРРЕКЦИЯ, не импульс).\nRe-label: wave3.py фильтрует такие сетапы как non-tradeable W3.")
+                // EPIC 5: Чередование по типу (Гл.5) — W2 sharpness → predict W4 type
+                int _tb1 = array.get(eb, pi0+1), int _tb2 = array.get(eb, pi0+2)
+                int _tb3 = array.get(eb, pi0+3), int _tb4 = array.get(eb, pi0+4)
+                float _sharp2 = math.max(_tb2-_tb1,1) > 0 ? _iW2 / math.max(_tb2-_tb1,1) : 0.0
+                float _iW4 = math.abs(array.get(ep,pi0+4) - array.get(ep,pi0+3))
+                float _sharp4 = math.max(_tb4-_tb3,1) > 0 ? _iW4 / math.max(_tb4-_tb3,1) : 0.0
+                string _predW4 = _sharp2 > _sharp4 * 1.43 ? "sideways" : _sharp4 > _sharp2 * 1.43 ? "sharp" : "similar"
+                string _predW5tip = "EPIC 5 (Гл.5 Правило Чередования):\nW2 острота=" + str.tostring(_sharp2,"#.###") + " vs W4=" + str.tostring(_sharp4,"#.###") + "\nW4 тип: " + _predW4 + (_predW4 == "sideways" ? " (W2 резкая → W4 боковая ✓)" : _predW4 == "sharp" ? " (W2 боковая → W4 резкая ✓)" : " (похожий характер ⚠)")
                 // n >= 6: все 6 точек (0..5) доступны; при n=5 рисуем только 5 (0..4 = до конца W4)
                 int impLabelCount = n >= 6 ? 6 : 5
                 string impLabels  = n >= 6 ? "0|1|2|3|4|5" : "0|1|2|3|4"
                 drawMotionLabels(eb, ep, pi0, impLabelCount, impLabels, color.green)
                 float impLen = math.abs(array.get(ep, n-1) - array.get(ep, pi0))
+                // EPIC 5: добавляем tip к Fib-label импульса
+                if showFibProj and n >= 6
+                    label.new(b1, lo, "W4→" + _predW4,
+                         xloc = xloc.bar_index, yloc = yloc.price,
+                         style = label.style_label_up, color = color.new(color.blue, 25),
+                         textcolor = color.white, size = size.tiny, tooltip = _predW5tip)
                 drawEnergy(b1, hi, "impulse", dir == "up" ? 1 : -1, impLen)
                 drawPostEffectTargets(eb, ep, pi0, "impulse", dir == "up" ? 1 : -1)  // Level 8
                 drawFibProjections(eb, ep, pi0, "impulse", dir == "up" ? 1 : -1)     // Level 10
@@ -1670,12 +1716,144 @@ if barstate.islast
              color = color.new(activeCColor, 10), textcolor = color.white, size = size.tiny,
              tooltip = "Активная незавершённая моноволна текущего ТФ: от последнего подтверждённого pivot до последнего бара.")
 
+// ─── EPIC 3+4 — LTF W3 persistent drawing objects ────────────────────────────
+var line  ltfW3EntryLine = na
+var line  ltfW3StopLine  = na
+var line  ltfW3Tp1Line   = na
+var line  ltfW3Tp2Line   = na
+var line  ltfW3Tp3Line   = na
+var box   ltfW3W2Box     = na
+var label ltfW3Label     = na
+
+// ─── EPIC 3+4 — LTF W3 engine (зеркало wave3.py) ────────────────────────────
+// Таблица будет обновлена ниже; строки определяются на barstate.islast.
+string ltfW3TableStr  = "—"
+string ltfW3LevelsStr = "—"
+if barstate.islast and showLtfW3
+    int ltfPivN = array.size(latestPivotBars)
+    if ltfPivN >= 3
+        int lp0Bar = array.get(latestPivotBars,  ltfPivN - 3)
+        float lp0  = array.get(latestPivotPrices, ltfPivN - 3)
+        int lp1Bar = array.get(latestPivotBars,  ltfPivN - 2)
+        float lp1  = array.get(latestPivotPrices, ltfPivN - 2)
+        int lp2Bar = array.get(latestPivotBars,  ltfPivN - 1)
+        float lp2  = array.get(latestPivotPrices, ltfPivN - 1)
+        float ltfW1  = math.abs(lp1 - lp0)
+        float ltfW2  = math.abs(lp2 - lp1)
+        bool  ltfUp  = lp1 > lp0
+        float ltfRet = ltfW1 > 0 ? ltfW2 / ltfW1 : na
+        bool  ltfW2Healthy = not na(ltfRet) and ltfRet >= ltfW3MinRetrace/100 and ltfRet <= ltfW3MaxRetrace/100
+        bool  ltfW2Valid   = ltfUp ? lp2 > lp0 : lp2 < lp0   // W2 не пробивает W1-старт
+        bool  ltfW2Dir     = ltfUp ? lp2 < lp1 : lp2 > lp1   // W2 = откат против W1
+        if ltfW2Healthy and ltfW2Valid and ltfW2Dir
+            float ltfSgn     = ltfUp ? 1.0 : -1.0
+            float ltfEntry   = lp1
+            float ltfStop    = lp2
+            float ltfInvalid = lp0
+            float ltfTp1 = ltfEntry + ltfSgn * 1.000 * ltfW1
+            float ltfTp2 = ltfEntry + ltfSgn * 1.618 * ltfW1
+            float ltfTp3 = ltfEntry + ltfSgn * 2.618 * ltfW1
+            // EPIC 4: канал 0-2 (AKU-0011) → проекция параллели через lp1
+            int   ltfDt      = lp2Bar - lp0Bar
+            float ltfSlope   = ltfDt > 0 ? (lp2 - lp0) / ltfDt : 0.0
+            int   ltfProjBar = lp2Bar + math.max(lp1Bar - lp0Bar, 1)
+            float ltfChTp    = lp1 + ltfSlope * (ltfProjBar - lp1Bar)
+            float ltfPrimary = ltfTp2
+            bool  ltfUsedCh  = false
+            if ltfW3UseChannel and not na(ltfChTp)
+                bool ltfChOk = ltfUp ? ltfChTp > ltfEntry : ltfChTp < ltfEntry
+                if ltfChOk and ltfChTp >= math.min(ltfTp1,ltfTp3) and ltfChTp <= math.max(ltfTp1,ltfTp3)
+                    ltfPrimary := ltfChTp
+                    ltfUsedCh  := true
+            bool   ltfTrig  = ltfUp ? close > ltfEntry : close < ltfEntry
+            float  ltfRisk  = math.abs(ltfEntry - ltfStop)
+            float  ltfRR1   = ltfRisk > 0 ? math.abs(ltfTp1 - ltfEntry) / ltfRisk : 0.0
+            string ltfSide  = ltfUp ? "LONG" : "SHORT"
+            string ltfStat  = ltfTrig ? "✅ ACTIVE" : "⏳ WAIT"
+            ltfW3TableStr  := ltfSide + " " + ltfStat + " W2=" + str.tostring(math.round(ltfRet*100)) + "% RR=" + str.tostring(ltfRR1, "#.##")
+            ltfW3LevelsStr := "E:" + str.tostring(ltfEntry,"#.##") + " S:" + str.tostring(ltfStop,"#.##") + " T:" + str.tostring(ltfPrimary,"#.##") + (ltfUsedCh ? " ch" : " fib")
+            // Перерисовываем drawing objects
+            if not na(ltfW3EntryLine)
+                line.delete(ltfW3EntryLine)
+            if not na(ltfW3StopLine)
+                line.delete(ltfW3StopLine)
+            if not na(ltfW3Tp1Line)
+                line.delete(ltfW3Tp1Line)
+            if not na(ltfW3Tp2Line)
+                line.delete(ltfW3Tp2Line)
+            if not na(ltfW3Tp3Line)
+                line.delete(ltfW3Tp3Line)
+            if not na(ltfW3W2Box)
+                box.delete(ltfW3W2Box)
+            if not na(ltfW3Label)
+                label.delete(ltfW3Label)
+            color ltfCol = ltfUp ? color.teal : color.orange
+            int   ltfExt = 30
+            // W2 zone box
+            ltfW3W2Box := box.new(lp2Bar, math.max(lp1,lp2), bar_index, math.min(lp1,lp2),
+                 xloc = xloc.bar_index, border_color = color.new(ltfCol,40),
+                 bgcolor = color.new(ltfCol,85), border_style = line.style_dashed)
+            // Entry / Stop lines
+            ltfW3EntryLine := line.new(lp1Bar, ltfEntry, bar_index+ltfExt, ltfEntry,
+                 xloc = xloc.bar_index, color = color.new(color.green,10), width = 2)
+            ltfW3StopLine  := line.new(lp2Bar, ltfStop,  bar_index+ltfExt, ltfStop,
+                 xloc = xloc.bar_index, color = color.new(color.red,20),   width = 1,
+                 style = line.style_dashed)
+            // TP lines: TP1 и TP3 — пунктир, primary TP — жирный
+            ltfW3Tp1Line := line.new(bar_index, ltfTp1, bar_index+ltfExt, ltfTp1,
+                 xloc = xloc.bar_index, color = color.new(color.lime,45), width = 1, style = line.style_dotted)
+            ltfW3Tp3Line := line.new(bar_index, ltfTp3, bar_index+ltfExt, ltfTp3,
+                 xloc = xloc.bar_index, color = color.new(color.lime,65), width = 1, style = line.style_dotted)
+            ltfW3Tp2Line := line.new(bar_index, ltfPrimary, bar_index+ltfExt, ltfPrimary,
+                 xloc = xloc.bar_index, color = color.new(color.lime,10), width = 2, style = line.style_dashed)
+            // Label
+            ltfW3Label := label.new(bar_index+ltfExt, ltfEntry, "W3 " + ltfSide + "\n" + ltfStat,
+                 xloc = xloc.bar_index, yloc = yloc.price, style = label.style_label_left,
+                 color = color.new(ltfTrig ? color.lime : color.gray, 10),
+                 textcolor = color.white, size = size.small,
+                 tooltip = "EPIC 3+4 — LTF Wave-3 entry (wave3.py зеркало)\n" +
+                 "W1: " + str.tostring(lp0,"#.####") + " → " + str.tostring(lp1,"#.####") + "\n" +
+                 "W2: " + str.tostring(lp2,"#.####") + " (" + str.tostring(math.round(ltfRet*100)) + "% W1)\n" +
+                 "Entry: " + str.tostring(ltfEntry,"#.####") + "\n" +
+                 "Stop: "  + str.tostring(ltfStop, "#.####") + "\n" +
+                 "TP1: " + str.tostring(ltfTp1,"#.####") + " (1.0×W1)\n" +
+                 "TP★: " + str.tostring(ltfPrimary,"#.####") + (ltfUsedCh ? " (канал 0-2 AKU-0011)" : " (fib 1.618×W1)") + "\n" +
+                 "TP3: " + str.tostring(ltfTp3,"#.####") + " (2.618×W1)\n" +
+                 "RR1: " + str.tostring(ltfRR1,"#.##") + "\n" +
+                 "Invalid: " + str.tostring(ltfInvalid,"#.####"))
+        else
+            // Нет сетапа — очищаем старые drawing objects
+            if not na(ltfW3EntryLine)
+                line.delete(ltfW3EntryLine)
+                ltfW3EntryLine := na
+            if not na(ltfW3StopLine)
+                line.delete(ltfW3StopLine)
+                ltfW3StopLine := na
+            if not na(ltfW3Tp1Line)
+                line.delete(ltfW3Tp1Line)
+                ltfW3Tp1Line := na
+            if not na(ltfW3Tp2Line)
+                line.delete(ltfW3Tp2Line)
+                ltfW3Tp2Line := na
+            if not na(ltfW3Tp3Line)
+                line.delete(ltfW3Tp3Line)
+                ltfW3Tp3Line := na
+            if not na(ltfW3W2Box)
+                box.delete(ltfW3W2Box)
+                ltfW3W2Box := na
+            if not na(ltfW3Label)
+                label.delete(ltfW3Label)
+                ltfW3Label := na
+
 // ── Накопление базовых структур и распознавание фигур (Уровень 3) ──
 // Окно ограничено 10 элементами — достаточно для 5-эл. шаблона + контекст.
 // Без ограничения массивы растут до тысяч баров → ложные рамки на всей истории.
 var array<int>   figStruct  = array.new<int>()
 var array<int>   figEndBar  = array.new<int>()
 var array<float> figEndPx   = array.new<float>()
+// EPIC 1: параллельные массивы с rule/cond для structScore (AKU-0148-0170)
+var array<int>   figRule    = array.new<int>()
+var array<string> figCond   = array.new<string>()
 array.set(_patConfArr, 0, "")
 if showFig and rc.ruleNo > 0
     // Используем уточнённый Индикатор Положения (Rule+Condition) для точного base
@@ -1687,10 +1865,14 @@ if showFig and rc.ruleNo > 0
     array.push(figStruct, base)
     array.push(figEndBar, rc.prevBar)
     array.push(figEndPx, rc.prevPrice)
+    array.push(figRule,  rc.ruleNo)        // EPIC 1: для structScore
+    array.push(figCond,  rc.condLetter)    // EPIC 1
     while array.size(figStruct) > 10
         array.shift(figStruct)
         array.shift(figEndBar)
         array.shift(figEndPx)
+        array.shift(figRule)
+        array.shift(figCond)
     if base > 0
         matchFigure(figStruct, figEndBar, figEndPx, colFig, mLblBarArr, mLblRefArr)
 
@@ -3261,7 +3443,7 @@ if enableHypothesisSoundAlerts and soundAlertBarOK and liveHypothesisReadyEvent
     alert(hypothesisAlertMessage, soundAlertsOnClose ? alert.freq_once_per_bar_close : alert.freq_once_per_bar)
 
 panelPosition = panelPositionInput == "Top right" ? position.top_right : panelPositionInput == "Bottom right" ? position.bottom_right : position.middle_right
-var table info = table.new(panelPosition, 2, 22, border_width = 1)
+var table info = table.new(panelPosition, 2, 28, border_width = 1)
 if showTradePanel and barstate.islast
     if simpleAntonPanel
         table.cell(info, 0, 0, "Anton decision", text_color = color.white, bgcolor = color.new(color.gray, 10))
@@ -3293,7 +3475,13 @@ if showTradePanel and barstate.islast
                  text_color = color.white, bgcolor = color.new(color.navy, 50),
                  tooltip = "LTF (" + timeframe.period + "): " + degCurr + "\nHTF (" + htf + "): " + degHtf + "\nAKU-0357, AKU-0365 mtfDegreeSync")
             degClearStart := 8
-        for clearRow = degClearStart to 21
+        // EPIC 3: LTF W3 setup
+        table.cell(info, 0, degClearStart,   "LTF W3", text_color = color.white, bgcolor = color.new(color.teal, 30))
+        table.cell(info, 1, degClearStart,   ltfW3TableStr, text_color = color.white,
+             bgcolor = str.contains(ltfW3TableStr,"ACTIVE") ? color.new(color.lime,25) : str.contains(ltfW3TableStr,"WAIT") ? color.new(color.teal,45) : color.new(color.gray,70))
+        table.cell(info, 0, degClearStart+1, "W3 E/S/T", text_color = color.white, bgcolor = color.new(color.teal, 45))
+        table.cell(info, 1, degClearStart+1, ltfW3LevelsStr, text_color = color.white, bgcolor = color.new(color.gray, 70))
+        for clearRow = degClearStart+2 to 27
             table.cell(info, 0, clearRow, "", bgcolor = color.new(color.black, 100))
             table.cell(info, 1, clearRow, "", bgcolor = color.new(color.black, 100))
     else
@@ -3351,3 +3539,38 @@ if showTradePanel and barstate.islast
         table.cell(info, 0, 21, "Active HTF wave", text_color = color.white, bgcolor = color.new(color.gray, 50))
         table.cell(info, 1, 21, activeHtfDisplay, text_color = color.white,
              bgcolor = htfBiasDir > 0 ? color.new(color.lime, 55) : htfBiasDir < 0 ? color.new(color.red, 55) : color.new(color.gray, 70))
+        // ── EPIC 0-6 диагностические строки ──────────────────────────────────
+        // EPIC 1: структурный score (совместимость Правил с фигурой)
+        int _sN = array.size(figStruct)
+        string _scoreStr = "—"
+        if _sN >= 5
+            // Импульс [5,3,5,3,5]: сравниваем последние 5 баз с их rule-based base
+            array<int> _expBase = array.new<int>(5, 0)
+            array.set(_expBase, 0, 5)
+            array.set(_expBase, 1, 3)
+            array.set(_expBase, 2, 5)
+            array.set(_expBase, 3, 3)
+            array.set(_expBase, 4, 5)
+            int _matched = 0
+            for _k = 0 to 4
+                int _rBase = structBase(array.get(figRule, _sN-5+_k), array.get(figCond, _sN-5+_k))
+                int _eBase = array.get(_expBase, _k)
+                if _rBase == _eBase or _rBase == 0
+                    _matched += 1
+            _scoreStr := str.tostring(math.round(float(_matched)/5*100)) + "% (" + str.tostring(_matched) + "/5)"
+        table.cell(info, 0, 22, "Struct score", text_color = color.white,
+             bgcolor = color.new(color.navy, 30),
+             tooltip = "EPIC 1 (AKU-0148-0170): Совместимость Правил Нили с последними 5 базами. Высокий % = Правила согласуются с ожидаемой структурой фигуры.")
+        table.cell(info, 1, 22, _scoreStr, text_color = color.white, bgcolor = color.new(color.navy, 55))
+        // EPIC 3+4: LTF W3 сетап
+        table.cell(info, 0, 23, "LTF W3", text_color = color.white,
+             bgcolor = color.new(color.teal, 30),
+             tooltip = "EPIC 3+4 — LTF Wave-3 entry engine (зеркало wave3.py / AKU Гл.5 + AKU-0011)\nW1=:5 + W2 откат 38.2-61.8% → вход на пробое W1-конца.")
+        table.cell(info, 1, 23, ltfW3TableStr, text_color = color.white,
+             bgcolor = str.contains(ltfW3TableStr,"ACTIVE") ? color.new(color.lime,25) : str.contains(ltfW3TableStr,"WAIT") ? color.new(color.teal,45) : color.new(color.gray,70))
+        table.cell(info, 0, 24, "W3 E/S/T", text_color = color.white, bgcolor = color.new(color.teal, 45))
+        table.cell(info, 1, 24, ltfW3LevelsStr, text_color = color.white, bgcolor = color.new(color.gray, 70))
+        // Пустые строки 25-27
+        for _cr = 25 to 27
+            table.cell(info, 0, _cr, "", bgcolor = color.new(color.black, 100))
+            table.cell(info, 1, _cr, "", bgcolor = color.new(color.black, 100))
