@@ -1,16 +1,22 @@
-"""Autonomous paper trader for Elliott Wave Brain.
+"""Autonomous paper trader for Elliott Wave Brain — US markets (NYSE/NASDAQ).
+
+Exchange : NYSE / NASDAQ
+Timezone : America/New_York (ET)
+Session  : Mon–Fri 09:30–16:00 ET, excluding NYSE holidays
+Daily TF : open + post_close (16:00–20:00) — candle finalised at 16:00
+Intraday : open session only
 
 Loop (every N minutes):
-  1. Scan watchlist → find REVIEW signals
-  2. Open paper trades for new signals (dedup by signal_id)
-  3. Check open trades → close on TP/SL/timeout
-  4. After every RETRAIN_EVERY closed trades → retrain LightGBM
-  5. Log everything to FORWARD_LOG (JSONL)
+  1. Check NYSE calendar — skip if market closed/holiday
+  2. Scan watchlist → find qualifying signals
+  3. Open paper trades (p_win ≥ 55%, R:R ≥ 1.0, max 5 open)
+  4. Check open trades → close on TP/SL/timeout
+  5. After every RETRAIN_EVERY closed trades → retrain LightGBM
 
 Run:
-    python -m ewb.auto_trader            # foreground, Ctrl-C to stop
-    python -m ewb.auto_trader --once     # single pass, useful for cron
-    python -m ewb.auto_trader --status   # print current state and exit
+    python -m ewb.auto_trader            # foreground loop (Ctrl-C to stop)
+    python -m ewb.auto_trader --once     # single pass
+    python -m ewb.auto_trader --status   # print state and exit
 """
 from __future__ import annotations
 
@@ -59,8 +65,9 @@ MAX_OPEN       = 5              # max concurrent open paper trades
 TIMEOUT_BARS   = 30             # close trade after N bars if still open
 RETRAIN_EVERY  = 20             # retrain ML after every N closed trades
 
-# NYSE/NASDAQ session: Mon-Fri 09:30–16:00 ET
-ET = ZoneInfo("America/New_York")
+# Exchange configuration — US markets
+EXCHANGE       = "NYSE"          # used for holiday calendar
+ET             = ZoneInfo("America/New_York")
 
 logging.basicConfig(
     level=logging.INFO,
@@ -80,27 +87,36 @@ def utc_now() -> datetime:
 
 
 def market_status(interval: str = "1d") -> str:
-    """Return 'open', 'post_close', or 'closed'.
+    """Return 'open', 'post_close', or 'closed' for NYSE/NASDAQ.
 
-    For daily TF we care about 'post_close' (16:00-20:00 ET) — the candle is
-    finalised and we can evaluate TP/SL against today's close.
-    For intraday TF we need 'open' (09:30-16:00 ET).
+    Checks official NYSE holiday calendar via pandas_market_calendars.
+    For daily TF 'post_close' (16:00–20:00 ET) means the candle is finalised.
     """
-    now_et = datetime.now(ET)
-    weekday = now_et.weekday()   # 0=Mon … 4=Fri
-    if weekday >= 5:             # weekend
-        return "closed"
-    t = now_et.time()
     from datetime import time as _time
+    try:
+        import pandas_market_calendars as mcal
+        import pandas as pd
+        nyse  = mcal.get_calendar(EXCHANGE)
+        today = pd.Timestamp.now(tz="America/New_York")
+        sched = nyse.schedule(start_date=today.date(), end_date=today.date())
+        if sched.empty:
+            return "closed"     # holiday or weekend
+    except Exception:
+        # Fallback: simple weekday check
+        if datetime.now(ET).weekday() >= 5:
+            return "closed"
+
+    now_et = datetime.now(ET)
+    t = now_et.time()
     market_open  = _time(9, 30)
     market_close = _time(16, 0)
     post_close   = _time(20, 0)
     if t < market_open:
-        return "closed"          # pre-market
+        return "closed"
     if t < market_close:
         return "open"
     if t < post_close:
-        return "post_close"      # after-hours, daily candle finalised
+        return "post_close"     # after-hours, daily candle finalised
     return "closed"
 
 
