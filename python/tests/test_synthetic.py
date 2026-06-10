@@ -482,6 +482,39 @@ def test_epic4_primary_tp_selection():
           f"(TP1={s.tp1:.1f}..TP3={s.tp3:.1f})\n")
 
 
+def test_epic5_alternation_by_type():
+    """EPIC 5: чередование по характеру (цена/время), не по размеру."""
+    from ewb.confirm import imp_alternation_by_type
+    # W2 резкая (20 цены за 5 баров = 4.0), W4 боковая (20 цены за 40 баров = 0.5)
+    # → разный характер → альтернация OK
+    sharp_vs_side = imp_alternation_by_type(20, 5, 20, 40)
+    assert sharp_vs_side.ok, "sharp W2 vs sideways W4 should alternate"
+    # Обе похожи по характеру (одинаковая острота) → нет чередования
+    similar = imp_alternation_by_type(20, 10, 22, 11)   # острота 2.0 vs 2.0
+    assert not similar.ok, "similar character → no alternation"
+    print("[epic5    ] ✓ sharp/sideways alternate; similar character flagged\n")
+
+
+def test_epic5_predict_w4_type():
+    """EPIC 5: предсказание характера W4 по W2."""
+    from ewb.confirm import predict_w4_type
+    assert predict_w4_type("sharp") == "sideways"
+    assert predict_w4_type("sideways") == "sharp"
+    # И через фигуру: импульс несёт predicted_w4_type
+    from ewb.figures import _try_impulse
+    from ewb.monowaves import Pivot
+    prices = [100, 120, 110, 145, 135, 165]
+    times  = [0, 8, 3, 10, 30, 12]   # W2 быстрая (3), W4 медленная (30)
+    pts = []
+    for i, (p, t) in enumerate(zip(prices, times)):
+        pv = Pivot(idx=i*10, price=p, direction=(1 if i % 2 == 1 else -1))
+        pv.time_len = t
+        pts.append(pv)
+    fig = _try_impulse(pts, 0)
+    assert fig is not None and fig.predicted_w4_type in ("sharp", "sideways")
+    print(f"[epic5    ] ✓ predict W4 type; figure.predicted_w4_type={fig.predicted_w4_type}\n")
+
+
 if __name__ == "__main__":
     print("=" * 60)
     print("Synthetic tests")
@@ -495,6 +528,8 @@ if __name__ == "__main__":
     test_epic3_rejects_deep_w2_and_invalidation()
     test_epic4_channel_target()
     test_epic4_primary_tp_selection()
+    test_epic5_alternation_by_type()
+    test_epic5_predict_w4_type()
     test_epic0_classify_fills_struct_list()
     test_classify_rule_boundaries()
     test_confirm_impulse_pure_math()

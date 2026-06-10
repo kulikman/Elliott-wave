@@ -20,7 +20,8 @@ from .rules import structure_to_base
 
 from .confirm import (
     confirm_impulse, confirm_zigzag, confirm_flat, confirm_triangle,
-    imp_w2_deep_relabel, all_passed, CheckResult,
+    imp_w2_deep_relabel, imp_alternation_by_type, correction_character,
+    all_passed, CheckResult,
 )
 
 
@@ -37,6 +38,7 @@ class Figure:
     structure_labels: list[str] = field(default_factory=list)
     struct_score: float = 0.0   # EPIC 1: совместимость с Логикой Структуры Гл.3 (0..1)
     w2_relabel_corrective: bool = False  # EPIC 2: глубокий откат W2 → W1=:3, сценарий коррекция
+    predicted_w4_type: str = ""  # EPIC 5: предсказанный характер W4 (sharp/sideways)
 
     @property
     def start_price(self) -> float: return self.pivots[0].price
@@ -54,6 +56,7 @@ class Figure:
             "duration": self.duration, "amplitude": self.amplitude,
             "confirmed": self.confirmed, "struct_score": round(self.struct_score, 3),
             "w2_relabel_corrective": self.w2_relabel_corrective,
+            "predicted_w4_type": self.predicted_w4_type,
             "n_checks": len(self.checks),
             "n_errors": sum(1 for c in self.checks if c.severity == "E" and not c.ok),
             "n_warnings": sum(1 for c in self.checks if c.severity == "W" and not c.ok),
@@ -134,6 +137,14 @@ def _try_impulse(pivots: list[Pivot], i: int) -> Figure | None:
     if w2_corrective:
         checks = checks + [relabel]   # фиксируем диагностику в чек-листе
 
+    # EPIC 5: Чередование по типу + предсказание характера W4.
+    w4 = abs(prices[4] - prices[3])
+    alt = imp_alternation_by_type(w2, pts[2].time_len, w4, pts[4].time_len)
+    checks = checks + [alt]
+    # Характер W2 относительно W1 (sharp если острее W1) → предсказание W4.
+    w2_sharp = correction_character(w2, pts[2].time_len) > correction_character(w1, pts[1].time_len)
+    predicted_w4 = "sideways" if w2_sharp else "sharp"
+
     return Figure(
         type="impulse", direction=direction,
         start_idx=pts[0].idx, end_idx=pts[-1].idx,
@@ -141,6 +152,7 @@ def _try_impulse(pivots: list[Pivot], i: int) -> Figure | None:
         motion_labels=["0", "1", "2", "3", "4", "5"],
         structure_labels=[":5", ":F3", ":5", ":F3", ":L5"],
         w2_relabel_corrective=w2_corrective,
+        predicted_w4_type=predicted_w4,
     )
 
 

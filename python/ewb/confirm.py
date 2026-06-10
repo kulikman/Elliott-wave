@@ -83,6 +83,44 @@ def imp_alternation(w2: float, w4: float) -> CheckResult:
         f"Черед. r={r:.2f}" if ok else "W2≈W4 нет черед.", "AKU-0126")
 
 
+def correction_character(price_len: float, time_len: int) -> float:
+    """EPIC 5 — «острота» коррекции = цена/время (Гл.5, Правило Чередования).
+
+    Резкая коррекция (зигзаг) проходит много цены за мало времени → высокая
+    острота. Боковая (плоская/треугольник) — мало цены за много времени →
+    низкая. Возвращает price/time (нормировку делает вызывающий через сравнение).
+    """
+    return price_len / max(time_len, 1)
+
+
+def imp_alternation_by_type(
+    w2_price: float, w2_time: int, w4_price: float, w4_time: int
+) -> CheckResult:
+    """EPIC 5 — Правило Чередования по ТИПУ, не по размеру (Гл.5).
+
+    Истинное чередование Нили: если W2 резкая (зигзаг-подобная), W4 должна быть
+    боковой (плоская/треугольник) и наоборот. Сравниваем «остроту» (цена/время),
+    а не только длины. Альтернация выполнена, если характеры заметно различаются.
+    """
+    s2 = correction_character(w2_price, w2_time)
+    s4 = correction_character(w4_price, w4_time)
+    if s2 <= 0 or s4 <= 0:
+        return CheckResult(True, "N", "нет данных времени", "AKU-0126")
+    ratio = s4 / s2
+    ok = ratio < 0.7 or ratio > 1.43        # острота различается >~40%
+    label = "W2/W4 разный характер" if ok else "W2/W4 похожий характер (нет черед.)"
+    return CheckResult(ok, "O" if ok else "W", f"{label} (острота {s2:.2f}→{s4:.2f})", "AKU-0126")
+
+
+def predict_w4_type(w2_character: str) -> str:
+    """EPIC 5 — предсказание типа W4 по типу W2 (Правило Чередования).
+
+    W2 резкая (sharp/zigzag) → жди W4 боковую (sideways: flat/triangle).
+    Это уточняет форму W4 и тайминг входа в W5.
+    """
+    return "sideways" if w2_character == "sharp" else "sharp"
+
+
 def imp_w2_w4_no_overlap(p1: float, p2: float, p3: float, p4: float) -> CheckResult:
     """AKU-0009: Price ranges of W2 and W4 must not overlap (Trending Impulse)."""
     w2lo, w2hi = min(p1, p2), max(p1, p2)
