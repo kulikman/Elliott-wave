@@ -208,12 +208,6 @@ def current_price(ticker: str) -> float | None:
         return None
 
 
-def current_prices(tickers: list[str]) -> dict[str, float | None]:
-    if not tickers:
-        return {}
-    return {t.upper(): current_price(t) for t in tickers}
-
-
 def rr(entry: float, stop: float, target: float) -> float:
     risk   = abs(entry - stop)
     reward = abs(target - entry)

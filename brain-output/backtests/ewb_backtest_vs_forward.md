@@ -7,11 +7,13 @@ This report is the bot reality check. If forward metrics diverge from history, d
 | Scope | Trades | Win | Exp | PF | DD |
 |---|---|---|---|---|---|
 | Historical baseline | 1518 | 59.9% | 1.44% | 1.83 | -96.2% |
-| Forward closed | 0 | n/a | n/a | n/a | n/a |
+| Forward closed | 1 | 100.0% | 26.54% | n/a | 0.0% |
 
 ## Forward Closed By Setup
 
-No closed forward trades yet.
+| TF | Pattern | Side | Trades | Win | Exp | PF | DD |
+|---|---|---|---|---|---|---|---|
+| 1d | flat | long | 1 | 100.0% | 26.54% | n/a | 0.0% |
 
 ## Decision Rule
 

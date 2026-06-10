@@ -12,18 +12,21 @@
     "avg_loss": -0.043462650204939876
   },
   "forward_closed": {
-    "trades": 0,
-    "winrate": NaN,
-    "expectancy": NaN,
+    "trades": 1,
+    "winrate": 1.0,
+    "expectancy": 0.26537596482579734,
     "profit_factor": NaN,
-    "max_drawdown": NaN,
-    "avg_return": NaN,
-    "median_return": NaN
+    "max_drawdown": 0.0,
+    "avg_return": 0.26537596482579734,
+    "median_return": 0.26537596482579734,
+    "total_return": 0.2653759648257974,
+    "avg_win": 0.26537596482579734,
+    "avg_loss": 0.0
   },
   "counts": {
     "historical_trades": 1518,
-    "forward_signals": 0,
-    "forward_closed": 0
+    "forward_signals": 5,
+    "forward_closed": 1
   },
   "outputs": {
     "forward_trades": "/Users/DEV/Elliott-wave/brain-output/backtests/ewb_forward_trades.parquet",

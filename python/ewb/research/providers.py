@@ -23,12 +23,35 @@ from pathlib import Path
 
 import pandas as pd
 
-try:  # make TIINGO_API_KEY available regardless of entry point
-    from dotenv import load_dotenv
+def _load_env() -> None:
+    """Make TIINGO_API_KEY available regardless of entry point.
 
-    load_dotenv(Path(__file__).resolve().parents[3] / ".env", override=False)
-except Exception:  # pragma: no cover - dotenv optional
-    pass
+    Uses python-dotenv when present; otherwise parses .env directly so the key
+    still loads even if the optional dependency is missing.
+    """
+    env_path = Path(__file__).resolve().parents[3] / ".env"
+    try:
+        from dotenv import load_dotenv
+        load_dotenv(env_path, override=False)
+        return
+    except Exception:
+        pass
+    try:
+        if not env_path.exists():
+            return
+        for line in env_path.read_text(encoding="utf-8").splitlines():
+            line = line.strip()
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+            key, _, val = line.partition("=")
+            key, val = key.strip(), val.strip().strip('"').strip("'")
+            if key and key not in os.environ:
+                os.environ[key] = val
+    except Exception:  # pragma: no cover - defensive
+        pass
+
+
+_load_env()
 
 log = logging.getLogger(__name__)
 

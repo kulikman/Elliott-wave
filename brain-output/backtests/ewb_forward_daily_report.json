@@ -2,10 +2,10 @@
   "decision": "OBSERVE",
   "decision_reason": "Меньше 30 закрытых forward-сделок. Реальные деньги и автоматизацию не включать.",
   "counts": {
-    "events": 0,
-    "signals": 0,
-    "open": 0,
-    "closed": 0
+    "events": 6,
+    "signals": 5,
+    "open": 4,
+    "closed": 1
   },
   "historical": {
     "trades": 1518,
@@ -20,16 +20,80 @@
     "avg_loss": -0.043462650204939876
   },
   "forward": {
-    "trades": 0,
-    "winrate": NaN,
-    "expectancy": NaN,
+    "trades": 1,
+    "winrate": 1.0,
+    "expectancy": 0.26537596482579734,
     "profit_factor": NaN,
-    "max_drawdown": NaN,
-    "avg_return": NaN,
-    "median_return": NaN
+    "max_drawdown": 0.0,
+    "avg_return": 0.26537596482579734,
+    "median_return": 0.26537596482579734,
+    "total_return": 0.2653759648257974,
+    "avg_win": 0.26537596482579734,
+    "avg_loss": 0.0
   },
-  "open_rows": [],
-  "closed_rows": [],
+  "open_rows": [
+    {
+      "signal_id": "efd61e4bd3124279",
+      "ticker": "ISRG",
+      "tf": "1d",
+      "side": "long",
+      "pattern": "flat",
+      "entry": "426.6",
+      "stop": "328.9",
+      "target": "524.4",
+      "p": "66.7%",
+      "time": "2026-06-09 00:00:00+00:00"
+    },
+    {
+      "signal_id": "fced5528679c4e27",
+      "ticker": "META",
+      "tf": "1d",
+      "side": "short",
+      "pattern": "flat",
+      "entry": "593",
+      "stop": "642.8",
+      "target": "543.2",
+      "p": "69.6%",
+      "time": "2026-06-05 00:00:00+00:00"
+    },
+    {
+      "signal_id": "8c227a7876f1ece9",
+      "ticker": "AVGO",
+      "tf": "1d",
+      "side": "short",
+      "pattern": "double_corr",
+      "entry": "418.9",
+      "stop": "624",
+      "target": "213.9",
+      "p": "100.0%",
+      "time": "2026-06-04 00:00:00+00:00"
+    },
+    {
+      "signal_id": "1ac464538f85c0e0",
+      "ticker": "LLY",
+      "tf": "1d",
+      "side": "short",
+      "pattern": "flat",
+      "entry": "1064",
+      "stop": "1338",
+      "target": "790.7",
+      "p": "69.6%",
+      "time": "2026-06-02 00:00:00+00:00"
+    }
+  ],
+  "closed_rows": [
+    {
+      "ticker": "ARM",
+      "tf": "1d",
+      "side": "long",
+      "pattern": "flat",
+      "entry": "256.7",
+      "exit": "324.9",
+      "ret": "26.5%",
+      "reason": "tp",
+      "exit_ts": "2026-06-09 21:59:26.361375+00:00"
+    }
+  ],
   "outputs": {
     "trades": "/Users/DEV/Elliott-wave/brain-output/backtests/ewb_forward_daily_trades.parquet",
     "markdown": "/Users/DEV/Elliott-wave/brain-output/backtests/ewb_forward_daily_report.md",

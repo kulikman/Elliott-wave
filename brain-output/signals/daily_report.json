@@ -1,1 +1,1 @@
-{"signals": []}
+{"decision": "OBSERVE", "decision_reason": "Чистый старт — ожидание свежих сигналов.", "counts": {"open": 0, "closed": 0}, "signals": []}
