@@ -1,5 +1,4 @@
-tickers:
-  # Акции — Growth 30 (NYSE/NASDAQ, пн-пт 09:30-20:00 ET)
+stocks:
   - NVDA
   - AVGO
   - AMD
@@ -30,7 +29,8 @@ tickers:
   - V
   - MA
   - CAT
-  # Крипто — Top 20 (24/7)
+
+crypto:
   - BTC-USD
   - ETH-USD
   - BNB-USD
@@ -51,9 +51,14 @@ tickers:
   - FIL-USD
   - INJ-USD
   - AAVE-USD
-interval: 1d
+
+intervals:
+  - 1d
+  - 4h
+  - 1h
+
+fresh_hours: 168
+limit: 200
 actions:
   - buy
   - sell
-fresh_hours: 168
-limit: 50

@@ -152,8 +152,21 @@ def split_by_session(tickers: list[str], interval: str) -> tuple[list[str], list
 
 def read_watchlist() -> dict[str, Any]:
     if not WATCHLIST.exists():
-        return {"tickers": [], "interval": "1d"}
+        return {"stocks": [], "crypto": [], "intervals": ["1d"]}
     return yaml.safe_load(WATCHLIST.read_text(encoding="utf-8")) or {}
+
+
+def wl_all_tickers(wl: dict) -> list[str]:
+    if "stocks" in wl or "crypto" in wl:
+        return [str(t).upper() for t in wl.get("stocks", [])] + \
+               [str(t).upper() for t in wl.get("crypto", [])]
+    return [str(t).upper() for t in wl.get("tickers", [])]
+
+
+def wl_intervals(wl: dict) -> list[str]:
+    if "intervals" in wl:
+        return [str(i) for i in wl["intervals"]]
+    return [str(wl.get("interval", "1d"))]
 
 
 def read_state() -> dict[str, Any]:
@@ -470,42 +483,49 @@ def print_status() -> None:
 # ─── main loop ──────────────────────────────────────────────────────────────
 
 def one_pass() -> None:
-    wl       = read_watchlist()
-    tickers  = wl.get("tickers", [])
-    interval = wl.get("interval", "1d")
-    state    = read_state()
-
-    tradeable, scan_only = split_by_session(tickers, interval)
+    wl        = read_watchlist()
+    tickers   = wl_all_tickers(wl)
+    intervals = wl_intervals(wl)
+    state     = read_state()
 
     crypto_count = sum(1 for t in tickers if is_crypto(t))
     stock_count  = len(tickers) - crypto_count
-    log.info(
-        "Session: crypto=%d(24/7) stocks=%d(%s) — tradeable=%d scan_only=%d",
-        crypto_count, stock_count,
-        market_status(interval), len(tradeable), len(scan_only),
-    )
 
-    # 1. Scan all tickers (pre-loads signals for when stocks session opens)
-    signals = run_scan(tickers, interval)
+    all_tradeable_signals: list[dict] = []
+    all_tradeable_set: set[str] = set()
+
+    # Scan each interval separately, collect tradeable signals
+    for interval in intervals:
+        tradeable, scan_only = split_by_session(tickers, interval)
+        tradeable_set = set(t.upper() for t in tradeable)
+        all_tradeable_set |= tradeable_set
+
+        log.info(
+            "[%s] Session: crypto=%d(24/7) stocks=%d(%s) — tradeable=%d scan_only=%d",
+            interval, crypto_count, stock_count,
+            market_status(interval), len(tradeable), len(scan_only),
+        )
+
+        signals = run_scan(tickers, interval)
+        log.info("[%s] Scan returned %d signal(s)", interval, len(signals))
+
+        tradeable_signals = [s for s in signals if s.get("ticker", "").upper() in tradeable_set]
+        if len(tradeable_signals) < len(signals):
+            log.info("[%s] Filtered to %d tradeable signal(s)", interval, len(tradeable_signals))
+
+        all_tradeable_signals.extend(tradeable_signals)
+
     state["last_scan"] = utc_now_iso()
-    log.info("Scan returned %d signal(s)", len(signals))
 
-    # 2. Filter signals to only tradeable tickers right now
-    tradeable_set    = set(t.upper() for t in tradeable)
-    tradeable_signals = [s for s in signals if s.get("ticker", "").upper() in tradeable_set]
-    if len(tradeable_signals) < len(signals):
-        log.info("Filtered to %d tradeable signal(s) (NYSE closed for stocks)",
-                 len(tradeable_signals))
-
-    # 3. Open new trades (only tradeable)
+    # Open new trades across all intervals
     events = read_jsonl(FORWARD_LOG)
-    opened = try_open_trades(tradeable_signals, events)
+    opened = try_open_trades(all_tradeable_signals, events)
 
-    # 4. Close trades — crypto always, stocks only when session allows
+    # Close trades
     events = read_jsonl(FORWARD_LOG)
-    closed = try_close_trades(events, tradeable_set)
+    closed = try_close_trades(events, all_tradeable_set)
 
-    # 4. Retrain if enough new closed trades
+    # Retrain if enough new closed trades
     state["closed_since_retrain"] = state.get("closed_since_retrain", 0) + closed
     if state["closed_since_retrain"] >= RETRAIN_EVERY:
         ok = retrain_model()
@@ -515,8 +535,8 @@ def one_pass() -> None:
 
     write_state(state)
     log.info(
-        "Pass done — opened=%d closed=%d pending_retrain=%d/%d",
-        opened, closed, state["closed_since_retrain"], RETRAIN_EVERY,
+        "Pass done — intervals=%s opened=%d closed=%d pending_retrain=%d/%d",
+        ",".join(intervals), opened, closed, state["closed_since_retrain"], RETRAIN_EVERY,
     )
 
 

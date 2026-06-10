@@ -40,18 +40,32 @@ def parser() -> argparse.ArgumentParser:
 def load_watchlist(path: str) -> dict:
     with open(path, encoding="utf-8") as f:
         data = yaml.safe_load(f) or {}
-    tickers = [str(ticker).strip().upper() for ticker in data.get("tickers", []) if str(ticker).strip()]
+
+    # Support new format (stocks/crypto/intervals) and legacy format (tickers/interval)
+    if "stocks" in data or "crypto" in data:
+        raw = list(data.get("stocks", [])) + list(data.get("crypto", []))
+    else:
+        raw = data.get("tickers", [])
+    tickers = [str(t).strip().upper() for t in raw if str(t).strip()]
     if not tickers:
         raise ValueError("watchlist config must contain at least one ticker")
-    actions = [str(action).strip() for action in data.get("actions", ["buy", "sell"]) if str(action).strip()]
+
+    # Support new intervals list and legacy single interval
+    if "intervals" in data:
+        intervals = [str(i) for i in data["intervals"]]
+    else:
+        intervals = [str(data.get("interval", "1d"))]
+
+    actions = [str(a).strip() for a in data.get("actions", ["buy", "sell"]) if str(a).strip()]
     return {
         "tickers": tickers,
-        "interval": str(data.get("interval", "1h")),
+        "intervals": intervals,
+        "interval": intervals[0],   # kept for backward-compat with callers
         "period": data.get("period"),
         "actions": actions,
         "fresh_hours": data.get("fresh_hours"),
         "fresh_days": data.get("fresh_days"),
-        "limit": int(data.get("limit", 20)),
+        "limit": int(data.get("limit", 200)),
     }
 
 
@@ -240,15 +254,17 @@ def russian_daily_report(payload: dict) -> str:
 
 
 def build_daily_payload(config: dict, calibration: dict) -> dict:
-    interval = config["interval"]
-    period = config.get("period") or DEFAULT_PERIODS.get(interval, "730d")
-    actions = set(config["actions"])
+    intervals = config.get("intervals", [config.get("interval", "1d")])
+    interval  = intervals[0]   # primary interval for backward-compat reporting
+    actions   = set(config["actions"])
     all_signals: list[dict] = []
-    for ticker in config["tickers"]:
-        try:
-            all_signals.extend(scan_ticker(ticker, interval, period, calibration))
-        except Exception as exc:
-            log_processing_error(ticker, interval, exc, context="daily_report")
+    for tf in intervals:
+        period = config.get("period") or DEFAULT_PERIODS.get(tf, "730d")
+        for ticker in config["tickers"]:
+            try:
+                all_signals.extend(scan_ticker(ticker, tf, period, calibration))
+            except Exception as exc:
+                log_processing_error(ticker, tf, exc, context="daily_report")
     filtered = [
         signal
         for signal in all_signals

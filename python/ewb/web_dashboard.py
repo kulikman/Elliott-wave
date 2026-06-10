@@ -57,8 +57,36 @@ def read_json(path: Path) -> dict[str, Any]:
 
 def read_watchlist() -> dict[str, Any]:
     if not WATCHLIST.exists():
-        return {"tickers": [], "interval": "1h", "actions": []}
+        return {"stocks": [], "crypto": [], "intervals": ["1d", "4h", "1h"], "actions": ["buy", "sell"]}
     return yaml.safe_load(WATCHLIST.read_text(encoding="utf-8")) or {}
+
+
+def wl_stocks(wl: dict) -> list[str]:
+    """Return stocks list, supporting both new (stocks:) and legacy (tickers:) format."""
+    if "stocks" in wl:
+        return [str(t).upper() for t in wl.get("stocks", [])]
+    tickers = [str(t).upper() for t in wl.get("tickers", [])]
+    return [t for t in tickers if not any(t.endswith(s) for s in ("-USD", "-USDT", "-BTC", "-ETH", "-PERP"))]
+
+
+def wl_crypto(wl: dict) -> list[str]:
+    """Return crypto list, supporting both new (crypto:) and legacy (tickers:) format."""
+    if "crypto" in wl:
+        return [str(t).upper() for t in wl.get("crypto", [])]
+    tickers = [str(t).upper() for t in wl.get("tickers", [])]
+    return [t for t in tickers if any(t.endswith(s) for s in ("-USD", "-USDT", "-BTC", "-ETH", "-PERP"))]
+
+
+def wl_all_tickers(wl: dict) -> list[str]:
+    """All tickers combined."""
+    return wl_stocks(wl) + wl_crypto(wl)
+
+
+def wl_intervals(wl: dict) -> list[str]:
+    """Return intervals list, supporting both new (intervals:) and legacy (interval:) format."""
+    if "intervals" in wl:
+        return [str(i) for i in wl.get("intervals", ["1d"])]
+    return [str(wl.get("interval", "1d"))]
 
 
 def write_watchlist(payload: dict[str, Any]) -> None:
@@ -961,72 +989,107 @@ def backtest() -> HTMLResponse:
 
 
 @app.get("/settings", response_class=HTMLResponse)
-def settings() -> HTMLResponse:
-    watchlist = read_watchlist()
-    profiles = read_profiles().get("profiles", {})
+def settings(tab: str = "stocks") -> HTMLResponse:
+    watchlist    = read_watchlist()
     risk_settings = read_risk_settings()
-    tickers = watchlist.get("tickers", [])
+    stocks       = wl_stocks(watchlist)
+    crypto       = wl_crypto(watchlist)
+    intervals    = wl_intervals(watchlist)
 
-    # Backtest section data
-    data = dashboard_payload()
+    # Backtest section
+    data       = dashboard_payload()
     historical = data["backtest"].get("portfolio", {})
-    forward = data["forward_summary"]
-    bt_rows = [
+    forward    = data["forward_summary"]
+    bt_rows    = [
         ["Historical baseline", historical.get("trades", 0), pct(historical.get("winrate")), pct(historical.get("expectancy")), fmt(historical.get("profit_factor")), pct(historical.get("max_drawdown"))],
         ["Forward closed",      forward.get("trades", 0),    pct(forward.get("winrate")),    pct(forward.get("expectancy")),    fmt(forward.get("profit_factor")),    pct(forward.get("max_drawdown"))],
     ]
 
-    profile_rows = []
-    for key, profile in profiles.items():
-        profile_rows.append([
-            html_escape(profile.get("label", key)),
-            html_escape(profile.get("interval", "")),
-            html_escape(", ".join(profile.get("actions", []))),
-            html_escape(profile.get("fresh_hours", "")),
-            html_escape(len(profile.get("tickers", []))),
-            f"""
-            <form class="inline" method="post" action="/settings/profiles/apply">
-              <input type="hidden" name="profile_id" value="{html_escape(key)}">
-              <button class="btn mini" type="submit">Apply</button>
-            </form>
-            """,
-        ])
+    # Ticker chips helper
+    def ticker_chips(tickers: list[str], group: str) -> str:
+        chips = "".join(
+            f'<span style="display:inline-flex;align-items:center;gap:4px;background:#1e222d;color:#c9d1d9;'
+            f'border:1px solid #2a2e39;border-radius:6px;padding:3px 8px;font-size:.8rem;margin:2px;">'
+            f'{html_escape(t)}'
+            f'<form class="inline" method="post" action="/settings/watchlist/remove-ticker" style="margin:0">'
+            f'<input type="hidden" name="ticker" value="{html_escape(t)}">'
+            f'<input type="hidden" name="group" value="{group}">'
+            f'<button type="submit" style="background:none;border:none;color:#9ba3af;cursor:pointer;'
+            f'padding:0 2px;font-size:.9rem;line-height:1">×</button>'
+            f'</form></span>'
+            for t in tickers
+        )
+        return f'<div style="display:flex;flex-wrap:wrap;gap:2px;padding:.75rem;">{chips}</div>' if chips else \
+               '<div class="muted" style="padding:.75rem;">Нет тикеров</div>'
+
+    # Interval checkboxes
+    all_tfs = ["1d", "4h", "1h", "1w"]
+    tf_boxes = "".join(
+        f'<label style="display:inline-flex;align-items:center;gap:6px;margin-right:16px;cursor:pointer;">'
+        f'<input type="checkbox" name="intervals" value="{tf}" {"checked" if tf in intervals else ""}> {tf}</label>'
+        for tf in all_tfs
+    )
+
+    stocks_tab_style = "border-bottom:3px solid #2962ff;color:#fff;" if tab == "stocks" else "border-bottom:3px solid transparent;color:#9ba3af;"
+    crypto_tab_style = "border-bottom:3px solid #2962ff;color:#fff;" if tab == "crypto" else "border-bottom:3px solid transparent;color:#9ba3af;"
+
+    if tab == "crypto":
+        active_chips  = ticker_chips(crypto, "crypto")
+        add_placeholder = "BTC-USD"
+        add_group = "crypto"
+        active_count = len(crypto)
+    else:
+        active_chips  = ticker_chips(stocks, "stocks")
+        add_placeholder = "AAPL"
+        add_group = "stocks"
+        active_count = len(stocks)
+
     body = f"""
-    <div class="topbar"><div><h2>Settings</h2><div class="muted">Watchlist profiles for long-term, swing, intraday and crypto modes.</div></div></div>
+    <div class="topbar"><div><h2>Settings</h2>
+      <div class="muted">Тикеры для мониторинга и риск-параметры.</div>
+    </div></div>
+
     <h3 id="backtest">Backtest vs Forward</h3>
     {table(["Scope", "Trades", "Winrate", "Expectancy", "PF", "Drawdown"], bt_rows)}
     <div class="band" style="margin-top:0">Правило: меньше 30 закрытых forward-сделок — только наблюдение. PF &lt; 1.1 или отрицательная expectancy — автоматизацию не включать.</div>
-    <h3>Активный вотчлист</h3>
-    <div class="band">
-      <strong>Interval:</strong> {html_escape(watchlist.get("interval", "-"))}<br>
-      <strong>Actions:</strong> {html_escape(", ".join(watchlist.get("actions", [])))}<br>
-      <strong>Fresh hours:</strong> {html_escape(watchlist.get("fresh_hours", "-"))}<br>
-      <strong>Tickers:</strong> {html_escape(", ".join(tickers))}
+
+    <h3>Вотчлист</h3>
+    <div style="display:flex;gap:.5rem;margin:0 1.5rem .5rem;border-bottom:1px solid #2a2e39;">
+      <a href="/settings?tab=stocks" style="padding:.5rem 1.2rem;text-decoration:none;font-weight:600;{stocks_tab_style}">
+        Акции <span style="background:#2a2e39;color:#9ba3af;border-radius:9px;padding:1px 8px;font-size:.75rem;margin-left:4px;">{len(stocks)}</span>
+      </a>
+      <a href="/settings?tab=crypto" style="padding:.5rem 1.2rem;text-decoration:none;font-weight:600;{crypto_tab_style}">
+        Крипто <span style="background:#2a2e39;color:#9ba3af;border-radius:9px;padding:1px 8px;font-size:.75rem;margin-left:4px;">{len(crypto)}</span>
+      </a>
     </div>
-    <h3>Profiles</h3>
-    {table(["Profile", "TF", "Actions", "Fresh h", "Tickers", "Apply"], profile_rows)}
-    <h3>Edit Active Watchlist</h3>
-    <form class="band form-grid" method="post" action="/settings/watchlist/save">
-      <label>Profile ID<input name="profile_id" value="anton_custom"></label>
-      <label>Label<input name="label" value="Anton Custom"></label>
-      <label>Interval<input name="interval" value="{html_escape(watchlist.get("interval", "1h"))}"></label>
-      <label>Actions<input name="actions" value="{html_escape(",".join(watchlist.get("actions", ["buy", "sell"])))}"></label>
-      <label>Fresh hours<input name="fresh_hours" value="{html_escape(watchlist.get("fresh_hours", 48))}"></label>
-      <label>Limit<input name="limit" value="{html_escape(watchlist.get("limit", 20))}"></label>
-      <label style="grid-column: span 4;">Tickers<input name="tickers" value="{html_escape(", ".join(tickers))}"></label>
-      <button class="btn" type="submit">Save active</button>
+    <div class="band" style="margin-top:0;padding:.5rem 0;">
+      {active_chips}
+      <form class="inline" method="post" action="/settings/watchlist/add-ticker"
+            style="display:flex;gap:.5rem;padding:.5rem .75rem 0;">
+        <input type="hidden" name="group" value="{add_group}">
+        <input name="ticker" placeholder="{add_placeholder}" style="width:120px;" required>
+        <button class="btn mini" type="submit">+ Добавить</button>
+      </form>
+    </div>
+
+    <h3>Таймфреймы для сканирования</h3>
+    <form class="band" method="post" action="/settings/watchlist/save-intervals">
+      {tf_boxes}
+      <button class="btn mini" type="submit" style="margin-left:8px;">Сохранить</button>
     </form>
-    <form class="band" method="post" action="/settings/run-scan">
-      <button class="btn" type="submit">Run scan for active watchlist</button>
-      <span class="muted">Updates Signals and Action Board from configs/watchlist.yaml.</span>
+
+    <form class="band" method="post" action="/settings/run-scan" style="margin-top:.5rem">
+      <button class="btn" type="submit">▶ Запустить скан</button>
+      <span class="muted">Обновляет Signals и Action Board по всем таймфреймам.</span>
     </form>
+
     <h3>Risk Settings</h3>
     <form class="band form-grid" method="post" action="/settings/risk/save">
-      <label>Account size<input name="account_size" value="{html_escape(risk_settings.get("account_size", 10000))}"></label>
-      <label>Risk % per trade<input name="risk_pct" value="{html_escape(risk_settings.get("risk_pct", 1.0))}"></label>
-      <label>Max position %<input name="max_position_pct" value="{html_escape(risk_settings.get("max_position_pct", 25.0))}"></label>
-      <label>Currency<input name="currency" value="{html_escape(risk_settings.get("currency", "USD"))}"></label>
-      <button class="btn" type="submit">Save risk</button>
+      <label>Размер счёта ($)<input name="account_size" value="{html_escape(risk_settings.get("account_size", 10000))}"></label>
+      <label>Риск на сделку %<input name="risk_pct" value="{html_escape(risk_settings.get("risk_pct", 1.0))}"></label>
+      <label>Макс. позиция %<input name="max_position_pct" value="{html_escape(risk_settings.get("max_position_pct", 25.0))}"></label>
+      <label>Валюта<input name="currency" value="{html_escape(risk_settings.get("currency", "USD"))}"></label>
+      <button class="btn" type="submit">Сохранить риск</button>
     </form>
     """
     return layout("Settings", "Settings", body)
@@ -1099,37 +1162,42 @@ async def accept_signal(request: Request) -> RedirectResponse:
     return RedirectResponse(f"/trades/{row['signal_id']}", status_code=303)
 
 
-@app.post("/settings/profiles/apply")
-async def apply_profile(request: Request) -> RedirectResponse:
+@app.post("/settings/watchlist/add-ticker")
+async def watchlist_add_ticker(request: Request) -> RedirectResponse:
     body = (await request.body()).decode("utf-8")
     form = {key: values[0] for key, values in parse_qs(body).items()}
-    profiles = read_profiles().get("profiles", {})
-    profile = profiles.get(form.get("profile_id", ""))
-    if profile:
-        write_watchlist({
-            "tickers": profile.get("tickers", []),
-            "interval": profile.get("interval", "1h"),
-            "actions": profile.get("actions", ["buy", "sell"]),
-            "fresh_hours": profile.get("fresh_hours", 48),
-            "limit": profile.get("limit", 20),
-        })
-    return RedirectResponse("/settings", status_code=303)
+    ticker = form.get("ticker", "").strip().upper()
+    group  = form.get("group", "stocks")  # "stocks" or "crypto"
+    if ticker:
+        wl = read_watchlist()
+        lst = wl.setdefault(group, [])
+        if ticker not in [str(t).upper() for t in lst]:
+            lst.append(ticker)
+        write_watchlist(wl)
+    return RedirectResponse(f"/settings?tab={group}", status_code=303)
 
 
-@app.post("/settings/watchlist/save")
-async def save_watchlist(request: Request) -> RedirectResponse:
+@app.post("/settings/watchlist/remove-ticker")
+async def watchlist_remove_ticker(request: Request) -> RedirectResponse:
     body = (await request.body()).decode("utf-8")
     form = {key: values[0] for key, values in parse_qs(body).items()}
-    watchlist = clean_watchlist_form(form)
-    write_watchlist(watchlist)
-    profiles_payload = read_profiles()
-    profiles = profiles_payload.setdefault("profiles", {})
-    profile_id = form.get("profile_id", "anton_custom").strip() or "anton_custom"
-    profiles[profile_id] = {
-        "label": form.get("label", profile_id).strip() or profile_id,
-        **watchlist,
-    }
-    write_profiles(profiles_payload)
+    ticker = form.get("ticker", "").strip().upper()
+    group  = form.get("group", "stocks")
+    if ticker:
+        wl = read_watchlist()
+        wl[group] = [t for t in wl.get(group, []) if str(t).upper() != ticker]
+        write_watchlist(wl)
+    return RedirectResponse(f"/settings?tab={group}", status_code=303)
+
+
+@app.post("/settings/watchlist/save-intervals")
+async def watchlist_save_intervals(request: Request) -> RedirectResponse:
+    body = (await request.body()).decode("utf-8")
+    form = parse_qs(body)
+    intervals = form.get("intervals", ["1d"])
+    wl = read_watchlist()
+    wl["intervals"] = intervals
+    write_watchlist(wl)
     return RedirectResponse("/settings", status_code=303)
 
 
