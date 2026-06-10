@@ -51,10 +51,9 @@ def project_next_move(figure) -> NextMove | None:
         w4 = prices[4]
         w2 = prices[2]
         end = prices[5]
-        near, far = (w4, w2) if not up else (w4, w2)
         return NextMove(
             direction="down" if up else "up",
-            target_lo=min(near, far), target_hi=max(near, far),
+            target_lo=min(w4, w2), target_hi=max(w4, w2),
             invalidation=end,                 # exceeding W5 end voids the top
             note="Пост-импульс: коррекция к зоне W4, глубже к W2; не выше конца W5.",
             confidence="medium",

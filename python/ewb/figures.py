@@ -204,7 +204,7 @@ def _try_flat(pivots: list[Pivot], i: int) -> Figure | None:
         start_idx=pts[0].idx, end_idx=pts[-1].idx,
         pivots=pts, confirmed=confirmed, checks=checks,
         motion_labels=["0", "A", "B", "C"],
-        structure_labels=[":F3", ":c3", ":?5"],
+        structure_labels=[":F3", ":c3", ":L5"],   # Flat = 3-3-5; C = Last 5 (:L5)
     )
 
 
@@ -313,9 +313,7 @@ def match_figures(pivots: list[Pivot]) -> list[Figure]:
         size = 6 if fig.type in ("impulse", "triangle") else 4
         indexed.append((i, i + size - 1, fig))
     # Sort by score desc (confirmed, type_rank, struct_bucket), then by start asc
-    indexed.sort(key=lambda t: (-_figure_score(t[2])[0],
-                                 -_figure_score(t[2])[1],
-                                 -_figure_score(t[2])[2], t[0]))
+    indexed.sort(key=lambda t: (tuple(-x for x in _figure_score(t[2])[:3]), t[0]))
 
     used = [False] * n
     selected: list[Figure] = []
