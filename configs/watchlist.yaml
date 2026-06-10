@@ -1,37 +1,59 @@
 tickers:
-- NVDA
-- AVGO
-- AMD
-- TSM
-- ASML
-- ARM
-- MU
-- MSFT
-- ORCL
-- CRM
-- NOW
-- PLTR
-- CRWD
-- PANW
-- SNOW
-- AMZN
-- GOOGL
-- META
-- NFLX
-- UBER
-- SHOP
-- BKNG
-- LLY
-- NVO
-- ISRG
-- VRTX
-- TSLA
-- V
-- MA
-- CAT
+  # Акции — Growth 30 (NYSE/NASDAQ, пн-пт 09:30-20:00 ET)
+  - NVDA
+  - AVGO
+  - AMD
+  - TSM
+  - ASML
+  - ARM
+  - MU
+  - MSFT
+  - ORCL
+  - CRM
+  - NOW
+  - PLTR
+  - CRWD
+  - PANW
+  - SNOW
+  - AMZN
+  - GOOGL
+  - META
+  - NFLX
+  - UBER
+  - SHOP
+  - BKNG
+  - LLY
+  - NVO
+  - ISRG
+  - VRTX
+  - TSLA
+  - V
+  - MA
+  - CAT
+  # Крипто — Top 20 (24/7)
+  - BTC-USD
+  - ETH-USD
+  - BNB-USD
+  - SOL-USD
+  - XRP-USD
+  - DOGE-USD
+  - ADA-USD
+  - AVAX-USD
+  - TRX-USD
+  - LINK-USD
+  - DOT-USD
+  - LTC-USD
+  - ATOM-USD
+  - XLM-USD
+  - OP-USD
+  - NEAR-USD
+  - HBAR-USD
+  - FIL-USD
+  - INJ-USD
+  - AAVE-USD
 interval: 1d
 actions:
-- buy
-- sell
+  - buy
+  - sell
 fresh_hours: 168
-limit: 30
+limit: 50

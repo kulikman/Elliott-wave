@@ -114,8 +114,8 @@ profiles:
     - sell
     fresh_hours: 168
     limit: 20
-  growth_30:
-    label: Growth 30 (multi-sector)
+  growth_50:
+    label: Growth 50 (stocks + crypto 24/7)
     tickers:
     - NVDA
     - AVGO
@@ -147,12 +147,61 @@ profiles:
     - V
     - MA
     - CAT
+    - BTC-USD
+    - ETH-USD
+    - BNB-USD
+    - SOL-USD
+    - XRP-USD
+    - DOGE-USD
+    - ADA-USD
+    - AVAX-USD
+    - TRX-USD
+    - LINK-USD
+    - DOT-USD
+    - LTC-USD
+    - ATOM-USD
+    - XLM-USD
+    - OP-USD
+    - NEAR-USD
+    - HBAR-USD
+    - FIL-USD
+    - INJ-USD
+    - AAVE-USD
     interval: 1d
     actions:
     - buy
     - sell
     fresh_hours: 168
-    limit: 30
+    limit: 50
+  crypto_20:
+    label: Crypto Top 20 (24/7)
+    tickers:
+    - BTC-USD
+    - ETH-USD
+    - BNB-USD
+    - SOL-USD
+    - XRP-USD
+    - DOGE-USD
+    - ADA-USD
+    - AVAX-USD
+    - TRX-USD
+    - LINK-USD
+    - DOT-USD
+    - LTC-USD
+    - ATOM-USD
+    - XLM-USD
+    - OP-USD
+    - NEAR-USD
+    - HBAR-USD
+    - FIL-USD
+    - INJ-USD
+    - AAVE-USD
+    interval: 4h
+    actions:
+    - buy
+    - sell
+    fresh_hours: 48
+    limit: 20
   anton_custom:
     label: Anton Custom
     tickers:
