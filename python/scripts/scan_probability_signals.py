@@ -13,6 +13,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from ewb.figures import match_figures
 from ewb.monowaves import detect_monowaves
 from ewb.rules import classify_pivots
+from ewb.wave3 import detect_wave3_setups
 from ewb.research import (
     download_ohlc,
     load_probability_calibration,
@@ -103,6 +104,15 @@ def scan_ticker(ticker: str, interval: str, period: str, calibration: dict) -> l
         signal = probability_signal_from_figure(calibration, figure, df, ticker, interval)
         if signal is not None:
             signals.append(signal)
+
+    # EPIC 3: Wave-3 trend entries (feature-flagged; default off until forward-validated)
+    if os.getenv("EWB_WAVE3") == "1":
+        last_idx = len(df) - 1
+        last_px = float(df["close"].iloc[last_idx])
+        last_ts = str(df.index[last_idx])
+        for setup in detect_wave3_setups(pivots, last_px, last_idx):
+            if setup.triggered and setup.struct_ok and setup.rr1 >= 1.0:
+                signals.append(setup.to_signal(ticker, interval, last_ts))
     return signals
 
 

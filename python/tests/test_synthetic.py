@@ -403,6 +403,54 @@ def test_epic2_figure_carries_relabel_flag():
     print("[epic2    ] ✓ deep-W2 impulse flagged corrective, shallow not\n")
 
 
+def test_epic3_wave3_long_setup():
+    """EPIC 3: W1 up + W2 pullback 50% + price breaks W1 end → long W3 setup."""
+    from ewb.wave3 import detect_wave3_setups
+    from ewb.monowaves import Pivot
+    # W1: 100→120 (len 20). W2: 120→110 (retrace 50%, doesn't break 100).
+    pivots = [
+        Pivot(idx=0,  price=100, direction=1),
+        Pivot(idx=10, price=120, direction=1),   # W1 end
+        Pivot(idx=20, price=110, direction=-1),  # W2 end
+    ]
+    # last price breaks above W1 end (120) → W3 triggered
+    setups = detect_wave3_setups(pivots, last_price=121.0, last_idx=25)
+    assert setups, "expected a W3 setup"
+    s = setups[0]
+    assert s.side == "long" and s.triggered
+    assert abs(s.w2_retrace - 0.5) < 0.01
+    assert s.entry_px == 120 and s.stop_px == 110 and s.invalid_px == 100
+    # TP1=1.0xW1=140, TP2=1.618xW1=152.36, TP3=2.618xW1=172.36
+    assert abs(s.tp1 - 140) < 0.1
+    assert abs(s.tp2 - (120 + 1.618*20)) < 0.1
+    assert s.rr1 >= 1.0
+    print(f"[epic3    ] ✓ long W3: entry={s.entry_px} stop={s.stop_px} "
+          f"TP1={s.tp1:.1f} TP2={s.tp2:.1f} RR1={s.rr1:.2f}\n")
+
+
+def test_epic3_rejects_deep_w2_and_invalidation():
+    """EPIC 3: deep W2 (>61.8%) and W2 breaking W1 start are rejected."""
+    from ewb.wave3 import detect_wave3_setups
+    from ewb.monowaves import Pivot
+    # Deep W2: 100→120→103 (retrace 85% > 61.8%) → no setup
+    deep = [Pivot(idx=0, price=100, direction=1),
+            Pivot(idx=10, price=120, direction=1),
+            Pivot(idx=20, price=103, direction=-1)]
+    assert not detect_wave3_setups(deep, 121.0, 25), "deep W2 must be rejected"
+    # W2 breaks W1 start: 100→120→99 → no setup
+    broke = [Pivot(idx=0, price=100, direction=1),
+             Pivot(idx=10, price=120, direction=1),
+             Pivot(idx=20, price=99, direction=-1)]
+    assert not detect_wave3_setups(broke, 121.0, 25), "W2 breaking W1 start must be rejected"
+    # Not triggered: price hasn't broken W1 end
+    ok = [Pivot(idx=0, price=100, direction=1),
+          Pivot(idx=10, price=120, direction=1),
+          Pivot(idx=20, price=110, direction=-1)]
+    setups = detect_wave3_setups(ok, last_price=115.0, last_idx=25)  # below 120
+    assert setups and not setups[0].triggered, "should detect but not trigger below W1 end"
+    print("[epic3    ] ✓ rejects deep-W2 + invalidation; untriggered below W1 end\n")
+
+
 if __name__ == "__main__":
     print("=" * 60)
     print("Synthetic tests")
@@ -412,6 +460,8 @@ if __name__ == "__main__":
     test_epic1_struct_consistency_unit()
     test_epic2_w2_deep_relabel()
     test_epic2_figure_carries_relabel_flag()
+    test_epic3_wave3_long_setup()
+    test_epic3_rejects_deep_w2_and_invalidation()
     test_epic0_classify_fills_struct_list()
     test_classify_rule_boundaries()
     test_confirm_impulse_pure_math()
