@@ -120,19 +120,35 @@ def market_status(interval: str = "1d") -> str:
     return "closed"
 
 
-def should_trade(interval: str) -> tuple[bool, str]:
-    """Return (allowed, reason) for current time and interval."""
+CRYPTO_SUFFIXES = ("-USD", "-USDT", "-BTC", "-ETH", "-PERP")
+
+def is_crypto(ticker: str) -> bool:
+    t = ticker.upper()
+    return any(t.endswith(s) for s in CRYPTO_SUFFIXES)
+
+
+def should_trade_ticker(ticker: str, interval: str) -> tuple[bool, str]:
+    """Return (allowed, reason) for a single ticker."""
+    if is_crypto(ticker):
+        return True, "crypto 24/7"
     status = market_status(interval)
     if interval in ("1d", "1w"):
-        # Daily/weekly: evaluate TP/SL once after session closes
         if status in ("open", "post_close"):
             return True, status
-        return False, f"market {status} — waiting for US session"
+        return False, f"NYSE {status}"
     else:
-        # Intraday: only during open session
         if status == "open":
             return True, "open"
-        return False, f"market {status} — intraday only trades during session"
+        return False, f"NYSE {status} — intraday only during session"
+
+
+def split_by_session(tickers: list[str], interval: str) -> tuple[list[str], list[str]]:
+    """Return (tradeable_now, scan_only) based on current session."""
+    tradeable, scan_only = [], []
+    for t in tickers:
+        ok, _ = should_trade_ticker(t, interval)
+        (tradeable if ok else scan_only).append(t)
+    return tradeable, scan_only
 
 
 def read_watchlist() -> dict[str, Any]:
@@ -307,12 +323,22 @@ def try_open_trades(signals: list[dict], events: list[dict]) -> int:
 
 # ─── close trades ───────────────────────────────────────────────────────────
 
-def try_close_trades(events: list[dict]) -> int:
-    """Check open trades against live prices; close on TP/SL/timeout. Returns count closed."""
+def try_close_trades(events: list[dict], tradeable_set: set[str] | None = None) -> int:
+    """Check open trades against live prices; close on TP/SL/timeout.
+
+    tradeable_set: tickers allowed to trade right now (crypto always included).
+    Stocks outside NYSE session are skipped — their prices are stale.
+    """
     trades = forward_trades(events)
     if trades.empty:
         return 0
     open_df = trades[trades["status"] == "open"]
+    if open_df.empty:
+        return 0
+
+    # Filter to tradeable tickers only
+    if tradeable_set:
+        open_df = open_df[open_df["ticker"].str.upper().isin(tradeable_set)]
     if open_df.empty:
         return 0
 
@@ -450,29 +476,35 @@ def one_pass() -> None:
     interval = wl.get("interval", "1d")
     state    = read_state()
 
-    allowed, reason = should_trade(interval)
-    if not allowed:
-        log.info("Session check: %s — skipping open/close (scan only)", reason)
-        # Still run scan to pre-load signals for when session opens
-        run_scan(tickers, interval)
-        state["last_scan"] = utc_now_iso()
-        write_state(state)
-        return
+    tradeable, scan_only = split_by_session(tickers, interval)
 
-    log.info("Session check: %s ✓", reason)
+    crypto_count = sum(1 for t in tickers if is_crypto(t))
+    stock_count  = len(tickers) - crypto_count
+    log.info(
+        "Session: crypto=%d(24/7) stocks=%d(%s) — tradeable=%d scan_only=%d",
+        crypto_count, stock_count,
+        market_status(interval), len(tradeable), len(scan_only),
+    )
 
-    # 1. Scan
+    # 1. Scan all tickers (pre-loads signals for when stocks session opens)
     signals = run_scan(tickers, interval)
     state["last_scan"] = utc_now_iso()
     log.info("Scan returned %d signal(s)", len(signals))
 
-    # 2. Open new trades
-    events  = read_jsonl(FORWARD_LOG)
-    opened  = try_open_trades(signals, events)
+    # 2. Filter signals to only tradeable tickers right now
+    tradeable_set    = set(t.upper() for t in tradeable)
+    tradeable_signals = [s for s in signals if s.get("ticker", "").upper() in tradeable_set]
+    if len(tradeable_signals) < len(signals):
+        log.info("Filtered to %d tradeable signal(s) (NYSE closed for stocks)",
+                 len(tradeable_signals))
 
-    # 3. Close trades on TP/SL/timeout (only with real finalised prices)
-    events  = read_jsonl(FORWARD_LOG)        # reload after writes
-    closed  = try_close_trades(events)
+    # 3. Open new trades (only tradeable)
+    events = read_jsonl(FORWARD_LOG)
+    opened = try_open_trades(tradeable_signals, events)
+
+    # 4. Close trades — crypto always, stocks only when session allows
+    events = read_jsonl(FORWARD_LOG)
+    closed = try_close_trades(events, tradeable_set)
 
     # 4. Retrain if enough new closed trades
     state["closed_since_retrain"] = state.get("closed_since_retrain", 0) + closed
