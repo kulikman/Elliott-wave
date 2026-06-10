@@ -22,6 +22,10 @@ class Pivot:
     similar_to_prev: Optional[bool] = None
     rule_no: int = 0
     cond_letter: str = ""
+    # EPIC 0: full structural list from Гл.3 (AKU-0148-0150, 0167-0170)
+    # ordered list of (label, weight); weight 1.0=normal, 0.6=(), 0.3=[]
+    struct_list: list = field(default_factory=list)
+    struct_label: str = ""   # most-probable single label (top of struct_list)
 
 
 @dataclass

@@ -284,10 +284,56 @@ def test_classify_rule_boundaries():
     print()
 
 
+def test_epic0_structural_lists():
+    """EPIC 0: структурные списки Гл.3 (AKU-0148-0150, 0167-0170)."""
+    from ewb.rules import rule_to_structure_list, rule_to_structure, structure_to_base
+
+    # AKU-0148: Правило 1 → :5 наиболее вероятно
+    assert rule_to_structure_list(1)[0][0] == ":5"
+    # AKU-0150: Правило 3 → :F3 во главе, список содержит обе базы (граница)
+    r3 = [lbl for lbl, _ in rule_to_structure_list(3)]
+    assert r3[0] == ":F3" and ":5" in r3 and ":L5" in r3
+    # AKU-0167: Правило 4 зависит от Условия — c даёт :c3 во главе
+    assert rule_to_structure_list(4, "c")[0][0] == ":c3"
+    assert rule_to_structure_list(4, "a")[0][0] == ":F3"
+    # AKU-0169/0170: Правило 6-7 больше НЕ '?' (корень проблемы figures.py)
+    assert rule_to_structure(6) != "?" and rule_to_structure(6) != ""
+    assert rule_to_structure(7) != "?" and rule_to_structure(7) != ""
+    print("[epic0    ] ✓ R1→:5  R3→:F3(±)  R4c→:c3  R6/7≠'?'")
+
+    # structure_to_base: метки с цифрой 5 → 5, с цифрой 3 → 3
+    assert structure_to_base(":5") == 5
+    assert structure_to_base(":s5") == 5
+    assert structure_to_base(":L5") == 5
+    assert structure_to_base(":F3") == 3
+    assert structure_to_base("x:c3") == 3
+    assert structure_to_base(":sL3") == 3
+    assert structure_to_base("?") == 0
+    print("[epic0    ] ✓ structure_to_base: :5/:s5/:L5→5  :F3/x:c3/:sL3→3\n")
+
+
+def test_epic0_classify_fills_struct_list():
+    """EPIC 0: classify_pivots заполняет struct_list/struct_label на реальных пивотах."""
+    pivots_target = [100, 120, 110, 140, 130, 160]
+    df = _build_ohlc_from_pivots(pivots_target, bars_per_seg=30, jitter=0.005)
+    pivots = detect_monowaves(df, atr_period=14, atr_mult=1.0)
+    classify_pivots(pivots)
+    classified = [p for p in pivots if p.rule_no > 0]
+    assert classified, "expected at least one classified pivot"
+    for p in classified:
+        assert p.struct_list, f"pivot rule={p.rule_no} has empty struct_list"
+        assert p.struct_label, f"pivot rule={p.rule_no} has empty struct_label"
+        # struct_label = вершина списка
+        assert p.struct_label == p.struct_list[0][0]
+    print(f"[epic0    ] ✓ {len(classified)} пивотов получили struct_list/struct_label\n")
+
+
 if __name__ == "__main__":
     print("=" * 60)
     print("Synthetic tests")
     print("=" * 60)
+    test_epic0_structural_lists()
+    test_epic0_classify_fills_struct_list()
     test_classify_rule_boundaries()
     test_confirm_impulse_pure_math()
     test_clean_impulse_up()
