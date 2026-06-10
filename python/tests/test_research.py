@@ -390,7 +390,7 @@ def test_pine_neely_core_signal_contract():
     assert "tfPlanText" in mono
     assert "bestHypProb" not in mono
     assert "htfBlocksHyp" not in mono
-    assert "for clearRow = 7 to 21" in mono
+    assert "for clearRow = degClearStart+2 to 23" in mono
     assert "MOVE 1.618" in mono
     assert "coreWaveLabel5" in mono
     assert 'table.cell(info, 0, 17, "Live hypothesis"' in mono

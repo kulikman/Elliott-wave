@@ -57,6 +57,7 @@ FORWARD_LOG    = ROOT / DEFAULT_FORWARD_LOG
 MODEL_OUT      = ROOT / "brain-output" / "models"
 STATE_FILE     = ROOT / "brain-output" / "auto_trader_state.json"
 LOG_FILE       = ROOT / "brain-output" / "auto_trader.log"
+SETUP_WR_FILE  = ROOT / "brain-output" / "backtests" / "ewb_strategy_backtest_grouped.parquet"
 
 SCAN_INTERVAL  = 60 * 60        # re-scan every 60 min
 MIN_P_WIN      = 0.55           # minimum p_trade_win to open a trade
@@ -64,6 +65,16 @@ MIN_RR         = 1.0            # minimum risk-reward ratio
 MAX_OPEN       = 5              # max concurrent open paper trades
 TIMEOUT_BARS   = 30             # close trade after N bars if still open
 RETRAIN_EVERY  = 20             # retrain ML after every N closed trades
+
+# ─── High-winrate setup gate (validated against the 1518-trade backtest) ──────
+# The probability calibration was built on a small sample and over-rates some
+# setups (e.g. stock flat-short: calib 70% vs real 47%). To enforce "only high
+# win-rate signals", every candidate is cross-checked against the large strategy
+# backtest grouped winrates. A setup that is not validated, has too few backtest
+# trades, or sits below the winrate floor is blocked regardless of its p_win.
+SETUP_WR_FLOOR = 0.55           # min validated historical win-rate to trade a setup
+SETUP_MIN_N    = 20             # min validated backtest trades for a setup to count
+MIN_SAMPLE     = 10             # min calibration sample_size (kills n=1 garbage)
 
 # Exchange configuration — US markets
 EXCHANGE       = "NYSE"          # used for holiday calendar
@@ -262,6 +273,62 @@ def dedup_key(sig: dict) -> str:
     return f"{sig['ticker']}|{sig.get('interval','?')}|{sig.get('side','?')}|{entry_day}"
 
 
+# ─── high-winrate setup gate ─────────────────────────────────────────────────
+_SETUP_WR_CACHE: dict[tuple[str, str, str, str], tuple[float, int]] | None = None
+
+
+def asset_class_of(ticker: str) -> str:
+    """Crypto pairs are quoted as <SYM>-USD; everything else is treated as stock."""
+    return "crypto" if str(ticker).upper().endswith("-USD") else "stock"
+
+
+def load_setup_winrates() -> dict[tuple[str, str, str, str], tuple[float, int]]:
+    """Load validated (asset_class, interval, fig_type, side) → (winrate, n)
+    from the large strategy backtest. Cached after first read."""
+    global _SETUP_WR_CACHE
+    if _SETUP_WR_CACHE is not None:
+        return _SETUP_WR_CACHE
+    lut: dict[tuple[str, str, str, str], tuple[float, int]] = {}
+    if SETUP_WR_FILE.exists():
+        try:
+            g = pd.read_parquet(SETUP_WR_FILE)
+            for _, r in g.iterrows():
+                key = (str(r["asset_class"]), str(r["interval"]),
+                       str(r["fig_type"]), str(r["side"]))
+                lut[key] = (float(r["winrate"]), int(r["trades"]))
+        except Exception as exc:  # pragma: no cover - defensive
+            log.warning("could not load setup winrates: %s", exc)
+    _SETUP_WR_CACHE = lut
+    return lut
+
+
+def setup_quality_ok(sig: dict) -> tuple[bool, str]:
+    """Block any setup not proven high-winrate by the large backtest.
+
+    Returns (ok, reason). Enforces the user requirement that Anton only opens
+    trades on setups with a validated high historical win-rate.
+    """
+    sample = sig.get("sample_size")
+    if sample is not None and int(sample) < MIN_SAMPLE:
+        return False, f"calib sample n={sample}<{MIN_SAMPLE}"
+
+    ticker   = sig.get("ticker", "")
+    interval = str(sig.get("interval", "?"))
+    fig      = str(sig.get("pattern", "unknown"))
+    side     = str(sig.get("side", "?"))
+    key = (asset_class_of(ticker), interval, fig, side)
+
+    lut = load_setup_winrates()
+    if key not in lut:
+        return False, f"unvalidated setup {key[0]}/{fig}/{side} (no backtest edge)"
+    wr, n = lut[key]
+    if n < SETUP_MIN_N:
+        return False, f"thin backtest n={n}<{SETUP_MIN_N}"
+    if wr < SETUP_WR_FLOOR:
+        return False, f"low WR {wr:.0%}<{SETUP_WR_FLOOR:.0%}"
+    return True, f"WR {wr:.0%} (n={n})"
+
+
 def try_open_trades(signals: list[dict], events: list[dict]) -> int:
     """Open paper trades for qualifying signals. Returns count opened."""
     trades = forward_trades(events)
@@ -297,6 +364,13 @@ def try_open_trades(signals: list[dict], events: list[dict]) -> int:
         if rr(entry_px, stop_px, target_px) < MIN_RR:
             continue
         if action not in ("buy", "sell"):
+            continue
+        # High-winrate gate: only open setups proven by the large backtest.
+        ok, reason = setup_quality_ok(sig)
+        if not ok:
+            log.info("SKIP  %-6s %-5s %s  — %s",
+                     sig.get("ticker", "?"), sig.get("side", "?"),
+                     sig.get("interval", "?"), reason)
             continue
 
         # Dedup
