@@ -758,20 +758,6 @@ def signals() -> HTMLResponse:
     body = f"""
     <div class="topbar"><div><h2>Signals</h2><div class="muted">Fresh scanner signals from the selected watchlist.</div></div></div>
     {table(["Ticker", "Action", "Pattern", "P(win)", "EV", "RR", "Entry", "SL", "TP", "Age", "Chart", "Time"], rows)}
-    <h3>Add Alert</h3>
-    <form class="band form-grid" method="post" action="/alerts/add">
-      <label>Ticker<input name="ticker" placeholder="AAPL" required></label>
-      <label>TF<input name="interval" placeholder="1d" required></label>
-      <label>Action<select name="action"><option>buy</option><option>sell</option></select></label>
-      <label>Entry time<input name="entry_ts" placeholder="2026-06-07T16:00:00Z" required></label>
-      <label>Entry<input name="entry_px" required></label>
-      <label>Stop<input name="stop_px"></label>
-      <label>Target<input name="target_px"></label>
-      <label>Pattern<select name="fig_type"><option>flat</option><option>double_corr</option><option>unknown</option></select></label>
-      <label>Probability<input name="probability" placeholder="61.2"></label>
-      <label>HTF context<input name="htf_context" placeholder="1W UP | 1D W3?"></label>
-      <button class="btn" type="submit">Add alert</button>
-    </form>
     <h3>Alerts Feed</h3>
     {table(["ID", "Ticker", "TF", "Side", "Pattern", "Entry", "SL", "TP", "P", "Source", "Recorded"], alert_event_rows())}
     """
