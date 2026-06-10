@@ -23,6 +23,21 @@ from .monowaves import Pivot
 from .rules import structure_to_base
 
 
+def channel_target(p0: Pivot, p1: Pivot, p2: Pivot, at_idx: int) -> float | None:
+    """EPIC 4 — Neely base channel 0-2 (Гл.8-9, AKU-0011).
+
+    Baseline через концы W1-start(p0) и W2-end(p2); параллель через W1-end(p1).
+    Цена на параллели в баре at_idx — динамическая проекция цели Волны 3.
+    Возвращает None если бары совпадают (нет наклона по времени).
+    """
+    dt = p2.idx - p0.idx
+    if dt == 0:
+        return None
+    slope = (p2.price - p0.price) / dt          # наклон базовой линии 0-2
+    # Параллель проходит через p1; экстраполируем на at_idx.
+    return p1.price + slope * (at_idx - p1.idx)
+
+
 # Neely-healthy W2 retracement window for a tradeable Wave-3 setup.
 W2_MIN_RETRACE = 0.382
 W2_MAX_RETRACE = 0.618          # >61.8% → W1 relabels to :3 (EPIC 2), not a real impulse
@@ -49,6 +64,8 @@ class Wave3Setup:
     triggered: bool             # price has broken W1 end (W3 underway)
     struct_ok: bool             # W1 monowave compatible with :5
     rr1: float = 0.0            # reward(TP1):risk
+    channel_tp: float | None = None   # EPIC 4: Neely channel-projected W3 target
+    primary_tp: float = 0.0     # chosen target (channel if sane, else fib 1.618)
     checks: list = field(default_factory=list)
 
     def to_signal(self, ticker: str, interval: str, ts: str) -> dict:
@@ -66,16 +83,18 @@ class Wave3Setup:
             "risk_box": {
                 "entry_px": self.entry_px,
                 "stop_px": self.stop_px,
-                "target_px": self.tp2,        # primary target = 1.618xW1
+                "target_px": self.primary_tp,   # EPIC 4: channel if sane, else fib 1.618
                 "invalid_px": self.invalid_px,
                 "tp1": self.tp1, "tp2": self.tp2, "tp3": self.tp3,
+                "channel_tp": self.channel_tp,
                 "amplitude": self.w1_len,
             },
             "w2_retrace": round(self.w2_retrace, 3),
             "rr1": round(self.rr1, 2),
             "entry_zone": "wave3_breakout_of_W1_end",
             "stop": "below_W2_end",
-            "target": "extension_1.0_1.618_2.618_of_W1",
+            "target": ("neely_channel_0-2" if self.primary_tp == self.channel_tp
+                       else "extension_1.0_1.618_2.618_of_W1"),
             "source": "wave3_engine",
         }
 
@@ -144,6 +163,20 @@ def detect_wave3_setups(
         risk = abs(entry_px - stop_px)
         rr1 = (abs(tp1 - entry_px) / risk) if risk > 0 else 0.0
 
+        # EPIC 4: channel projection. W3 spans at least W1's time → project the
+        # 0-2 channel parallel to bar (W2 end + W1 duration).
+        w1_dur = max(1, p1.idx - p0.idx)
+        proj_idx = p2.idx + w1_dur
+        ch = channel_target(p0, p1, p2, proj_idx)
+        # Use channel target only if it is sane: beyond entry in trend dir and
+        # within [TP1, TP3] band; otherwise fall back to fib 1.618 (tp2).
+        primary = tp2
+        if ch is not None:
+            lo, hi = (min(tp1, tp3), max(tp1, tp3))
+            ahead = ch > entry_px if up else ch < entry_px
+            if ahead and lo <= ch <= hi:
+                primary = ch
+
         setups.append(Wave3Setup(
             direction=direction, side="long" if up else "short",
             w1_start=p0.price, w1_end=p1.price, w2_end=p2.price,
@@ -151,6 +184,6 @@ def detect_wave3_setups(
             entry_px=entry_px, stop_px=stop_px, invalid_px=invalid_px,
             tp1=tp1, tp2=tp2, tp3=tp3,
             entry_idx=last_idx, triggered=triggered, struct_ok=struct_ok,
-            rr1=rr1,
+            rr1=rr1, channel_tp=ch, primary_tp=primary,
         ))
     return setups

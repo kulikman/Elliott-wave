@@ -451,6 +451,37 @@ def test_epic3_rejects_deep_w2_and_invalidation():
     print("[epic3    ] ✓ rejects deep-W2 + invalidation; untriggered below W1 end\n")
 
 
+def test_epic4_channel_target():
+    """EPIC 4: Neely base-channel 0-2 projection."""
+    from ewb.wave3 import channel_target
+    from ewb.monowaves import Pivot
+    p0 = Pivot(idx=0,  price=100, direction=1)
+    p1 = Pivot(idx=10, price=120, direction=1)
+    p2 = Pivot(idx=20, price=110, direction=-1)
+    # baseline slope 0→2 = (110-100)/(20-0) = 0.5/bar
+    # parallel through p1(10,120): at idx=30 → 120 + 0.5*(30-10) = 130
+    t = channel_target(p0, p1, p2, 30)
+    assert abs(t - 130.0) < 0.01, f"expected 130, got {t}"
+    # degenerate: same idx → None
+    assert channel_target(p0, p1, Pivot(idx=0, price=110, direction=-1), 30) is None
+    print(f"[epic4    ] ✓ channel target @idx30 = {t:.1f}\n")
+
+
+def test_epic4_primary_tp_selection():
+    """EPIC 4: primary_tp uses channel when sane, else fib 1.618."""
+    from ewb.wave3 import detect_wave3_setups
+    from ewb.monowaves import Pivot
+    pivots = [Pivot(idx=0, price=100, direction=1),
+              Pivot(idx=10, price=120, direction=1),
+              Pivot(idx=20, price=110, direction=-1)]
+    s = detect_wave3_setups(pivots, last_price=121.0, last_idx=25)[0]
+    assert s.channel_tp is not None
+    # primary must be within [TP1, TP3] band
+    assert min(s.tp1, s.tp3) <= s.primary_tp <= max(s.tp1, s.tp3)
+    print(f"[epic4    ] ✓ channel_tp={s.channel_tp:.1f} primary_tp={s.primary_tp:.1f} "
+          f"(TP1={s.tp1:.1f}..TP3={s.tp3:.1f})\n")
+
+
 if __name__ == "__main__":
     print("=" * 60)
     print("Synthetic tests")
@@ -462,6 +493,8 @@ if __name__ == "__main__":
     test_epic2_figure_carries_relabel_flag()
     test_epic3_wave3_long_setup()
     test_epic3_rejects_deep_w2_and_invalidation()
+    test_epic4_channel_target()
+    test_epic4_primary_tp_selection()
     test_epic0_classify_fills_struct_list()
     test_classify_rule_boundaries()
     test_confirm_impulse_pure_math()
