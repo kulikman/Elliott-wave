@@ -33,8 +33,10 @@ DEFAULT_OUTPUT_DIR = os.path.join(REPO, "brain-output", "signals")
 DEFAULT_PERIODS = {
     "1d": "5y",
     "1h": "730d",
+    "4h": "730d",   # resampled from 1h (yfinance 1h max ~730d)
     "30m": "60d",
     "15m": "60d",
+    "1w": "10y",    # alias of 1wk
     "1wk": "10y",
 }
 

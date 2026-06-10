@@ -56,6 +56,7 @@ intervals:
   - 1d
   - 4h
   - 1h
+  - 1w
 
 fresh_hours: 168
 limit: 200
