@@ -320,11 +320,15 @@ def test_pine_neely_core_signal_contract():
     assert "htfMapRightOffset" in mono
     assert "chartTfRank()" in mono
     assert "contextTfEnabled" in mono
-    assert 'request.security(syminfo.tickerid, "60", high' in mono
-    assert 'request.security(syminfo.tickerid, "240", high' in mono
-    assert 'request.security(syminfo.tickerid, "D", high' in mono
-    assert 'request.security(syminfo.tickerid, "W", high' in mono
-    assert 'request.security(syminfo.tickerid, "M", high' in mono
+    # Context waves are built on real LTF high/low with an HTF-scaled reversal
+    # threshold so pivots sit on actual chart peaks; only close + ATR come from
+    # the higher TF via security.
+    assert 'request.security(syminfo.tickerid, "60", ta.atr' in mono
+    assert 'request.security(syminfo.tickerid, "240", ta.atr' in mono
+    assert 'request.security(syminfo.tickerid, "D", ta.atr' in mono
+    assert 'request.security(syminfo.tickerid, "W", ta.atr' in mono
+    assert 'request.security(syminfo.tickerid, "M", ta.atr' in mono
+    assert "zMap1h.step(high, low" in mono
     assert "drawHtfWaveMap" in mono
     assert "mtfContextStack" in mono
     assert "tfPlanBase" in mono

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.ewb.autotrader</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/Users/DEV/Elliott-wave/.venv/bin/python3</string>
+        <string>-m</string>
+        <string>ewb.auto_trader</string>
+    </array>
+
+    <key>WorkingDirectory</key>
+    <string>/Users/DEV/Elliott-wave/python</string>
+
+    <key>StandardOutPath</key>
+    <string>/Users/DEV/Elliott-wave/brain-output/auto_trader.log</string>
+
+    <key>StandardErrorPath</key>
+    <string>/Users/DEV/Elliott-wave/brain-output/auto_trader.log</string>
+
+    <!-- Перезапускать автоматически при падении -->
+    <key>KeepAlive</key>
+    <true/>
+
+    <!-- Запускать при логине -->
+    <key>RunAtLoad</key>
+    <true/>
+
+    <!-- Throttle: не чаще раза в 30 сек при краше -->
+    <key>ThrottleInterval</key>
+    <integer>30</integer>
+</dict>
+</plist>

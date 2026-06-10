@@ -59,6 +59,12 @@ activeWaveWidth = input.int(2, "Толщина активной волны", gro
 
 grpL    = "Метки"
 showLbl = input.bool(false, "Нумеровать моноволны (m0, m1, ...)", group = grpL)
+labelGapAtr = input.float(0.7, "Отступ меток от вершины (×ATR)", group = grpL, minval = 0.0, maxval = 5.0, step = 0.1,
+    tooltip = "Поднимает номер волны над вершиной / опускает под впадину на эту долю ATR, чтобы был виден сам пивот и свеча.")
+badgeRightOffset = input.int(6, "Сдвиг инфо-бейджей вправо (баров)", group = grpL, minval = 0, maxval = 60,
+    tooltip = "Уводит живые бейджи (LAST BAR WAVE, Active HTF, W3) вправо от последнего бара в пустую зону, чтобы они не закрывали свечи.")
+badgeStackAtr = input.float(2.0, "Разнос бейджей по вертикали (×ATR)", group = grpL, minval = 0.0, maxval = 8.0, step = 0.5,
+    tooltip = "Раздвигает бейджи по вертикали на эту долю ATR, чтобы они не накладывались друг на друга.")
 
 // ─── Уровень 6: Степени волн (AKU-0357, spec_v5) ───────────────────────────
 grpDeg  = "Степени волн — Level 6 (AKU-0356..0365)"
@@ -423,7 +429,7 @@ degreeSuffix(bool isHTF) =>
             " [" + degManual + "]"
 
 // Отрисовка одной завершившейся моноволны
-drawMono(ZZResult r, color cUp, color cDn, int width, bool isHTF, color cHTF, bool lbl) =>
+drawMono(ZZResult r, color cUp, color cDn, int width, bool isHTF, color cHTF, bool lbl, float atrVal) =>
     label monoL = na
     if r.confirmed and not na(r.prevBar)
         col = isHTF ? cHTF : (r.dir > 0 ? cUp : cDn)
@@ -432,11 +438,13 @@ drawMono(ZZResult r, color cUp, color cDn, int width, bool isHTF, color cHTF, bo
              style = isHTF ? line.style_dashed : line.style_solid)
         if lbl
             prefix = isHTF ? "M" : "m"
-            yloc_  = r.dir > 0 ? yloc.abovebar : yloc.belowbar
+            // Отступ метки над вершиной / под впадиной, чтобы пивот и свеча были видны.
+            float gap = (na(atrVal) ? 0.0 : atrVal) * labelGapAtr
+            float lblY = r.dir > 0 ? r.price + gap : r.price - gap
             // Level 6: добавляем суффикс Порядка (AKU-0357, AKU-0365)
             degSfx = degreeSuffix(isHTF)
-            monoL := label.new(r.bar, r.price, prefix + str.tostring(r.idx) + degSfx,
-                 xloc = xloc.bar_index, yloc = yloc_,
+            monoL := label.new(r.bar, lblY, prefix + str.tostring(r.idx) + degSfx,
+                 xloc = xloc.bar_index, yloc = yloc.price,
                  style = r.dir > 0 ? label.style_label_down : label.style_label_up,
                  color = isHTF ? cHTF : (r.dir > 0 ? cUp : cDn),
                  textcolor = color.white, size = isHTF ? size.normal : size.small)
@@ -1579,7 +1587,8 @@ var array<int>   mLblBarArr = array.new<int>()
 var array<label> mLblRefArr = array.new<label>()
 
 // ──────────────────── ПОРОГ РАЗВОРОТА (текущий ТФ) ───────────────
-revC = useATR ? ta.atr(atrLen) * atrMult : close * pctRev / 100.0
+float atrBar = ta.atr(atrLen)   // глобальный per-bar ATR для отступа меток
+revC = useATR ? atrBar * atrMult : close * pctRev / 100.0
 
 // ──────────────────── ТЕКУЩИЙ ТАЙМФРЕЙМ ──────────────────────────
 var ZZState zC = ZZState.new()
@@ -1590,7 +1599,7 @@ var array<float> latestPivotPrices = array.new<float>()
 var array<label> latestPivotLabels = array.new<label>()
 ZZResult rc = zC.step(high, low, revC)
 if showC
-    label newMl = drawMono(rc, colCUp, colCDn, wC, false, colH, showLbl)
+    label newMl = drawMono(rc, colCUp, colCDn, wC, false, colH, showLbl, atrBar)
     if not na(newMl)
         array.push(mLblBarArr, rc.bar)
         array.push(mLblRefArr, newMl)
@@ -1653,7 +1662,7 @@ if barstate.islast
         activeCLine := line.new(zC.pivotBar, zC.pivotPrice, bar_index, close,
              xloc = xloc.bar_index, color = color.new(activeCColor, 0),
              width = activeWaveWidth, style = line.style_dotted)
-        activeCLabel := label.new(bar_index, close, "LAST BAR WAVE\n" + activeCInfo,
+        activeCLabel := label.new(bar_index + badgeRightOffset, close + atrBar * badgeStackAtr, "LAST BAR WAVE\n" + activeCInfo,
              xloc = xloc.bar_index, yloc = yloc.price, style = label.style_label_left,
              color = color.new(activeCColor, 10), textcolor = color.white, size = size.tiny,
              tooltip = "Активная незавершённая моноволна текущего ТФ: от последнего подтверждённого pivot до последнего бара.")
@@ -2170,7 +2179,7 @@ if newHTF and not na(hHigh)
             array.shift(htfPivotBars)
             array.shift(htfPivotPrices)
     if showH
-        drawMono(rh, colCUp, colCDn, wH, true, colH, showLbl)
+        drawMono(rh, colCUp, colCDn, wH, true, colH, showLbl, hAtr)
 
 string htfBias = htfBiasDir > 1 ? "UP strong" : htfBiasDir > 0 ? "UP" : htfBiasDir < -1 ? "DOWN strong" : htfBiasDir < 0 ? "DOWN" : "NEUTRAL"
 float activeHPrice = na(hClose) ? close : hClose
@@ -2188,7 +2197,7 @@ if barstate.islast
         activeHLine := line.new(zH.pivotBar, zH.pivotPrice, bar_index, activeHPrice,
              xloc = xloc.bar_index, color = color.new(colH, 0),
              width = activeWaveWidth + 1, style = line.style_dashed)
-        activeHLabel := label.new(bar_index + 1, activeHPrice, "Active HTF " + htf + "\n" + activeHInfo,
+        activeHLabel := label.new(bar_index + badgeRightOffset, activeHPrice - (na(hAtr) ? atrBar : hAtr) * badgeStackAtr, "Active HTF " + htf + "\n" + activeHInfo,
              xloc = xloc.bar_index, yloc = yloc.price, style = label.style_label_left,
              color = color.new(colH, 5), textcolor = color.white, size = size.tiny,
              tooltip = "Активная незавершённая HTF-моноволна: от последнего подтверждённого HTF pivot до текущего HTF close.")
@@ -2250,34 +2259,16 @@ bool mapDEnabled = contextTfEnabled(4, currentTfRank)
 bool mapWEnabled = contextTfEnabled(5, currentTfRank)
 bool mapMEnabled = contextTfEnabled(6, currentTfRank)
 
-float map1hHigh = request.security(syminfo.tickerid, "60", high, lookahead = barmerge.lookahead_off)
-float map1hLow = request.security(syminfo.tickerid, "60", low, lookahead = barmerge.lookahead_off)
+// Контекстным волнам теперь нужны только close (живое продолжение) и ATR (порог).
 float map1hClose = request.security(syminfo.tickerid, "60", close, lookahead = barmerge.lookahead_off)
-int map1hTime = request.security(syminfo.tickerid, "60", time, lookahead = barmerge.lookahead_off)
 float map1hAtr = request.security(syminfo.tickerid, "60", ta.atr(atrLen), lookahead = barmerge.lookahead_off)
-
-float map4hHigh = request.security(syminfo.tickerid, "240", high, lookahead = barmerge.lookahead_off)
-float map4hLow = request.security(syminfo.tickerid, "240", low, lookahead = barmerge.lookahead_off)
 float map4hClose = request.security(syminfo.tickerid, "240", close, lookahead = barmerge.lookahead_off)
-int map4hTime = request.security(syminfo.tickerid, "240", time, lookahead = barmerge.lookahead_off)
 float map4hAtr = request.security(syminfo.tickerid, "240", ta.atr(atrLen), lookahead = barmerge.lookahead_off)
-
-float mapDHigh = request.security(syminfo.tickerid, "D", high, lookahead = barmerge.lookahead_off)
-float mapDLow = request.security(syminfo.tickerid, "D", low, lookahead = barmerge.lookahead_off)
 float mapDClose = request.security(syminfo.tickerid, "D", close, lookahead = barmerge.lookahead_off)
-int mapDTime = request.security(syminfo.tickerid, "D", time, lookahead = barmerge.lookahead_off)
 float mapDAtr = request.security(syminfo.tickerid, "D", ta.atr(atrLen), lookahead = barmerge.lookahead_off)
-
-float mapWHigh = request.security(syminfo.tickerid, "W", high, lookahead = barmerge.lookahead_off)
-float mapWLow = request.security(syminfo.tickerid, "W", low, lookahead = barmerge.lookahead_off)
 float mapWClose = request.security(syminfo.tickerid, "W", close, lookahead = barmerge.lookahead_off)
-int mapWTime = request.security(syminfo.tickerid, "W", time, lookahead = barmerge.lookahead_off)
 float mapWAtr = request.security(syminfo.tickerid, "W", ta.atr(atrLen), lookahead = barmerge.lookahead_off)
-
-float mapMHigh = request.security(syminfo.tickerid, "M", high, lookahead = barmerge.lookahead_off)
-float mapMLow = request.security(syminfo.tickerid, "M", low, lookahead = barmerge.lookahead_off)
 float mapMClose = request.security(syminfo.tickerid, "M", close, lookahead = barmerge.lookahead_off)
-int mapMTime = request.security(syminfo.tickerid, "M", time, lookahead = barmerge.lookahead_off)
 float mapMAtr = request.security(syminfo.tickerid, "M", ta.atr(atrLen), lookahead = barmerge.lookahead_off)
 
 var ZZState zMap1h = ZZState.new()
@@ -2307,25 +2298,23 @@ var array<line> mapMLines = array.new<line>()
 var array<label> mapMLabels = array.new<label>()
 
 int mapMaxPivots = htfContextSegments + 2
-int map1hTimeChg = ta.change(map1hTime)
-int map4hTimeChg = ta.change(map4hTime)
-int mapDTimeChg = ta.change(mapDTime)
-int mapWTimeChg = ta.change(mapWTime)
-int mapMTimeChg = ta.change(mapMTime)
-if map1hEnabled and not na(map1hHigh) and map1hTimeChg != 0
-    ZZResult rMap1h = zMap1h.step(map1hHigh, map1hLow, useATR ? map1hAtr * atrMult : map1hClose * pctRev / 100.0)
+// Контекстные волны строим ПО РЕАЛЬНЫМ LTF high/low (на каждом баре), но с
+// HTF-масштабным порогом разворота → крупные волны ложатся на настоящие вершины
+// графика, а не на бар границы HTF-периода (раньше пивот смещался вбок).
+if map1hEnabled and not na(map1hAtr)
+    ZZResult rMap1h = zMap1h.step(high, low, useATR ? map1hAtr * atrMult : close * pctRev / 100.0)
     rememberContextPivot(map1hBars, map1hPrices, rMap1h, mapMaxPivots)
-if map4hEnabled and not na(map4hHigh) and map4hTimeChg != 0
-    ZZResult rMap4h = zMap4h.step(map4hHigh, map4hLow, useATR ? map4hAtr * atrMult : map4hClose * pctRev / 100.0)
+if map4hEnabled and not na(map4hAtr)
+    ZZResult rMap4h = zMap4h.step(high, low, useATR ? map4hAtr * atrMult : close * pctRev / 100.0)
     rememberContextPivot(map4hBars, map4hPrices, rMap4h, mapMaxPivots)
-if mapDEnabled and not na(mapDHigh) and mapDTimeChg != 0
-    ZZResult rMapD = zMapD.step(mapDHigh, mapDLow, useATR ? mapDAtr * atrMult : mapDClose * pctRev / 100.0)
+if mapDEnabled and not na(mapDAtr)
+    ZZResult rMapD = zMapD.step(high, low, useATR ? mapDAtr * atrMult : close * pctRev / 100.0)
     rememberContextPivot(mapDBars, mapDPrices, rMapD, mapMaxPivots)
-if mapWEnabled and not na(mapWHigh) and mapWTimeChg != 0
-    ZZResult rMapW = zMapW.step(mapWHigh, mapWLow, useATR ? mapWAtr * atrMult : mapWClose * pctRev / 100.0)
+if mapWEnabled and not na(mapWAtr)
+    ZZResult rMapW = zMapW.step(high, low, useATR ? mapWAtr * atrMult : close * pctRev / 100.0)
     rememberContextPivot(mapWBars, mapWPrices, rMapW, mapMaxPivots)
-if mapMEnabled and not na(mapMHigh) and mapMTimeChg != 0
-    ZZResult rMapM = zMapM.step(mapMHigh, mapMLow, useATR ? mapMAtr * atrMult : mapMClose * pctRev / 100.0)
+if mapMEnabled and not na(mapMAtr)
+    ZZResult rMapM = zMapM.step(high, low, useATR ? mapMAtr * atrMult : close * pctRev / 100.0)
     rememberContextPivot(mapMBars, mapMPrices, rMapM, mapMaxPivots)
 
 string mtfContextStack = ""

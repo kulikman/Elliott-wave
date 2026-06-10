@@ -225,13 +225,104 @@ def rr(entry: float, stop: float, target: float) -> float:
     return reward / risk if risk > 0 else 0.0
 
 
+# ─── verifiable historical exit ───────────────────────────────────────────────
+# An open trade must be closed at the price that the market actually printed on
+# the bar where SL / TP / timeout occurred — NOT at today's live price. Closing a
+# months-old trade at the current quote produced hallucinated exits (e.g. MU
+# entered 230 then "closed" at 892). We walk the real OHLC from the entry bar
+# forward and exit at the first bar that hits SL or TP, otherwise at the close of
+# the timeout bar. Every exit price is thus checkable against the chart.
+
+# yfinance native intervals + how many native bars make one trade bar.
+_YF_INTERVAL = {
+    "1d":  ("1d", 1),
+    "1w":  ("1wk", 1),
+    "1wk": ("1wk", 1),
+    "4h":  ("1h", 4),
+    "1h":  ("1h", 1),
+    "30m": ("30m", 1),
+    "15m": ("15m", 1),
+}
+
+
+def historical_exit(
+    ticker: str,
+    interval: str,
+    entry_ts: pd.Timestamp,
+    entry_px: float,
+    stop_px: float,
+    target_px: float,
+    side: str,
+    timeout_bars: int = TIMEOUT_BARS,
+) -> tuple[pd.Timestamp, float, str] | None:
+    """Replay real OHLC after entry and return (exit_ts, exit_px, reason).
+
+    SL/TP exits use the stop/target level (the price the order would fill at);
+    timeout exits use the close of the timeout bar. Returns None if no usable
+    history is available (caller should then leave the trade open).
+    """
+    try:
+        import yfinance as yf
+    except Exception:
+        return None
+
+    yf_int, scale = _YF_INTERVAL.get(str(interval), ("1d", 1))
+    entry_ts = pd.Timestamp(entry_ts)
+    if entry_ts.tzinfo is None:
+        entry_ts = entry_ts.tz_localize("UTC")
+
+    start = (entry_ts - pd.Timedelta(days=2)).date()
+    end   = (utc_now() + pd.Timedelta(days=2)).date()
+    try:
+        df = yf.download(ticker, start=str(start), end=str(end), interval=yf_int,
+                         progress=False, auto_adjust=True, threads=False)
+    except Exception:
+        return None
+    if df is None or df.empty:
+        return None
+    if isinstance(df.columns, pd.MultiIndex):
+        df.columns = [c[0] for c in df.columns]
+    df.columns = [str(c).lower() for c in df.columns]
+    if not {"high", "low", "close"}.issubset(df.columns):
+        return None
+
+    idx = pd.to_datetime(df.index, utc=True)
+    df = df.set_axis(idx)
+    after = df[df.index > entry_ts]
+    if after.empty:
+        return None
+
+    max_native = max(1, timeout_bars * scale)
+    walk = after.iloc[:max_native]
+    is_long = str(side).lower() in ("long", "buy")
+
+    for ts, bar in walk.iterrows():
+        hi, lo = float(bar["high"]), float(bar["low"])
+        if is_long:
+            hit_sl = stop_px > 0 and lo <= stop_px
+            hit_tp = target_px > 0 and hi >= target_px
+        else:
+            hit_sl = stop_px > 0 and hi >= stop_px
+            hit_tp = target_px > 0 and lo <= target_px
+        # If both levels fall inside one bar, assume the stop filled first.
+        if hit_sl:
+            return ts, float(stop_px), "sl"
+        if hit_tp:
+            return ts, float(target_px), "tp"
+
+    last_ts = walk.index[-1]
+    last_close = float(walk.iloc[-1]["close"])
+    reason = "timeout" if len(after) >= max_native else "open_end"
+    return last_ts, last_close, reason
+
+
 # ─── scanner ────────────────────────────────────────────────────────────────
 
 def run_scan(tickers: list[str], interval: str) -> list[dict]:
     """Run probability scan and return list of signal dicts."""
     if not tickers:
         return []
-    log.info("Scanning %d tickers on %s …", len(tickers), interval)
+    log.info("Сканирую %d тикеров на %s …", len(tickers), interval)
     result = subprocess.run(
         [
             sys.executable,
@@ -334,7 +425,7 @@ def try_open_trades(signals: list[dict], events: list[dict]) -> int:
     trades = forward_trades(events)
     n_open = 0 if trades.empty else int((trades["status"] == "open").sum())
     if n_open >= MAX_OPEN:
-        log.info("Max open trades (%d) reached, skipping open step", MAX_OPEN)
+        log.info("Достигнут лимит открытых сделок (%d), пропускаю открытие", MAX_OPEN)
         return 0
 
     # Build dedup keys of already-opened signals
@@ -368,7 +459,7 @@ def try_open_trades(signals: list[dict], events: list[dict]) -> int:
         # High-winrate gate: only open setups proven by the large backtest.
         ok, reason = setup_quality_ok(sig)
         if not ok:
-            log.info("SKIP  %-6s %-5s %s  — %s",
+            log.info("ПРОПУСК %-6s %-5s %s  — %s",
                      sig.get("ticker", "?"), sig.get("side", "?"),
                      sig.get("interval", "?"), reason)
             continue
@@ -397,13 +488,13 @@ def try_open_trades(signals: list[dict], events: list[dict]) -> int:
         existing_keys.add(key)
         opened += 1
         log.info(
-            "OPEN  %-6s %-5s  %s  entry=%.2f stop=%.2f target=%.2f p=%.1f%%",
+            "ОТКРЫТ %-6s %-5s  %s  вход=%.2f stop=%.2f target=%.2f p=%.1f%%",
             row["ticker"], row["side"], row["interval"],
             entry_px, stop_px, target_px, p_win * 100,
         )
 
     if opened:
-        log.info("Opened %d new paper trade(s)", opened)
+        log.info("Открыто новых бумажных сделок: %d", opened)
     return opened
 
 
@@ -428,60 +519,46 @@ def try_close_trades(events: list[dict], tradeable_set: set[str] | None = None) 
     if open_df.empty:
         return 0
 
-    tickers = open_df["ticker"].unique().tolist()
-    prices  = current_prices(tickers)
     closed  = 0
-    now     = utc_now()
 
     for _, trade in open_df.iterrows():
         ticker    = trade["ticker"]
-        px        = prices.get(ticker)
-        if px is None:
-            continue
-
         entry_px  = float(trade["entry_px"])
         stop_px   = float(trade.get("stop_px") or 0)
         target_px = float(trade.get("target_px") or 0)
         side      = trade.get("side", "long")
+        interval  = str(trade.get("interval", "1d"))
         signal_id = trade["signal_id"]
-
-        # Timeout check (in trading days)
         entry_ts  = pd.Timestamp(trade["entry_ts"]).tz_convert("UTC")
-        bars_held = (now - entry_ts).days
-        if bars_held > TIMEOUT_BARS:
-            reason = "timeout"
-        elif side == "long":
-            if stop_px > 0 and px <= stop_px:
-                reason = "sl"
-            elif target_px > 0 and px >= target_px:
-                reason = "tp"
-            else:
-                continue
-        else:  # short
-            if stop_px > 0 and px >= stop_px:
-                reason = "sl"
-            elif target_px > 0 and px <= target_px:
-                reason = "tp"
-            else:
-                continue
+
+        # Exit at the real historical bar (SL/TP/timeout) — never today's quote.
+        result = historical_exit(
+            ticker, interval, entry_ts, entry_px, stop_px, target_px, side,
+        )
+        if result is None:
+            continue
+        exit_ts, exit_px, reason = result
+        if reason == "open_end":
+            # Not enough bars yet and no level hit — trade is still genuinely open.
+            continue
 
         evt = outcome_event(
             signal_id  = signal_id,
-            exit_ts    = now.isoformat(),
-            exit_px    = px,
+            exit_ts    = exit_ts.isoformat(),
+            exit_px    = exit_px,
             exit_reason= reason,
         )
         append_jsonl(FORWARD_LOG, evt)
         closed += 1
         direction = 1 if side == "long" else -1
-        ret_pct   = direction * (px - entry_px) / entry_px * 100
+        ret_pct   = direction * (exit_px - entry_px) / entry_px * 100
         log.info(
-            "CLOSE %-6s %-5s  reason=%-7s exit=%.2f ret=%+.1f%%",
-            ticker, side, reason, px, ret_pct,
+            "ЗАКРЫТ %-6s %-5s  причина=%-7s выход=%.2f дох=%+.1f%%",
+            ticker, side, reason, exit_px, ret_pct,
         )
 
     if closed:
-        log.info("Closed %d trade(s)", closed)
+        log.info("Закрыто сделок: %d", closed)
     return closed
 
 
@@ -489,7 +566,7 @@ def try_close_trades(events: list[dict], tradeable_set: set[str] | None = None) 
 
 def retrain_model() -> bool:
     """Rebuild dataset and retrain LightGBM. Returns True on success."""
-    log.info("Retraining LightGBM model …")
+    log.info("Переобучаю модель LightGBM …")
     try:
         r1 = subprocess.run(
             [sys.executable, str(ROOT / "python" / "scripts" / "build_dataset.py")],
@@ -510,11 +587,65 @@ def retrain_model() -> bool:
             log.warning("lgbm_model stderr: %s", r2.stderr[-300:])
             return False
 
-        log.info("Retrain complete. stdout: %s", r2.stdout[-300:])
+        log.info("Переобучение завершено. stdout: %s", r2.stdout[-300:])
         return True
     except Exception as e:
         log.error("Retrain failed: %s", e)
         return False
+
+
+# ─── repair hallucinated exits ────────────────────────────────────────────────
+
+def repair_outcomes() -> int:
+    """Recompute every auto_trader exit from real history and rewrite the log.
+
+    Fixes legacy outcomes that were closed at the live quote (months after the
+    trade should have ended), which produced impossible exit prices. Manual /
+    webhook trades are left untouched. Returns the number of outcomes rewritten.
+    """
+    events = read_jsonl(FORWARD_LOG)
+    signals = {e["signal_id"]: e for e in events if e.get("event_type") == "signal"}
+    auto_ids = {sid for sid, s in signals.items() if s.get("source") == "auto_trader"}
+
+    fixed = 0
+    new_events: list[dict] = []
+    for e in events:
+        # Drop old auto_trader outcomes; we recompute them below.
+        if e.get("event_type") == "outcome" and e.get("signal_id") in auto_ids:
+            continue
+        new_events.append(e)
+
+    for sid in auto_ids:
+        s = signals[sid]
+        result = historical_exit(
+            s["ticker"], str(s.get("interval", "1d")),
+            pd.Timestamp(s["entry_ts"]), float(s["entry_px"]),
+            float(s.get("stop_px") or 0), float(s.get("target_px") or 0),
+            s.get("side", "long"),
+        )
+        if result is None:
+            log.warning("repair: no history for %s %s — left open", s["ticker"], sid)
+            continue
+        exit_ts, exit_px, reason = result
+        if reason == "open_end":
+            log.info("repair: %s %s still genuinely open", s["ticker"], sid)
+            continue
+        new_events.append(outcome_event(
+            signal_id=sid, exit_ts=exit_ts.isoformat(),
+            exit_px=exit_px, exit_reason=reason,
+        ))
+        fixed += 1
+        direction = 1 if s.get("side") == "long" else -1
+        ret_pct = direction * (exit_px - float(s["entry_px"])) / float(s["entry_px"]) * 100
+        log.info("repair: %-6s %-5s reason=%-7s exit=%.4f ret=%+.1f%%",
+                 s["ticker"], s.get("side"), reason, exit_px, ret_pct)
+
+    FORWARD_LOG.write_text(
+        "".join(json.dumps(e, ensure_ascii=False) + "\n" for e in new_events),
+        encoding="utf-8",
+    )
+    log.info("repair complete — %d outcome(s) rewritten", fixed)
+    return fixed
 
 
 # ─── status report ──────────────────────────────────────────────────────────
@@ -575,17 +706,17 @@ def one_pass() -> None:
         all_tradeable_set |= tradeable_set
 
         log.info(
-            "[%s] Session: crypto=%d(24/7) stocks=%d(%s) — tradeable=%d scan_only=%d",
+            "[%s] Сессия: крипто=%d(24/7) акции=%d(%s) — торгуемых=%d только_скан=%d",
             interval, crypto_count, stock_count,
             market_status(interval), len(tradeable), len(scan_only),
         )
 
         signals = run_scan(tickers, interval)
-        log.info("[%s] Scan returned %d signal(s)", interval, len(signals))
+        log.info("[%s] Скан вернул сигналов: %d", interval, len(signals))
 
         tradeable_signals = [s for s in signals if s.get("ticker", "").upper() in tradeable_set]
         if len(tradeable_signals) < len(signals):
-            log.info("[%s] Filtered to %d tradeable signal(s)", interval, len(tradeable_signals))
+            log.info("[%s] Отфильтровано торгуемых сигналов: %d", interval, len(tradeable_signals))
 
         all_tradeable_signals.extend(tradeable_signals)
 
@@ -609,7 +740,7 @@ def one_pass() -> None:
 
     write_state(state)
     log.info(
-        "Pass done — intervals=%s opened=%d closed=%d pending_retrain=%d/%d",
+        "Проход завершён — ТФ=%s открыто=%d закрыто=%d до_ретрейна=%d/%d",
         ",".join(intervals), opened, closed, state["closed_since_retrain"], RETRAIN_EVERY,
     )
 
@@ -618,6 +749,8 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="EWB autonomous paper trader")
     parser.add_argument("--once",   action="store_true", help="Single pass and exit")
     parser.add_argument("--status", action="store_true", help="Print status and exit")
+    parser.add_argument("--repair", action="store_true",
+                        help="Recompute all auto_trader exits from real history and exit")
     parser.add_argument("--interval", type=int, default=SCAN_INTERVAL,
                         help=f"Scan interval in seconds (default {SCAN_INTERVAL})")
     args = parser.parse_args()
@@ -626,21 +759,25 @@ def main() -> None:
         print_status()
         return
 
+    if args.repair:
+        repair_outcomes()
+        return
+
     if args.once:
         one_pass()
         return
 
-    log.info("Auto-trader started  scan_interval=%ds  max_open=%d  min_p=%.0f%%  retrain_every=%d",
+    log.info("Авто-трейдер запущен  scan_interval=%dс  max_open=%d  min_p=%.0f%%  retrain_every=%d",
              args.interval, MAX_OPEN, MIN_P_WIN * 100, RETRAIN_EVERY)
     while True:
         try:
             one_pass()
         except KeyboardInterrupt:
-            log.info("Stopped by user")
+            log.info("Остановлено пользователем")
             break
         except Exception as e:
             log.exception("Unexpected error in pass: %s", e)
-        log.info("Sleeping %ds until next scan …", args.interval)
+        log.info("Сон %dс до следующего скана …", args.interval)
         time.sleep(args.interval)
 
 

@@ -197,23 +197,23 @@ def html_escape(value: Any) -> str:
 
 def nav(active: str) -> str:
     items = [
-        ("Dashboard", "/"),
-        ("Action Board", "/action-board"),
-        ("Signals", "/signals"),
-        ("Trades", "/trades"),
-        ("Portfolio", "/portfolio"),
-        ("Settings", "/settings"),
+        ("Главная", "Dashboard", "/"),
+        ("Доска действий", "Action Board", "/action-board"),
+        ("Сигналы", "Signals", "/signals"),
+        ("Сделки", "Trades", "/trades"),
+        ("Портфель", "Portfolio", "/portfolio"),
+        ("Настройки", "Settings", "/settings"),
     ]
     links = []
-    for label, href in items:
-        cls = "active" if label == active else ""
+    for label, key, href in items:
+        cls = "active" if key == active else ""
         links.append(f'<a class="{cls}" href="{href}">{label}</a>')
     return "".join(links)
 
 
 def layout(title: str, active: str, body: str) -> HTMLResponse:
     html = f"""<!doctype html>
-<html lang="en">
+<html lang="ru">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -266,11 +266,27 @@ def layout(title: str, active: str, body: str) -> HTMLResponse:
   </style>
 </head>
 <body>
-  <header><h1>EWB Strategy System</h1><nav>{nav(active)}</nav></header>
+  <header><h1>EWB — Система стратегии</h1><nav>{nav(active)}</nav></header>
   <main>{body}</main>
 </body>
 </html>"""
     return HTMLResponse(html)
+
+
+_DECISION_RU = {
+    "review": "ПРОВЕРИТЬ", "hold": "ДЕРЖАТЬ", "check": "СВЕРИТЬ",
+    "watch": "НАБЛЮДАТЬ", "wait": "ЖДАТЬ", "observe": "НАБЛЮДЕНИЕ",
+    "buy": "ПОКУПКА", "sell": "ПРОДАЖА", "long": "ЛОНГ", "short": "ШОРТ",
+    "open": "открыта", "closed": "закрыта", "win": "профит", "loss": "убыток",
+    "ok": "ОК", "ready": "готов",
+}
+
+
+def decision_pill(value: Any) -> str:
+    """Pill with Russian label but English CSS class for consistent colours."""
+    key = str(value).lower().split()[0] if value not in (None, "") else ""
+    label = _DECISION_RU.get(key, str(value))
+    return pill(label, key)
 
 
 def pill(value: Any, cls: str | None = None) -> str:
@@ -307,8 +323,28 @@ def age_text(value: Any) -> str:
         return "-"
     age_hours = max(0.0, (pd.Timestamp.utcnow() - ts).total_seconds() / 3600.0)
     if age_hours < 48:
-        return f"{age_hours:.0f}h"
-    return f"{age_hours / 24.0:.1f}d"
+        return f"{age_hours:.0f}ч"
+    return f"{age_hours / 24.0:.1f}д"
+
+
+def dt_text(value: Any) -> str:
+    """Format an event timestamp as 'YYYY-MM-DD HH:MM' (UTC) for the trade log."""
+    ts = as_timestamp(value)
+    if ts is None:
+        return "-"
+    return ts.strftime("%Y-%m-%d %H:%M")
+
+
+def seq_numbers(frame: pd.DataFrame) -> dict[str, int]:
+    """Stable per-trade sequence number (1,2,3…) ordered by entry time.
+
+    Numbering spans open + closed trades so an ID never changes when a trade
+    moves from the open tab to history."""
+    if frame.empty or "signal_id" not in frame.columns:
+        return {}
+    sort_col = "entry_ts" if "entry_ts" in frame.columns else "recorded_at"
+    ordered = frame.sort_values(sort_col, ascending=True, na_position="first")
+    return {str(sid): i for i, sid in enumerate(ordered["signal_id"].tolist(), start=1)}
 
 
 def rr_value(entry: Any, stop: Any, target: Any) -> float | None:
@@ -422,17 +458,17 @@ def action_decision(action: str, probability: Any, rr: float | None, entry_ts: A
     elif action in {"short", "enter short"}:
         action = "sell"
     if action not in {"buy", "sell"}:
-        return "WAIT", "No actionable side"
+        return "WAIT", "Нет торговой стороны"
     prob = probability_percent(probability)
     age = as_timestamp(entry_ts)
     age_hours = None if age is None else max(0.0, (pd.Timestamp.utcnow() - age).total_seconds() / 3600.0)
     if rr is None or rr < 1.0:
-        return "WAIT", "RR below 1.0 or missing"
+        return "WAIT", "RR ниже 1.0 или отсутствует"
     if prob is None or prob < 55.0:
-        return "WATCH", "Probability below 55%"
+        return "WATCH", "Вероятность ниже 55%"
     if age_hours is not None and age_hours > 72:
-        return "CHECK", "Signal is older than 72h"
-    return "REVIEW", "Check chart, HTF context and news"
+        return "CHECK", "Сигнал старше 72ч"
+    return "REVIEW", "Проверьте график, HTF-контекст и новости"
 
 
 def accept_signal_form(signal: dict[str, Any]) -> str:
@@ -454,7 +490,7 @@ def accept_signal_form(signal: dict[str, Any]) -> str:
         for key, value in fields.items()
         if value not in (None, "")
     )
-    return f'<form class="inline" method="post" action="/signals/accept">{inputs}<button class="btn mini" type="submit">Paper</button></form>'
+    return f'<form class="inline" method="post" action="/signals/accept">{inputs}<button class="btn mini" type="submit">В бумаги</button></form>'
 
 
 def asset_class(ticker: Any) -> str:
@@ -517,9 +553,9 @@ def action_board_rows(limit: int = 20, filters: dict[str, Any] | None = None) ->
         )
         action_cell = tradingview_link(signal.get("ticker", "")) + accept_signal_form(signal)
         rows.append([
-            pill(decision, decision.lower()),
+            decision_pill(decision),
             html_escape(signal.get("ticker", "")),
-            pill(action, action),
+            decision_pill(action),
             html_escape(signal.get("interval", report.get("interval", ""))),
             html_escape(signal.get("pattern", "")),
             probability_label(signal.get("p_trade_win")),
@@ -556,9 +592,9 @@ def action_board_rows(limit: int = 20, filters: dict[str, Any] | None = None) ->
             settings=risk_settings,
         )
         rows.insert(0, [
-            pill("HOLD", "open"),
+            pill("ДЕРЖАТЬ", "open"),
             html_escape(row.get("ticker", "")),
-            pill(row.get("side", ""), str(row.get("side", "")).lower()),
+            decision_pill(row.get("side", "")),
             html_escape(row.get("interval", "")),
             html_escape(row.get("fig_type", "")),
             probability_label(row.get("probability")),
@@ -569,7 +605,7 @@ def action_board_rows(limit: int = 20, filters: dict[str, Any] | None = None) ->
             price(row.get("stop_px")),
             price(row.get("target_px")),
             age_text(row.get("entry_ts")),
-            tradingview_link(row.get("ticker", "")) + f'<a class="btn mini" href="/trades/{signal_id}">Manage</a>',
+            tradingview_link(row.get("ticker", "")) + f'<a class="btn mini" href="/trades/{signal_id}">Управление</a>',
         ])
     return rows[:limit]
 
@@ -580,15 +616,15 @@ def checklist_rows(signal: dict[str, Any], outcome: dict[str, Any] | None) -> li
     decision, reason = action_decision(action, signal.get("probability"), rr, signal.get("entry_ts"))
     prob = probability_percent(signal.get("probability"))
     return [
-        ["Trade status", pill("CLOSED" if outcome else "OPEN", "open" if not outcome else "ready")],
-        ["Decision", pill(decision, decision.lower())],
-        ["Reason", html_escape(reason)],
-        ["Freshness", age_text(signal.get("entry_ts"))],
-        ["Probability gate", pill("OK" if prob is not None and prob >= 55.0 else "CHECK", "review" if prob is not None and prob >= 55.0 else "check")],
-        ["R:R gate", pill("OK" if rr is not None and rr >= 1.0 else "CHECK", "review" if rr is not None and rr >= 1.0 else "check")],
-        ["HTF context", html_escape(signal.get("htf_context", "") or "Check chart manually")],
-        ["Chart", tradingview_link(signal.get("ticker", ""))],
-        ["Manual guard", "Check news, liquidity, earnings date and position size before entry."],
+        ["Статус сделки", pill("ЗАКРЫТА" if outcome else "ОТКРЫТА", "open" if not outcome else "ready")],
+        ["Решение", decision_pill(decision)],
+        ["Причина", html_escape(reason)],
+        ["Свежесть", age_text(signal.get("entry_ts"))],
+        ["Порог вероятности", pill("ОК" if prob is not None and prob >= 55.0 else "СВЕРИТЬ", "review" if prob is not None and prob >= 55.0 else "check")],
+        ["Порог R:R", pill("ОК" if rr is not None and rr >= 1.0 else "СВЕРИТЬ", "review" if rr is not None and rr >= 1.0 else "check")],
+        ["HTF контекст", html_escape(signal.get("htf_context", "") or "Проверьте график вручную")],
+        ["График", tradingview_link(signal.get("ticker", ""))],
+        ["Ручная проверка", "Перед входом проверьте новости, ликвидность, дату отчётности и размер позиции."],
     ]
 
 
@@ -600,15 +636,15 @@ def risk_plan_rows(signal: dict[str, Any]) -> list[list[Any]]:
         side=signal.get("action", signal.get("side", "")),
     )
     if not plan.get("ok"):
-        return [["Position plan", "Missing or invalid entry/SL/TP. Do not size this trade yet."]]
+        return [["План позиции", "Нет или некорректны вход/SL/TP. Пока не рассчитывайте размер."]]
     currency = plan.get("currency", "USD")
     return [
-        ["Quantity", qty_text(plan.get("qty"))],
-        ["Capital used", money(plan.get("capital"), currency)],
-        ["Risk", money(plan.get("risk_cash"), currency)],
-        ["Potential reward", money(plan.get("reward_cash"), currency)],
+        ["Количество", qty_text(plan.get("qty"))],
+        ["Задействовано капитала", money(plan.get("capital"), currency)],
+        ["Риск", money(plan.get("risk_cash"), currency)],
+        ["Потенциальная прибыль", money(plan.get("reward_cash"), currency)],
         ["R:R", fmt(plan.get("rr"))],
-        ["Capital limit", "Max position cap applied" if plan.get("risk_cap_limited") else "Risk % controls size"],
+        ["Лимит капитала", "Применён максимум на позицию" if plan.get("risk_cap_limited") else "Размер ограничен % риска"],
     ]
 
 
@@ -629,14 +665,14 @@ def alert_event_rows(limit: int = 30) -> list[list[Any]]:
             f'<a class="code" href="/trades/{signal_id}">{signal_id}</a>',
             html_escape(row.get("ticker", "")),
             html_escape(row.get("interval", "")),
-            pill(row.get("side", ""), str(row.get("side", "")).lower()),
+            decision_pill(row.get("side", "")),
             html_escape(row.get("fig_type", "")),
             price(row.get("entry_px")),
             price(row.get("stop_px")),
             price(row.get("target_px")),
             probability_label(row.get("probability")),
             html_escape(row.get("source", "")),
-            html_escape(row.get("recorded_at", "")),
+            dt_text(row.get("recorded_at", "")),
         ])
     return rows
 
@@ -689,14 +725,14 @@ def dashboard() -> HTMLResponse:
     counts = daily.get("counts", {})
     portfolio = backtest.get("portfolio", {})
     metrics = [
-        ("Decision", pill(decision, decision.lower().split()[0])),
-        ("Open Trades", counts.get("open", len(data["open"]))),
-        ("Closed Forward", counts.get("closed", len(data["closed"]))),
-        ("Baseline Winrate", pct(portfolio.get("winrate"))),
-        ("Baseline Expectancy", pct(portfolio.get("expectancy"))),
-        ("Forward Winrate", pct(data["forward_summary"].get("winrate"))),
-        ("Forward Expectancy", pct(data["forward_summary"].get("expectancy"))),
-        ("Forward PF", fmt(data["forward_summary"].get("profit_factor"))),
+        ("Решение", decision_pill(decision)),
+        ("Открытых сделок", counts.get("open", len(data["open"]))),
+        ("Закрыто (forward)", counts.get("closed", len(data["closed"]))),
+        ("Винрейт (бэктест)", pct(portfolio.get("winrate"))),
+        ("Ожидание (бэктест)", pct(portfolio.get("expectancy"))),
+        ("Винрейт (forward)", pct(data["forward_summary"].get("winrate"))),
+        ("Ожидание (forward)", pct(data["forward_summary"].get("expectancy"))),
+        ("PF (forward)", fmt(data["forward_summary"].get("profit_factor"))),
     ]
     metric_html = "".join(
         f'<div class="metric"><div class="label">{html_escape(label)}</div><div class="value">{value}</div></div>'
@@ -704,23 +740,23 @@ def dashboard() -> HTMLResponse:
     )
     body = f"""
     <div class="topbar">
-      <div><h2>Dashboard</h2><div class="muted">Local control center for signals, paper trading and forward validation.</div></div>
-      <form method="post" action="/actions/run-strategy"><button class="btn" type="submit">Run pipeline</button></form>
+      <div><h2>Главная</h2><div class="muted">Локальный центр управления сигналами, бумажной торговлей и forward-валидацией.</div></div>
+      <form method="post" action="/actions/run-strategy"><button class="btn" type="submit">Запустить пайплайн</button></form>
     </div>
     <div class="grid">{metric_html}</div>
-    <div class="band"><strong>Operating decision:</strong> {html_escape(daily.get("decision_reason", "Run the strategy system pipeline to generate a fresh decision."))}</div>
-    <h3>Action Board</h3>
-    {table(["Decision", "Ticker", "Side", "TF", "Pattern", "P", "RR", "Qty", "Risk", "Entry", "SL", "TP", "Age", "Action"], action_board_rows(12))}
-    <h3>Auto-Trader</h3>
+    <div class="band"><strong>Рабочее решение:</strong> {html_escape(daily.get("decision_reason", "Запустите пайплайн стратегии, чтобы получить свежее решение."))}</div>
+    <h3>Доска действий</h3>
+    {table(["Решение", "Тикер", "Сторона", "ТФ", "Паттерн", "P", "RR", "Кол-во", "Риск", "Вход", "SL", "TP", "Возраст", "Действие"], action_board_rows(12))}
+    <h3>Авто-трейдер</h3>
     {auto_trader_widget()}
-    <h3>Next Actions</h3>
+    <h3>Что дальше</h3>
     <div class="band">
-      1. Auto-trader открывает/закрывает бумажные сделки автономно.<br>
-      2. Следи за результатами на вкладках Trades и History.<br>
+      1. Авто-трейдер открывает/закрывает бумажные сделки автономно.<br>
+      2. Следи за результатами на вкладке «Сделки».<br>
       3. После {RETRAIN_EVERY} закрытых сделок — модель переобучается автоматически.
     </div>
     """
-    return layout("Dashboard", "Dashboard", body)
+    return layout("Главная", "Dashboard", body)
 
 
 @app.get("/action-board", response_class=HTMLResponse)
@@ -733,32 +769,32 @@ def action_board(
 ) -> HTMLResponse:
     filters = {"decision": decision, "asset": asset, "tf": tf, "min_p": min_p, "min_rr": min_rr}
     body = f"""
-    <div class="topbar"><div><h2>Action Board</h2><div class="muted">First screen for trading decisions: what to review, hold, skip or close.</div></div></div>
+    <div class="topbar"><div><h2>Доска действий</h2><div class="muted">Первый экран для торговых решений: что проверить, держать, пропустить или закрыть.</div></div></div>
     <form class="band form-grid" method="get" action="/action-board">
-      <label>Decision<select name="decision">
-        <option value="all" {"selected" if decision == "all" else ""}>All</option>
-        <option value="review" {"selected" if decision == "review" else ""}>REVIEW</option>
-        <option value="hold" {"selected" if decision == "hold" else ""}>HOLD</option>
-        <option value="check" {"selected" if decision == "check" else ""}>CHECK</option>
-        <option value="watch" {"selected" if decision == "watch" else ""}>WATCH</option>
+      <label>Решение<select name="decision">
+        <option value="all" {"selected" if decision == "all" else ""}>Все</option>
+        <option value="review" {"selected" if decision == "review" else ""}>ПРОВЕРИТЬ</option>
+        <option value="hold" {"selected" if decision == "hold" else ""}>ДЕРЖАТЬ</option>
+        <option value="check" {"selected" if decision == "check" else ""}>СВЕРИТЬ</option>
+        <option value="watch" {"selected" if decision == "watch" else ""}>НАБЛЮДАТЬ</option>
       </select></label>
-      <label>Asset<select name="asset">
-        <option value="all" {"selected" if asset == "all" else ""}>All</option>
-        <option value="stock" {"selected" if asset == "stock" else ""}>Stocks</option>
-        <option value="crypto" {"selected" if asset == "crypto" else ""}>Crypto</option>
+      <label>Актив<select name="asset">
+        <option value="all" {"selected" if asset == "all" else ""}>Все</option>
+        <option value="stock" {"selected" if asset == "stock" else ""}>Акции</option>
+        <option value="crypto" {"selected" if asset == "crypto" else ""}>Крипто</option>
       </select></label>
-      <label>TF<input name="tf" value="{html_escape(tf)}" placeholder="all, 1h, 4h, 1d"></label>
-      <label>Min P<input name="min_p" value="{html_escape(min_p)}" placeholder="55"></label>
-      <label>Min RR<input name="min_rr" value="{html_escape(min_rr)}" placeholder="1.0"></label>
-      <button class="btn" type="submit">Filter</button>
+      <label>ТФ<input name="tf" value="{html_escape(tf)}" placeholder="все, 1h, 4h, 1d"></label>
+      <label>Мин. P<input name="min_p" value="{html_escape(min_p)}" placeholder="55"></label>
+      <label>Мин. RR<input name="min_rr" value="{html_escape(min_rr)}" placeholder="1.0"></label>
+      <button class="btn" type="submit">Фильтр</button>
     </form>
-    {table(["Decision", "Ticker", "Side", "TF", "Pattern", "P", "RR", "Qty", "Risk", "Entry", "SL", "TP", "Age", "Action"], action_board_rows(50, filters))}
+    {table(["Решение", "Тикер", "Сторона", "ТФ", "Паттерн", "P", "RR", "Кол-во", "Риск", "Вход", "SL", "TP", "Возраст", "Действие"], action_board_rows(50, filters))}
     <div class="band">
-      <strong>How to read:</strong> REVIEW means open the chart and confirm HTF/wave context before entry.
-      HOLD means there is an open forward trade to manage. WAIT/CHECK means do not enter without manual review.
+      <strong>Как читать:</strong> ПРОВЕРИТЬ — открыть график и подтвердить HTF/волновой контекст перед входом.
+      ДЕРЖАТЬ — есть открытая forward-сделка для управления. НАБЛЮДАТЬ/СВЕРИТЬ — не входить без ручной проверки.
     </div>
     """
-    return layout("Action Board", "Action Board", body)
+    return layout("Доска действий", "Action Board", body)
 
 
 @app.get("/signals", response_class=HTMLResponse)
@@ -771,7 +807,7 @@ def signals() -> HTMLResponse:
         rr = rr_text(risk.get("entry_px"), risk.get("stop_px"), risk.get("target_px"))
         rows.append([
             html_escape(signal.get("ticker", "")),
-            pill(signal.get("recommended_action", "wait")),
+            decision_pill(signal.get("recommended_action", "wait")),
             html_escape(signal.get("pattern", "")),
             probability_label(signal.get("p_trade_win")),
             pct(signal.get("expected_net_return")),
@@ -781,25 +817,29 @@ def signals() -> HTMLResponse:
             price(risk.get("target_px")),
             age_text(signal.get("entry_ts")),
             tradingview_link(signal.get("ticker", "")),
-            html_escape(signal.get("entry_ts", "")),
+            dt_text(signal.get("entry_ts")),
         ])
     body = f"""
-    <div class="topbar"><div><h2>Signals</h2><div class="muted">Fresh scanner signals from the selected watchlist.</div></div></div>
-    {table(["Ticker", "Action", "Pattern", "P(win)", "EV", "RR", "Entry", "SL", "TP", "Age", "Chart", "Time"], rows)}
-    <h3>Alerts Feed</h3>
-    {table(["ID", "Ticker", "TF", "Side", "Pattern", "Entry", "SL", "TP", "P", "Source", "Recorded"], alert_event_rows())}
+    <div class="topbar"><div><h2>Сигналы</h2><div class="muted">Свежие сигналы сканера по выбранному вотчлисту.</div></div></div>
+    {table(["Тикер", "Действие", "Паттерн", "P(win)", "EV", "RR", "Вход", "SL", "TP", "Возраст", "График", "Время"], rows)}
+    <h3>Лента алертов</h3>
+    {table(["ID", "Тикер", "ТФ", "Сторона", "Паттерн", "Вход", "SL", "TP", "P", "Источник", "Записано"], alert_event_rows())}
     """
-    return layout("Signals", "Signals", body)
+    return layout("Сигналы", "Signals", body)
 
 
-def trade_rows(frame: pd.DataFrame, include_settle: bool) -> list[list[Any]]:
+def trade_rows(frame: pd.DataFrame, include_settle: bool,
+               seq: dict[str, int] | None = None) -> list[list[Any]]:
     if frame.empty:
         return []
+    seq = seq or {}
     sort_col = "entry_ts" if "entry_ts" in frame.columns else frame.columns[0]
     rows = []
     for _, row in frame.sort_values(sort_col, ascending=False).iterrows():
-        settle = ""
-        signal_id = html_escape(row.get("signal_id", ""))
+        sid = str(row.get("signal_id", ""))
+        signal_id = html_escape(sid)
+        num = seq.get(sid, "")
+        id_cell = f'<a class="code" href="/trades/{signal_id}" title="{signal_id}"><strong>{num}</strong></a>'
         if include_settle:
             settle = f"""
             <form class="inline" method="post" action="/trades/settle">
@@ -810,25 +850,40 @@ def trade_rows(frame: pd.DataFrame, include_settle: bool) -> list[list[Any]]:
               <button class="btn secondary" type="submit">TP</button>
             </form>
             """
-        rows.append([
-            f'<a class="code" href="/trades/{signal_id}">{signal_id}</a>',
-            html_escape(row.get("ticker", "")),
-            html_escape(row.get("interval", "")),
-            pill(row.get("side", ""), str(row.get("side", "")).lower()),
-            html_escape(row.get("fig_type", "")),
-            price(row.get("entry_px")),
-            price(row.get("stop_px")),
-            price(row.get("target_px")),
-            pct(row.get("net_ret")) if row.get("status") == "closed" else pill("open", "open"),
-            html_escape(row.get("exit_reason", "")),
-            settle,
-        ])
+            rows.append([
+                id_cell,
+                html_escape(row.get("ticker", "")),
+                html_escape(row.get("interval", "")),
+                decision_pill(row.get("side", "")),
+                html_escape(row.get("fig_type", "")),
+                price(row.get("entry_px")),
+                dt_text(row.get("entry_ts")),
+                price(row.get("stop_px")),
+                price(row.get("target_px")),
+                pill("открыта", "open"),
+                settle,
+            ])
+        else:
+            rows.append([
+                id_cell,
+                html_escape(row.get("ticker", "")),
+                html_escape(row.get("interval", "")),
+                decision_pill(row.get("side", "")),
+                html_escape(row.get("fig_type", "")),
+                price(row.get("entry_px")),
+                dt_text(row.get("entry_ts")),
+                price(row.get("exit_px")),
+                dt_text(row.get("exit_ts")),
+                html_escape(row.get("exit_reason", "")),
+                pct(row.get("net_ret")),
+            ])
     return rows
 
 
 @app.get("/trades", response_class=HTMLResponse)
 def trades(tab: str = "open") -> HTMLResponse:
     frame = forward_frame()
+    seq = seq_numbers(frame)
     open_trades  = frame[frame["status"] == "open"].copy()   if not frame.empty else pd.DataFrame()
     closed_trades = frame[frame["status"] == "closed"].copy() if not frame.empty else pd.DataFrame()
 
@@ -837,13 +892,15 @@ def trades(tab: str = "open") -> HTMLResponse:
 
     if tab == "history":
         tab_content = table(
-            ["ID", "Ticker", "TF", "Side", "Pattern", "Entry", "SL", "TP", "Return", "Exit"],
-            trade_rows(closed_trades, False),
+            ["#", "Тикер", "ТФ", "Сторона", "Паттерн", "Вход", "Время входа",
+             "Выход", "Время выхода", "Причина", "Доходность"],
+            trade_rows(closed_trades, False, seq),
         )
     else:
         tab_content = f"""
-        {table(["ID", "Ticker", "TF", "Side", "Pattern", "Entry", "SL", "TP", "Status", "Exit", "Quick"],
-               trade_rows(open_trades, True))}
+        {table(["#", "Тикер", "ТФ", "Сторона", "Паттерн", "Вход", "Время входа",
+                "SL", "TP", "Статус", "Быстро"],
+               trade_rows(open_trades, True, seq))}
         <h3 style="margin:1.5rem 0 .5rem">Закрыть вручную</h3>
         <form class="band form-grid" method="post" action="/trades/settle">
           <label>Signal ID<input name="signal_id" required></label>
@@ -860,8 +917,8 @@ def trades(tab: str = "open") -> HTMLResponse:
     closed_cnt = len(closed_trades)
 
     body = f"""
-    <div class="topbar"><div><h2>Trades</h2>
-      <div class="muted">Бумажные позиции — открытые и история.</div>
+    <div class="topbar"><div><h2>Сделки</h2>
+      <div class="muted">Бумажные позиции — открытые и история. № — порядковый номер сделки.</div>
     </div></div>
     <div style="display:flex;gap:.5rem;margin:1rem 1.5rem .5rem;border-bottom:1px solid #2a2e39;">
       <a href="/trades?tab=open"
@@ -883,7 +940,7 @@ def trades(tab: str = "open") -> HTMLResponse:
     </div>
     {tab_content}
     """
-    return layout("Trades", "Trades", body)
+    return layout("Сделки", "Trades", body)
 
 
 @app.get("/history", response_class=HTMLResponse)
@@ -896,10 +953,10 @@ def trade_detail_page(signal_id: str) -> HTMLResponse:
     signal, outcome, notes = signal_detail(signal_id)
     if signal is None:
         body = f"""
-        <div class="topbar"><div><h2>Trade not found</h2><div class="muted">{html_escape(signal_id)}</div></div></div>
-        <div class="band">No signal event exists for this ID.</div>
+        <div class="topbar"><div><h2>Сделка не найдена</h2><div class="muted">{html_escape(signal_id)}</div></div></div>
+        <div class="band">Для этого ID нет события сигнала.</div>
         """
-        return layout("Trade Detail", "Trades", body)
+        return layout("Детали сделки", "Trades", body)
 
     side = signal.get("side", "")
     status = "closed" if outcome else "open"
@@ -909,30 +966,31 @@ def trade_detail_page(signal_id: str) -> HTMLResponse:
         exit_px = float(outcome.get("exit_px") or 0.0)
         direction = 1 if side == "long" else -1
         ret_text = pct(direction * (exit_px - entry) / entry) if entry else "-"
+    status_ru = "закрыта" if outcome else "открыта"
     metric_html = "".join([
-        f'<div class="metric"><div class="label">Ticker</div><div class="value">{html_escape(signal.get("ticker", ""))}</div></div>',
-        f'<div class="metric"><div class="label">Status</div><div class="value">{pill(status, status)}</div></div>',
-        f'<div class="metric"><div class="label">Side</div><div class="value">{pill(side, str(side).lower())}</div></div>',
-        f'<div class="metric"><div class="label">Return</div><div class="value">{ret_text}</div></div>',
+        f'<div class="metric"><div class="label">Тикер</div><div class="value">{html_escape(signal.get("ticker", ""))}</div></div>',
+        f'<div class="metric"><div class="label">Статус</div><div class="value">{pill(status_ru, status)}</div></div>',
+        f'<div class="metric"><div class="label">Сторона</div><div class="value">{decision_pill(side)}</div></div>',
+        f'<div class="metric"><div class="label">Доходность</div><div class="value">{ret_text}</div></div>',
     ])
     signal_rows = [
         ["Signal ID", f'<span class="code">{html_escape(signal_id)}</span>'],
-        ["Interval", html_escape(signal.get("interval", ""))],
-        ["Pattern", html_escape(signal.get("fig_type", ""))],
-        ["Entry time", html_escape(signal.get("entry_ts", ""))],
-        ["Entry", price(signal.get("entry_px"))],
-        ["Stop", price(signal.get("stop_px"))],
-        ["Target", price(signal.get("target_px"))],
+        ["Таймфрейм", html_escape(signal.get("interval", ""))],
+        ["Паттерн", html_escape(signal.get("fig_type", ""))],
+        ["Время входа", dt_text(signal.get("entry_ts"))],
+        ["Вход", price(signal.get("entry_px"))],
+        ["Стоп (SL)", price(signal.get("stop_px"))],
+        ["Цель (TP)", price(signal.get("target_px"))],
         ["R:R", rr_text(signal.get("entry_px"), signal.get("stop_px"), signal.get("target_px"))],
-        ["Probability", probability_label(signal.get("probability"))],
-        ["HTF context", html_escape(signal.get("htf_context", ""))],
-        ["Source", html_escape(signal.get("source", ""))],
+        ["Вероятность", probability_label(signal.get("probability"))],
+        ["HTF контекст", html_escape(signal.get("htf_context", ""))],
+        ["Источник", html_escape(signal.get("source", ""))],
     ]
     if outcome:
         signal_rows.extend([
-            ["Exit time", html_escape(outcome.get("exit_ts", ""))],
-            ["Exit price", price(outcome.get("exit_px"))],
-            ["Exit reason", html_escape(outcome.get("exit_reason", ""))],
+            ["Время выхода", dt_text(outcome.get("exit_ts"))],
+            ["Цена выхода", price(outcome.get("exit_px"))],
+            ["Причина выхода", html_escape(outcome.get("exit_reason", ""))],
         ])
     note_rows = [
         [
@@ -944,29 +1002,29 @@ def trade_detail_page(signal_id: str) -> HTMLResponse:
         for row in reversed(notes)
     ]
     settle_form = "" if outcome else f"""
-    <h3>Close Trade</h3>
+    <h3>Закрыть сделку</h3>
     <form class="band form-grid" method="post" action="/trades/settle">
       <input type="hidden" name="signal_id" value="{html_escape(signal_id)}">
-      <label>Exit time<input name="exit_ts" placeholder="2026-06-07T16:00:00Z" required></label>
-      <label>Exit price<input name="exit_px" required></label>
-      <label>Reason<select name="exit_reason"><option>tp</option><option>sl</option><option>time</option><option>manual</option><option>cancelled</option></select></label>
-      <button class="btn" type="submit">Settle</button>
+      <label>Время выхода<input name="exit_ts" placeholder="2026-06-07T16:00:00Z" required></label>
+      <label>Цена выхода<input name="exit_px" required></label>
+      <label>Причина<select name="exit_reason"><option>tp</option><option>sl</option><option>time</option><option>manual</option><option>cancelled</option></select></label>
+      <button class="btn" type="submit">Закрыть</button>
     </form>
     """
     body = f"""
-    <div class="topbar"><div><h2>Trade Detail</h2><div class="muted">{html_escape(signal_id)}</div></div></div>
+    <div class="topbar"><div><h2>Детали сделки</h2><div class="muted">{html_escape(signal_id)}</div></div></div>
     <div class="grid">{metric_html}</div>
-    <h3>Trading Checklist</h3>
-    {table(["Check", "Value"], checklist_rows(signal, outcome))}
-    <h3>Risk Plan</h3>
-    {table(["Metric", "Value"], risk_plan_rows(signal))}
-    <h3>Signal Contract</h3>
-    {table(["Field", "Value"], signal_rows)}
+    <h3>Торговый чек-лист</h3>
+    {table(["Проверка", "Значение"], checklist_rows(signal, outcome))}
+    <h3>План риска</h3>
+    {table(["Метрика", "Значение"], risk_plan_rows(signal))}
+    <h3>Контракт сигнала</h3>
+    {table(["Поле", "Значение"], signal_rows)}
     {settle_form}
-    <h3>Anton Notes</h3>
-    {table(["Recorded", "Tag", "Author", "Note"], note_rows)}
+    <h3>Заметки Антона</h3>
+    {table(["Записано", "Тег", "Автор", "Заметка"], note_rows)}
     <form class="band form-grid" method="post" action="/trades/{html_escape(signal_id)}/notes">
-      <label>Tag<select name="tag">
+      <label>Тег<select name="tag">
         <option>note</option>
         <option>late_entry</option>
         <option>ignored_htf</option>
@@ -975,12 +1033,12 @@ def trade_detail_page(signal_id: str) -> HTMLResponse:
         <option>news_risk</option>
         <option>good_execution</option>
       </select></label>
-      <label>Author<input name="author" value="anton"></label>
-      <label>Note<input name="note" placeholder="Что произошло и почему" required></label>
-      <button class="btn" type="submit">Add note</button>
+      <label>Автор<input name="author" value="anton"></label>
+      <label>Заметка<input name="note" placeholder="Что произошло и почему" required></label>
+      <button class="btn" type="submit">Добавить заметку</button>
     </form>
     """
-    return layout("Trade Detail", "Trades", body)
+    return layout("Детали сделки", "Trades", body)
 
 
 @app.get("/backtest", response_class=HTMLResponse)
@@ -1001,8 +1059,8 @@ def settings(tab: str = "stocks") -> HTMLResponse:
     historical = data["backtest"].get("portfolio", {})
     forward    = data["forward_summary"]
     bt_rows    = [
-        ["Historical baseline", historical.get("trades", 0), pct(historical.get("winrate")), pct(historical.get("expectancy")), fmt(historical.get("profit_factor")), pct(historical.get("max_drawdown"))],
-        ["Forward closed",      forward.get("trades", 0),    pct(forward.get("winrate")),    pct(forward.get("expectancy")),    fmt(forward.get("profit_factor")),    pct(forward.get("max_drawdown"))],
+        ["Бэктест (база)", historical.get("trades", 0), pct(historical.get("winrate")), pct(historical.get("expectancy")), fmt(historical.get("profit_factor")), pct(historical.get("max_drawdown"))],
+        ["Forward (закрытые)", forward.get("trades", 0),    pct(forward.get("winrate")),    pct(forward.get("expectancy")),    fmt(forward.get("profit_factor")),    pct(forward.get("max_drawdown"))],
     ]
 
     # Ticker chips helper
@@ -1049,8 +1107,8 @@ def settings(tab: str = "stocks") -> HTMLResponse:
       <div class="muted">Тикеры для мониторинга и риск-параметры.</div>
     </div></div>
 
-    <h3 id="backtest">Backtest vs Forward</h3>
-    {table(["Scope", "Trades", "Winrate", "Expectancy", "PF", "Drawdown"], bt_rows)}
+    <h3 id="backtest">Бэктест против Forward</h3>
+    {table(["Период", "Сделок", "Винрейт", "Ожидание", "PF", "Просадка"], bt_rows)}
     <div class="band" style="margin-top:0">Правило: меньше 30 закрытых forward-сделок — только наблюдение. PF &lt; 1.1 или отрицательная expectancy — автоматизацию не включать.</div>
 
     <h3>Вотчлист</h3>
@@ -1092,7 +1150,7 @@ def settings(tab: str = "stocks") -> HTMLResponse:
       <button class="btn" type="submit">Сохранить риск</button>
     </form>
     """
-    return layout("Settings", "Settings", body)
+    return layout("Настройки", "Settings", body)
 
 
 @app.post("/trades/settle")
@@ -1445,7 +1503,7 @@ def portfolio_page() -> HTMLResponse:
 
     body = f"""
     <div class="topbar">
-      <div><h2>Portfolio</h2><div class="muted">Ручной учёт позиций. Текущие цены — Yahoo Finance.</div></div>
+      <div><h2>Портфель</h2><div class="muted">Ручной учёт позиций. Текущие цены — Yahoo Finance.</div></div>
       <form method="get" action="/portfolio"><button class="btn secondary" type="submit">↻ Обновить цены</button></form>
     </div>
     {metrics}
@@ -1503,7 +1561,7 @@ def portfolio_page() -> HTMLResponse:
       }});
     </script>
     """
-    return layout("Portfolio", "Portfolio", body)
+    return layout("Портфель", "Portfolio", body)
 
 
 @app.post("/portfolio/add")
