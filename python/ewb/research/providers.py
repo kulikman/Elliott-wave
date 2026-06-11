@@ -23,6 +23,42 @@ from pathlib import Path
 
 import pandas as pd
 
+# ─── Tiingo scan-path OHLC cache ─────────────────────────────────────────────
+# Avoids re-fetching Tiingo on every hourly cron pass. Cache TTLs match bar
+# duration so data is never staler than 1 bar. Saves ~90% of Tiingo requests.
+_SCAN_CACHE_ROOT = Path(__file__).resolve().parents[3] / "python" / "data" / "ohlc_cache" / "tiingo_scan"
+_SCAN_CACHE_TTL: dict[str, timedelta] = {
+    "1h": timedelta(hours=1),
+    "4h": timedelta(hours=4),
+    "1d": timedelta(hours=24),
+    "1w": timedelta(days=7),
+}
+
+def _scan_cache_path(ticker: str, interval: str) -> Path:
+    safe = ticker.replace("/", "-").replace(".", "-").replace(" ", "-")
+    return _SCAN_CACHE_ROOT / f"{safe}_{interval}.parquet"
+
+def _scan_cache_load(ticker: str, interval: str) -> pd.DataFrame | None:
+    path = _scan_cache_path(ticker, interval)
+    if not path.exists():
+        return None
+    ttl = _SCAN_CACHE_TTL.get(interval, timedelta(hours=1))
+    age = datetime.now(timezone.utc) - datetime.fromtimestamp(path.stat().st_mtime, tz=timezone.utc)
+    if age > ttl:
+        return None
+    try:
+        return pd.read_parquet(path)
+    except Exception:
+        return None
+
+def _scan_cache_save(ticker: str, interval: str, df: pd.DataFrame) -> None:
+    path = _scan_cache_path(ticker, interval)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        df.to_parquet(path)
+    except Exception:
+        pass
+
 def _load_env() -> None:
     """Make TIINGO_API_KEY available regardless of entry point.
 
@@ -236,6 +272,11 @@ def _tiingo_rows_to_df(rows: list | None) -> pd.DataFrame | None:
 
 def download_tiingo_ohlc(ticker: str, interval: str, period: str | None = None,
                          min_rows: int = 50) -> pd.DataFrame | None:
+    # Return cached data if fresh enough (avoids Tiingo rate-limit burn).
+    cached = _scan_cache_load(ticker, interval)
+    if cached is not None and len(cached) >= min_rows:
+        return cached
+
     token = tiingo_token()
     if not token:
         return None
@@ -254,7 +295,10 @@ def download_tiingo_ohlc(ticker: str, interval: str, period: str | None = None,
     df = _tiingo_rows_to_df(rows)
     if df is not None and interval == "4h":
         df = _resample(_finalize(df, 0), "4h")
-    return _finalize(df, min_rows)
+    result = _finalize(df, min_rows)
+    if result is not None:
+        _scan_cache_save(ticker, interval, result)
+    return result
 
 
 def tiingo_last_price(ticker: str) -> float | None:

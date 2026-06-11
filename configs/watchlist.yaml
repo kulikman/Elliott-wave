@@ -1,114 +1,44 @@
 stocks:
-  # AI & Semiconductors (10)
+  # AI & Semiconductors
   - NVDA
   - AMD
-  - AVGO
   - TSM
-  - ASML
-  - ARM
-  - MU
-  - MRVL
-  - KLAC
-  - LRCX
-  # Cloud & Enterprise SaaS (10)
+  # Cloud & SaaS
   - MSFT
-  - ORCL
-  - CRM
-  - NOW
   - PLTR
-  - SNOW
   - CRWD
-  - PANW
-  - DDOG
-  - NET
-  # Big Tech & Media (10)
+  # Big Tech & Media
   - GOOGL
-  - AMZN
   - META
-  - AAPL
-  - NFLX
-  - SPOT
-  - TTD
-  - ROKU
-  - RBLX
-  - PINS
-  # Biotech & Pharma (10)
+  - AMZN
+  # Biotech & Pharma
   - LLY
-  - NVO
-  - ISRG
   - VRTX
-  - REGN
-  - ABBV
-  - MRNA
-  - GILD
-  - BIIB
-  - ILMN
-  # FinTech & Finance (10)
+  - ISRG
+  # FinTech & Finance
   - V
   - MA
-  - PYPL
-  - SQ
   - COIN
-  - GS
-  - JPM
-  - BLK
-  - SOFI
-  - AFRM
-  # Clean Energy & EV (10)
+  # Clean Energy & EV
   - TSLA
-  - RIVN
-  - NIO
   - ENPH
-  - FSLR
   - NEE
-  - BE
-  - PLUG
-  - CHPT
-  - LCID
-  # Space, Defense & Next-Gen (10)
+  # Space & Defense
   - LMT
   - RTX
-  - NOC
-  - BA
-  - GD
   - RKLB
-  - ASTS
-  - JOBY
-  - ACHR
-  - LUNR
-  # Travel & Consumer Platforms (10)
+  # Travel & Consumer
   - BKNG
-  - ABNB
   - UBER
-  - DASH
   - SHOP
-  - ETSY
-  - LYFT
-  - EXPE
-  - HLT
-  - MAR
-  # Industrial & Infrastructure (10)
+  # Industrial
   - CAT
-  - DE
   - HON
   - GE
-  - ETN
-  - EMR
-  - ITW
-  - PH
-  - ROK
-  - CARR
-  # Energy & Materials (10)
+  # Energy & Materials
   - XOM
-  - CVX
-  - COP
-  - SLB
   - FCX
   - NEM
-  - MP
-  - CF
-  - MOS
-  - ALB
 
 crypto:
   # Mega Cap (5)
