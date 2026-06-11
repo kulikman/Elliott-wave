@@ -70,7 +70,11 @@ MIN_P_WIN      = 0.50           # sanity floor only; real quality = EV gate (rew
 MIN_RR         = 1.0            # minimum risk-reward ratio
 MAX_OPEN       = 0              # 0 = no limit on concurrent paper trades
 TRADE_USD      = 100.0          # fixed paper trade size in USD
-TIMEOUT_BARS   = 30             # close trade after N bars if still open
+TIMEOUT_BARS   = 30             # default close-after-N-bars (fallback)
+# Per-timeframe timeout: a W3 of a given degree must resolve within ~this many
+# bars or the count was wrong. Scaled so a daily trade no longer hangs 6 weeks
+# (30 daily bars) — the higher degree is the COMPASS, not the holding horizon.
+TIMEOUT_BY_TF  = {"1h": 24, "4h": 18, "1d": 12, "1w": 6}
 RETRAIN_EVERY  = 20             # retrain ML after every N closed trades
 
 # ─── High-winrate setup gate (validated against the 1518-trade backtest) ──────
@@ -314,6 +318,72 @@ def historical_exit(
     last_close = float(walk.iloc[-1]["close"])
     reason = "timeout" if len(after) >= timeout_bars else "open_end"
     return last_ts, last_close, reason
+
+
+# ─── HTF bias-flip exit ───────────────────────────────────────────────────────
+# Event-driven exit: close when the higher-degree compass (1D/1W) turns against
+# the position — Neely's "the structure changed" exit. Replaces waiting out a
+# fixed timer with reacting to the actual trend reversal. Checkable: we exit at
+# the close of the bar where the flip was CONFIRMED, never today's live quote.
+
+# Which higher degree governs each trade's timeframe (mirrors the scanner).
+BIASFLIP_RULE  = {"1h": "1D", "4h": "1D", "1d": "1W"}
+# Mode: "strong" → flip only on |bias|=2 against (two HTF monowaves agree);
+#       "sign"   → flip as soon as bias sign opposes the position;
+#       "off"    → disabled. Tunable for forward/backtest comparison.
+BIASFLIP_MODE  = os.environ.get("EWB_BIASFLIP_MODE", "strong").lower()
+
+
+def bias_flip_exit(
+    ticker: str, interval: str, entry_ts: pd.Timestamp, side: str,
+    timeout_bars: int = TIMEOUT_BARS,
+) -> tuple[pd.Timestamp, float, str] | None:
+    """First bar after entry where the HTF compass flips against the position.
+
+    Returns (exit_ts, exit_px=close, "bias_flip") or None if no flip within the
+    timeout window. Honors EWB_BIASFLIP_MODE (strong/sign/off).
+    """
+    if BIASFLIP_MODE == "off":
+        return None
+    rule = BIASFLIP_RULE.get(str(interval))
+    if rule is None:
+        return None
+
+    from ewb.research.data import download_ohlc
+    from ewb.htf import structural_trend_series
+
+    entry_ts = pd.Timestamp(entry_ts)
+    if entry_ts.tzinfo is None:
+        entry_ts = entry_ts.tz_localize("UTC")
+    # Need a long lookback so the HTF pivot ladder is established BEFORE entry —
+    # a short window (entry→now) yields too few HTF pivots and a stuck compass.
+    _compass_floor = {"1h": 180, "4h": 300, "1d": 400}.get(str(interval), 400)
+    days = max(_compass_floor, (utc_now() - entry_ts).days + 5)
+    df = download_ohlc(ticker, interval, f"{days}d", min_rows=0)
+    if df is None or df.empty or "close" not in df.columns:
+        return None
+    df = df.set_axis(pd.to_datetime(df.index, utc=True))
+
+    try:
+        bias = structural_trend_series(df, rule)
+    except Exception:
+        return None
+
+    after = df[df.index > entry_ts]
+    if after.empty:
+        return None
+    after = after.iloc[:max(1, timeout_bars)]   # only within the holding window
+    is_long = str(side).lower() in ("long", "buy")
+
+    for ts, bar in after.iterrows():
+        b = int(bias.get(ts, 0))
+        if BIASFLIP_MODE == "sign":
+            flipped = (b < 0) if is_long else (b > 0)
+        else:  # "strong"
+            flipped = (b <= -2) if is_long else (b >= 2)
+        if flipped:
+            return ts, float(bar["close"]), "bias_flip"
+    return None
 
 
 # ─── scanner ────────────────────────────────────────────────────────────────
@@ -590,15 +660,27 @@ def try_close_trades(events: list[dict], tradeable_set: set[str] | None = None) 
         entry_ts  = pd.Timestamp(trade["entry_ts"]).tz_convert("UTC")
 
         # Exit at the real historical bar (SL/TP/timeout) — never today's quote.
+        tf_timeout = TIMEOUT_BY_TF.get(interval, TIMEOUT_BARS)
         result = historical_exit(
             ticker, interval, entry_ts, entry_px, stop_px, target_px, side,
+            timeout_bars=tf_timeout,
         )
-        if result is None:
+        # Event-driven exit: HTF compass flip against the position.
+        flip = bias_flip_exit(ticker, interval, entry_ts, side, timeout_bars=tf_timeout)
+
+        if result is None and flip is None:
             continue
-        exit_ts, exit_px, reason = result
-        if reason == "open_end":
-            # Not enough bars yet and no level hit — trade is still genuinely open.
+        # Choose the EARLIEST real exit. A pending "open_end" loses to any flip
+        # but is otherwise "still open".
+        candidates = []
+        if result is not None and result[2] != "open_end":
+            candidates.append(result)
+        if flip is not None:
+            candidates.append(flip)
+        if not candidates:
+            # Only open_end and no flip → genuinely still open.
             continue
+        exit_ts, exit_px, reason = min(candidates, key=lambda r: r[0])
 
         evt = outcome_event(
             signal_id  = signal_id,

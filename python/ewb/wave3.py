@@ -83,9 +83,10 @@ class Wave3Setup:
             "risk_box": {
                 "entry_px": self.entry_px,
                 "stop_px": self.stop_px,
-                # Guard against negative target for low-priced short assets:
-                # w1_len can exceed entry_px (e.g. DOGE/SOL). Use tp1 as floor.
-                "target_px": max(self.primary_tp, self.entry_px * 0.01, 1e-8),
+                # primary_tp is already positive: detect_wave3_setups rejects
+                # tp2<=0 and bounds |W1| via max_w1_frac, so no negative-target
+                # clamp is needed here. 1e-8 floor only guards against exact 0.
+                "target_px": max(self.primary_tp, 1e-8),
                 "invalid_px": self.invalid_px,
                 "tp1": self.tp1, "tp2": self.tp2, "tp3": self.tp3,
                 "channel_tp": self.channel_tp,
@@ -112,11 +113,19 @@ def detect_wave3_setups(
     pivots: list[Pivot],
     last_price: float,
     last_idx: int,
+    max_w1_frac: float = 0.6,
 ) -> list[Wave3Setup]:
     """Scan pivot ladder for live Wave-3 setups.
 
     Uses the most recent completed W1(p0->p1) + W2(p1->p2) triples. A setup is
     `triggered` when last_price has broken beyond W1 end in the W1 direction.
+
+    Degree constraint (so the wave is measured at the chart's OWN degree, not
+    from a historical peak — the root cause of absurd targets like HBAR):
+      max_w1_frac : reject if |W1| > entry_px * max_w1_frac. A single impulse
+                    sub-wave cannot sanely span most of the asset's price; when
+                    it does, the pivots belong to a higher degree and the 1.618
+                    projection is meaningless at this level.
     """
     setups: list[Wave3Setup] = []
     n = len(pivots)
@@ -131,6 +140,12 @@ def detect_wave3_setups(
 
         w1_len = abs(p1.price - p0.price)
         if w1_len <= 0:
+            continue
+        # Degree constraint: W1 amplitude must be sane vs. current price. A W1
+        # larger than max_w1_frac of price is at the wrong (higher) degree for
+        # this timeframe — its 1.618 target is geometrically absurd. Use the
+        # break level (p1.price) as the price reference.
+        if max_w1_frac is not None and w1_len > abs(p1.price) * max_w1_frac:
             continue
         w2_len = abs(p2.price - p1.price)
         w2_retrace = w2_len / w1_len
@@ -161,6 +176,12 @@ def detect_wave3_setups(
         tp1 = entry_px + sgn * TP_MULTS[0] * w1_len
         tp2 = entry_px + sgn * TP_MULTS[1] * w1_len
         tp3 = entry_px + sgn * TP_MULTS[2] * w1_len
+
+        # Reject setups where the Fib 1.618 target is geometrically impossible.
+        # This happens when w1_len > entry_px on a short (historical W1 from much
+        # higher price levels). These are not tradeable — wave geometry is broken.
+        if tp2 <= 0:
+            continue
 
         risk = abs(entry_px - stop_px)
         rr1 = (abs(tp1 - entry_px) / risk) if risk > 0 else 0.0

@@ -191,6 +191,15 @@ def _emit_core_setups(ticker, interval, df, figures, signals):
 _HTFFLAT_WR_CACHE: dict | None = None
 _HTF_RULE = {"1h": "4h", "4h": "1D"}
 
+# Wave-3 degree constraint: max |W1| as a fraction of price, per timeframe. A
+# 1h-degree W1 is a small swing; a 1d/1w one is larger. Anything above this is a
+# higher-degree leg leaking in (the HBAR-from-2021-peak failure mode).
+_W3_MAX_W1_FRAC = {"1h": 0.15, "4h": 0.30, "1d": 0.50, "1w": 0.80}
+# Wave-3 HTF compass: which higher degree must agree with the entry direction.
+# This makes W3 a WITH-TREND pullback entry (Neely: trade W3/W5 of the lower
+# degree only in the direction of the higher-degree impulse).
+_W3_HTF_RULE = {"1h": "1D", "4h": "1D", "1d": "1W"}
+
 
 def _htf_flat_winrates() -> dict:
     global _HTFFLAT_WR_CACHE
@@ -283,6 +292,21 @@ def scan_ticker(ticker: str, interval: str, period: str, calibration: dict) -> l
         closes = df["close"].values
         opens = df["open"].values
 
+        # HTF compass: bias of the higher degree at the current bar. Wave-3 is a
+        # with-trend entry, so only take longs when the compass is up and shorts
+        # when it is down. Set EWB_WAVE3_HTF=0 to disable the gate.
+        w3_bias_now = 0
+        if os.getenv("EWB_WAVE3_HTF", "1") == "1":
+            htf_rule = _W3_HTF_RULE.get(str(interval))
+            if htf_rule is not None:
+                try:
+                    from ewb.htf import structural_trend_series
+                    _bias = structural_trend_series(df, htf_rule)
+                    if len(_bias):
+                        w3_bias_now = int(_bias.iloc[-1])
+                except Exception:
+                    w3_bias_now = 0
+
         def _w3_trigger_bar(setup) -> int | None:
             """Return bar index where price FIRST crossed the breakout level.
 
@@ -305,8 +329,16 @@ def scan_ticker(ticker: str, interval: str, period: str, calibration: dict) -> l
         # Many past W1/W2 triples can still be "triggered"; keep only the
         # freshest setup per side (largest trigger_bar) to avoid flooding.
         freshest: dict[str, object] = {}
-        for setup in detect_wave3_setups(pivots, last_px, last_idx):
+        _w3_frac = _W3_MAX_W1_FRAC.get(str(interval), 0.5)
+        for setup in detect_wave3_setups(pivots, last_px, last_idx,
+                                         max_w1_frac=_w3_frac):
             if not (setup.triggered and setup.struct_ok and setup.rr1 >= 1.0):
+                continue
+            # HTF compass gate: skip counter-trend entries. bias>0 → longs only,
+            # bias<0 → shorts only, bias==0 (no clear higher-degree trend) → allow.
+            if w3_bias_now > 0 and setup.side == "short":
+                continue
+            if w3_bias_now < 0 and setup.side == "long":
                 continue
             tbar = _w3_trigger_bar(setup)
             if tbar is None:
@@ -328,10 +360,10 @@ def scan_ticker(ticker: str, interval: str, period: str, calibration: dict) -> l
             rb = sig["risk_box"]
             rb["entry_px"] = actual_entry
             rb["structural_entry"] = setup.entry_px   # preserve for reference
-            # Guard negative targets: can happen when w1_len > entry_px for
-            # low-priced assets on a short. Cap target at 1% of entry price.
+            # Broken geometry guard: tp2 <= 0 should be caught at detect stage;
+            # if it slips through, reject rather than clamp to a fake floor.
             if rb["target_px"] <= 0:
-                rb["target_px"] = max(rb["entry_px"] * 0.01, 1e-8)
+                continue
             # Recalculate R:R from actual entry (stop/target stay structural)
             risk = abs(actual_entry - rb["stop_px"])
             reward = abs(rb["target_px"] - actual_entry)
