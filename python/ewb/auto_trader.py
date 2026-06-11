@@ -74,7 +74,12 @@ RETRAIN_EVERY  = 20             # retrain ML after every N closed trades
 # win-rate signals", every candidate is cross-checked against the large strategy
 # backtest grouped winrates. A setup that is not validated, has too few backtest
 # trades, or sits below the winrate floor is blocked regardless of its p_win.
-SETUP_WR_FLOOR = 0.55           # min validated historical win-rate to trade a setup
+# SETUP_WR_FLOOR is the BACKTEST win-rate floor. At 0.70 it targets >70% wins
+# by trading only the highest-WR validated flats (stock 1w/1d long, crypto
+# short). Live/forward WR is typically a few points below backtest, so this is
+# a target, not a guarantee. Override via EWB_SETUP_WR_FLOOR (e.g. 0.55 for
+# more trades, 0.72 for even stricter).
+SETUP_WR_FLOOR = float(os.environ.get("EWB_SETUP_WR_FLOOR", "0.70"))
 SETUP_MIN_N    = 20             # min validated backtest trades for a setup to count
 MIN_SAMPLE     = 10             # min calibration sample_size (kills n=1 garbage)
 
