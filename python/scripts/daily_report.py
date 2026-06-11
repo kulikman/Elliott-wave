@@ -319,6 +319,9 @@ def save_daily_outputs(payload: dict, output_dir: str) -> tuple[str, str]:
 
 
 def main() -> None:
+    # Emit Wave-3 setups in the manual scan too (core setups are always on),
+    # so the dashboard scan shows the same patterns the auto-trader uses.
+    os.environ.setdefault("EWB_WAVE3", "1")
     args = parser().parse_args()
     config = load_watchlist(args.config)
     calibration = load_probability_calibration(args.calibration)
