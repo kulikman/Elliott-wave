@@ -41,7 +41,11 @@ def _load() -> pd.DataFrame:
 
 def _slice(g: pd.DataFrame, mtf: str) -> pd.DataFrame:
     # next_open execution: stock grid labels it "next_open", crypto "next_bar_open".
+    # Only 1h/4h: the live emitter (_emit_htf_flat, _HTF_RULE={1h:4h,4h:1D}) makes
+    # flat_htf signals only on those LTFs, so other intervals would be dead LUT
+    # rows that never match a signal. This is exactly the idea — enter on 1h/4h.
     s = g[(g.fig_type == "flat") & (g.entry_variant.isin(["next_open", "next_bar_open"]))
+          & (g.interval.isin(["1h", "4h"]))
           & (g.tp_mult == 1.618) & (g.sl_mult == 1.0) & (g.late_limit == 999.0)
           & (g.mtf_policy == mtf)].copy()
     s["entry_ts"] = pd.to_datetime(s["entry_ts"], utc=True, errors="coerce")
@@ -55,6 +59,28 @@ def _grp(frame: pd.DataFrame, fig_label: str) -> pd.DataFrame:
                  expectancy=("net_ret", "mean")).reset_index())
 
 
+def _per_setup_split(frame: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """70/30 chronological split computed PER (asset, interval, side), not on a
+    single global cutoff. A global cutoff is set by the high-frequency setups
+    (stock/crypto 1h, 200-466 trades) and compresses the OOS window to a few
+    months — which starves sparse 4h setups (~100 trades / 4y → ~4 in the test)
+    and wrongly fails them on sample size. A per-setup cutoff gives each a
+    proportional, still-recent OOS window; the stability filter (positive in
+    BOTH the setup's own train and test) remains the overfitting guard."""
+    tr_parts, te_parts = [], []
+    for _, sub in frame.groupby(["asset_class", "interval", "side"]):
+        sub = sub.sort_values("entry_ts")
+        if len(sub) < 10:
+            continue
+        c = sub["entry_ts"].quantile(0.70)
+        tr_parts.append(sub[sub.entry_ts <= c])
+        te_parts.append(sub[sub.entry_ts > c])
+    empty = frame.iloc[0:0]
+    tr = pd.concat(tr_parts) if tr_parts else empty
+    te = pd.concat(te_parts) if te_parts else empty
+    return tr, te
+
+
 def main() -> None:
     g = _load()
     if g.empty:
@@ -62,13 +88,13 @@ def main() -> None:
         return
     aligned = _slice(g, ALIGNED)
     plain = _slice(g, "none")
-    cut = aligned["entry_ts"].quantile(0.70)
 
-    g_tr = _grp(aligned[aligned.entry_ts <= cut], "flat_htf")
-    g_te = _grp(aligned[aligned.entry_ts > cut], "flat_htf")
-    # plain-flat OOS EV for comparison (same split)
-    pcut = plain["entry_ts"].quantile(0.70)
-    p_te = _grp(plain[plain.entry_ts > pcut], "flat")
+    a_tr, a_te = _per_setup_split(aligned)
+    g_tr = _grp(a_tr, "flat_htf")
+    g_te = _grp(a_te, "flat_htf")
+    # plain-flat OOS EV for comparison (same per-setup split)
+    _, p_te_raw = _per_setup_split(plain)
+    p_te = _grp(p_te_raw, "flat")
 
     m = g_te.merge(g_tr, on=KEYS, how="left", suffixes=("_oos", "_is"))
     stable = m[(m.expectancy_oos > 0) & (m.expectancy_is > 0)].copy()
@@ -84,7 +110,7 @@ def main() -> None:
                              "trades": "plain_n"}),
         left_on=["asset_class", "interval", "side"],
         right_on=["asset_class", "interval", "side"], how="left")
-    print(f"split @ {str(cut)[:10]} | HTF-aligned flat setups stable OOS: {len(lut)}")
+    print(f"per-setup 70/30 split | HTF-aligned flat setups stable OOS: {len(lut)}")
     print(f"{'asset/tf/side':<18}{'HTF_WR%':>8}{'HTF_EV%':>8}{'n':>5}{'plain_EV%':>11}{'beats?':>8}")
     for _, r in cmp.sort_values("expectancy_oos", ascending=False).iterrows():
         pe = r.get("plain_ev")

@@ -85,6 +85,10 @@ SETUP_EV_FLOOR = float(os.environ.get("EWB_SETUP_EV_FLOOR", "0.005"))  # +0.5%/t
 SETUP_WR_FLOOR = float(os.environ.get("EWB_SETUP_WR_FLOOR", "0.45"))   # sanity only (reward-first: EV leads)
 SETUP_MIN_N    = 20             # min validated backtest trades for a setup to count
 MIN_SAMPLE     = 10             # min calibration sample_size (kills n=1 garbage)
+# Optional style: trade ONLY lower-TF entries (1h/4h) and skip 1d/1w. Off by
+# default — 1d/1w keep their own validated edge. Flip with EWB_LTF_ONLY=1.
+LTF_ONLY       = os.environ.get("EWB_LTF_ONLY", "0") == "1"
+HTF_INTERVALS  = {"1d", "1w", "1D", "1W"}
 
 # ─── Freshness gate — open only signals confirmed "now", not old backfill ─────
 # The scanner returns the last confirmed pattern, whose entry bar can be weeks
@@ -444,6 +448,10 @@ def setup_quality_ok(sig: dict) -> tuple[bool, str]:
     interval = str(sig.get("interval", "?"))
     fig      = str(sig.get("pattern", "unknown"))
     side     = str(sig.get("side", "?"))
+
+    if LTF_ONLY and interval in HTF_INTERVALS:        # optional LTF-only style
+        return False, f"LTF-only: {interval} entries off (EWB_LTF_ONLY=1)"
+
     key = (asset_class_of(ticker), interval, fig, side)
 
     lut = load_setup_winrates()

@@ -63,6 +63,30 @@ def test_setup_quality_ok_reward_first(monkeypatch):
     assert not ok and "calib" in r
 
 
+def test_setup_quality_ok_ltf_only(monkeypatch):
+    """EWB_LTF_ONLY blocks 1d/1w entries (trade only 1h/4h) while keeping the
+    LTF setups; default off keeps 1d/1w."""
+    lut = {
+        ("stock", "4h", "flat_htf", "long"): (0.76, 42, 0.0405),   # LTF — keep
+        ("stock", "1d", "wave3", "long"): (0.50, 40, 0.0402),      # HTF — strong, but off under LTF-only
+    }
+    monkeypatch.setattr(at, "_SETUP_WR_CACHE", lut)
+
+    def q(ticker, iv, pat, side):
+        return at.setup_quality_ok({"ticker": ticker, "interval": iv,
+                                    "pattern": pat, "side": side, "sample_size": 100})
+
+    # LTF-only ON: 1d blocked, 4h still allowed
+    monkeypatch.setattr(at, "LTF_ONLY", True)
+    ok, r = q("NVDA", "1d", "wave3", "long")
+    assert not ok and "LTF-only" in r
+    assert q("NVDA", "4h", "flat_htf", "long")[0] is True
+
+    # default OFF: the 1d setup passes (its own validated edge)
+    monkeypatch.setattr(at, "LTF_ONLY", False)
+    assert q("NVDA", "1d", "wave3", "long")[0] is True
+
+
 def test_asset_class_of():
     assert at.asset_class_of("BTC-USD") == "crypto"
     assert at.asset_class_of("NVDA") == "stock"
