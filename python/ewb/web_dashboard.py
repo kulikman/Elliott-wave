@@ -1702,8 +1702,11 @@ async def portfolio_delete(request: Request) -> RedirectResponse:
 def auto_trader_start() -> RedirectResponse:
     if not auto_trader_running():
         log_fh = open(AUTO_TRADER_LOG, "a")
+        # --once: a single manual scan, consistent with the hourly launchd cron
+        # (EPIC L). It takes the same single-instance lock, so a manual "scan now"
+        # never races a cron pass that is still running.
         proc = subprocess.Popen(
-            [sys.executable, "-m", "ewb.auto_trader"],
+            [sys.executable, "-m", "ewb.auto_trader", "--once"],
             cwd=REPO / "python",
             stdout=log_fh,
             stderr=log_fh,

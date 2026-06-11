@@ -1164,16 +1164,16 @@ def test_crypto_research_report_hides_missing_model_ev():
 
 
 
-def test_figures_to_rows_uses_confirmation_idx_for_entry(monkeypatch):
+def test_figures_to_rows_uses_next_open_for_entry(monkeypatch):
     monkeypatch.setattr(build_dataset, "HORIZONS", [1])
     df = pd.DataFrame(
         {
-            "open": [100, 101, 102, 103, 104, 105],
-            "high": [101, 102, 103, 104, 105, 106],
-            "low": [99, 100, 101, 102, 103, 104],
-            "close": [100, 101, 102, 103, 104, 105],
+            "open": [100, 101, 102, 103, 104, 105, 106, 107],
+            "high": [101, 102, 103, 104, 105, 106, 107, 108],
+            "low": [99, 100, 101, 102, 103, 104, 105, 106],
+            "close": [100, 101, 102, 103, 104, 105, 106, 107],
         },
-        index=pd.date_range("2024-01-01", periods=6, freq="1D"),
+        index=pd.date_range("2024-01-01", periods=8, freq="1D"),
     )
     pivots = [
         Pivot(idx=0, price=100, direction=-1, confirmation_idx=0),
@@ -1195,19 +1195,20 @@ def test_figures_to_rows_uses_confirmation_idx_for_entry(monkeypatch):
         "TEST",
         "1d",
     )
-    assert rows[0]["entry_ts"] == df.index[4]
-    assert rows[0]["confirmation_lag"] == 2
+    # next_open: confirmation at idx 4 -> enter at idx 5
+    assert rows[0]["entry_ts"] == df.index[5]
+    assert rows[0]["confirmation_lag"] == 2          # conf 4 - end_idx 2
 
 
 def test_figure_rows_from_matches_can_preserve_extra_tf_schema():
     df = pd.DataFrame(
         {
-            "open": [100, 101, 102, 103, 104, 105],
-            "high": [101, 102, 103, 104, 105, 106],
-            "low": [99, 100, 101, 102, 103, 104],
-            "close": [100, 101, 102, 103, 104, 105],
+            "open": [100, 101, 102, 103, 104, 105, 106, 107],
+            "high": [101, 102, 103, 104, 105, 106, 107, 108],
+            "low": [99, 100, 101, 102, 103, 104, 105, 106],
+            "close": [100, 101, 102, 103, 104, 105, 106, 107],
         },
-        index=pd.date_range("2024-01-01", periods=6, freq="1D"),
+        index=pd.date_range("2024-01-01", periods=8, freq="1D"),
     )
     pivots = [
         Pivot(idx=0, price=100, direction=-1, confirmation_idx=0),
@@ -1233,5 +1234,5 @@ def test_figure_rows_from_matches_can_preserve_extra_tf_schema():
         horizons=(1,),
         include_w5_ratio=False,
     )
-    assert rows[0]["entry_ts"] == df.index[4]
+    assert rows[0]["entry_ts"] == df.index[5]        # next_open: conf 4 -> entry 5
     assert "w5_w3_ratio" not in rows[0]

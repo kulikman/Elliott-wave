@@ -9,7 +9,8 @@
 // это следующие уровни (см. pine/README.md и indicator-spec/spec_vN.json).
 // =============================================================================
 indicator("Elliott Wave Brain — Monowaves MTF", "EWB Mono",
-     overlay = true, max_labels_count = 500, max_lines_count = 500, max_boxes_count = 200)
+     overlay = true, max_labels_count = 500, max_lines_count = 500, max_boxes_count = 200,
+     max_bars_back = 500)
 
 // ───────────────────────────── ВВОД ─────────────────────────────
 grpDet  = "Идентификация моноволн (Уровень 1)"
@@ -813,8 +814,10 @@ coreDirText(int dir) =>
 // live-баре его ещё нет — тогда берём close как близкий прокси к будущему open.
 // math.max защищает от open[-1] (Pine падает на отрицательном индексе истории).
 nextOpenEntry(int confBar) =>
+    // cap at 500 = indicator max_bars_back, so a far-back confirmation never
+    // overruns the history buffer (such ancient markers are context only).
     int off = bar_index - confBar - 1
-    off >= 0 ? open[math.max(off, 0)] : close
+    off >= 0 ? open[math.min(math.max(off, 0), 500)] : close
 
 drawTradeSignal(string figType, string figDir, int confBar, float entryPx,
                 int b0, int b1, float lo, float hi, float amp) =>

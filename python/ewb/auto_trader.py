@@ -876,7 +876,14 @@ def main() -> None:
              args.interval, MAX_OPEN, MIN_P_WIN * 100, RETRAIN_EVERY)
     while True:
         try:
-            one_pass()
+            lock = _acquire_single_instance_lock()   # cooperate with the cron pass
+            if lock is None:
+                log.info("Проход уже идёт (cron?) — пропускаю итерацию")
+            else:
+                try:
+                    one_pass()
+                finally:
+                    lock.close()
         except KeyboardInterrupt:
             log.info("Остановлено пользователем")
             break

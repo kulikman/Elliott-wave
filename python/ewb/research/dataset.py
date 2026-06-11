@@ -10,16 +10,21 @@ def figure_rows_from_matches(df, figs, bias, ticker: str, interval: str,
     """Build feature rows from matched figures using confirmed entry bars."""
     rows = []
     close = df["close"].to_numpy()
+    open_ = df["open"].to_numpy()
     n = len(close)
     max_horizon = max(horizons)
 
     for f in figs:
-        entry_idx = f.pivots[-1].confirmation_idx
-        if entry_idx < 0:
-            entry_idx = f.end_idx
+        conf_idx = f.pivots[-1].confirmation_idx
+        if conf_idx < 0:
+            conf_idx = f.end_idx
+        # next_open execution (matches the live engine, EPIC K): the pattern
+        # confirms at conf_idx's close; we enter at the next bar's open and
+        # measure outcomes forward from that exec bar.
+        entry_idx = conf_idx + 1
         if entry_idx >= n - max_horizon:
             continue
-        entry_px = close[entry_idx]
+        entry_px = open_[entry_idx]
         if entry_px <= 0 or np.isnan(entry_px):
             continue
 
@@ -39,7 +44,7 @@ def figure_rows_from_matches(df, figs, bias, ticker: str, interval: str,
             "interval": interval,
             "end_ts": df.index[f.end_idx],
             "entry_ts": df.index[entry_idx],
-            "confirmation_lag": entry_idx - f.end_idx,
+            "confirmation_lag": conf_idx - f.end_idx,
             "fig_type": f.type,
             "direction": f.direction,
             "confirmed": f.confirmed,
