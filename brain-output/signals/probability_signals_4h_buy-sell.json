@@ -6,7 +6,7 @@
   "fresh_days": null,
   "fresh_hours": null,
   "freshness": null,
-  "generated_at": "2026-06-11T08:38:29+00:00",
+  "generated_at": "2026-06-11T08:59:54+00:00",
   "interval": "4h",
   "limit": 50,
   "model_version": "probability-calibration-v0",
@@ -926,7 +926,7 @@
       "confirmed": true,
       "entry_ts": "2026-06-10 20:00:00+00:00",
       "interval": "4h",
-      "p_trade_win": 0.4222222222222222,
+      "p_trade_win": 0.3684210526315789,
       "pattern": "core_moving_correction_follow",
       "recommended_action": "sell",
       "risk_box": {
@@ -935,7 +935,7 @@
         "stop_px": 43.10756,
         "target_px": 35.94756
       },
-      "sample_size": 45,
+      "sample_size": 19,
       "side": "short",
       "source": "core_engine",
       "ticker": "LTC-USD"
@@ -944,7 +944,7 @@
       "confirmed": true,
       "entry_ts": "2026-06-10 20:00:00+00:00",
       "interval": "4h",
-      "p_trade_win": 0.5264270613107822,
+      "p_trade_win": 0.5028248587570622,
       "pattern": "core_triangle_thrust",
       "recommended_action": "sell",
       "risk_box": {
@@ -953,7 +953,7 @@
         "stop_px": 2.0575840000000003,
         "target_px": 1.35
       },
-      "sample_size": 473,
+      "sample_size": 177,
       "side": "short",
       "source": "core_engine",
       "ticker": "ATOM-USD"
@@ -1001,7 +1001,7 @@
       "confirmed": true,
       "entry_ts": "2026-06-10 20:00:00+00:00",
       "interval": "4h",
-      "p_trade_win": 0.4222222222222222,
+      "p_trade_win": 0.3684210526315789,
       "pattern": "core_moving_correction_follow",
       "recommended_action": "sell",
       "risk_box": {
@@ -1010,7 +1010,7 @@
         "stop_px": 0.794356,
         "target_px": 0.47835599999999995
       },
-      "sample_size": 45,
+      "sample_size": 19,
       "side": "short",
       "source": "core_engine",
       "ticker": "FIL-USD"

@@ -154,13 +154,32 @@ def main() -> None:
         exit_plan=args.exit_plan,
     )
     scoped = scoped.sort_values("entry_ts") if not scoped.empty else scoped
-    grouped = grouped_summary(scoped, ["asset_class", "interval", "fig_type", "side"])
+    keys = ["asset_class", "interval", "fig_type", "side"]
+    grouped = grouped_summary(scoped, keys)            # in-sample, for the markdown report
     by_setup = grouped_summary(scoped, ["setup_key"])
     walk_forward = walk_forward_summary(scoped, folds=args.folds)
     portfolio = trade_summary(scoped)
 
+    # Gate LUT = out-of-sample + stability (same as W3/core): chronological
+    # 70/30 split; keep only setups whose expectancy is positive in BOTH the
+    # train and held-out test slices, carrying the OOS (test) metrics.
+    gate_lut = grouped
+    if not scoped.empty and "entry_ts" in scoped.columns:
+        sc = scoped.assign(_ts=pd.to_datetime(scoped["entry_ts"], utc=True, errors="coerce"))
+        sc = sc.dropna(subset=["_ts"]).sort_values("_ts")
+        if len(sc) >= 20:
+            cut = sc["_ts"].quantile(0.70)
+            g_tr = grouped_summary(sc[sc["_ts"] <= cut], keys)
+            g_te = grouped_summary(sc[sc["_ts"] > cut], keys)
+            if not g_tr.empty and not g_te.empty:
+                tr_pos = {tuple(r[k] for k in keys) for _, r in g_tr.iterrows() if r["expectancy"] > 0}
+                gate_lut = g_te[
+                    g_te.apply(lambda r: r["expectancy"] > 0
+                               and tuple(r[k] for k in keys) in tr_pos, axis=1)
+                ].copy()
+
     trades_path = write_frame(scoped, output_dir / "ewb_strategy_backtest_trades.parquet")
-    grouped_path = write_frame(grouped, output_dir / "ewb_strategy_backtest_grouped.parquet")
+    grouped_path = write_frame(gate_lut, output_dir / "ewb_strategy_backtest_grouped.parquet")
     wf_path = write_frame(walk_forward, output_dir / "ewb_strategy_walk_forward.parquet")
     summary = {
         "contract": contract_payload(contract),

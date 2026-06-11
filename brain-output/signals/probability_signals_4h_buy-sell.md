@@ -1,6 +1,6 @@
 # Probability Signals
 
-Generated: `2026-06-11T08:38:29+00:00`
+Generated: `2026-06-11T08:59:54+00:00`
 Model: `probability-calibration-v0`
 Tickers: `NVDA, AVGO, AMD, TSM, ASML, ARM, MU, MSFT, ORCL, CRM, NOW, PLTR, CRWD, PANW, SNOW, AMZN, GOOGL, META, NFLX, UBER, SHOP, BKNG, LLY, NVO, ISRG, VRTX, TSLA, V, MA, CAT, BTC-USD, ETH-USD, BNB-USD, SOL-USD, XRP-USD, DOGE-USD, ADA-USD, AVAX-USD, TRX-USD, LINK-USD, DOT-USD, LTC-USD, ATOM-USD, XLM-USD, OP-USD, NEAR-USD, HBAR-USD, FIL-USD, INJ-USD, AAVE-USD`
 Interval: `4h`
@@ -40,10 +40,10 @@ Signals: `50`
 | INJ-USD | buy | wave3 | 2026-06-11 08:00:00+00:00 | 0.0% | n/a | None | 3.92 | 3.46 | 5.16 |
 | AAVE-USD | sell | wave3 | 2026-06-11 08:00:00+00:00 | 0.0% | n/a | None | 71.06 | 83.61 | 24.28 |
 | LTC-USD | sell | flat | 2026-06-10 20:00:00+00:00 | 55.9% | +0.70% | high | 41.74 | 41.82 | 41.66 |
-| LTC-USD | sell | core_moving_correction_follow | 2026-06-10 20:00:00+00:00 | 42.2% | n/a | None | 41.74 | 43.11 | 35.95 |
-| ATOM-USD | sell | core_triangle_thrust | 2026-06-10 20:00:00+00:00 | 52.6% | n/a | None | 1.76 | 2.06 | 1.35 |
+| LTC-USD | sell | core_moving_correction_follow | 2026-06-10 20:00:00+00:00 | 36.8% | n/a | None | 41.74 | 43.11 | 35.95 |
+| ATOM-USD | sell | core_triangle_thrust | 2026-06-10 20:00:00+00:00 | 50.3% | n/a | None | 1.76 | 2.06 | 1.35 |
 | FIL-USD | sell | flat | 2026-06-10 20:00:00+00:00 | 55.9% | +0.70% | high | 0.73 | 0.77 | 0.69 |
-| FIL-USD | sell | core_moving_correction_follow | 2026-06-10 20:00:00+00:00 | 42.2% | n/a | None | 0.73 | 0.79 | 0.48 |
+| FIL-USD | sell | core_moving_correction_follow | 2026-06-10 20:00:00+00:00 | 36.8% | n/a | None | 0.73 | 0.79 | 0.48 |
 | NVDA | buy | wave3 | 2026-06-10 12:00:00-04:00 | 0.0% | n/a | None | 49.65 | 44.89 | 62.58 |
 | AVGO | buy | wave3 | 2026-06-10 12:00:00-04:00 | 0.0% | n/a | None | 99.99 | 90.31 | 129.36 |
 | AMD | buy | wave3 | 2026-06-10 12:00:00-04:00 | 0.0% | n/a | None | 143.47 | 135.37 | 168.10 |
