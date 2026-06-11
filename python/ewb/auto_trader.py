@@ -24,6 +24,7 @@ import argparse
 import json
 import logging
 import math
+import os
 import pickle
 import subprocess
 import sys
@@ -75,6 +76,22 @@ RETRAIN_EVERY  = 20             # retrain ML after every N closed trades
 SETUP_WR_FLOOR = 0.55           # min validated historical win-rate to trade a setup
 SETUP_MIN_N    = 20             # min validated backtest trades for a setup to count
 MIN_SAMPLE     = 10             # min calibration sample_size (kills n=1 garbage)
+
+# ─── Freshness gate — open only signals confirmed "now", not old backfill ─────
+# The scanner returns the last confirmed pattern, whose entry bar can be weeks
+# old. Opening such a trade just replays history (its TP/SL already happened) —
+# not a real forward test. We only open a trade if the signal's entry bar is
+# within ~1 bar of the current time, i.e. it just confirmed. Set env
+# EWB_MAX_SIGNAL_AGE_DAYS to override the window globally (in days).
+SIGNAL_MAX_AGE = {
+    "15m": timedelta(minutes=45),
+    "30m": timedelta(hours=1, minutes=30),
+    "1h":  timedelta(hours=2),
+    "4h":  timedelta(hours=9),
+    "1d":  timedelta(days=2),     # covers the just-closed daily bar (today)
+    "1w":  timedelta(days=9),
+}
+SIGNAL_MAX_AGE_DEFAULT = timedelta(days=2)
 
 # Exchange configuration — US markets
 EXCHANGE       = "NYSE"          # used for holiday calendar
@@ -361,6 +378,42 @@ def load_setup_winrates() -> dict[tuple[str, str, str, str], tuple[float, int]]:
     return lut
 
 
+def signal_is_fresh(sig: dict) -> tuple[bool, str]:
+    """Allow only signals whose entry bar just confirmed (from today/now).
+
+    Blocks old backfill so every opened trade is a genuine forward trade whose
+    outcome lies in the future. Returns (ok, reason).
+    """
+    ets = sig.get("entry_ts")
+    if not ets:
+        return False, "no entry_ts"
+    try:
+        ts = pd.Timestamp(ets)
+        if ts.tzinfo is None:
+            ts = ts.tz_localize("UTC")
+        ts = ts.tz_convert("UTC")
+    except Exception:
+        return False, f"bad entry_ts {ets!r}"
+
+    interval = str(sig.get("interval", "1d"))
+    env_days = os.environ.get("EWB_MAX_SIGNAL_AGE_DAYS")
+    if env_days:
+        try:
+            max_age = timedelta(days=float(env_days))
+        except ValueError:
+            max_age = SIGNAL_MAX_AGE.get(interval, SIGNAL_MAX_AGE_DEFAULT)
+    else:
+        max_age = SIGNAL_MAX_AGE.get(interval, SIGNAL_MAX_AGE_DEFAULT)
+
+    age = utc_now() - ts
+    if age > max_age:
+        def _fmt(td: timedelta) -> str:
+            h = td.total_seconds() / 3600.0
+            return f"{h/24:.1f}d" if h >= 24 else f"{h:.0f}h"
+        return False, f"stale signal (entry {_fmt(age)} ago > {_fmt(max_age)})"
+    return True, "fresh"
+
+
 def setup_quality_ok(sig: dict) -> tuple[bool, str]:
     """Block any setup not proven high-winrate by the large backtest.
 
@@ -423,6 +476,13 @@ def try_open_trades(signals: list[dict], events: list[dict]) -> int:
         if rr(entry_px, stop_px, target_px) < MIN_RR:
             continue
         if action not in ("buy", "sell"):
+            continue
+        # Freshness gate: open only signals confirmed now, not old backfill.
+        fresh, freason = signal_is_fresh(sig)
+        if not fresh:
+            log.info("ПРОПУСК %-6s %-5s %s  — %s",
+                     sig.get("ticker", "?"), sig.get("side", "?"),
+                     sig.get("interval", "?"), freason)
             continue
         # High-winrate gate: only open setups proven by the large backtest.
         ok, reason = setup_quality_ok(sig)
