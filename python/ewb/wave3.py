@@ -83,7 +83,9 @@ class Wave3Setup:
             "risk_box": {
                 "entry_px": self.entry_px,
                 "stop_px": self.stop_px,
-                "target_px": self.primary_tp,   # EPIC 4: channel if sane, else fib 1.618
+                # Guard against negative target for low-priced short assets:
+                # w1_len can exceed entry_px (e.g. DOGE/SOL). Use tp1 as floor.
+                "target_px": max(self.primary_tp, self.entry_px * 0.01, 1e-8),
                 "invalid_px": self.invalid_px,
                 "tp1": self.tp1, "tp2": self.tp2, "tp3": self.tp3,
                 "channel_tp": self.channel_tp,

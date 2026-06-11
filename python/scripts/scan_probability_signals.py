@@ -275,17 +275,67 @@ def scan_ticker(ticker: str, interval: str, period: str, calibration: dict) -> l
         last_ts = str(df.index[last_idx])
         w3_wr = _wave3_winrates()
         asset = "crypto" if str(ticker).upper().endswith("-USD") else "stock"
+        # Max bars since the breakout bar (trigger_bar). For 1d: ≤2 bars (today
+        # or yesterday's break); for 1h/4h: ≤3 bars; for 1w: ≤1 bar.
+        _w3_max_age = {"1w": 1, "1d": 2, "4h": 3, "1h": 3}
+        w3_fresh_bars = _w3_max_age.get(str(interval), 2)
+        closes = df["close"].values
+        opens = df["open"].values
+
+        def _w3_trigger_bar(setup) -> int | None:
+            """Return bar index where price FIRST crossed the breakout level.
+
+            Walks back from last_idx to find the bar that crossed entry_px.
+            Returns None if the crossing is older than w3_fresh_bars.
+            """
+            ep = setup.entry_px
+            short = setup.side == "short"
+            # Walk back to find the last bar that was on the 'pre-trigger' side.
+            for i in range(last_idx - 1, max(-1, last_idx - w3_fresh_bars - 2), -1):
+                c = float(closes[i])
+                was_pre = c >= ep if short else c <= ep
+                if was_pre:
+                    trig = i + 1   # bar after the last pre-trigger bar
+                    if last_idx - trig <= w3_fresh_bars:
+                        return trig
+                    return None   # stale
+            return None  # crossed too far back or not found in window
+
         # Many past W1/W2 triples can still be "triggered"; keep only the
-        # freshest setup per side (largest entry_idx) to avoid flooding.
+        # freshest setup per side (largest trigger_bar) to avoid flooding.
         freshest: dict[str, object] = {}
         for setup in detect_wave3_setups(pivots, last_px, last_idx):
             if not (setup.triggered and setup.struct_ok and setup.rr1 >= 1.0):
                 continue
+            tbar = _w3_trigger_bar(setup)
+            if tbar is None:
+                continue   # stale breakout — entry opportunity already passed
             cur = freshest.get(setup.side)
-            if cur is None or setup.entry_idx > cur.entry_idx:
-                freshest[setup.side] = setup
-        for setup in freshest.values():
-            sig = setup.to_signal(ticker, interval, last_ts)
+            if cur is None or tbar > cur[1]:
+                freshest[setup.side] = (setup, tbar)
+
+        for setup, tbar in freshest.values():
+            # next_open execution: enter at the open of the bar AFTER the trigger.
+            exec_bar = tbar + 1
+            if exec_bar > last_idx:
+                exec_bar = last_idx   # current bar is best available approx
+            actual_entry = float(opens[exec_bar])
+            actual_ts = str(df.index[exec_bar])
+
+            sig = setup.to_signal(ticker, interval, actual_ts)
+            # Override entry_px with actual fill price; keep structural stop/target.
+            rb = sig["risk_box"]
+            rb["entry_px"] = actual_entry
+            rb["structural_entry"] = setup.entry_px   # preserve for reference
+            # Guard negative targets: can happen when w1_len > entry_px for
+            # low-priced assets on a short. Cap target at 1% of entry price.
+            if rb["target_px"] <= 0:
+                rb["target_px"] = max(rb["entry_px"] * 0.01, 1e-8)
+            # Recalculate R:R from actual entry (stop/target stay structural)
+            risk = abs(actual_entry - rb["stop_px"])
+            reward = abs(rb["target_px"] - actual_entry)
+            if risk <= 0 or reward / risk < 1.0:
+                continue   # entry overshot structural level, R:R invalid
             wr, n = w3_wr.get((asset, interval, setup.side), (0.0, 0))
             sig["p_trade_win"] = wr
             sig["sample_size"] = n
