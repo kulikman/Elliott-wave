@@ -373,6 +373,7 @@ def position_plan(
     target: Any,
     side: str,
     settings: dict[str, Any] | None = None,
+    size_mult: float = 1.0,
 ) -> dict[str, Any]:
     settings = settings or read_risk_settings()
     try:
@@ -391,7 +392,12 @@ def position_plan(
     reward_per_unit = direction * (target_f - entry_f)
     if risk_per_unit <= 0 or reward_per_unit <= 0:
         return {"ok": False}
-    risk_cash = account * risk_pct / 100.0
+    # EV-weighted sizing: scale risk by the setup's edge multiplier (0.5x..2x).
+    try:
+        mult = max(0.25, min(2.0, float(size_mult)))
+    except Exception:
+        mult = 1.0
+    risk_cash = account * risk_pct / 100.0 * mult
     max_position_cash = account * max_position_pct / 100.0
     qty_by_risk = risk_cash / risk_per_unit
     qty_by_cap = max_position_cash / entry_f
@@ -407,6 +413,7 @@ def position_plan(
         "reward_cash": reward_cash,
         "rr": reward_per_unit / risk_per_unit,
         "risk_cap_limited": qty_by_cap < qty_by_risk,
+        "size_mult": mult,
         "currency": settings.get("currency", "USD"),
     }
 
@@ -596,6 +603,7 @@ def action_board_rows(limit: int = 20, filters: dict[str, Any] | None = None) ->
             target=row.get("target_px"),
             side=row.get("side", ""),
             settings=risk_settings,
+            size_mult=row.get("size_mult", 1.0),
         )
         rows.insert(0, [
             f'<a class="code" href="/trades/{signal_id}" title="{signal_id}"><strong>{num}</strong></a>',
@@ -641,12 +649,14 @@ def risk_plan_rows(signal: dict[str, Any]) -> list[list[Any]]:
         stop=signal.get("stop_px"),
         target=signal.get("target_px"),
         side=signal.get("action", signal.get("side", "")),
+        size_mult=signal.get("size_mult", 1.0),
     )
     if not plan.get("ok"):
         return [["План позиции", "Нет или некорректны вход/SL/TP. Пока не рассчитывайте размер."]]
     currency = plan.get("currency", "USD")
     return [
         ["Количество", qty_text(plan.get("qty"))],
+        ["Множитель размера (по EV)", f"{plan.get('size_mult', 1.0):.2f}x"],
         ["Задействовано капитала", money(plan.get("capital"), currency)],
         ["Риск", money(plan.get("risk_cash"), currency)],
         ["Потенциальная прибыль", money(plan.get("reward_cash"), currency)],

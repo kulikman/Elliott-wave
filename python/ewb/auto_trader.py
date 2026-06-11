@@ -65,7 +65,7 @@ CORE_WR_FILE   = ROOT / "brain-output" / "backtests" / "ewb_core_backtest_groupe
 SCAN_INTERVAL  = 60 * 60        # re-scan every 60 min
 MIN_P_WIN      = 0.50           # sanity floor only; real quality = EV gate (reward-first)
 MIN_RR         = 1.0            # minimum risk-reward ratio
-MAX_OPEN       = 5              # max concurrent open paper trades
+MAX_OPEN       = 8              # max concurrent open paper trades (EV-priority fills slots)
 TIMEOUT_BARS   = 30             # close trade after N bars if still open
 RETRAIN_EVERY  = 20             # retrain ML after every N closed trades
 
@@ -472,6 +472,27 @@ def try_open_trades(signals: list[dict], events: list[dict]) -> int:
             day = str(row.get("entry_ts", ""))[:10]
             existing_keys.add(f"{row['ticker']}|{row['interval']}|{row['side']}|{day}")
 
+    # EV-priority: when MAX_OPEN limits slots, fill them with the highest
+    # backtested-expectancy setups first so weak setups never crowd out strong.
+    lut = load_setup_winrates()
+
+    def _sig_ev(s: dict) -> float:
+        key = (asset_class_of(s.get("ticker", "")), str(s.get("interval", "?")),
+               str(s.get("pattern", "unknown")), str(s.get("side", "?")))
+        return lut.get(key, (0.0, 0, 0.0))[2]
+
+    signals = sorted(signals, key=_sig_ev, reverse=True)
+
+    # EV-weighted sizing reference: median of validated positive expectancies.
+    pos_ev = sorted(ev for (_w, _n, ev) in lut.values() if ev > 0)
+    median_ev = pos_ev[len(pos_ev) // 2] if pos_ev else 0.0
+
+    def _size_mult(s: dict) -> float:
+        ev = _sig_ev(s)
+        if median_ev <= 0 or ev <= 0:
+            return 1.0
+        return max(0.5, min(2.0, ev / median_ev))   # stronger edge -> bigger size
+
     opened = 0
     for sig in signals:
         if n_open + opened >= MAX_OPEN:
@@ -535,6 +556,7 @@ def try_open_trades(signals: list[dict], events: list[dict]) -> int:
             htf_context = f"auto_trader | p={p_win:.2f} | lag={sig.get('confirmation_lag',0)}d",
             source      = "auto_trader",
         )
+        row["size_mult"] = round(_size_mult(sig), 3)   # EV-weighted position size
         append_jsonl(FORWARD_LOG, row)
         existing_keys.add(key)
         opened += 1
