@@ -24,6 +24,7 @@ every 5 min, self-gated to the market windows).
 from __future__ import annotations
 
 import argparse
+import os
 import sys
 import time
 from datetime import datetime, time as dtime
@@ -42,7 +43,9 @@ from ewb.research.providers import download_binance_ohlc, is_crypto  # noqa: E40
 WATCHLIST = ROOT / "configs" / "watchlist.yaml"
 CACHE = ROOT / "python" / "data" / "ohlc_cache"
 STOCK_MARKER = ROOT / "brain-output" / ".last_stock_ingest"
-STOCK_THROTTLE_S = 0.8          # pace Tiingo requests under the rate limit
+# Tiingo throttle: Free plan = 0.8s (500 req/day limit).
+# Power plan ($30/mo, 10k req/h) → set EWB_TIINGO_THROTTLE=0.05 in .env
+STOCK_THROTTLE_S = float(os.environ.get("EWB_TIINGO_THROTTLE", "0.8"))
 CRYPTO_INTERVALS = [("1d", "1500d"), ("4h", "900d"), ("1h", "730d"), ("1w", "3650d")]
 ET = ZoneInfo("America/New_York")
 COOLDOWN_S = 55 * 60           # one stock refresh per hour during the session

@@ -6,6 +6,7 @@ import json
 import math
 import os
 import sys
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timedelta, timezone
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -478,11 +479,21 @@ def main() -> None:
     calibration = load_probability_calibration(args.calibration)
     all_signals: list[dict] = []
 
-    for ticker in tickers:
+    # Parallel ticker scan: env EWB_SCAN_WORKERS controls concurrency.
+    # Default 4 workers — safe for Tiingo free; set to 8-16 with Power plan.
+    n_workers = int(os.environ.get("EWB_SCAN_WORKERS", "4"))
+
+    def _scan(ticker: str) -> list[dict]:
         try:
-            all_signals.extend(scan_ticker(ticker, args.interval, period, calibration))
+            return scan_ticker(ticker, args.interval, period, calibration)
         except Exception as exc:
             log_processing_error(ticker, args.interval, exc, context="probability_scan")
+            return []
+
+    with ThreadPoolExecutor(max_workers=n_workers) as pool:
+        futures = {pool.submit(_scan, t): t for t in tickers}
+        for future in as_completed(futures):
+            all_signals.extend(future.result())
 
     filtered = [
         signal

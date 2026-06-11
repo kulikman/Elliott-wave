@@ -29,6 +29,7 @@ import pickle
 import subprocess
 import sys
 import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
 from typing import Any
@@ -756,26 +757,34 @@ def one_pass() -> None:
     all_tradeable_signals: list[dict] = []
     all_tradeable_set: set[str] = set()
 
-    # Scan each interval separately, collect tradeable signals
+    # Pre-compute session info per interval (fast, no I/O)
+    interval_meta: dict[str, tuple[set[str], set[str]]] = {}
     for interval in intervals:
         tradeable, scan_only = split_by_session(tickers, interval)
         tradeable_set = set(t.upper() for t in tradeable)
         all_tradeable_set |= tradeable_set
-
+        interval_meta[interval] = (tradeable_set, scan_only)
         log.info(
             "[%s] Сессия: крипто=%d(24/7) акции=%d(%s) — торгуемых=%d только_скан=%d",
             interval, crypto_count, stock_count,
             market_status(interval), len(tradeable), len(scan_only),
         )
 
+    # Scan all intervals in parallel (each is an independent subprocess)
+    def _scan_interval(interval: str) -> tuple[str, list[dict]]:
         signals = run_scan(tickers, interval)
-        log.info("[%s] Скан вернул сигналов: %d", interval, len(signals))
+        return interval, signals
 
-        tradeable_signals = [s for s in signals if s.get("ticker", "").upper() in tradeable_set]
-        if len(tradeable_signals) < len(signals):
-            log.info("[%s] Отфильтровано торгуемых сигналов: %d", interval, len(tradeable_signals))
-
-        all_tradeable_signals.extend(tradeable_signals)
+    with ThreadPoolExecutor(max_workers=len(intervals)) as pool:
+        futures = {pool.submit(_scan_interval, iv): iv for iv in intervals}
+        for future in as_completed(futures):
+            interval, signals = future.result()
+            tradeable_set = interval_meta[interval][0]
+            log.info("[%s] Скан вернул сигналов: %d", interval, len(signals))
+            tradeable_signals = [s for s in signals if s.get("ticker", "").upper() in tradeable_set]
+            if len(tradeable_signals) < len(signals):
+                log.info("[%s] Отфильтровано торгуемых: %d", interval, len(tradeable_signals))
+            all_tradeable_signals.extend(tradeable_signals)
 
     state["last_scan"] = utc_now_iso()
 
