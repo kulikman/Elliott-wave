@@ -47,7 +47,8 @@ def _load_cached(path: str) -> pd.DataFrame | None:
     need = ["open", "high", "low", "close"]
     if not set(need).issubset(df.columns):
         return None
-    out = df[need].dropna()
+    df["ts"] = pd.to_datetime(df.index, utc=True, errors="coerce")
+    out = df[need + ["ts"]].dropna(subset=need)
     return out if len(out) > 120 else None
 
 
@@ -74,8 +75,9 @@ def _core_trades(df: pd.DataFrame, ticker: str, interval: str) -> list[dict]:
             r = simulate_level_exit(df, e_idx, side, target, stop, EXIT_BARS, cost)
             if r is None:
                 continue
+            ts = df["ts"].iloc[e_idx] if "ts" in df.columns else pd.NaT
             out.append({"fig_type": s["setup"], "side": side,
-                        "win": r["win"], "net_ret": r["net_ret"]})
+                        "win": r["win"], "net_ret": r["net_ret"], "entry_ts": ts})
     return out
 
 
@@ -94,6 +96,7 @@ def main() -> None:
             df = download_binance_ohlc(tk, interval, period, min_rows=120)
             if df is None:
                 continue
+            df["ts"] = pd.to_datetime(df.index, utc=True, errors="coerce")
             for t in _core_trades(df.reset_index(drop=True), tk, interval):
                 t.update(asset_class="crypto", interval=interval)
                 rows.append(t)
@@ -102,23 +105,44 @@ def main() -> None:
     if d.empty:
         print("No core trades found.")
         return
-    grouped = (
-        d.groupby(["asset_class", "interval", "fig_type", "side"])
-        .agg(trades=("win", "size"), winrate=("win", "mean"),
-             expectancy=("net_ret", "mean"))
-        .reset_index()
-    )
-    OUT.parent.mkdir(parents=True, exist_ok=True)
-    grouped.to_parquet(OUT, index=False)
 
-    show = grouped[grouped["trades"] >= 20].copy()
-    show["WR%"] = (show["winrate"] * 100).round(0)
-    show["EV%"] = (show["expectancy"] * 100).round(2)
-    print(f"Core backtest: {len(d)} trades across {grouped['fig_type'].nunique()} setups")
-    print(show.sort_values("expectancy", ascending=False)[
-        ["asset_class", "interval", "fig_type", "side", "trades", "WR%", "EV%"]
+    # Out-of-sample validation: chronological 70/30 split. Train on the first
+    # 70% of trades by entry time, validate on the held-out last 30%. The LUT
+    # uses TEST (OOS) metrics so the gate never trades on in-sample-only edge.
+    d["entry_ts"] = pd.to_datetime(d["entry_ts"], utc=True, errors="coerce", format="mixed")
+    d = d.dropna(subset=["entry_ts"]).sort_values("entry_ts")
+    cutoff = d["entry_ts"].quantile(0.70)
+    train, test = d[d["entry_ts"] <= cutoff], d[d["entry_ts"] > cutoff]
+    keys = ["asset_class", "interval", "fig_type", "side"]
+
+    def grp(frame):
+        return (frame.groupby(keys)
+                .agg(trades=("win", "size"), winrate=("win", "mean"),
+                     expectancy=("net_ret", "mean")).reset_index())
+
+    g_test, g_train = grp(test), grp(train)
+    m = g_test.merge(g_train, on=keys, how="left", suffixes=("_oos", "_is"))
+    # Stability filter: the edge must be positive in BOTH train and test, so a
+    # setup that only "works" on a lucky test slice (or only in-sample) is
+    # excluded. The LUT carries OOS (test) metrics for the survivors.
+    stable = m[(m["expectancy_oos"] > 0) & (m["expectancy_is"] > 0)].copy()
+    lut = (stable[keys + ["trades_oos", "winrate_oos", "expectancy_oos"]]
+           .rename(columns={"trades_oos": "trades", "winrate_oos": "winrate",
+                            "expectancy_oos": "expectancy"}))
+    OUT.parent.mkdir(parents=True, exist_ok=True)
+    lut.to_parquet(OUT, index=False)
+
+    m["OOS_WR%"] = (m["winrate_oos"] * 100).round(0)
+    m["OOS_EV%"] = (m["expectancy_oos"] * 100).round(2)
+    m["IS_EV%"] = (m["expectancy_is"] * 100).round(2)
+    m["STABLE"] = (m["expectancy_oos"] > 0) & (m["expectancy_is"] > 0)
+    print(f"Core backtest: {len(d)} trades; split @ {str(cutoff)[:10]} "
+          f"(train {len(train)} / test {len(test)})")
+    print("STABLE = positive in BOTH train and test (only these enter the LUT):\n")
+    print(m[m["trades_oos"] >= 20].sort_values("expectancy_oos", ascending=False)[
+        ["asset_class", "interval", "fig_type", "side", "trades_oos", "OOS_WR%", "OOS_EV%", "IS_EV%", "STABLE"]
     ].to_string(index=False))
-    print(f"\nWrote {OUT}")
+    print(f"\nWrote {OUT}: {len(lut)} stable setups (OOS metrics)")
 
 
 if __name__ == "__main__":

@@ -1,6 +1,6 @@
 # Probability Signals
 
-Generated: `2026-06-11T08:18:28+00:00`
+Generated: `2026-06-11T08:35:23+00:00`
 Model: `probability-calibration-v0`
 Tickers: `NVDA, AVGO, AMD, TSM, ASML, ARM, MU, MSFT, ORCL, CRM, NOW, PLTR, CRWD, PANW, SNOW, AMZN, GOOGL, META, NFLX, UBER, SHOP, BKNG, LLY, NVO, ISRG, VRTX, TSLA, V, MA, CAT, BTC-USD, ETH-USD, BNB-USD, SOL-USD, XRP-USD, DOGE-USD, ADA-USD, AVAX-USD, TRX-USD, LINK-USD, DOT-USD, LTC-USD, ATOM-USD, XLM-USD, OP-USD, NEAR-USD, HBAR-USD, FIL-USD, INJ-USD, AAVE-USD`
 Interval: `1d`
@@ -26,7 +26,7 @@ Signals: `50`
 | AVAX-USD | sell | wave3 | 2026-06-11 00:00:00+00:00 | 58.8% | n/a | None | 52.95 | 98.77 | -67.38 |
 | TRX-USD | buy | wave3 | 2026-06-11 00:00:00+00:00 | 50.0% | n/a | None | 0.12 | 0.09 | 0.19 |
 | LINK-USD | sell | wave3 | 2026-06-11 00:00:00+00:00 | 58.8% | n/a | None | 15.32 | 24.49 | -21.88 |
-| LINK-USD | buy | wave3 | 2026-06-11 00:00:00+00:00 | 50.0% | n/a | None | 7.20 | 6.21 | 10.77 |
+| LINK-USD | buy | wave3 | 2026-06-11 00:00:00+00:00 | 50.0% | n/a | None | 7.82 | 6.40 | 11.75 |
 | DOT-USD | sell | wave3 | 2026-06-11 00:00:00+00:00 | 58.8% | n/a | None | 22.43 | 28.47 | 5.68 |
 | LTC-USD | sell | wave3 | 2026-06-11 00:00:00+00:00 | 58.8% | n/a | None | 120.70 | 153.90 | 9.71 |
 | ATOM-USD | sell | wave3 | 2026-06-11 00:00:00+00:00 | 58.8% | n/a | None | 28.32 | 37.27 | 4.11 |

@@ -6,7 +6,7 @@
   "fresh_days": null,
   "fresh_hours": null,
   "freshness": null,
-  "generated_at": "2026-06-11T08:21:31+00:00",
+  "generated_at": "2026-06-11T08:38:29+00:00",
   "interval": "4h",
   "limit": 50,
   "model_version": "probability-calibration-v0",
@@ -923,6 +923,42 @@
       "time_budget_ok": true
     },
     {
+      "confirmed": true,
+      "entry_ts": "2026-06-10 20:00:00+00:00",
+      "interval": "4h",
+      "p_trade_win": 0.4222222222222222,
+      "pattern": "core_moving_correction_follow",
+      "recommended_action": "sell",
+      "risk_box": {
+        "amplitude": 5.792439999999999,
+        "entry_px": 41.74,
+        "stop_px": 43.10756,
+        "target_px": 35.94756
+      },
+      "sample_size": 45,
+      "side": "short",
+      "source": "core_engine",
+      "ticker": "LTC-USD"
+    },
+    {
+      "confirmed": true,
+      "entry_ts": "2026-06-10 20:00:00+00:00",
+      "interval": "4h",
+      "p_trade_win": 0.5264270613107822,
+      "pattern": "core_triangle_thrust",
+      "recommended_action": "sell",
+      "risk_box": {
+        "amplitude": 0.4129999999999998,
+        "entry_px": 1.763,
+        "stop_px": 2.0575840000000003,
+        "target_px": 1.35
+      },
+      "sample_size": 473,
+      "side": "short",
+      "source": "core_engine",
+      "ticker": "ATOM-USD"
+    },
+    {
       "confidence": "high",
       "confirmation_lag": 18,
       "confirmed": true,
@@ -960,6 +996,24 @@
       "target": "full_retrace",
       "ticker": "FIL-USD",
       "time_budget_ok": false
+    },
+    {
+      "confirmed": true,
+      "entry_ts": "2026-06-10 20:00:00+00:00",
+      "interval": "4h",
+      "p_trade_win": 0.4222222222222222,
+      "pattern": "core_moving_correction_follow",
+      "recommended_action": "sell",
+      "risk_box": {
+        "amplitude": 0.25564400000000004,
+        "entry_px": 0.734,
+        "stop_px": 0.794356,
+        "target_px": 0.47835599999999995
+      },
+      "sample_size": 45,
+      "side": "short",
+      "source": "core_engine",
+      "ticker": "FIL-USD"
     },
     {
       "confirmed": true,
@@ -1440,96 +1494,6 @@
       "target": "extension_1.0_1.618_2.618_of_W1",
       "ticker": "PANW",
       "w2_retrace": 0.442
-    },
-    {
-      "confirmed": true,
-      "direction": "up",
-      "entry_idx": 1706,
-      "entry_ts": "2026-06-10 12:00:00-04:00",
-      "entry_zone": "wave3_breakout_of_W1_end",
-      "interval": "4h",
-      "p_trade_win": 0.0,
-      "pattern": "wave3",
-      "recommended_action": "buy",
-      "risk_box": {
-        "amplitude": 22.559890747070312,
-        "channel_tp": 216.30189514160156,
-        "entry_px": 202.82989501953125,
-        "invalid_px": 180.27000427246094,
-        "stop_px": 193.74200439453125,
-        "target_px": 239.33179824829102,
-        "tp1": 225.38978576660156,
-        "tp2": 239.33179824829102,
-        "tp3": 261.89168899536133
-      },
-      "rr1": 2.48,
-      "sample_size": 0,
-      "side": "long",
-      "source": "wave3_engine",
-      "stop": "below_W2_end",
-      "target": "extension_1.0_1.618_2.618_of_W1",
-      "ticker": "SNOW",
-      "w2_retrace": 0.403
-    },
-    {
-      "confirmed": true,
-      "direction": "down",
-      "entry_idx": 1706,
-      "entry_ts": "2026-06-10 12:00:00-04:00",
-      "entry_zone": "wave3_breakout_of_W1_end",
-      "interval": "4h",
-      "p_trade_win": 0.0,
-      "pattern": "wave3",
-      "recommended_action": "sell",
-      "risk_box": {
-        "amplitude": 32.65998840332031,
-        "channel_tp": 229.5900115966797,
-        "entry_px": 243.2100067138672,
-        "invalid_px": 275.8699951171875,
-        "stop_px": 262.25,
-        "target_px": 190.36614547729494,
-        "tp1": 210.55001831054688,
-        "tp2": 190.36614547729494,
-        "tp3": 157.70615707397462
-      },
-      "rr1": 1.72,
-      "sample_size": 0,
-      "side": "short",
-      "source": "wave3_engine",
-      "stop": "below_W2_end",
-      "target": "extension_1.0_1.618_2.618_of_W1",
-      "ticker": "SNOW",
-      "w2_retrace": 0.583
-    },
-    {
-      "confirmed": true,
-      "direction": "up",
-      "entry_idx": 1706,
-      "entry_ts": "2026-06-10 12:00:00-04:00",
-      "entry_zone": "wave3_breakout_of_W1_end",
-      "interval": "4h",
-      "p_trade_win": 0.0,
-      "pattern": "wave3",
-      "recommended_action": "buy",
-      "risk_box": {
-        "amplitude": 13.1199951171875,
-        "channel_tp": 163.02999877929688,
-        "entry_px": 157.1699981689453,
-        "invalid_px": 144.0500030517578,
-        "stop_px": 149.91000366210938,
-        "target_px": 178.39815026855467,
-        "tp1": 170.2899932861328,
-        "tp2": 178.39815026855467,
-        "tp3": 191.51814538574217
-      },
-      "rr1": 1.81,
-      "sample_size": 0,
-      "side": "long",
-      "source": "wave3_engine",
-      "stop": "below_W2_end",
-      "target": "extension_1.0_1.618_2.618_of_W1",
-      "ticker": "AMZN",
-      "w2_retrace": 0.553
     }
   ],
   "tickers": [

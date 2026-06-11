@@ -1,6 +1,6 @@
 # Probability Signals
 
-Generated: `2026-06-11T08:30:27+00:00`
+Generated: `2026-06-11T08:46:31+00:00`
 Model: `probability-calibration-v0`
 Tickers: `NVDA, AVGO, AMD, TSM, ASML, ARM, MU, MSFT, ORCL, CRM, NOW, PLTR, CRWD, PANW, SNOW, AMZN, GOOGL, META, NFLX, UBER, SHOP, BKNG, LLY, NVO, ISRG, VRTX, TSLA, V, MA, CAT, BTC-USD, ETH-USD, BNB-USD, SOL-USD, XRP-USD, DOGE-USD, ADA-USD, AVAX-USD, TRX-USD, LINK-USD, DOT-USD, LTC-USD, ATOM-USD, XLM-USD, OP-USD, NEAR-USD, HBAR-USD, FIL-USD, INJ-USD, AAVE-USD`
 Interval: `1h`
@@ -36,7 +36,7 @@ Signals: `50`
 | NEAR-USD | sell | wave3 | 2026-06-11 08:00:00+00:00 | 0.0% | n/a | None | 5.41 | 5.70 | 4.44 |
 | NEAR-USD | buy | wave3 | 2026-06-11 08:00:00+00:00 | 0.0% | n/a | None | 1.84 | 1.75 | 2.07 |
 | HBAR-USD | sell | wave3 | 2026-06-11 08:00:00+00:00 | 0.0% | n/a | None | 0.09 | 0.09 | 0.08 |
-| HBAR-USD | buy | wave3 | 2026-06-11 08:00:00+00:00 | 0.0% | n/a | None | 0.08 | 0.08 | 0.09 |
+| HBAR-USD | buy | wave3 | 2026-06-11 08:00:00+00:00 | 0.0% | n/a | None | 0.07 | 0.07 | 0.08 |
 | FIL-USD | sell | wave3 | 2026-06-11 08:00:00+00:00 | 0.0% | n/a | None | 5.29 | 5.47 | 4.64 |
 | INJ-USD | sell | wave3 | 2026-06-11 08:00:00+00:00 | 0.0% | n/a | None | 20.11 | 21.87 | 15.03 |
 | INJ-USD | buy | wave3 | 2026-06-11 08:00:00+00:00 | 0.0% | n/a | None | 4.88 | 4.71 | 5.37 |
@@ -44,19 +44,19 @@ Signals: `50`
 | NEAR-USD | buy | flat | 2026-06-11 05:00:00+00:00 | 55.4% | +0.41% | high | 2.04 | 1.71 | 2.37 |
 | ETH-USD | buy | flat | 2026-06-11 03:00:00+00:00 | 55.4% | +0.41% | high | 1653.95 | 1593.62 | 1714.28 |
 | ADA-USD | buy | flat | 2026-06-11 03:00:00+00:00 | 55.4% | +0.41% | high | 0.17 | 0.15 | 0.18 |
+| AVAX-USD | buy | core_triangle_thrust | 2026-06-11 03:00:00+00:00 | 0.0% | n/a | None | 6.60 | 6.13 | 6.74 |
+| INJ-USD | buy | core_impulse_post_w4 | 2026-06-11 03:00:00+00:00 | 0.0% | n/a | None | 5.24 | 4.49 | 5.37 |
+| XLM-USD | buy | core_impulse_post_w4 | 2026-06-11 02:00:00+00:00 | 0.0% | n/a | None | 0.19 | 0.17 | 0.19 |
+| BNB-USD | buy | core_triangle_thrust | 2026-06-11 01:00:00+00:00 | 0.0% | n/a | None | 593.01 | 573.76 | 603.94 |
+| SOL-USD | buy | core_triangle_thrust | 2026-06-11 01:00:00+00:00 | 0.0% | n/a | None | 64.90 | 60.84 | 66.27 |
+| XRP-USD | buy | core_impulse_post_w4 | 2026-06-11 01:00:00+00:00 | 0.0% | n/a | None | 1.12 | 1.05 | 1.14 |
 | LINK-USD | buy | flat | 2026-06-11 01:00:00+00:00 | 55.4% | +0.41% | high | 7.70 | 7.25 | 8.15 |
+| DOT-USD | buy | core_triangle_thrust | 2026-06-11 01:00:00+00:00 | 0.0% | n/a | None | 0.94 | 0.88 | 0.97 |
+| LTC-USD | buy | core_triangle_thrust | 2026-06-11 01:00:00+00:00 | 0.0% | n/a | None | 42.30 | 40.48 | 43.26 |
+| HBAR-USD | buy | core_triangle_thrust | 2026-06-11 01:00:00+00:00 | 0.0% | n/a | None | 0.08 | 0.08 | 0.08 |
+| FIL-USD | buy | core_triangle_thrust | 2026-06-11 01:00:00+00:00 | 0.0% | n/a | None | 0.75 | 0.70 | 0.77 |
 | AAVE-USD | buy | flat | 2026-06-11 01:00:00+00:00 | 55.4% | +0.41% | high | 62.57 | 59.85 | 65.29 |
+| DOGE-USD | sell | core_triangle_thrust | 2026-06-10 19:00:00+00:00 | 0.0% | n/a | None | 0.08 | 0.09 | 0.08 |
 | OP-USD | sell | flat | 2026-06-10 16:00:00+00:00 | 54.5% | +0.33% | high | 0.09 | 0.10 | 0.09 |
 | NVDA | buy | wave3 | 2026-06-10 15:30:00-04:00 | 0.0% | n/a | None | 47.40 | 45.75 | 51.87 |
 | NVDA | sell | wave3 | 2026-06-10 15:30:00-04:00 | 0.0% | n/a | None | 217.91 | 227.40 | 187.77 |
-| AVGO | buy | wave3 | 2026-06-10 15:30:00-04:00 | 0.0% | n/a | None | 85.46 | 83.65 | 90.50 |
-| AVGO | sell | wave3 | 2026-06-10 15:30:00-04:00 | 0.0% | n/a | None | 405.87 | 424.17 | 346.83 |
-| AMD | buy | wave3 | 2026-06-10 15:30:00-04:00 | 0.0% | n/a | None | 109.72 | 104.85 | 122.73 |
-| AMD | sell | wave3 | 2026-06-10 15:30:00-04:00 | 0.0% | n/a | None | 463.97 | 504.56 | 336.88 |
-| TSM | buy | wave3 | 2026-06-10 15:30:00-04:00 | 0.0% | n/a | None | 100.89 | 98.57 | 108.26 |
-| ASML | buy | wave3 | 2026-06-10 15:30:00-04:00 | 0.0% | n/a | None | 680.53 | 663.71 | 741.46 |
-| MU | buy | wave3 | 2026-06-10 15:30:00-04:00 | 0.0% | n/a | None | 65.08 | 63.17 | 70.47 |
-| MSFT | buy | wave3 | 2026-06-10 15:30:00-04:00 | 0.0% | n/a | None | 331.99 | 326.78 | 353.33 |
-| MSFT | sell | wave3 | 2026-06-10 15:30:00-04:00 | 0.0% | n/a | None | 403.39 | 410.07 | 375.19 |
-| ORCL | buy | wave3 | 2026-06-10 15:30:00-04:00 | 0.0% | n/a | None | 118.06 | 113.95 | 129.27 |
-| ORCL | sell | wave3 | 2026-06-10 15:30:00-04:00 | 0.0% | n/a | None | 235.41 | 242.29 | 210.36 |

@@ -47,7 +47,8 @@ def _load_cached(path: str) -> pd.DataFrame | None:
     need = ["open", "high", "low", "close"]
     if not set(need).issubset(df.columns):
         return None
-    out = df[need].dropna().reset_index(drop=True)
+    df["ts"] = pd.to_datetime(df.index, utc=True, errors="coerce")
+    out = df[need + ["ts"]].dropna(subset=need).reset_index(drop=True)
     return out if len(out) > 120 else None
 
 
@@ -92,7 +93,8 @@ def _w3_trades(df: pd.DataFrame) -> list[dict]:
             if px is None:
                 continue
             ret = (px - s.entry_px) / s.entry_px * (1.0 if up else -1.0)
-            out.append({"side": s.side, "win": ret > 0, "ret": ret})
+            ts = df["ts"].iloc[i] if "ts" in df.columns else pd.NaT
+            out.append({"side": s.side, "win": ret > 0, "ret": ret, "entry_ts": ts})
     return out
 
 
@@ -113,6 +115,7 @@ def main() -> None:
         df = download_binance_ohlc(tk, "1d", "1500d", min_rows=120)
         if df is None:
             continue
+        df["ts"] = pd.to_datetime(df.index, utc=True, errors="coerce")
         df = df.reset_index(drop=True)
         for t in _w3_trades(df):
             t.update(asset_class="crypto", interval="1d", fig_type="wave3")
@@ -123,24 +126,39 @@ def main() -> None:
         print("No W3 trades found — nothing written.")
         return
 
-    grouped = (
-        d.groupby(["asset_class", "interval", "fig_type", "side"])
-        .agg(trades=("win", "size"), winrate=("win", "mean"),
-             expectancy=("ret", "mean"))
-        .reset_index()
-    )
-    OUT.parent.mkdir(parents=True, exist_ok=True)
-    grouped.to_parquet(OUT, index=False)
+    # Out-of-sample: chronological 70/30 split; LUT uses TEST (held-out) metrics.
+    d["entry_ts"] = pd.to_datetime(d["entry_ts"], utc=True, errors="coerce", format="mixed")
+    d = d.dropna(subset=["entry_ts"]).sort_values("entry_ts")
+    cutoff = d["entry_ts"].quantile(0.70)
+    train, test = d[d["entry_ts"] <= cutoff], d[d["entry_ts"] > cutoff]
+    keys = ["asset_class", "interval", "fig_type", "side"]
 
-    print(f"W3 backtest: {len(d)} trades, overall WR {d['win'].mean()*100:.0f}%, "
-          f"avg {d['ret'].mean()*100:+.2f}%/trade")
-    show = grouped.copy()
-    show["winrate"] = (show["winrate"] * 100).round(0)
-    show["expectancy"] = (show["expectancy"] * 100).round(2)
-    print(show.to_string(index=False))
-    passing = grouped[(grouped["winrate"] >= 0.55) & (grouped["trades"] >= 20)]
-    print(f"\nGate-passing groups (WR>=55%, n>=20): {len(passing)}")
-    print(f"Wrote {OUT}")
+    def grp(frame):
+        return (frame.groupby(keys)
+                .agg(trades=("win", "size"), winrate=("win", "mean"),
+                     expectancy=("ret", "mean")).reset_index())
+
+    g_test, g_train = grp(test), grp(train)
+    m = g_test.merge(g_train, on=keys, how="left", suffixes=("_oos", "_is"))
+    # Stability filter: positive in BOTH train and test (excludes lucky-test and
+    # in-sample-only edges). LUT carries OOS (test) metrics for survivors.
+    stable = m[(m["expectancy_oos"] > 0) & (m["expectancy_is"] > 0)].copy()
+    lut = (stable[keys + ["trades_oos", "winrate_oos", "expectancy_oos"]]
+           .rename(columns={"trades_oos": "trades", "winrate_oos": "winrate",
+                            "expectancy_oos": "expectancy"}))
+    OUT.parent.mkdir(parents=True, exist_ok=True)
+    lut.to_parquet(OUT, index=False)
+
+    m["OOS_WR%"] = (m["winrate_oos"] * 100).round(0)
+    m["OOS_EV%"] = (m["expectancy_oos"] * 100).round(2)
+    m["IS_EV%"] = (m["expectancy_is"] * 100).round(2)
+    m["STABLE"] = (m["expectancy_oos"] > 0) & (m["expectancy_is"] > 0)
+    print(f"W3 backtest: {len(d)} trades; split @ {str(cutoff)[:10]} "
+          f"(train {len(train)} / test {len(test)})\nSTABLE = positive in BOTH train+test (LUT only these):\n")
+    print(m.sort_values("expectancy_oos", ascending=False)[
+        ["asset_class", "interval", "fig_type", "side", "trades_oos", "OOS_WR%", "OOS_EV%", "IS_EV%", "STABLE"]
+    ].to_string(index=False))
+    print(f"\nWrote {OUT}: {len(lut)} stable setups (OOS metrics)")
 
 
 if __name__ == "__main__":
