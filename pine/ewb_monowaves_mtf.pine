@@ -1167,6 +1167,15 @@ drawPostEffectTargets(array<int> eb, array<float> ep, int i0, string figType, in
                  style = label.style_label_left, color = color.new(color.purple, 10),
                  textcolor = color.white, size = size.tiny,
                  tooltip = "AKU-0218: Thrust ≥ ширина самой широкой волны Треугольника (" + str.tostring(widest, "#.##") + ")\nЦель: " + str.tostring(thrustT, "#.####"))
+            // AKU-0038/0039: выброс должен пробить b-d за ≤ длительности волны e.
+            int triEdur = math.max(bN - array.get(eb, nPiv - 2), 1)
+            int triDl   = bN + triEdur
+            line.new(triDl, bWave, triDl, thrustT, xloc = xloc.bar_index,
+                 color = color.new(color.purple, 40), width = 1, style = line.style_dotted)
+            label.new(triDl, thrustT, "≤" + str.tostring(triEdur) + "б",
+                 xloc = xloc.bar_index, yloc = yloc.price, style = label.style_label_down,
+                 color = color.new(color.purple, 25), textcolor = color.white, size = size.tiny,
+                 tooltip = "AKU-0038/0039: пробой b-d и новый экстремум должны произойти за ≤ длительности волны e (" + str.tostring(triEdur) + " баров).")
 
     else if figType == "flat"
         // AKU-0216: Неудавшаяся-с Плоская (C/A = 61.8%–138.2%) → следующая ДОЛЖНА достичь p0
@@ -1177,6 +1186,15 @@ drawPostEffectTargets(array<int> eb, array<float> ep, int i0, string figType, in
              style = label.style_label_left, color = color.new(color.teal, 10),
              textcolor = color.white, size = size.tiny,
              tooltip = "AKU-0216: Неудавшаяся-с Плоская → следующая волна ДОЛЖНА достичь старта\n= " + str.tostring(p0, "#.####"))
+        // AKU-0036: подтверждение (пробой линии 0-B) должно прийти за ≤ длительности волны C.
+        int flatCdur = math.max(bN - array.get(eb, nPiv - 2), 1)
+        int flatDl   = bN + flatCdur
+        line.new(flatDl, pN, flatDl, p0, xloc = xloc.bar_index,
+             color = color.new(color.teal, 40), width = 1, style = line.style_dotted)
+        label.new(flatDl, p0, "≤" + str.tostring(flatCdur) + "б",
+             xloc = xloc.bar_index, yloc = yloc.price, style = label.style_label_left,
+             color = color.new(color.teal, 25), textcolor = color.white, size = size.tiny,
+             tooltip = "AKU-0036: подтверждение Плоской (пробой 0-B) должно произойти за ≤ длительности волны C (" + str.tostring(flatCdur) + " баров).")
 
     else if figType == "double_corr"
         // AKU-0215: Двойная Коррекция (+2) → следующая волна НЕ должна достичь стартового уровня
