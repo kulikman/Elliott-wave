@@ -1,6 +1,6 @@
 # Probability Signals
 
-Generated: `2026-06-10T20:57:49+00:00`
+Generated: `2026-06-11T04:39:20+00:00`
 Model: `probability-calibration-v0`
 Tickers: `NVDA, AVGO, AMD, TSM, ASML, ARM, MU, MSFT, ORCL, CRM, NOW, PLTR, CRWD, PANW, SNOW, AMZN, GOOGL, META, NFLX, UBER, SHOP, BKNG, LLY, NVO, ISRG, VRTX, TSLA, V, MA, CAT, BTC-USD, ETH-USD, BNB-USD, SOL-USD, XRP-USD, DOGE-USD, ADA-USD, AVAX-USD, TRX-USD, LINK-USD, DOT-USD, LTC-USD, ATOM-USD, XLM-USD, OP-USD, NEAR-USD, HBAR-USD, FIL-USD, INJ-USD, AAVE-USD`
 Interval: `4h`
@@ -10,6 +10,7 @@ Signals: `50`
 
 | ticker | action | pattern | entry_ts | P(win) | EV | conf | entry | stop | target |
 |---|---|---|---|---:|---:|---|---:|---:|---:|
+| LTC-USD | sell | flat | 2026-06-10 20:00:00+00:00 | 55.9% | +0.70% | high | 41.74 | 41.82 | 41.66 |
 | FIL-USD | sell | flat | 2026-06-10 20:00:00+00:00 | 55.9% | +0.70% | high | 0.73 | 0.77 | 0.69 |
 | BNB-USD | sell | flat | 2026-06-10 08:00:00+00:00 | 55.9% | +0.70% | high | 583.00 | 657.18 | 508.82 |
 | XRP-USD | sell | flat | 2026-06-10 04:00:00+00:00 | 55.9% | +0.70% | high | 1.12 | 1.20 | 1.04 |
@@ -21,7 +22,6 @@ Signals: `50`
 | ISRG | buy | flat | 2026-06-04 08:00:00-04:00 | 56.4% | +0.57% | high | 414.40 | 362.33 | 466.47 |
 | VRTX | buy | flat | 2026-06-04 08:00:00-04:00 | 56.4% | +0.57% | high | 442.63 | 405.96 | 479.30 |
 | OP-USD | sell | flat | 2026-06-04 04:00:00+00:00 | 55.9% | +0.70% | high | 0.11 | 0.12 | 0.10 |
-| SHOP | sell | flat | 2026-06-02 16:00:00+00:00 | 55.9% | +0.70% | high | 117.00 | 123.23 | 110.77 |
 | MSFT | sell | flat | 2026-06-02 12:00:00+00:00 | 55.9% | +0.70% | high | 443.86 | 508.12 | 379.60 |
 | UBER | buy | flat | 2026-06-01 12:00:00+00:00 | 56.4% | +0.57% | high | 74.17 | 66.88 | 81.45 |
 | AVGO | buy | flat | 2026-05-26 12:00:00+00:00 | 56.4% | +0.57% | high | 422.84 | 393.82 | 451.86 |

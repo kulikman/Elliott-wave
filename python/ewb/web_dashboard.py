@@ -660,11 +660,13 @@ def forward_frame() -> pd.DataFrame:
 
 
 def alert_event_rows(limit: int = 30) -> list[list[Any]]:
-    signals = [
-        row
-        for row in read_jsonl(FORWARD_LOG)
-        if row.get("event_type") == "signal"
-    ]
+    # Dedupe by signal_id (the log can hold the same signal twice); keep the
+    # latest occurrence so the feed mirrors the deduped trade list.
+    by_id: dict[str, dict[str, Any]] = {}
+    for row in read_jsonl(FORWARD_LOG):
+        if row.get("event_type") == "signal":
+            by_id[str(row.get("signal_id", ""))] = row
+    signals = list(by_id.values())
     seq = seq_numbers(forward_frame())
     rows = []
     for row in reversed(signals[-limit:]):
