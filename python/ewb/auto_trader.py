@@ -79,7 +79,7 @@ RETRAIN_EVERY  = 20             # retrain ML after every N closed trades
 # short). Live/forward WR is typically a few points below backtest, so this is
 # a target, not a guarantee. Override via EWB_SETUP_WR_FLOOR (e.g. 0.55 for
 # more trades, 0.72 for even stricter).
-SETUP_WR_FLOOR = float(os.environ.get("EWB_SETUP_WR_FLOOR", "0.70"))
+SETUP_WR_FLOOR = float(os.environ.get("EWB_SETUP_WR_FLOOR", "0.58"))
 SETUP_MIN_N    = 20             # min validated backtest trades for a setup to count
 MIN_SAMPLE     = 10             # min calibration sample_size (kills n=1 garbage)
 
