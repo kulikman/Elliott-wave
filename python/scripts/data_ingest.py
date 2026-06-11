@@ -6,12 +6,12 @@ on up-to-date data and thin setups mature as bars accumulate.
 
 Scopes (--scope):
   crypto : Binance 1d/4h/1h/1w for all watchlist crypto (keyless, hourly).
-  stocks : Tiingo 1d for all watchlist stocks, but ONLY inside the US market
-           windows — right after the open (09:30-09:40 ET) and just before the
-           close (15:55-16:00 ET), once per window (a 30-min cooldown stops the
-           5-min scheduler from re-refreshing and blowing the Tiingo rate limit).
-           Window is checked in America/New_York time, so it tracks US DST
-           automatically (open = 16:30 MSK in summer, 17:30 in winter).
+  stocks : Tiingo 1d for all watchlist stocks, ONCE PER HOUR during the US
+           regular session (09:30-16:00 ET ≈ 16:33-22:55 MSK summer) — a 55-min
+           cooldown makes the 5-min scheduler fire it roughly hourly (30 tickers
+           << 50/hr Tiingo limit), with a guaranteed final refresh in the last
+           minutes before the close (15:55-16:00 ET). Checked in
+           America/New_York, so it tracks US DST automatically.
   all    : both, ignoring the window gate (manual/one-off runs).
 
 Cache layout matches what the backtests read:
@@ -45,7 +45,7 @@ STOCK_MARKER = ROOT / "brain-output" / ".last_stock_ingest"
 STOCK_THROTTLE_S = 0.8          # pace Tiingo requests under the rate limit
 CRYPTO_INTERVALS = [("1d", "1500d"), ("4h", "900d"), ("1h", "730d"), ("1w", "3650d")]
 ET = ZoneInfo("America/New_York")
-COOLDOWN_S = 30 * 60            # one stock refresh per market window
+COOLDOWN_S = 55 * 60           # one stock refresh per hour during the session
 
 
 def _write_cache(provider: str, ticker: str, label: str, period: str, df: pd.DataFrame) -> None:
@@ -73,14 +73,16 @@ def _is_trading_day(now_et: datetime) -> bool:
         return True   # fallback: weekday is enough
 
 
-def _in_stock_window(now_et: datetime) -> bool:
-    """Right after the open or a couple minutes before the close."""
+def _in_session(now_et: datetime) -> bool:
+    """Inside the US regular session (09:30-16:00 ET ≈ 16:30-23:00 MSK summer)."""
     if not _is_trading_day(now_et):
         return False
-    t = now_et.time()
-    open_win = dtime(9, 30) <= t <= dtime(9, 40)        # just after 09:30 ET open
-    close_win = dtime(15, 55) <= t <= dtime(16, 0)      # last minutes before 16:00 ET close
-    return open_win or close_win
+    return dtime(9, 30) <= now_et.time() <= dtime(16, 0)
+
+
+def _in_close_window(now_et: datetime) -> bool:
+    """Last minutes before the close — force a final refresh regardless of cooldown."""
+    return _is_trading_day(now_et) and dtime(15, 55) <= now_et.time() <= dtime(16, 0)
 
 
 def _cooldown_active() -> bool:
@@ -135,10 +137,10 @@ def main() -> None:
 
     if args.scope in ("stocks", "all"):
         gated = args.scope == "stocks"   # only the scheduled stock job is window-gated
-        if gated and not _in_stock_window(now_et):
-            print(f"{now}  data_ingest[stocks]: outside market window ({now_et:%H:%M} ET) — skip")
-        elif gated and _cooldown_active():
-            print(f"{now}  data_ingest[stocks]: already refreshed this window — skip")
+        if gated and not _in_session(now_et):
+            print(f"{now}  data_ingest[stocks]: outside US session ({now_et:%H:%M} ET) — skip")
+        elif gated and _cooldown_active() and not _in_close_window(now_et):
+            print(f"{now}  data_ingest[stocks]: refreshed within the hour ({now_et:%H:%M} ET) — skip")
         else:
             s_ok, s_fail = _ingest_stocks(stocks)
             print(f"{now}  data_ingest[stocks]: {len(stocks)} tickers ok={s_ok} fail={s_fail} "
