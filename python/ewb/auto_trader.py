@@ -80,7 +80,7 @@ RETRAIN_EVERY  = 20             # retrain ML after every N closed trades
 # scalp that makes +0.35% with reward<risk. SETUP_EV_FLOOR is the backtest
 # expectancy floor; SETUP_WR_FLOOR is only a sanity floor. Both env-overridable.
 SETUP_EV_FLOOR = float(os.environ.get("EWB_SETUP_EV_FLOOR", "0.005"))  # +0.5%/trade
-SETUP_WR_FLOOR = float(os.environ.get("EWB_SETUP_WR_FLOOR", "0.50"))   # sanity only
+SETUP_WR_FLOOR = float(os.environ.get("EWB_SETUP_WR_FLOOR", "0.45"))   # sanity only (reward-first: EV leads)
 SETUP_MIN_N    = 20             # min validated backtest trades for a setup to count
 MIN_SAMPLE     = 10             # min calibration sample_size (kills n=1 garbage)
 

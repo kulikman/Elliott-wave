@@ -1,6 +1,6 @@
 # Probability Signals
 
-Generated: `2026-06-11T09:16:27+00:00`
+Generated: `2026-06-11T09:37:07+00:00`
 Model: `probability-calibration-v0`
 Tickers: `NVDA, AVGO, AMD, TSM, ASML, ARM, MU, MSFT, ORCL, CRM, NOW, PLTR, CRWD, PANW, SNOW, AMZN, GOOGL, META, NFLX, UBER, SHOP, BKNG, LLY, NVO, ISRG, VRTX, TSLA, V, MA, CAT, BTC-USD, ETH-USD, BNB-USD, SOL-USD, XRP-USD, DOGE-USD, ADA-USD, AVAX-USD, TRX-USD, LINK-USD, DOT-USD, LTC-USD, ATOM-USD, XLM-USD, OP-USD, NEAR-USD, HBAR-USD, FIL-USD, INJ-USD, AAVE-USD`
 Interval: `1d`
@@ -21,7 +21,7 @@ Signals: `50`
 | XRP-USD | buy | wave3 | 2026-06-11 00:00:00+00:00 | 0.0% | n/a | None | 1.09 | 0.85 | 2.02 |
 | XRP-USD | sell | wave3 | 2026-06-11 00:00:00+00:00 | 58.2% | n/a | None | 2.06 | 2.34 | 1.10 |
 | DOGE-USD | sell | wave3 | 2026-06-11 00:00:00+00:00 | 58.2% | n/a | None | 0.12 | 0.17 | -0.03 |
-| DOGE-USD | buy | wave3 | 2026-06-11 00:00:00+00:00 | 0.0% | n/a | None | 0.07 | 0.06 | 0.10 |
+| DOGE-USD | buy | wave3 | 2026-06-11 00:00:00+00:00 | 0.0% | n/a | None | 0.08 | 0.07 | 0.13 |
 | ADA-USD | sell | wave3 | 2026-06-11 00:00:00+00:00 | 58.2% | n/a | None | 1.91 | 2.38 | 0.47 |
 | AVAX-USD | sell | wave3 | 2026-06-11 00:00:00+00:00 | 58.2% | n/a | None | 52.95 | 98.77 | -67.38 |
 | TRX-USD | buy | wave3 | 2026-06-11 00:00:00+00:00 | 0.0% | n/a | None | 0.12 | 0.09 | 0.19 |
