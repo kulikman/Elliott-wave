@@ -1,6 +1,6 @@
 # Probability Signals
 
-Generated: `2026-06-11T09:28:06+00:00`
+Generated: `2026-06-11T09:50:43+00:00`
 Model: `probability-calibration-v0`
 Tickers: `NVDA, AVGO, AMD, TSM, ASML, ARM, MU, MSFT, ORCL, CRM, NOW, PLTR, CRWD, PANW, SNOW, AMZN, GOOGL, META, NFLX, UBER, SHOP, BKNG, LLY, NVO, ISRG, VRTX, TSLA, V, MA, CAT, BTC-USD, ETH-USD, BNB-USD, SOL-USD, XRP-USD, DOGE-USD, ADA-USD, AVAX-USD, TRX-USD, LINK-USD, DOT-USD, LTC-USD, ATOM-USD, XLM-USD, OP-USD, NEAR-USD, HBAR-USD, FIL-USD, INJ-USD, AAVE-USD`
 Interval: `1h`
@@ -41,22 +41,22 @@ Signals: `50`
 | INJ-USD | buy | wave3 | 2026-06-11 09:00:00+00:00 | 0.0% | n/a | None | 4.88 | 4.71 | 5.37 |
 | AAVE-USD | sell | wave3 | 2026-06-11 09:00:00+00:00 | 0.0% | n/a | None | 89.20 | 94.99 | 71.77 |
 | TRX-USD | buy | core_impulse_post_w4 | 2026-06-11 08:00:00+00:00 | 0.0% | n/a | None | 0.32 | 0.32 | 0.32 |
-| NEAR-USD | buy | flat | 2026-06-11 05:00:00+00:00 | 55.4% | +0.41% | high | 2.04 | 1.71 | 2.37 |
-| ETH-USD | buy | flat | 2026-06-11 03:00:00+00:00 | 55.4% | +0.41% | high | 1653.95 | 1593.62 | 1714.28 |
-| ADA-USD | buy | flat | 2026-06-11 03:00:00+00:00 | 55.4% | +0.41% | high | 0.17 | 0.15 | 0.18 |
+| NEAR-USD | buy | flat | 2026-06-11 05:00:00+00:00 | 55.4% | +0.41% | high | 2.04 | 1.71 | 2.58 |
+| ETH-USD | buy | flat | 2026-06-11 03:00:00+00:00 | 55.4% | +0.41% | high | 1653.95 | 1593.62 | 1751.56 |
+| ADA-USD | buy | flat | 2026-06-11 03:00:00+00:00 | 55.4% | +0.41% | high | 0.17 | 0.15 | 0.19 |
 | AVAX-USD | buy | core_triangle_thrust | 2026-06-11 03:00:00+00:00 | 0.0% | n/a | None | 6.60 | 6.13 | 6.74 |
 | INJ-USD | buy | core_impulse_post_w4 | 2026-06-11 03:00:00+00:00 | 0.0% | n/a | None | 5.24 | 4.49 | 5.37 |
 | XLM-USD | buy | core_impulse_post_w4 | 2026-06-11 02:00:00+00:00 | 0.0% | n/a | None | 0.19 | 0.17 | 0.19 |
 | BNB-USD | buy | core_triangle_thrust | 2026-06-11 01:00:00+00:00 | 0.0% | n/a | None | 593.01 | 573.76 | 603.94 |
 | SOL-USD | buy | core_triangle_thrust | 2026-06-11 01:00:00+00:00 | 0.0% | n/a | None | 64.90 | 60.84 | 66.27 |
 | XRP-USD | buy | core_impulse_post_w4 | 2026-06-11 01:00:00+00:00 | 0.0% | n/a | None | 1.12 | 1.05 | 1.14 |
-| LINK-USD | buy | flat | 2026-06-11 01:00:00+00:00 | 55.4% | +0.41% | high | 7.70 | 7.25 | 8.15 |
+| LINK-USD | buy | flat | 2026-06-11 01:00:00+00:00 | 55.4% | +0.41% | high | 7.70 | 7.25 | 8.43 |
 | DOT-USD | buy | core_triangle_thrust | 2026-06-11 01:00:00+00:00 | 0.0% | n/a | None | 0.94 | 0.88 | 0.97 |
 | LTC-USD | buy | core_triangle_thrust | 2026-06-11 01:00:00+00:00 | 0.0% | n/a | None | 42.30 | 40.48 | 43.26 |
 | HBAR-USD | buy | core_triangle_thrust | 2026-06-11 01:00:00+00:00 | 0.0% | n/a | None | 0.08 | 0.08 | 0.08 |
 | FIL-USD | buy | core_triangle_thrust | 2026-06-11 01:00:00+00:00 | 0.0% | n/a | None | 0.75 | 0.70 | 0.77 |
-| AAVE-USD | buy | flat | 2026-06-11 01:00:00+00:00 | 55.4% | +0.41% | high | 62.57 | 59.85 | 65.29 |
+| AAVE-USD | buy | flat | 2026-06-11 01:00:00+00:00 | 55.4% | +0.41% | high | 62.57 | 59.85 | 66.97 |
 | DOGE-USD | sell | core_triangle_thrust | 2026-06-10 19:00:00+00:00 | 0.0% | n/a | None | 0.08 | 0.09 | 0.08 |
-| OP-USD | sell | flat | 2026-06-10 16:00:00+00:00 | 54.5% | +0.33% | high | 0.09 | 0.10 | 0.09 |
+| OP-USD | sell | flat | 2026-06-10 16:00:00+00:00 | 54.5% | +0.33% | high | 0.09 | 0.10 | 0.08 |
 | NVDA | buy | wave3 | 2026-06-10 15:30:00-04:00 | 0.0% | n/a | None | 47.40 | 45.75 | 51.87 |
 | NVDA | sell | wave3 | 2026-06-10 15:30:00-04:00 | 0.0% | n/a | None | 217.91 | 227.40 | 187.77 |

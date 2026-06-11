@@ -185,6 +185,66 @@ def _emit_core_setups(ticker, interval, df, figures, signals):
         })
 
 
+_HTFFLAT_WR_CACHE: dict | None = None
+_HTF_RULE = {"1h": "4h", "4h": "1D"}
+
+
+def _htf_flat_winrates() -> dict:
+    global _HTFFLAT_WR_CACHE
+    if _HTFFLAT_WR_CACHE is not None:
+        return _HTFFLAT_WR_CACHE
+    import pandas as pd
+    from pathlib import Path
+    f = Path(__file__).resolve().parents[2] / "brain-output" / "backtests" / "ewb_htf_flat_backtest_grouped.parquet"
+    lut: dict = {}
+    if f.exists():
+        try:
+            g = pd.read_parquet(f)
+            for _, r in g.iterrows():
+                lut[(str(r["asset_class"]), str(r["interval"]), str(r["side"]))] = (
+                    float(r["winrate"]), int(r["trades"]))
+        except Exception:
+            pass
+    _HTFFLAT_WR_CACHE = lut
+    return lut
+
+
+def _emit_htf_flat(ticker, interval, df, signals):
+    """EPIC G: for LTF flat signals aligned with the higher-TF trend, emit a
+    'flat_htf' variant carrying the HTF-aligned backtest winrate. EV-priority +
+    sizing then favour it over the plain flat when the bigger wave agrees."""
+    if interval not in _HTF_RULE:
+        return
+    try:
+        from ewb.htf import htf_bias_series
+        bias = htf_bias_series(df, _HTF_RULE[interval])
+    except Exception:
+        return
+    wr_lut = _htf_flat_winrates()
+    asset = "crypto" if str(ticker).upper().endswith("-USD") else "stock"
+    extra = []
+    for s in signals:
+        if s.get("pattern") != "flat":
+            continue
+        side = s.get("side")
+        ei = s.get("entry_idx")
+        if ei is None or ei >= len(bias):
+            continue
+        b = int(bias.iloc[ei])
+        if not ((side == "long" and b > 0) or (side == "short" and b < 0)):
+            continue
+        wr, n = wr_lut.get((asset, interval, side), (0.0, 0))
+        if wr <= 0 or n <= 0:        # only validated HTF-aligned setups
+            continue
+        h = dict(s)
+        h["pattern"] = "flat_htf"
+        h["p_trade_win"] = wr
+        h["sample_size"] = n
+        h["source"] = "htf_flat"
+        extra.append(h)
+    signals.extend(extra)
+
+
 def scan_ticker(ticker: str, interval: str, period: str, calibration: dict) -> list[dict]:
     df = download_ohlc(ticker, interval, period, min_rows=100)
     if df is None:
@@ -199,6 +259,9 @@ def scan_ticker(ticker: str, interval: str, period: str, calibration: dict) -> l
         signal = probability_signal_from_figure(calibration, figure, df, ticker, interval)
         if signal is not None:
             signals.append(signal)
+
+    # EPIC G: HTF-aligned LTF flat variant (1h/4h flat in the higher-TF trend).
+    _emit_htf_flat(ticker, interval, df, signals)
 
     # EPIC 3: Wave-3 trend entries. Validated by backtest_wave3.py; each W3
     # signal carries p_trade_win = its backtested group winrate so the

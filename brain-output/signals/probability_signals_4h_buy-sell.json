@@ -6,7 +6,7 @@
   "fresh_days": null,
   "fresh_hours": null,
   "freshness": null,
-  "generated_at": "2026-06-11T09:19:29+00:00",
+  "generated_at": "2026-06-11T09:43:29+00:00",
   "interval": "4h",
   "limit": 50,
   "model_version": "probability-calibration-v0",
@@ -912,7 +912,7 @@
         "amplitude": 0.0799999999999983,
         "entry_px": 41.74,
         "stop_px": 41.82,
-        "target_px": 41.660000000000004
+        "target_px": 41.61056000000001
       },
       "sample_size": 256,
       "side": "short",
@@ -987,7 +987,7 @@
         "amplitude": 0.040999999999999925,
         "entry_px": 0.734,
         "stop_px": 0.7749999999999999,
-        "target_px": 0.6930000000000001
+        "target_px": 0.6676620000000001
       },
       "sample_size": 256,
       "side": "short",

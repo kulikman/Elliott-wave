@@ -6,7 +6,7 @@
   "fresh_days": null,
   "fresh_hours": null,
   "freshness": null,
-  "generated_at": "2026-06-11T09:28:06+00:00",
+  "generated_at": "2026-06-11T09:50:43+00:00",
   "interval": "1h",
   "limit": 50,
   "model_version": "probability-calibration-v0",
@@ -960,7 +960,7 @@
         "amplitude": 0.3310000000000002,
         "entry_px": 2.042,
         "stop_px": 1.7109999999999996,
-        "target_px": 2.373
+        "target_px": 2.5775580000000002
       },
       "sample_size": 251,
       "side": "long",
@@ -999,7 +999,7 @@
         "amplitude": 60.32999999999993,
         "entry_px": 1653.95,
         "stop_px": 1593.6200000000001,
-        "target_px": 1714.28
+        "target_px": 1751.56394
       },
       "sample_size": 251,
       "side": "long",
@@ -1038,7 +1038,7 @@
         "amplitude": 0.011699999999999988,
         "entry_px": 0.1665,
         "stop_px": 0.15480000000000002,
-        "target_px": 0.1782
+        "target_px": 0.1854306
       },
       "sample_size": 251,
       "side": "long",
@@ -1185,7 +1185,7 @@
         "amplitude": 0.44899999999999984,
         "entry_px": 7.702,
         "stop_px": 7.253,
-        "target_px": 8.151
+        "target_px": 8.428481999999999
       },
       "sample_size": 251,
       "side": "long",
@@ -1296,7 +1296,7 @@
         "amplitude": 2.719999999999999,
         "entry_px": 62.57,
         "stop_px": 59.85,
-        "target_px": 65.28999999999999
+        "target_px": 66.97096
       },
       "sample_size": 251,
       "side": "long",
@@ -1353,7 +1353,7 @@
         "amplitude": 0.006400000000000003,
         "entry_px": 0.0939,
         "stop_px": 0.1003,
-        "target_px": 0.0875
+        "target_px": 0.08354479999999999
       },
       "sample_size": 233,
       "side": "short",
