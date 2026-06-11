@@ -24,6 +24,9 @@ brain-output/backtests/logs/
 brain-output/signals/logs/launchd.*.log
 brain-output/auto_trader.log
 brain-output/auto_trader.pid
+brain-output/.auto_trader.lock
+brain-output/.last_stock_ingest
+brain-output/dashboard.log
 brain-output/backtests/_archive_reset_*/
 brain-output/portfolio/
 
