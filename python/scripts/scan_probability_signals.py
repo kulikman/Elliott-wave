@@ -116,6 +116,75 @@ def _wave3_winrates() -> dict:
     return lut
 
 
+_CORE_WR_CACHE: dict | None = None
+
+
+def _core_winrates() -> dict:
+    """Load backtested core-setup winrates: (asset, interval, fig_type, side) -> (wr, n)."""
+    global _CORE_WR_CACHE
+    if _CORE_WR_CACHE is not None:
+        return _CORE_WR_CACHE
+    import pandas as pd
+    from pathlib import Path
+    f = Path(__file__).resolve().parents[2] / "brain-output" / "backtests" / "ewb_core_backtest_grouped.parquet"
+    lut: dict = {}
+    if f.exists():
+        try:
+            g = pd.read_parquet(f)
+            for _, r in g.iterrows():
+                lut[(str(r["asset_class"]), str(r["interval"]), str(r["fig_type"]), str(r["side"]))] = (
+                    float(r["winrate"]), int(r["trades"]))
+        except Exception:
+            pass
+    _CORE_WR_CACHE = lut
+    return lut
+
+
+def _emit_core_setups(ticker, interval, df, figures, signals):
+    """Emit Neely core setups (triangle thrust, post-W4, etc.) as signals.
+
+    Only the freshest figure per (setup, side) is emitted; p_trade_win/sample
+    come from the core backtest LUT so the reward-first gate selects by
+    expectancy (triangle thrust passes; thin/negative-EV setups are dropped)."""
+    try:
+        from scripts.neely_core_ab_backtest import neely_core_setups, entry_index
+    except Exception:
+        return
+    core_wr = _core_winrates()
+    asset = "crypto" if str(ticker).upper().endswith("-USD") else "stock"
+    freshest: dict[tuple, dict] = {}
+    for fig in figures:
+        if not getattr(fig, "confirmed", False) or not getattr(fig, "pivots", None):
+            continue
+        e_idx = entry_index(fig)
+        if e_idx < 0 or e_idx + 1 >= len(df):
+            continue
+        entry_px = float(df["close"].iloc[e_idx])
+        for s in neely_core_setups(fig):
+            if "target" in s and "stop" in s:
+                target, stop = float(s["target"]), float(s["stop"])
+            elif "target_offset" in s:
+                target = entry_px + float(s["target_offset"])
+                stop = entry_px + float(s["stop_offset"])
+            else:
+                continue
+            k = (s["setup"], s["side"])
+            if k not in freshest or e_idx > freshest[k]["_eidx"]:
+                freshest[k] = {"setup": s["setup"], "side": s["side"], "entry_px": entry_px,
+                               "stop": stop, "target": target, "_eidx": e_idx,
+                               "ts": str(df.index[e_idx])}
+    for v in freshest.values():
+        wr, n = core_wr.get((asset, interval, v["setup"], v["side"]), (0.0, 0))
+        signals.append({
+            "pattern": v["setup"], "interval": interval, "ticker": ticker,
+            "side": v["side"], "recommended_action": "buy" if v["side"] == "long" else "sell",
+            "entry_ts": v["ts"], "confirmed": True,
+            "risk_box": {"entry_px": v["entry_px"], "stop_px": v["stop"], "target_px": v["target"],
+                         "amplitude": abs(v["target"] - v["entry_px"])},
+            "p_trade_win": wr, "sample_size": n, "source": "core_engine",
+        })
+
+
 def scan_ticker(ticker: str, interval: str, period: str, calibration: dict) -> list[dict]:
     df = download_ohlc(ticker, interval, period, min_rows=100)
     if df is None:
@@ -156,6 +225,10 @@ def scan_ticker(ticker: str, interval: str, period: str, calibration: dict) -> l
             sig["p_trade_win"] = wr
             sig["sample_size"] = n
             signals.append(sig)
+
+    # EPIC F: Neely core setups (triangle thrust, post-W4, ...). Reward-first
+    # gate + MIN_RR select the profitable, high-R:R ones (triangle thrust).
+    _emit_core_setups(ticker, interval, df, figures, signals)
     return signals
 
 

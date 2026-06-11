@@ -60,6 +60,7 @@ STATE_FILE     = ROOT / "brain-output" / "auto_trader_state.json"
 LOG_FILE       = ROOT / "brain-output" / "auto_trader.log"
 SETUP_WR_FILE  = ROOT / "brain-output" / "backtests" / "ewb_strategy_backtest_grouped.parquet"
 WAVE3_WR_FILE  = ROOT / "brain-output" / "backtests" / "ewb_wave3_backtest_grouped.parquet"
+CORE_WR_FILE   = ROOT / "brain-output" / "backtests" / "ewb_core_backtest_grouped.parquet"
 
 SCAN_INTERVAL  = 60 * 60        # re-scan every 60 min
 MIN_P_WIN      = 0.50           # sanity floor only; real quality = EV gate (reward-first)
@@ -375,7 +376,7 @@ def load_setup_winrates() -> dict[tuple[str, str, str, str], tuple[float, int]]:
     lut: dict[tuple[str, str, str, str], tuple[float, int, float]] = {}
     # Main flat LUT + the W3 LUT (EPIC C) are merged so validated setups pass
     # the gate alongside flats. Value = (winrate, trades, expectancy).
-    for wr_file in (SETUP_WR_FILE, WAVE3_WR_FILE):
+    for wr_file in (SETUP_WR_FILE, WAVE3_WR_FILE, CORE_WR_FILE):
         if not wr_file.exists():
             continue
         try:
