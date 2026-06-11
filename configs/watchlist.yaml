@@ -1,56 +1,206 @@
 stocks:
+  # AI & Semiconductors (10)
   - NVDA
-  - AVGO
   - AMD
+  - AVGO
   - TSM
   - ASML
   - ARM
   - MU
+  - MRVL
+  - KLAC
+  - LRCX
+  # Cloud & Enterprise SaaS (10)
   - MSFT
   - ORCL
   - CRM
   - NOW
   - PLTR
+  - SNOW
   - CRWD
   - PANW
-  - SNOW
-  - AMZN
+  - DDOG
+  - NET
+  # Big Tech & Media (10)
   - GOOGL
+  - AMZN
   - META
+  - AAPL
   - NFLX
-  - UBER
-  - SHOP
-  - BKNG
+  - SPOT
+  - TTD
+  - ROKU
+  - RBLX
+  - PINS
+  # Biotech & Pharma (10)
   - LLY
   - NVO
   - ISRG
   - VRTX
-  - TSLA
+  - REGN
+  - ABBV
+  - MRNA
+  - GILD
+  - BIIB
+  - ILMN
+  # FinTech & Finance (10)
   - V
   - MA
+  - PYPL
+  - SQ
+  - COIN
+  - GS
+  - JPM
+  - BLK
+  - SOFI
+  - AFRM
+  # Clean Energy & EV (10)
+  - TSLA
+  - RIVN
+  - NIO
+  - ENPH
+  - FSLR
+  - NEE
+  - BE
+  - PLUG
+  - CHPT
+  - LCID
+  # Space, Defense & Next-Gen (10)
+  - LMT
+  - RTX
+  - NOC
+  - BA
+  - GD
+  - RKLB
+  - ASTS
+  - JOBY
+  - ACHR
+  - LUNR
+  # Travel & Consumer Platforms (10)
+  - BKNG
+  - ABNB
+  - UBER
+  - DASH
+  - SHOP
+  - ETSY
+  - LYFT
+  - EXPE
+  - HLT
+  - MAR
+  # Industrial & Infrastructure (10)
   - CAT
+  - DE
+  - HON
+  - GE
+  - ETN
+  - EMR
+  - ITW
+  - PH
+  - ROK
+  - CARR
+  # Energy & Materials (10)
+  - XOM
+  - CVX
+  - COP
+  - SLB
+  - FCX
+  - NEM
+  - MP
+  - CF
+  - MOS
+  - ALB
 
 crypto:
+  # Mega Cap (5)
   - BTC-USD
   - ETH-USD
   - BNB-USD
   - SOL-USD
   - XRP-USD
+  # Large Cap L1 (15)
   - DOGE-USD
   - ADA-USD
   - AVAX-USD
   - TRX-USD
-  - LINK-USD
   - DOT-USD
-  - LTC-USD
-  - ATOM-USD
-  - XLM-USD
-  - OP-USD
   - NEAR-USD
+  - ATOM-USD
+  - ALGO-USD
+  - FTM-USD
+  - ETC-USD
+  - BCH-USD
+  - LTC-USD
+  - XLM-USD
   - HBAR-USD
   - FIL-USD
+  # New-Gen L1 (5)
+  - SUI-USD
+  - APT-USD
+  - SEI-USD
+  - EGLD-USD
+  - ICP-USD
+  # Layer 2 & Scaling (8)
+  - OP-USD
+  - ARB-USD
+  - IMX-USD
+  - STX-USD
+  - STRK-USD
+  - MINA-USD
   - INJ-USD
+  - TIA-USD
+  # DeFi Blue Chip (12)
+  - LINK-USD
   - AAVE-USD
+  - UNI-USD
+  - MKR-USD
+  - CRV-USD
+  - LDO-USD
+  - DYDX-USD
+  - GMX-USD
+  - SNX-USD
+  - COMP-USD
+  - SUSHI-USD
+  - BAL-USD
+  # AI & Data (8)
+  - FET-USD
+  - RNDR-USD
+  - TAO-USD
+  - GRT-USD
+  - OCEAN-USD
+  - GLM-USD
+  - ANKR-USD
+  - BAND-USD
+  # Gaming & Metaverse (8)
+  - SAND-USD
+  - MANA-USD
+  - AXS-USD
+  - GALA-USD
+  - FLOW-USD
+  - CHZ-USD
+  - APE-USD
+  - THETA-USD
+  # Meme & Community (5)
+  - SHIB-USD
+  - PEPE-USD
+  - WIF-USD
+  - BONK-USD
+  - FLOKI-USD
+  # Privacy & Infrastructure (7)
+  - XMR-USD
+  - ZEC-USD
+  - KSM-USD
+  - CELO-USD
+  - ROSE-USD
+  - XTZ-USD
+  - ONE-USD
+  # New Ecosystem (7)
+  - WLD-USD
+  - JUP-USD
+  - PYTH-USD
+  - DYM-USD
+  - BLUR-USD
+  - ENS-USD
+  - MAGIC-USD
 
 intervals:
   - 1d
