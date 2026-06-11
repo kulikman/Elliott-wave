@@ -32,3 +32,6 @@ brain-output/portfolio/
 *.docx
 *.doc
 *.pdf
+
+brain-output/data_ingest.log
+brain-output/lut_refresh.log
