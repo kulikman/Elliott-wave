@@ -62,7 +62,7 @@ SETUP_WR_FILE  = ROOT / "brain-output" / "backtests" / "ewb_strategy_backtest_gr
 WAVE3_WR_FILE  = ROOT / "brain-output" / "backtests" / "ewb_wave3_backtest_grouped.parquet"
 
 SCAN_INTERVAL  = 60 * 60        # re-scan every 60 min
-MIN_P_WIN      = 0.55           # minimum p_trade_win to open a trade
+MIN_P_WIN      = 0.50           # sanity floor only; real quality = EV gate (reward-first)
 MIN_RR         = 1.0            # minimum risk-reward ratio
 MAX_OPEN       = 5              # max concurrent open paper trades
 TIMEOUT_BARS   = 30             # close trade after N bars if still open
@@ -74,12 +74,12 @@ RETRAIN_EVERY  = 20             # retrain ML after every N closed trades
 # win-rate signals", every candidate is cross-checked against the large strategy
 # backtest grouped winrates. A setup that is not validated, has too few backtest
 # trades, or sits below the winrate floor is blocked regardless of its p_win.
-# SETUP_WR_FLOOR is the BACKTEST win-rate floor. At 0.70 it targets >70% wins
-# by trading only the highest-WR validated flats (stock 1w/1d long, crypto
-# short). Live/forward WR is typically a few points below backtest, so this is
-# a target, not a guarantee. Override via EWB_SETUP_WR_FLOOR (e.g. 0.55 for
-# more trades, 0.72 for even stricter).
-SETUP_WR_FLOOR = float(os.environ.get("EWB_SETUP_WR_FLOOR", "0.58"))
+# Reward-first selection: the PRIMARY gate is expectancy (avg % return per
+# trade), not win-rate. A 59%-WR setup that makes +4.6%/trade beats a 72%-WR
+# scalp that makes +0.35% with reward<risk. SETUP_EV_FLOOR is the backtest
+# expectancy floor; SETUP_WR_FLOOR is only a sanity floor. Both env-overridable.
+SETUP_EV_FLOOR = float(os.environ.get("EWB_SETUP_EV_FLOOR", "0.005"))  # +0.5%/trade
+SETUP_WR_FLOOR = float(os.environ.get("EWB_SETUP_WR_FLOOR", "0.50"))   # sanity only
 SETUP_MIN_N    = 20             # min validated backtest trades for a setup to count
 MIN_SAMPLE     = 10             # min calibration sample_size (kills n=1 garbage)
 
@@ -372,9 +372,9 @@ def load_setup_winrates() -> dict[tuple[str, str, str, str], tuple[float, int]]:
     global _SETUP_WR_CACHE
     if _SETUP_WR_CACHE is not None:
         return _SETUP_WR_CACHE
-    lut: dict[tuple[str, str, str, str], tuple[float, int]] = {}
-    # Main flat LUT + the W3 LUT (EPIC C) are merged so validated Wave-3 setups
-    # pass the gate alongside flats.
+    lut: dict[tuple[str, str, str, str], tuple[float, int, float]] = {}
+    # Main flat LUT + the W3 LUT (EPIC C) are merged so validated setups pass
+    # the gate alongside flats. Value = (winrate, trades, expectancy).
     for wr_file in (SETUP_WR_FILE, WAVE3_WR_FILE):
         if not wr_file.exists():
             continue
@@ -383,7 +383,8 @@ def load_setup_winrates() -> dict[tuple[str, str, str, str], tuple[float, int]]:
             for _, r in g.iterrows():
                 key = (str(r["asset_class"]), str(r["interval"]),
                        str(r["fig_type"]), str(r["side"]))
-                lut[key] = (float(r["winrate"]), int(r["trades"]))
+                ev = float(r["expectancy"]) if "expectancy" in g.columns and pd.notna(r["expectancy"]) else 0.0
+                lut[key] = (float(r["winrate"]), int(r["trades"]), ev)
         except Exception as exc:  # pragma: no cover - defensive
             log.warning("could not load setup winrates from %s: %s", wr_file.name, exc)
     _SETUP_WR_CACHE = lut
@@ -427,10 +428,10 @@ def signal_is_fresh(sig: dict) -> tuple[bool, str]:
 
 
 def setup_quality_ok(sig: dict) -> tuple[bool, str]:
-    """Block any setup not proven high-winrate by the large backtest.
+    """Reward-first gate: only open setups with validated positive expectancy.
 
-    Returns (ok, reason). Enforces the user requirement that Anton only opens
-    trades on setups with a validated high historical win-rate.
+    Primary filter is backtest expectancy (avg % return per trade); win-rate is
+    only a sanity floor. Returns (ok, reason).
     """
     sample = sig.get("sample_size")
     if sample is not None and int(sample) < MIN_SAMPLE:
@@ -445,12 +446,14 @@ def setup_quality_ok(sig: dict) -> tuple[bool, str]:
     lut = load_setup_winrates()
     if key not in lut:
         return False, f"unvalidated setup {key[0]}/{fig}/{side} (no backtest edge)"
-    wr, n = lut[key]
+    wr, n, ev = lut[key]
     if n < SETUP_MIN_N:
         return False, f"thin backtest n={n}<{SETUP_MIN_N}"
-    if wr < SETUP_WR_FLOOR:
+    if ev < SETUP_EV_FLOOR:                       # PRIMARY — reward first
+        return False, f"low EV {ev:+.2%}<{SETUP_EV_FLOOR:+.2%}"
+    if wr < SETUP_WR_FLOOR:                        # sanity floor
         return False, f"low WR {wr:.0%}<{SETUP_WR_FLOOR:.0%}"
-    return True, f"WR {wr:.0%} (n={n})"
+    return True, f"EV {ev:+.2%} WR {wr:.0%} (n={n})"
 
 
 def try_open_trades(signals: list[dict], events: list[dict]) -> int:
