@@ -738,6 +738,37 @@ def dashboard_payload() -> dict[str, Any]:
     }
 
 
+def forward_vs_backtest_rows() -> list[list[Any]]:
+    """Per tradeable setup: backtest WR/EV/n (OOS LUT) vs live forward closed
+    WR/EV/n — the real check that the validated edge holds out of sample."""
+    from ewb.auto_trader import (load_setup_winrates, asset_class_of,
+                                 SETUP_EV_FLOOR, SETUP_WR_FLOOR, SETUP_MIN_N)
+    lut = load_setup_winrates()
+    closed = forward_frame()
+    closed = closed[closed["status"] == "closed"].copy() if not closed.empty else pd.DataFrame()
+    fgrp: dict = {}
+    if not closed.empty and "net_ret" in closed.columns:
+        closed["asset_class"] = closed["ticker"].apply(asset_class_of)
+        for key, g in closed.groupby(["asset_class", "interval", "fig_type", "side"]):
+            fgrp[tuple(key)] = (float(g["win"].mean()), int(len(g)), float(g["net_ret"].mean()))
+    rows: list[list[Any]] = []
+    for key, (wr, n, ev) in sorted(lut.items(), key=lambda x: -x[1][2]):
+        ac, iv, fig, side = key
+        tradeable = ev >= SETUP_EV_FLOOR and wr >= SETUP_WR_FLOOR and n >= SETUP_MIN_N
+        fwr, fn, fev = fgrp.get(key, (None, 0, None))
+        if not tradeable and not fn:
+            continue
+        bt = f"{wr*100:.0f}% / {ev*100:+.2f}% / n{n}"
+        if fn:
+            fw = f"{fwr*100:.0f}% / {fev*100:+.2f}% / n{fn}"
+            verdict = pill("держится", "win") if (fev - ev) >= -0.005 else pill("просел", "loss")
+        else:
+            fw = '<span class="muted">— нет закрытых —</span>'
+            verdict = '<span class="muted">ждём</span>'
+        rows.append([f"{html_escape(ac)}/{iv}/{html_escape(fig)}/{side}", bt, fw, verdict])
+    return rows
+
+
 @app.get("/", response_class=HTMLResponse)
 def dashboard() -> HTMLResponse:
     data = dashboard_payload()
@@ -771,6 +802,9 @@ def dashboard() -> HTMLResponse:
     {table(["#", "Решение", "Тикер", "Сторона", "ТФ", "Паттерн", "P", "RR", "Кол-во", "Риск", "Вход", "SL", "TP", "Возраст", "Действие"], action_board_rows(12))}
     <h3>Авто-трейдер</h3>
     {auto_trader_widget()}
+    <h3>Форвард vs Бэктест</h3>
+    {table(["Сетап", "Бэктест WR/EV/n", "Форвард WR/EV/n", "Вердикт"], forward_vs_backtest_rows())}
+    <div class="band muted" style="margin-top:0">Главная проверка: держится ли живой edge к OOS-бэктесту. «Вердикт» по сетапу появляется, когда по нему закроются форвард-сделки (EV-просадка &gt; 0.5% → «просел»).</div>
     <h3>Что дальше</h3>
     <div class="band">
       1. Авто-трейдер открывает/закрывает бумажные сделки автономно.<br>
