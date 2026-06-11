@@ -323,7 +323,7 @@ def age_text(value: Any) -> str:
     ts = as_timestamp(value)
     if ts is None:
         return "-"
-    age_hours = max(0.0, (pd.Timestamp.utcnow() - ts).total_seconds() / 3600.0)
+    age_hours = max(0.0, (pd.Timestamp.now("UTC") - ts).total_seconds() / 3600.0)
     if age_hours < 48:
         return f"{age_hours:.0f}ч"
     return f"{age_hours / 24.0:.1f}д"
@@ -463,7 +463,7 @@ def action_decision(action: str, probability: Any, rr: float | None, entry_ts: A
         return "WAIT", "Нет торговой стороны"
     prob = probability_percent(probability)
     age = as_timestamp(entry_ts)
-    age_hours = None if age is None else max(0.0, (pd.Timestamp.utcnow() - age).total_seconds() / 3600.0)
+    age_hours = None if age is None else max(0.0, (pd.Timestamp.now("UTC") - age).total_seconds() / 3600.0)
     if rr is None or rr < 1.0:
         return "WAIT", "RR ниже 1.0 или отсутствует"
     if prob is None or prob < 55.0:
@@ -856,7 +856,7 @@ def trade_rows(frame: pd.DataFrame, include_settle: bool,
             settle = f"""
             <form class="inline" method="post" action="/trades/settle">
               <input type="hidden" name="signal_id" value="{signal_id}">
-              <input type="hidden" name="exit_ts" value="{pd.Timestamp.utcnow().isoformat()}">
+              <input type="hidden" name="exit_ts" value="{pd.Timestamp.now("UTC").isoformat()}">
               <input type="hidden" name="exit_px" value="{html_escape(row.get("target_px", ""))}">
               <input type="hidden" name="exit_reason" value="tp">
               <button class="btn secondary" type="submit">TP</button>
