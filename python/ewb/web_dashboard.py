@@ -1352,13 +1352,29 @@ async def api_tradingview_alert(request: Request) -> JSONResponse:
 # ─────────── AUTO-TRADER ───────────
 
 def auto_trader_running() -> bool:
-    if not AUTO_TRADER_PID.exists():
-        return False
+    """The trader runs hourly via launchd (StartCalendarInterval :01), so it is
+    NOT a persistent process — a pid check would read STOPPED between passes.
+    Treat it as active if the last scan landed within the last 90 min (hourly
+    cadence + one cycle of grace). A live manual run also refreshes last_scan,
+    so this covers both modes."""
+    state = auto_trader_state()
+    ts = state.get("last_scan")
+    if not ts:
+        # fall back to the pid for a freshly-started manual run with no scan yet
+        if not AUTO_TRADER_PID.exists():
+            return False
+        try:
+            import os
+            os.kill(int(AUTO_TRADER_PID.read_text().strip()), 0)
+            return True
+        except Exception:
+            return False
     try:
-        pid = int(AUTO_TRADER_PID.read_text().strip())
-        import os, signal as _sig
-        os.kill(pid, 0)
-        return True
+        last = pd.Timestamp(ts)
+        if last.tzinfo is None:
+            last = last.tz_localize("UTC")
+        age_s = (pd.Timestamp.now("UTC") - last).total_seconds()
+        return age_s < 90 * 60
     except Exception:
         return False
 

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.ewb.autotrader</string>
+
+    <!-- EPIC L: запуск в :01 каждого часа — сразу после закрытия часового бара,
+         вход на open нового бара (next_open). Single-pass, не вечный процесс. -->
+    <key>ProgramArguments</key>
+    <array>
+        <string>/Users/DEV/Elliott-wave/.venv/bin/python3</string>
+        <string>-m</string>
+        <string>ewb.auto_trader</string>
+        <string>--once</string>
+    </array>
+
+    <key>WorkingDirectory</key>
+    <string>/Users/DEV/Elliott-wave/python</string>
+
+    <key>StandardOutPath</key>
+    <string>/Users/DEV/Elliott-wave/brain-output/auto_trader.log</string>
+
+    <key>StandardErrorPath</key>
+    <string>/Users/DEV/Elliott-wave/brain-output/auto_trader.log</string>
+
+    <!-- Каждый час в :01 (бар закрылся в :00, данные обновились) -->
+    <key>StartCalendarInterval</key>
+    <dict>
+        <key>Minute</key>
+        <integer>1</integer>
+    </dict>
+
+    <!-- Первый скан сразу при загрузке -->
+    <key>RunAtLoad</key>
+    <true/>
+</dict>
+</plist>

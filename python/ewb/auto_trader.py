@@ -58,6 +58,7 @@ FORWARD_LOG    = ROOT / DEFAULT_FORWARD_LOG
 MODEL_OUT      = ROOT / "brain-output" / "models"
 STATE_FILE     = ROOT / "brain-output" / "auto_trader_state.json"
 LOG_FILE       = ROOT / "brain-output" / "auto_trader.log"
+LOCK_FILE      = ROOT / "brain-output" / ".auto_trader.lock"
 SETUP_WR_FILE  = ROOT / "brain-output" / "backtests" / "ewb_strategy_backtest_grouped.parquet"
 WAVE3_WR_FILE  = ROOT / "brain-output" / "backtests" / "ewb_wave3_backtest_grouped.parquet"
 CORE_WR_FILE   = ROOT / "brain-output" / "backtests" / "ewb_core_backtest_grouped.parquet"
@@ -819,6 +820,21 @@ def one_pass() -> None:
     )
 
 
+def _acquire_single_instance_lock():
+    """Non-blocking exclusive lock so an hourly cron pass never overlaps a still-
+    running one (StartCalendarInterval :01 fires regardless of prior completion).
+    Returns the open lock fd on success, or None if another pass holds it."""
+    import fcntl
+    LOCK_FILE.parent.mkdir(parents=True, exist_ok=True)
+    fd = open(LOCK_FILE, "w")
+    try:
+        fcntl.flock(fd.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except OSError:
+        fd.close()
+        return None
+    return fd
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="EWB autonomous paper trader")
     parser.add_argument("--once",   action="store_true", help="Single pass and exit")
@@ -838,7 +854,14 @@ def main() -> None:
         return
 
     if args.once:
-        one_pass()
+        lock = _acquire_single_instance_lock()
+        if lock is None:
+            log.info("Предыдущий проход ещё идёт — пропускаю этот запуск (анти-наложение)")
+            return
+        try:
+            one_pass()
+        finally:
+            lock.close()
         return
 
     log.info("Авто-трейдер запущен  scan_interval=%dс  max_open=%d  min_p=%.0f%%  retrain_every=%d",
