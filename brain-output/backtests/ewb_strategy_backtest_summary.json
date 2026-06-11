@@ -15,18 +15,18 @@
     "notes": "Python reports are source of truth for statistics; Pine is visual and alert surface."
   },
   "raw_rows": 817837,
-  "scoped_rows": 1518,
+  "scoped_rows": 1512,
   "portfolio": {
-    "trades": 1518,
-    "winrate": 0.5678524374176548,
-    "expectancy": 0.0177219544866726,
-    "profit_factor": 1.9574733755665945,
-    "max_drawdown": -0.9748847147779012,
-    "avg_return": 0.0177219544866726,
-    "median_return": 0.006919756079452876,
-    "total_return": 38606535.57305676,
-    "avg_win": 0.06380361414514087,
-    "avg_loss": -0.0428304702474732
+    "trades": 1512,
+    "winrate": 0.5753968253968254,
+    "expectancy": 0.018525050389759823,
+    "profit_factor": 1.9731729461464447,
+    "max_drawdown": -0.9860650964756039,
+    "avg_return": 0.018525050389759823,
+    "median_return": 0.008496291037408576,
+    "total_return": 59077724.48486849,
+    "avg_win": 0.06527803331717526,
+    "avg_loss": -0.044831795633373264
   },
   "outputs": {
     "trades": "/Users/DEV/Elliott-wave/brain-output/backtests/ewb_strategy_backtest_trades.parquet",
