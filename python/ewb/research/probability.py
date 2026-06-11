@@ -288,13 +288,30 @@ def probability_signal_from_figure(
         entry_px=entry_px,
         amplitude=float(figure.amplitude),
     )
+    # AKU-0036/0038/0060 — time budget of confirmation. The post-pattern move
+    # must confirm (break the pattern's trendline) within the duration of the
+    # final wave (C of a flat, Y of a double correction). confirmation_lag is
+    # bars from the pattern's last pivot to the confirmation bar; last_wave_bars
+    # is the duration of that final wave. A confirmation slower than the final
+    # wave means the structure is suspect (not a clean fade).
+    confirmation_lag = int(entry_idx - figure.end_idx)
+    last_wave_bars = None
+    if len(figure.pivots) >= 2:
+        last_wave_bars = int(figure.pivots[-1].idx - figure.pivots[-2].idx)
+    time_budget_ok = (
+        last_wave_bars is None
+        or last_wave_bars <= 0
+        or confirmation_lag <= last_wave_bars
+    )
     signal.update({
         "ticker": ticker,
         "entry_idx": int(entry_idx),
         "entry_ts": str(df.index[entry_idx]),
         "end_idx": int(figure.end_idx),
         "end_ts": str(df.index[figure.end_idx]) if figure.end_idx < len(df) else None,
-        "confirmation_lag": int(entry_idx - figure.end_idx),
+        "confirmation_lag": confirmation_lag,
+        "last_wave_bars": last_wave_bars,
+        "time_budget_ok": bool(time_budget_ok),
         "confirmed": bool(getattr(figure, "confirmed", False)),
         "n_checks": len(getattr(figure, "checks", [])),
         "n_errors": sum(

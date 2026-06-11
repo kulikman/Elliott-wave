@@ -1,6 +1,6 @@
 # Probability Signals
 
-Generated: `2026-06-11T04:39:20+00:00`
+Generated: `2026-06-11T06:51:34+00:00`
 Model: `probability-calibration-v0`
 Tickers: `NVDA, AVGO, AMD, TSM, ASML, ARM, MU, MSFT, ORCL, CRM, NOW, PLTR, CRWD, PANW, SNOW, AMZN, GOOGL, META, NFLX, UBER, SHOP, BKNG, LLY, NVO, ISRG, VRTX, TSLA, V, MA, CAT, BTC-USD, ETH-USD, BNB-USD, SOL-USD, XRP-USD, DOGE-USD, ADA-USD, AVAX-USD, TRX-USD, LINK-USD, DOT-USD, LTC-USD, ATOM-USD, XLM-USD, OP-USD, NEAR-USD, HBAR-USD, FIL-USD, INJ-USD, AAVE-USD`
 Interval: `4h`
@@ -23,7 +23,6 @@ Signals: `50`
 | VRTX | buy | flat | 2026-06-04 08:00:00-04:00 | 56.4% | +0.57% | high | 442.63 | 405.96 | 479.30 |
 | OP-USD | sell | flat | 2026-06-04 04:00:00+00:00 | 55.9% | +0.70% | high | 0.11 | 0.12 | 0.10 |
 | MSFT | sell | flat | 2026-06-02 12:00:00+00:00 | 55.9% | +0.70% | high | 443.86 | 508.12 | 379.60 |
-| UBER | buy | flat | 2026-06-01 12:00:00+00:00 | 56.4% | +0.57% | high | 74.17 | 66.88 | 81.45 |
 | AVGO | buy | flat | 2026-05-26 12:00:00+00:00 | 56.4% | +0.57% | high | 422.84 | 393.82 | 451.86 |
 | DOGE-USD | sell | flat | 2026-05-26 00:00:00+00:00 | 55.9% | +0.70% | high | 0.10 | 0.10 | 0.10 |
 | ETH-USD | sell | flat | 2026-05-24 20:00:00+00:00 | 55.9% | +0.70% | high | 2099.85 | 2172.57 | 2027.13 |
@@ -60,3 +59,4 @@ Signals: `50`
 | TRX-USD | sell | double_corr | 2026-02-15 12:00:00+00:00 | 87.5% | +2.15% | low | 0.28 | 0.30 | 0.27 |
 | AAVE-USD | buy | flat | 2026-02-12 20:00:00+00:00 | 56.4% | +0.57% | high | 114.98 | 104.17 | 125.79 |
 | ATOM-USD | sell | flat | 2026-02-09 08:00:00+00:00 | 55.9% | +0.70% | high | 1.91 | 2.10 | 1.73 |
+| SNOW | buy | flat | 2026-02-06 16:00:00+00:00 | 56.4% | +0.57% | high | 168.02 | 108.19 | 227.85 |

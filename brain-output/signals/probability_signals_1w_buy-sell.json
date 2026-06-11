@@ -6,7 +6,7 @@
   "fresh_days": null,
   "fresh_hours": null,
   "freshness": null,
-  "generated_at": "2026-06-11T04:47:44+00:00",
+  "generated_at": "2026-06-11T06:59:21+00:00",
   "interval": "1w",
   "limit": 50,
   "model_version": "probability-calibration-v0",
@@ -186,10 +186,10 @@
       "pattern": "flat",
       "recommended_action": "sell",
       "risk_box": {
-        "amplitude": 11.810038618879332,
+        "amplitude": 11.810053247603435,
         "entry_px": 153.74349975585938,
-        "stop_px": 165.5535383747387,
-        "target_px": 141.93346113698004
+        "stop_px": 165.5535530034628,
+        "target_px": 141.93344650825594
       },
       "sample_size": 256,
       "side": "short",
@@ -408,10 +408,10 @@
       "pattern": "flat",
       "recommended_action": "buy",
       "risk_box": {
-        "amplitude": 24.30959956885124,
+        "amplitude": 24.309530849622774,
         "entry_px": 577.7378540039062,
-        "stop_px": 553.428254435055,
-        "target_px": 602.0474535727575
+        "stop_px": 553.4283231542835,
+        "target_px": 602.047384853529
       },
       "sample_size": 275,
       "side": "long",
@@ -778,10 +778,10 @@
       "pattern": "flat",
       "recommended_action": "sell",
       "risk_box": {
-        "amplitude": 81.37134921981868,
+        "amplitude": 81.37130346346305,
         "entry_px": 187.28460693359375,
-        "stop_px": 268.65595615341243,
-        "target_px": 105.91325771377507
+        "stop_px": 268.6559103970568,
+        "target_px": 105.9133034701307
       },
       "sample_size": 256,
       "side": "short",
@@ -1000,10 +1000,10 @@
       "pattern": "flat",
       "recommended_action": "buy",
       "risk_box": {
-        "amplitude": 50.41291708422477,
-        "entry_px": 231.3496551513672,
-        "stop_px": 180.93673806714241,
-        "target_px": 281.76257223559196
+        "amplitude": 50.4129032859683,
+        "entry_px": 231.34967041015625,
+        "stop_px": 180.93676712418795,
+        "target_px": 281.76257369612455
       },
       "sample_size": 275,
       "side": "long",
@@ -1074,10 +1074,10 @@
       "pattern": "flat",
       "recommended_action": "buy",
       "risk_box": {
-        "amplitude": 13.075124243074214,
-        "entry_px": 96.15914916992188,
-        "stop_px": 83.08402492684766,
-        "target_px": 109.23427341299609
+        "amplitude": 13.075108484357273,
+        "entry_px": 96.15916442871094,
+        "stop_px": 83.08405594435366,
+        "target_px": 109.23427291306821
       },
       "sample_size": 275,
       "side": "long",
@@ -1111,10 +1111,10 @@
       "pattern": "flat",
       "recommended_action": "buy",
       "risk_box": {
-        "amplitude": 19.89405610045185,
-        "entry_px": 597.6326293945312,
-        "stop_px": 577.7385732940794,
-        "target_px": 617.5266854949831
+        "amplitude": 19.894255327845997,
+        "entry_px": 597.6328125,
+        "stop_px": 577.7385571721541,
+        "target_px": 617.5270678278459
       },
       "sample_size": 275,
       "side": "long",
@@ -1185,10 +1185,10 @@
       "pattern": "flat",
       "recommended_action": "sell",
       "risk_box": {
-        "amplitude": 33.34446230273878,
+        "amplitude": 33.34446994627441,
         "entry_px": 74.77381134033203,
-        "stop_px": 108.11827364307081,
-        "target_px": 41.42934903759325
+        "stop_px": 108.11828128660645,
+        "target_px": 41.42934139405762
       },
       "sample_size": 256,
       "side": "short",
@@ -1259,10 +1259,10 @@
       "pattern": "flat",
       "recommended_action": "buy",
       "risk_box": {
-        "amplitude": 98.04287864649478,
+        "amplitude": 98.04288038778742,
         "entry_px": 247.9608917236328,
-        "stop_px": 149.91801307713803,
-        "target_px": 346.0037703701276
+        "stop_px": 149.9180113358454,
+        "target_px": 346.00377211142023
       },
       "sample_size": 275,
       "side": "long",
@@ -1296,10 +1296,10 @@
       "pattern": "flat",
       "recommended_action": "buy",
       "risk_box": {
-        "amplitude": 31.492630794720974,
-        "entry_px": 75.99686431884766,
-        "stop_px": 44.50423352412668,
-        "target_px": 107.48949511356864
+        "amplitude": 31.492630378773903,
+        "entry_px": 75.99685668945312,
+        "stop_px": 44.50422631067922,
+        "target_px": 107.48948706822702
       },
       "sample_size": 275,
       "side": "long",
@@ -1407,10 +1407,10 @@
       "pattern": "flat",
       "recommended_action": "buy",
       "risk_box": {
-        "amplitude": 14.250533469176986,
+        "amplitude": 14.250517409622574,
         "entry_px": 243.8043212890625,
-        "stop_px": 229.5537878198855,
-        "target_px": 258.05485475823946
+        "stop_px": 229.55380387943993,
+        "target_px": 258.0548386986851
       },
       "sample_size": 275,
       "side": "long",
@@ -1777,10 +1777,10 @@
       "pattern": "flat",
       "recommended_action": "buy",
       "risk_box": {
-        "amplitude": 0.09122330089843445,
-        "entry_px": 32.67990493774414,
-        "stop_px": 32.588681636845706,
-        "target_px": 32.771128238642575
+        "amplitude": 0.09122114588742036,
+        "entry_px": 32.67989730834961,
+        "stop_px": 32.58867616246219,
+        "target_px": 32.771118454237026
       },
       "sample_size": 275,
       "side": "long",
@@ -1851,10 +1851,10 @@
       "pattern": "flat",
       "recommended_action": "sell",
       "risk_box": {
-        "amplitude": 47.77532538871853,
+        "amplitude": 47.775341593633215,
         "entry_px": 174.25396728515625,
-        "stop_px": 222.02929267387478,
-        "target_px": 126.47864189643772
+        "stop_px": 222.02930887878946,
+        "target_px": 126.47862569152304
       },
       "sample_size": 256,
       "side": "short",

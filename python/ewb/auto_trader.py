@@ -484,6 +484,13 @@ def try_open_trades(signals: list[dict], events: list[dict]) -> int:
                      sig.get("ticker", "?"), sig.get("side", "?"),
                      sig.get("interval", "?"), freason)
             continue
+        # Time-budget gate (AKU-0036/0038/0060): confirmation must arrive within
+        # the final wave's duration, else the pattern is structurally suspect.
+        if sig.get("time_budget_ok") is False:
+            log.info("ПРОПУСК %-6s %-5s %s  — confirmation %s бар > волны C %s бар (AKU-0036)",
+                     sig.get("ticker", "?"), sig.get("side", "?"), sig.get("interval", "?"),
+                     sig.get("confirmation_lag"), sig.get("last_wave_bars"))
+            continue
         # High-winrate gate: only open setups proven by the large backtest.
         ok, reason = setup_quality_ok(sig)
         if not ok:
