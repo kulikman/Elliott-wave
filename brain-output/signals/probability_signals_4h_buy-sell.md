@@ -1,6 +1,6 @@
 # Probability Signals
 
-Generated: `2026-06-11T06:51:34+00:00`
+Generated: `2026-06-11T07:31:54+00:00`
 Model: `probability-calibration-v0`
 Tickers: `NVDA, AVGO, AMD, TSM, ASML, ARM, MU, MSFT, ORCL, CRM, NOW, PLTR, CRWD, PANW, SNOW, AMZN, GOOGL, META, NFLX, UBER, SHOP, BKNG, LLY, NVO, ISRG, VRTX, TSLA, V, MA, CAT, BTC-USD, ETH-USD, BNB-USD, SOL-USD, XRP-USD, DOGE-USD, ADA-USD, AVAX-USD, TRX-USD, LINK-USD, DOT-USD, LTC-USD, ATOM-USD, XLM-USD, OP-USD, NEAR-USD, HBAR-USD, FIL-USD, INJ-USD, AAVE-USD`
 Interval: `4h`
@@ -18,6 +18,7 @@ Signals: `50`
 | BKNG | sell | flat | 2026-06-08 12:00:00-04:00 | 55.9% | +0.70% | high | 162.28 | 170.14 | 154.42 |
 | ASML | buy | flat | 2026-06-08 12:00:00+00:00 | 56.4% | +0.57% | high | 1759.48 | 1723.58 | 1795.38 |
 | XLM-USD | buy | flat | 2026-06-07 00:00:00+00:00 | 56.4% | +0.57% | high | 0.21 | 0.10 | 0.32 |
+| META | sell | flat | 2026-06-05 12:00:00-04:00 | 55.9% | +0.70% | high | 592.64 | 625.76 | 559.52 |
 | LLY | buy | flat | 2026-06-04 08:00:00-04:00 | 56.4% | +0.57% | high | 1138.18 | 1082.51 | 1193.84 |
 | ISRG | buy | flat | 2026-06-04 08:00:00-04:00 | 56.4% | +0.57% | high | 414.40 | 362.33 | 466.47 |
 | VRTX | buy | flat | 2026-06-04 08:00:00-04:00 | 56.4% | +0.57% | high | 442.63 | 405.96 | 479.30 |
@@ -37,6 +38,7 @@ Signals: `50`
 | DOT-USD | buy | flat | 2026-05-04 04:00:00+00:00 | 56.4% | +0.57% | high | 1.24 | 1.18 | 1.30 |
 | INJ-USD | buy | double_corr | 2026-05-01 08:00:00+00:00 | 82.4% | +2.23% | low | 3.57 | 2.76 | 4.38 |
 | ASML | buy | flat | 2026-04-30 16:00:00+00:00 | 56.4% | +0.57% | high | 1439.05 | 1281.60 | 1596.50 |
+| META | sell | flat | 2026-04-23 08:00:00-04:00 | 55.9% | +0.70% | high | 665.17 | 729.89 | 600.45 |
 | ATOM-USD | sell | flat | 2026-04-23 00:00:00+00:00 | 55.9% | +0.70% | high | 1.84 | 2.00 | 1.67 |
 | AAVE-USD | buy | flat | 2026-04-22 12:00:00+00:00 | 56.4% | +0.57% | high | 94.14 | 61.61 | 126.67 |
 | OP-USD | buy | flat | 2026-04-22 04:00:00+00:00 | 56.4% | +0.57% | high | 0.13 | 0.13 | 0.13 |
@@ -58,5 +60,3 @@ Signals: `50`
 | PLTR | sell | flat | 2026-02-20 12:00:00+00:00 | 55.9% | +0.70% | high | 134.78 | 147.62 | 121.94 |
 | TRX-USD | sell | double_corr | 2026-02-15 12:00:00+00:00 | 87.5% | +2.15% | low | 0.28 | 0.30 | 0.27 |
 | AAVE-USD | buy | flat | 2026-02-12 20:00:00+00:00 | 56.4% | +0.57% | high | 114.98 | 104.17 | 125.79 |
-| ATOM-USD | sell | flat | 2026-02-09 08:00:00+00:00 | 55.9% | +0.70% | high | 1.91 | 2.10 | 1.73 |
-| SNOW | buy | flat | 2026-02-06 16:00:00+00:00 | 56.4% | +0.57% | high | 168.02 | 108.19 | 227.85 |

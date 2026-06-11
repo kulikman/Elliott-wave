@@ -92,6 +92,30 @@ def parser() -> argparse.ArgumentParser:
     return p
 
 
+_WAVE3_WR_CACHE: dict | None = None
+
+
+def _wave3_winrates() -> dict:
+    """Load backtested W3 winrates: (asset_class, interval, side) -> (wr, n)."""
+    global _WAVE3_WR_CACHE
+    if _WAVE3_WR_CACHE is not None:
+        return _WAVE3_WR_CACHE
+    import pandas as pd
+    from pathlib import Path
+    f = Path(__file__).resolve().parents[2] / "brain-output" / "backtests" / "ewb_wave3_backtest_grouped.parquet"
+    lut: dict = {}
+    if f.exists():
+        try:
+            g = pd.read_parquet(f)
+            for _, r in g.iterrows():
+                lut[(str(r["asset_class"]), str(r["interval"]), str(r["side"]))] = (
+                    float(r["winrate"]), int(r["trades"]))
+        except Exception:
+            pass
+    _WAVE3_WR_CACHE = lut
+    return lut
+
+
 def scan_ticker(ticker: str, interval: str, period: str, calibration: dict) -> list[dict]:
     df = download_ohlc(ticker, interval, period, min_rows=100)
     if df is None:
@@ -107,14 +131,31 @@ def scan_ticker(ticker: str, interval: str, period: str, calibration: dict) -> l
         if signal is not None:
             signals.append(signal)
 
-    # EPIC 3: Wave-3 trend entries (feature-flagged; default off until forward-validated)
+    # EPIC 3: Wave-3 trend entries. Validated by backtest_wave3.py; each W3
+    # signal carries p_trade_win = its backtested group winrate so the
+    # auto-trader's MIN_P_WIN + winrate gate both apply (stock-long/crypto-short
+    # pass at 59%, stock-short/crypto-long fall below the floor).
     if os.getenv("EWB_WAVE3") == "1":
         last_idx = len(df) - 1
         last_px = float(df["close"].iloc[last_idx])
         last_ts = str(df.index[last_idx])
+        w3_wr = _wave3_winrates()
+        asset = "crypto" if str(ticker).upper().endswith("-USD") else "stock"
+        # Many past W1/W2 triples can still be "triggered"; keep only the
+        # freshest setup per side (largest entry_idx) to avoid flooding.
+        freshest: dict[str, object] = {}
         for setup in detect_wave3_setups(pivots, last_px, last_idx):
-            if setup.triggered and setup.struct_ok and setup.rr1 >= 1.0:
-                signals.append(setup.to_signal(ticker, interval, last_ts))
+            if not (setup.triggered and setup.struct_ok and setup.rr1 >= 1.0):
+                continue
+            cur = freshest.get(setup.side)
+            if cur is None or setup.entry_idx > cur.entry_idx:
+                freshest[setup.side] = setup
+        for setup in freshest.values():
+            sig = setup.to_signal(ticker, interval, last_ts)
+            wr, n = w3_wr.get((asset, interval, setup.side), (0.0, 0))
+            sig["p_trade_win"] = wr
+            sig["sample_size"] = n
+            signals.append(sig)
     return signals
 
 

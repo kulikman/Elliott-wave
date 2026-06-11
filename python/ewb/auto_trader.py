@@ -59,6 +59,7 @@ MODEL_OUT      = ROOT / "brain-output" / "models"
 STATE_FILE     = ROOT / "brain-output" / "auto_trader_state.json"
 LOG_FILE       = ROOT / "brain-output" / "auto_trader.log"
 SETUP_WR_FILE  = ROOT / "brain-output" / "backtests" / "ewb_strategy_backtest_grouped.parquet"
+WAVE3_WR_FILE  = ROOT / "brain-output" / "backtests" / "ewb_wave3_backtest_grouped.parquet"
 
 SCAN_INTERVAL  = 60 * 60        # re-scan every 60 min
 MIN_P_WIN      = 0.55           # minimum p_trade_win to open a trade
@@ -308,6 +309,8 @@ def run_scan(tickers: list[str], interval: str) -> list[dict]:
     if not tickers:
         return []
     log.info("Сканирую %d тикеров на %s …", len(tickers), interval)
+    # EPIC C: emit Wave-3 setups too (validated stock-long / crypto-short).
+    scan_env = {**os.environ, "EWB_WAVE3": "1"}
     result = subprocess.run(
         [
             sys.executable,
@@ -319,7 +322,7 @@ def run_scan(tickers: list[str], interval: str) -> list[dict]:
             "--save",
             "--output-dir", str(SIGNALS_DIR),
         ],
-        capture_output=True, text=True, cwd=ROOT,
+        capture_output=True, text=True, cwd=ROOT, env=scan_env,
     )
     if result.returncode != 0:
         log.warning("scan stderr: %s", result.stderr[-500:])
@@ -365,15 +368,19 @@ def load_setup_winrates() -> dict[tuple[str, str, str, str], tuple[float, int]]:
     if _SETUP_WR_CACHE is not None:
         return _SETUP_WR_CACHE
     lut: dict[tuple[str, str, str, str], tuple[float, int]] = {}
-    if SETUP_WR_FILE.exists():
+    # Main flat LUT + the W3 LUT (EPIC C) are merged so validated Wave-3 setups
+    # pass the gate alongside flats.
+    for wr_file in (SETUP_WR_FILE, WAVE3_WR_FILE):
+        if not wr_file.exists():
+            continue
         try:
-            g = pd.read_parquet(SETUP_WR_FILE)
+            g = pd.read_parquet(wr_file)
             for _, r in g.iterrows():
                 key = (str(r["asset_class"]), str(r["interval"]),
                        str(r["fig_type"]), str(r["side"]))
                 lut[key] = (float(r["winrate"]), int(r["trades"]))
         except Exception as exc:  # pragma: no cover - defensive
-            log.warning("could not load setup winrates: %s", exc)
+            log.warning("could not load setup winrates from %s: %s", wr_file.name, exc)
     _SETUP_WR_CACHE = lut
     return lut
 

@@ -6,7 +6,7 @@
   "fresh_days": null,
   "fresh_hours": null,
   "freshness": null,
-  "generated_at": "2026-06-11T06:59:21+00:00",
+  "generated_at": "2026-06-11T07:41:38+00:00",
   "interval": "1w",
   "limit": 50,
   "model_version": "probability-calibration-v0",
@@ -25,6 +25,7 @@
       "entry_zone": "fade_after_confirmed_pattern",
       "expected_net_return": 0.0070283457821307335,
       "interval": "1w",
+      "last_wave_bars": 16,
       "lgbm_action": null,
       "lgbm_prob": null,
       "lgbm_threshold": null,
@@ -48,7 +49,8 @@
       "source_model_version": "probability-calibration-v0",
       "stop": "figure_amplitude",
       "target": "full_retrace",
-      "ticker": "TRX-USD"
+      "ticker": "TRX-USD",
+      "time_budget_ok": true
     },
     {
       "confidence": "high",
@@ -62,6 +64,7 @@
       "entry_zone": "fade_after_confirmed_pattern",
       "expected_net_return": 0.0070283457821307335,
       "interval": "1w",
+      "last_wave_bars": 2,
       "lgbm_action": null,
       "lgbm_prob": null,
       "lgbm_threshold": null,
@@ -85,7 +88,8 @@
       "source_model_version": "probability-calibration-v0",
       "stop": "figure_amplitude",
       "target": "full_retrace",
-      "ticker": "NEAR-USD"
+      "ticker": "NEAR-USD",
+      "time_budget_ok": true
     },
     {
       "confidence": "high",
@@ -99,6 +103,7 @@
       "entry_zone": "fade_after_confirmed_pattern",
       "expected_net_return": 0.005659002209410505,
       "interval": "1w",
+      "last_wave_bars": 40,
       "lgbm_action": null,
       "lgbm_prob": null,
       "lgbm_threshold": null,
@@ -122,7 +127,8 @@
       "source_model_version": "probability-calibration-v0",
       "stop": "figure_amplitude",
       "target": "full_retrace",
-      "ticker": "NOW"
+      "ticker": "NOW",
+      "time_budget_ok": true
     },
     {
       "confidence": "high",
@@ -136,6 +142,7 @@
       "entry_zone": "fade_after_confirmed_pattern",
       "expected_net_return": 0.005659002209410505,
       "interval": "1w",
+      "last_wave_bars": 0,
       "lgbm_action": null,
       "lgbm_prob": null,
       "lgbm_threshold": null,
@@ -159,7 +166,8 @@
       "source_model_version": "probability-calibration-v0",
       "stop": "figure_amplitude",
       "target": "full_retrace",
-      "ticker": "MU"
+      "ticker": "MU",
+      "time_budget_ok": true
     },
     {
       "confidence": "high",
@@ -173,6 +181,7 @@
       "entry_zone": "fade_after_confirmed_pattern",
       "expected_net_return": 0.0070283457821307335,
       "interval": "1w",
+      "last_wave_bars": 8,
       "lgbm_action": null,
       "lgbm_prob": null,
       "lgbm_threshold": null,
@@ -186,17 +195,18 @@
       "pattern": "flat",
       "recommended_action": "sell",
       "risk_box": {
-        "amplitude": 11.810053247603435,
+        "amplitude": 11.810038618879332,
         "entry_px": 153.74349975585938,
-        "stop_px": 165.5535530034628,
-        "target_px": 141.93344650825594
+        "stop_px": 165.5535383747387,
+        "target_px": 141.93346113698004
       },
       "sample_size": 256,
       "side": "short",
       "source_model_version": "probability-calibration-v0",
       "stop": "figure_amplitude",
       "target": "full_retrace",
-      "ticker": "BKNG"
+      "ticker": "BKNG",
+      "time_budget_ok": true
     },
     {
       "confidence": "high",
@@ -210,6 +220,7 @@
       "entry_zone": "fade_after_confirmed_pattern",
       "expected_net_return": 0.005659002209410505,
       "interval": "1w",
+      "last_wave_bars": 10,
       "lgbm_action": null,
       "lgbm_prob": null,
       "lgbm_threshold": null,
@@ -233,7 +244,8 @@
       "source_model_version": "probability-calibration-v0",
       "stop": "figure_amplitude",
       "target": "full_retrace",
-      "ticker": "NVO"
+      "ticker": "NVO",
+      "time_budget_ok": true
     },
     {
       "confidence": "high",
@@ -247,6 +259,7 @@
       "entry_zone": "fade_after_confirmed_pattern",
       "expected_net_return": 0.005659002209410505,
       "interval": "1w",
+      "last_wave_bars": 5,
       "lgbm_action": null,
       "lgbm_prob": null,
       "lgbm_threshold": null,
@@ -270,7 +283,8 @@
       "source_model_version": "probability-calibration-v0",
       "stop": "figure_amplitude",
       "target": "full_retrace",
-      "ticker": "ASML"
+      "ticker": "ASML",
+      "time_budget_ok": true
     },
     {
       "confidence": "high",
@@ -284,6 +298,7 @@
       "entry_zone": "fade_after_confirmed_pattern",
       "expected_net_return": 0.005659002209410505,
       "interval": "1w",
+      "last_wave_bars": 4,
       "lgbm_action": null,
       "lgbm_prob": null,
       "lgbm_threshold": null,
@@ -307,7 +322,8 @@
       "source_model_version": "probability-calibration-v0",
       "stop": "figure_amplitude",
       "target": "full_retrace",
-      "ticker": "CAT"
+      "ticker": "CAT",
+      "time_budget_ok": true
     },
     {
       "confidence": "high",
@@ -321,6 +337,7 @@
       "entry_zone": "fade_after_confirmed_pattern",
       "expected_net_return": 0.005659002209410505,
       "interval": "1w",
+      "last_wave_bars": 34,
       "lgbm_action": null,
       "lgbm_prob": null,
       "lgbm_threshold": null,
@@ -344,7 +361,8 @@
       "source_model_version": "probability-calibration-v0",
       "stop": "figure_amplitude",
       "target": "full_retrace",
-      "ticker": "NFLX"
+      "ticker": "NFLX",
+      "time_budget_ok": true
     },
     {
       "confidence": "high",
@@ -358,6 +376,7 @@
       "entry_zone": "fade_after_confirmed_pattern",
       "expected_net_return": 0.0070283457821307335,
       "interval": "1w",
+      "last_wave_bars": 3,
       "lgbm_action": null,
       "lgbm_prob": null,
       "lgbm_threshold": null,
@@ -381,7 +400,8 @@
       "source_model_version": "probability-calibration-v0",
       "stop": "figure_amplitude",
       "target": "full_retrace",
-      "ticker": "XRP-USD"
+      "ticker": "XRP-USD",
+      "time_budget_ok": false
     },
     {
       "confidence": "high",
@@ -395,6 +415,7 @@
       "entry_zone": "fade_after_confirmed_pattern",
       "expected_net_return": 0.005659002209410505,
       "interval": "1w",
+      "last_wave_bars": 13,
       "lgbm_action": null,
       "lgbm_prob": null,
       "lgbm_threshold": null,
@@ -408,17 +429,18 @@
       "pattern": "flat",
       "recommended_action": "buy",
       "risk_box": {
-        "amplitude": 24.309530849622774,
-        "entry_px": 577.7378540039062,
-        "stop_px": 553.4283231542835,
-        "target_px": 602.047384853529
+        "amplitude": 24.309540306923395,
+        "entry_px": 577.73779296875,
+        "stop_px": 553.4282526618266,
+        "target_px": 602.0473332756734
       },
       "sample_size": 275,
       "side": "long",
       "source_model_version": "probability-calibration-v0",
       "stop": "figure_amplitude",
       "target": "full_retrace",
-      "ticker": "MA"
+      "ticker": "MA",
+      "time_budget_ok": true
     },
     {
       "confidence": "high",
@@ -432,6 +454,7 @@
       "entry_zone": "fade_after_confirmed_pattern",
       "expected_net_return": 0.0070283457821307335,
       "interval": "1w",
+      "last_wave_bars": 1,
       "lgbm_action": null,
       "lgbm_prob": null,
       "lgbm_threshold": null,
@@ -455,7 +478,8 @@
       "source_model_version": "probability-calibration-v0",
       "stop": "figure_amplitude",
       "target": "full_retrace",
-      "ticker": "AVAX-USD"
+      "ticker": "AVAX-USD",
+      "time_budget_ok": false
     },
     {
       "confidence": "high",
@@ -469,6 +493,7 @@
       "entry_zone": "fade_after_confirmed_pattern",
       "expected_net_return": 0.0070283457821307335,
       "interval": "1w",
+      "last_wave_bars": 1,
       "lgbm_action": null,
       "lgbm_prob": null,
       "lgbm_threshold": null,
@@ -492,7 +517,8 @@
       "source_model_version": "probability-calibration-v0",
       "stop": "figure_amplitude",
       "target": "full_retrace",
-      "ticker": "ADA-USD"
+      "ticker": "ADA-USD",
+      "time_budget_ok": false
     },
     {
       "confidence": "high",
@@ -506,6 +532,7 @@
       "entry_zone": "fade_after_confirmed_pattern",
       "expected_net_return": 0.0070283457821307335,
       "interval": "1w",
+      "last_wave_bars": 12,
       "lgbm_action": null,
       "lgbm_prob": null,
       "lgbm_threshold": null,
@@ -529,7 +556,8 @@
       "source_model_version": "probability-calibration-v0",
       "stop": "figure_amplitude",
       "target": "full_retrace",
-      "ticker": "PANW"
+      "ticker": "PANW",
+      "time_budget_ok": true
     },
     {
       "confidence": "high",
@@ -543,6 +571,7 @@
       "entry_zone": "fade_after_confirmed_pattern",
       "expected_net_return": 0.0070283457821307335,
       "interval": "1w",
+      "last_wave_bars": 24,
       "lgbm_action": null,
       "lgbm_prob": null,
       "lgbm_threshold": null,
@@ -566,7 +595,8 @@
       "source_model_version": "probability-calibration-v0",
       "stop": "figure_amplitude",
       "target": "full_retrace",
-      "ticker": "UBER"
+      "ticker": "UBER",
+      "time_budget_ok": true
     },
     {
       "confidence": "low",
@@ -580,6 +610,7 @@
       "entry_zone": "fade_after_confirmed_pattern",
       "expected_net_return": 0.02146697160555637,
       "interval": "1w",
+      "last_wave_bars": 12,
       "lgbm_action": null,
       "lgbm_prob": null,
       "lgbm_threshold": null,
@@ -603,7 +634,8 @@
       "source_model_version": "probability-calibration-v0",
       "stop": "figure_amplitude",
       "target": "full_retrace",
-      "ticker": "SHOP"
+      "ticker": "SHOP",
+      "time_budget_ok": true
     },
     {
       "confidence": "high",
@@ -617,6 +649,7 @@
       "entry_zone": "fade_after_confirmed_pattern",
       "expected_net_return": 0.005659002209410505,
       "interval": "1w",
+      "last_wave_bars": 22,
       "lgbm_action": null,
       "lgbm_prob": null,
       "lgbm_threshold": null,
@@ -640,7 +673,8 @@
       "source_model_version": "probability-calibration-v0",
       "stop": "figure_amplitude",
       "target": "full_retrace",
-      "ticker": "ISRG"
+      "ticker": "ISRG",
+      "time_budget_ok": true
     },
     {
       "confidence": "high",
@@ -654,6 +688,7 @@
       "entry_zone": "fade_after_confirmed_pattern",
       "expected_net_return": 0.005659002209410505,
       "interval": "1w",
+      "last_wave_bars": 11,
       "lgbm_action": null,
       "lgbm_prob": null,
       "lgbm_threshold": null,
@@ -677,7 +712,8 @@
       "source_model_version": "probability-calibration-v0",
       "stop": "figure_amplitude",
       "target": "full_retrace",
-      "ticker": "HBAR-USD"
+      "ticker": "HBAR-USD",
+      "time_budget_ok": true
     },
     {
       "confidence": "high",
@@ -691,6 +727,7 @@
       "entry_zone": "fade_after_confirmed_pattern",
       "expected_net_return": 0.005659002209410505,
       "interval": "1w",
+      "last_wave_bars": 7,
       "lgbm_action": null,
       "lgbm_prob": null,
       "lgbm_threshold": null,
@@ -714,7 +751,8 @@
       "source_model_version": "probability-calibration-v0",
       "stop": "figure_amplitude",
       "target": "full_retrace",
-      "ticker": "AAVE-USD"
+      "ticker": "AAVE-USD",
+      "time_budget_ok": true
     },
     {
       "confidence": "high",
@@ -728,6 +766,7 @@
       "entry_zone": "fade_after_confirmed_pattern",
       "expected_net_return": 0.005659002209410505,
       "interval": "1w",
+      "last_wave_bars": 26,
       "lgbm_action": null,
       "lgbm_prob": null,
       "lgbm_threshold": null,
@@ -751,7 +790,8 @@
       "source_model_version": "probability-calibration-v0",
       "stop": "figure_amplitude",
       "target": "full_retrace",
-      "ticker": "AMD"
+      "ticker": "AMD",
+      "time_budget_ok": true
     },
     {
       "confidence": "high",
@@ -765,6 +805,7 @@
       "entry_zone": "fade_after_confirmed_pattern",
       "expected_net_return": 0.0070283457821307335,
       "interval": "1w",
+      "last_wave_bars": 18,
       "lgbm_action": null,
       "lgbm_prob": null,
       "lgbm_threshold": null,
@@ -778,17 +819,18 @@
       "pattern": "flat",
       "recommended_action": "sell",
       "risk_box": {
-        "amplitude": 81.37130346346305,
-        "entry_px": 187.28460693359375,
-        "stop_px": 268.6559103970568,
-        "target_px": 105.9133034701307
+        "amplitude": 81.3713647986045,
+        "entry_px": 187.2846221923828,
+        "stop_px": 268.65598699098734,
+        "target_px": 105.91325739377831
       },
       "sample_size": 256,
       "side": "short",
       "source_model_version": "probability-calibration-v0",
       "stop": "figure_amplitude",
       "target": "full_retrace",
-      "ticker": "BKNG"
+      "ticker": "BKNG",
+      "time_budget_ok": true
     },
     {
       "confidence": "high",
@@ -802,6 +844,7 @@
       "entry_zone": "fade_after_confirmed_pattern",
       "expected_net_return": 0.005659002209410505,
       "interval": "1w",
+      "last_wave_bars": 27,
       "lgbm_action": null,
       "lgbm_prob": null,
       "lgbm_threshold": null,
@@ -825,7 +868,8 @@
       "source_model_version": "probability-calibration-v0",
       "stop": "figure_amplitude",
       "target": "full_retrace",
-      "ticker": "HBAR-USD"
+      "ticker": "HBAR-USD",
+      "time_budget_ok": true
     },
     {
       "confidence": "high",
@@ -839,6 +883,7 @@
       "entry_zone": "fade_after_confirmed_pattern",
       "expected_net_return": 0.0070283457821307335,
       "interval": "1w",
+      "last_wave_bars": 14,
       "lgbm_action": null,
       "lgbm_prob": null,
       "lgbm_threshold": null,
@@ -862,7 +907,8 @@
       "source_model_version": "probability-calibration-v0",
       "stop": "figure_amplitude",
       "target": "full_retrace",
-      "ticker": "SHOP"
+      "ticker": "SHOP",
+      "time_budget_ok": true
     },
     {
       "confidence": "high",
@@ -876,6 +922,7 @@
       "entry_zone": "fade_after_confirmed_pattern",
       "expected_net_return": 0.005659002209410505,
       "interval": "1w",
+      "last_wave_bars": 21,
       "lgbm_action": null,
       "lgbm_prob": null,
       "lgbm_threshold": null,
@@ -899,7 +946,8 @@
       "source_model_version": "probability-calibration-v0",
       "stop": "figure_amplitude",
       "target": "full_retrace",
-      "ticker": "ADA-USD"
+      "ticker": "ADA-USD",
+      "time_budget_ok": true
     },
     {
       "confidence": "high",
@@ -913,6 +961,7 @@
       "entry_zone": "fade_after_confirmed_pattern",
       "expected_net_return": 0.005659002209410505,
       "interval": "1w",
+      "last_wave_bars": 16,
       "lgbm_action": null,
       "lgbm_prob": null,
       "lgbm_threshold": null,
@@ -936,7 +985,8 @@
       "source_model_version": "probability-calibration-v0",
       "stop": "figure_amplitude",
       "target": "full_retrace",
-      "ticker": "XRP-USD"
+      "ticker": "XRP-USD",
+      "time_budget_ok": true
     },
     {
       "confidence": "high",
@@ -950,6 +1000,7 @@
       "entry_zone": "fade_after_confirmed_pattern",
       "expected_net_return": 0.005659002209410505,
       "interval": "1w",
+      "last_wave_bars": 6,
       "lgbm_action": null,
       "lgbm_prob": null,
       "lgbm_threshold": null,
@@ -973,7 +1024,8 @@
       "source_model_version": "probability-calibration-v0",
       "stop": "figure_amplitude",
       "target": "full_retrace",
-      "ticker": "PLTR"
+      "ticker": "PLTR",
+      "time_budget_ok": false
     },
     {
       "confidence": "high",
@@ -987,6 +1039,7 @@
       "entry_zone": "fade_after_confirmed_pattern",
       "expected_net_return": 0.005659002209410505,
       "interval": "1w",
+      "last_wave_bars": 13,
       "lgbm_action": null,
       "lgbm_prob": null,
       "lgbm_threshold": null,
@@ -1010,7 +1063,8 @@
       "source_model_version": "probability-calibration-v0",
       "stop": "figure_amplitude",
       "target": "full_retrace",
-      "ticker": "CRM"
+      "ticker": "CRM",
+      "time_budget_ok": true
     },
     {
       "confidence": "high",
@@ -1024,6 +1078,7 @@
       "entry_zone": "fade_after_confirmed_pattern",
       "expected_net_return": 0.005659002209410505,
       "interval": "1w",
+      "last_wave_bars": 2,
       "lgbm_action": null,
       "lgbm_prob": null,
       "lgbm_threshold": null,
@@ -1047,7 +1102,8 @@
       "source_model_version": "probability-calibration-v0",
       "stop": "figure_amplitude",
       "target": "full_retrace",
-      "ticker": "NFLX"
+      "ticker": "NFLX",
+      "time_budget_ok": false
     },
     {
       "confidence": "high",
@@ -1061,6 +1117,7 @@
       "entry_zone": "fade_after_confirmed_pattern",
       "expected_net_return": 0.005659002209410505,
       "interval": "1w",
+      "last_wave_bars": 15,
       "lgbm_action": null,
       "lgbm_prob": null,
       "lgbm_threshold": null,
@@ -1074,17 +1131,18 @@
       "pattern": "flat",
       "recommended_action": "buy",
       "risk_box": {
-        "amplitude": 13.075108484357273,
-        "entry_px": 96.15916442871094,
-        "stop_px": 83.08405594435366,
-        "target_px": 109.23427291306821
+        "amplitude": 13.075133630875413,
+        "entry_px": 96.15914916992188,
+        "stop_px": 83.08401553904646,
+        "target_px": 109.23428280079729
       },
       "sample_size": 275,
       "side": "long",
       "source_model_version": "probability-calibration-v0",
       "stop": "figure_amplitude",
       "target": "full_retrace",
-      "ticker": "TSM"
+      "ticker": "TSM",
+      "time_budget_ok": true
     },
     {
       "confidence": "high",
@@ -1098,6 +1156,7 @@
       "entry_zone": "fade_after_confirmed_pattern",
       "expected_net_return": 0.005659002209410505,
       "interval": "1w",
+      "last_wave_bars": 3,
       "lgbm_action": null,
       "lgbm_prob": null,
       "lgbm_threshold": null,
@@ -1111,17 +1170,18 @@
       "pattern": "flat",
       "recommended_action": "buy",
       "risk_box": {
-        "amplitude": 19.894255327845997,
-        "entry_px": 597.6328125,
-        "stop_px": 577.7385571721541,
-        "target_px": 617.5270678278459
+        "amplitude": 19.894248951387397,
+        "entry_px": 597.6327514648438,
+        "stop_px": 577.7385025134563,
+        "target_px": 617.5270004162312
       },
       "sample_size": 275,
       "side": "long",
       "source_model_version": "probability-calibration-v0",
       "stop": "figure_amplitude",
       "target": "full_retrace",
-      "ticker": "LLY"
+      "ticker": "LLY",
+      "time_budget_ok": true
     },
     {
       "confidence": "high",
@@ -1135,6 +1195,7 @@
       "entry_zone": "fade_after_confirmed_pattern",
       "expected_net_return": 0.005659002209410505,
       "interval": "1w",
+      "last_wave_bars": 1,
       "lgbm_action": null,
       "lgbm_prob": null,
       "lgbm_threshold": null,
@@ -1158,7 +1219,8 @@
       "source_model_version": "probability-calibration-v0",
       "stop": "figure_amplitude",
       "target": "full_retrace",
-      "ticker": "TRX-USD"
+      "ticker": "TRX-USD",
+      "time_budget_ok": false
     },
     {
       "confidence": "high",
@@ -1172,6 +1234,7 @@
       "entry_zone": "fade_after_confirmed_pattern",
       "expected_net_return": 0.0070283457821307335,
       "interval": "1w",
+      "last_wave_bars": 29,
       "lgbm_action": null,
       "lgbm_prob": null,
       "lgbm_threshold": null,
@@ -1185,17 +1248,18 @@
       "pattern": "flat",
       "recommended_action": "sell",
       "risk_box": {
-        "amplitude": 33.34446994627441,
-        "entry_px": 74.77381134033203,
-        "stop_px": 108.11828128660645,
-        "target_px": 41.42934139405762
+        "amplitude": 33.34446271268765,
+        "entry_px": 74.7738037109375,
+        "stop_px": 108.11826642362516,
+        "target_px": 41.42934099824985
       },
       "sample_size": 256,
       "side": "short",
       "source_model_version": "probability-calibration-v0",
       "stop": "figure_amplitude",
       "target": "full_retrace",
-      "ticker": "NVO"
+      "ticker": "NVO",
+      "time_budget_ok": true
     },
     {
       "confidence": "high",
@@ -1209,6 +1273,7 @@
       "entry_zone": "fade_after_confirmed_pattern",
       "expected_net_return": 0.0070283457821307335,
       "interval": "1w",
+      "last_wave_bars": 30,
       "lgbm_action": null,
       "lgbm_prob": null,
       "lgbm_threshold": null,
@@ -1232,7 +1297,8 @@
       "source_model_version": "probability-calibration-v0",
       "stop": "figure_amplitude",
       "target": "full_retrace",
-      "ticker": "VRTX"
+      "ticker": "VRTX",
+      "time_budget_ok": true
     },
     {
       "confidence": "high",
@@ -1246,6 +1312,7 @@
       "entry_zone": "fade_after_confirmed_pattern",
       "expected_net_return": 0.005659002209410505,
       "interval": "1w",
+      "last_wave_bars": 11,
       "lgbm_action": null,
       "lgbm_prob": null,
       "lgbm_threshold": null,
@@ -1259,17 +1326,18 @@
       "pattern": "flat",
       "recommended_action": "buy",
       "risk_box": {
-        "amplitude": 98.04288038778742,
-        "entry_px": 247.9608917236328,
-        "stop_px": 149.9180113358454,
-        "target_px": 346.00377211142023
+        "amplitude": 98.04290980811578,
+        "entry_px": 247.96084594726562,
+        "stop_px": 149.91793613914984,
+        "target_px": 346.0037557553814
       },
       "sample_size": 275,
       "side": "long",
       "source_model_version": "probability-calibration-v0",
       "stop": "figure_amplitude",
       "target": "full_retrace",
-      "ticker": "MSFT"
+      "ticker": "MSFT",
+      "time_budget_ok": true
     },
     {
       "confidence": "high",
@@ -1283,6 +1351,7 @@
       "entry_zone": "fade_after_confirmed_pattern",
       "expected_net_return": 0.005659002209410505,
       "interval": "1w",
+      "last_wave_bars": 8,
       "lgbm_action": null,
       "lgbm_prob": null,
       "lgbm_threshold": null,
@@ -1296,17 +1365,18 @@
       "pattern": "flat",
       "recommended_action": "buy",
       "risk_box": {
-        "amplitude": 31.492630378773903,
-        "entry_px": 75.99685668945312,
-        "stop_px": 44.50422631067922,
-        "target_px": 107.48948706822702
+        "amplitude": 31.492637763186075,
+        "entry_px": 75.99687957763672,
+        "stop_px": 44.504241814450644,
+        "target_px": 107.4895173408228
       },
       "sample_size": 275,
       "side": "long",
       "source_model_version": "probability-calibration-v0",
       "stop": "figure_amplitude",
       "target": "full_retrace",
-      "ticker": "BKNG"
+      "ticker": "BKNG",
+      "time_budget_ok": true
     },
     {
       "confidence": "high",
@@ -1320,6 +1390,7 @@
       "entry_zone": "fade_after_confirmed_pattern",
       "expected_net_return": 0.005659002209410505,
       "interval": "1w",
+      "last_wave_bars": 10,
       "lgbm_action": null,
       "lgbm_prob": null,
       "lgbm_threshold": null,
@@ -1343,7 +1414,8 @@
       "source_model_version": "probability-calibration-v0",
       "stop": "figure_amplitude",
       "target": "full_retrace",
-      "ticker": "TRX-USD"
+      "ticker": "TRX-USD",
+      "time_budget_ok": false
     },
     {
       "confidence": "high",
@@ -1357,6 +1429,7 @@
       "entry_zone": "fade_after_confirmed_pattern",
       "expected_net_return": 0.0070283457821307335,
       "interval": "1w",
+      "last_wave_bars": 3,
       "lgbm_action": null,
       "lgbm_prob": null,
       "lgbm_threshold": null,
@@ -1380,7 +1453,8 @@
       "source_model_version": "probability-calibration-v0",
       "stop": "figure_amplitude",
       "target": "full_retrace",
-      "ticker": "NEAR-USD"
+      "ticker": "NEAR-USD",
+      "time_budget_ok": true
     },
     {
       "confidence": "high",
@@ -1394,6 +1468,7 @@
       "entry_zone": "fade_after_confirmed_pattern",
       "expected_net_return": 0.005659002209410505,
       "interval": "1w",
+      "last_wave_bars": 6,
       "lgbm_action": null,
       "lgbm_prob": null,
       "lgbm_threshold": null,
@@ -1407,17 +1482,18 @@
       "pattern": "flat",
       "recommended_action": "buy",
       "risk_box": {
-        "amplitude": 14.250517409622574,
-        "entry_px": 243.8043212890625,
-        "stop_px": 229.55380387943993,
-        "target_px": 258.0548386986851
+        "amplitude": 14.250533469176986,
+        "entry_px": 243.80430603027344,
+        "stop_px": 229.55377256109645,
+        "target_px": 258.0548394994504
       },
       "sample_size": 275,
       "side": "long",
       "source_model_version": "probability-calibration-v0",
       "stop": "figure_amplitude",
       "target": "full_retrace",
-      "ticker": "LLY"
+      "ticker": "LLY",
+      "time_budget_ok": true
     },
     {
       "confidence": "high",
@@ -1431,6 +1507,7 @@
       "entry_zone": "fade_after_confirmed_pattern",
       "expected_net_return": 0.005659002209410505,
       "interval": "1w",
+      "last_wave_bars": 7,
       "lgbm_action": null,
       "lgbm_prob": null,
       "lgbm_threshold": null,
@@ -1454,7 +1531,8 @@
       "source_model_version": "probability-calibration-v0",
       "stop": "figure_amplitude",
       "target": "full_retrace",
-      "ticker": "AMD"
+      "ticker": "AMD",
+      "time_budget_ok": true
     },
     {
       "confidence": "high",
@@ -1468,6 +1546,7 @@
       "entry_zone": "fade_after_confirmed_pattern",
       "expected_net_return": 0.005659002209410505,
       "interval": "1w",
+      "last_wave_bars": 17,
       "lgbm_action": null,
       "lgbm_prob": null,
       "lgbm_threshold": null,
@@ -1491,7 +1570,8 @@
       "source_model_version": "probability-calibration-v0",
       "stop": "figure_amplitude",
       "target": "full_retrace",
-      "ticker": "NFLX"
+      "ticker": "NFLX",
+      "time_budget_ok": true
     },
     {
       "confidence": "low",
@@ -1505,6 +1585,7 @@
       "entry_zone": "fade_after_confirmed_pattern",
       "expected_net_return": 0.02146697160555637,
       "interval": "1w",
+      "last_wave_bars": 1,
       "lgbm_action": null,
       "lgbm_prob": null,
       "lgbm_threshold": null,
@@ -1528,7 +1609,8 @@
       "source_model_version": "probability-calibration-v0",
       "stop": "figure_amplitude",
       "target": "full_retrace",
-      "ticker": "DOGE-USD"
+      "ticker": "DOGE-USD",
+      "time_budget_ok": true
     },
     {
       "confidence": "high",
@@ -1542,6 +1624,7 @@
       "entry_zone": "fade_after_confirmed_pattern",
       "expected_net_return": 0.005659002209410505,
       "interval": "1w",
+      "last_wave_bars": 1,
       "lgbm_action": null,
       "lgbm_prob": null,
       "lgbm_threshold": null,
@@ -1565,7 +1648,8 @@
       "source_model_version": "probability-calibration-v0",
       "stop": "figure_amplitude",
       "target": "full_retrace",
-      "ticker": "XLM-USD"
+      "ticker": "XLM-USD",
+      "time_budget_ok": false
     },
     {
       "confidence": "high",
@@ -1579,6 +1663,7 @@
       "entry_zone": "fade_after_confirmed_pattern",
       "expected_net_return": 0.005659002209410505,
       "interval": "1w",
+      "last_wave_bars": 1,
       "lgbm_action": null,
       "lgbm_prob": null,
       "lgbm_threshold": null,
@@ -1602,7 +1687,8 @@
       "source_model_version": "probability-calibration-v0",
       "stop": "figure_amplitude",
       "target": "full_retrace",
-      "ticker": "TRX-USD"
+      "ticker": "TRX-USD",
+      "time_budget_ok": false
     },
     {
       "confidence": "high",
@@ -1616,6 +1702,7 @@
       "entry_zone": "fade_after_confirmed_pattern",
       "expected_net_return": 0.005659002209410505,
       "interval": "1w",
+      "last_wave_bars": 1,
       "lgbm_action": null,
       "lgbm_prob": null,
       "lgbm_threshold": null,
@@ -1639,7 +1726,8 @@
       "source_model_version": "probability-calibration-v0",
       "stop": "figure_amplitude",
       "target": "full_retrace",
-      "ticker": "XRP-USD"
+      "ticker": "XRP-USD",
+      "time_budget_ok": false
     },
     {
       "confidence": "high",
@@ -1653,6 +1741,7 @@
       "entry_zone": "fade_after_confirmed_pattern",
       "expected_net_return": 0.005659002209410505,
       "interval": "1w",
+      "last_wave_bars": 0,
       "lgbm_action": null,
       "lgbm_prob": null,
       "lgbm_threshold": null,
@@ -1676,7 +1765,8 @@
       "source_model_version": "probability-calibration-v0",
       "stop": "figure_amplitude",
       "target": "full_retrace",
-      "ticker": "DOT-USD"
+      "ticker": "DOT-USD",
+      "time_budget_ok": true
     },
     {
       "confidence": "high",
@@ -1690,6 +1780,7 @@
       "entry_zone": "fade_after_confirmed_pattern",
       "expected_net_return": 0.005659002209410505,
       "interval": "1w",
+      "last_wave_bars": 0,
       "lgbm_action": null,
       "lgbm_prob": null,
       "lgbm_threshold": null,
@@ -1713,7 +1804,8 @@
       "source_model_version": "probability-calibration-v0",
       "stop": "figure_amplitude",
       "target": "full_retrace",
-      "ticker": "BTC-USD"
+      "ticker": "BTC-USD",
+      "time_budget_ok": true
     },
     {
       "confidence": "high",
@@ -1727,6 +1819,7 @@
       "entry_zone": "fade_after_confirmed_pattern",
       "expected_net_return": 0.005659002209410505,
       "interval": "1w",
+      "last_wave_bars": 0,
       "lgbm_action": null,
       "lgbm_prob": null,
       "lgbm_threshold": null,
@@ -1750,7 +1843,8 @@
       "source_model_version": "probability-calibration-v0",
       "stop": "figure_amplitude",
       "target": "full_retrace",
-      "ticker": "DOGE-USD"
+      "ticker": "DOGE-USD",
+      "time_budget_ok": true
     },
     {
       "confidence": "high",
@@ -1764,6 +1858,7 @@
       "entry_zone": "fade_after_confirmed_pattern",
       "expected_net_return": 0.005659002209410505,
       "interval": "1w",
+      "last_wave_bars": 2,
       "lgbm_action": null,
       "lgbm_prob": null,
       "lgbm_threshold": null,
@@ -1777,17 +1872,18 @@
       "pattern": "flat",
       "recommended_action": "buy",
       "risk_box": {
-        "amplitude": 0.09122114588742036,
-        "entry_px": 32.67989730834961,
-        "stop_px": 32.58867616246219,
-        "target_px": 32.771118454237026
+        "amplitude": 0.09122509902376663,
+        "entry_px": 32.679901123046875,
+        "stop_px": 32.58867602402311,
+        "target_px": 32.77112622207064
       },
       "sample_size": 275,
       "side": "long",
       "source_model_version": "probability-calibration-v0",
       "stop": "figure_amplitude",
       "target": "full_retrace",
-      "ticker": "NVO"
+      "ticker": "NVO",
+      "time_budget_ok": false
     },
     {
       "confidence": "high",
@@ -1801,6 +1897,7 @@
       "entry_zone": "fade_after_confirmed_pattern",
       "expected_net_return": 0.005659002209410505,
       "interval": "1w",
+      "last_wave_bars": 0,
       "lgbm_action": null,
       "lgbm_prob": null,
       "lgbm_threshold": null,
@@ -1824,7 +1921,8 @@
       "source_model_version": "probability-calibration-v0",
       "stop": "figure_amplitude",
       "target": "full_retrace",
-      "ticker": "XLM-USD"
+      "ticker": "XLM-USD",
+      "time_budget_ok": true
     },
     {
       "confidence": "high",
@@ -1838,6 +1936,7 @@
       "entry_zone": "fade_after_confirmed_pattern",
       "expected_net_return": 0.0070283457821307335,
       "interval": "1w",
+      "last_wave_bars": 23,
       "lgbm_action": null,
       "lgbm_prob": null,
       "lgbm_threshold": null,
@@ -1851,17 +1950,18 @@
       "pattern": "flat",
       "recommended_action": "sell",
       "risk_box": {
-        "amplitude": 47.775341593633215,
-        "entry_px": 174.25396728515625,
-        "stop_px": 222.02930887878946,
-        "target_px": 126.47862569152304
+        "amplitude": 47.775263742848125,
+        "entry_px": 174.2539825439453,
+        "stop_px": 222.02924628679344,
+        "target_px": 126.47871880109719
       },
       "sample_size": 256,
       "side": "short",
       "source_model_version": "probability-calibration-v0",
       "stop": "figure_amplitude",
       "target": "full_retrace",
-      "ticker": "V"
+      "ticker": "V",
+      "time_budget_ok": true
     }
   ],
   "tickers": [
