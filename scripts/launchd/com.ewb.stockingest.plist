@@ -3,20 +3,20 @@
 <plist version="1.0">
 <dict>
     <key>Label</key>
-    <string>com.ewb.dataingest</string>
+    <string>com.ewb.stockingest</string>
     <key>ProgramArguments</key>
     <array>
         <string>/Users/DEV/Elliott-wave/.venv/bin/python3</string>
         <string>/Users/DEV/Elliott-wave/python/scripts/data_ingest.py</string>
         <string>--scope</string>
-        <string>crypto</string>
+        <string>stocks</string>
     </array>
     <key>WorkingDirectory</key>
     <string>/Users/DEV/Elliott-wave</string>
     <key>StartInterval</key>
-    <integer>3600</integer>
+    <integer>300</integer>
     <key>RunAtLoad</key>
-    <true/>
+    <false/>
     <key>StandardOutPath</key>
     <string>/Users/DEV/Elliott-wave/brain-output/data_ingest.log</string>
     <key>StandardErrorPath</key>
