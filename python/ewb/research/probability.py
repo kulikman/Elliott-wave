@@ -127,6 +127,13 @@ def fade_side(direction: str) -> str | None:
     return None
 
 
+# OOS TP/SL: TP at 1.618x amplitude beats 1.0x out-of-sample across all flat
+# setups (a single coherent rule, not per-setup overfit); SL kept at 1.0x
+# (the SL signal was mixed). The gate LUT is rebuilt with the same --tp-mult.
+TP_MULT = 1.618
+SL_MULT = 1.0
+
+
 def price_levels(side: str | None, entry_px: float | None, amplitude: float | None) -> dict:
     """Calculate stop/target prices from entry and absolute figure amplitude."""
     if side not in {"long", "short"} or entry_px is None or amplitude is None:
@@ -136,13 +143,13 @@ def price_levels(side: str | None, entry_px: float | None, amplitude: float | No
     if side == "long":
         return {
             "entry_px": entry_px,
-            "stop_px": entry_px - amplitude,
-            "target_px": entry_px + amplitude,
+            "stop_px": entry_px - amplitude * SL_MULT,
+            "target_px": entry_px + amplitude * TP_MULT,
         }
     return {
         "entry_px": entry_px,
-        "stop_px": entry_px + amplitude,
-        "target_px": entry_px - amplitude,
+        "stop_px": entry_px + amplitude * SL_MULT,
+        "target_px": entry_px - amplitude * TP_MULT,
     }
 
 

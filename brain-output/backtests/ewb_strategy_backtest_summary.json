@@ -18,15 +18,15 @@
   "scoped_rows": 1518,
   "portfolio": {
     "trades": 1518,
-    "winrate": 0.5988142292490118,
-    "expectancy": 0.014394861924968224,
-    "profit_factor": 1.825554554736457,
-    "max_drawdown": -0.9621242136350999,
-    "avg_return": 0.014394861924968224,
-    "median_return": 0.008484215800087644,
-    "total_return": 1602053.1349666219,
-    "avg_win": 0.053157485563157476,
-    "avg_loss": -0.043462650204939876
+    "winrate": 0.5678524374176548,
+    "expectancy": 0.0177219544866726,
+    "profit_factor": 1.9574733755665945,
+    "max_drawdown": -0.9748847147779012,
+    "avg_return": 0.0177219544866726,
+    "median_return": 0.006919756079452876,
+    "total_return": 38606535.57305676,
+    "avg_win": 0.06380361414514087,
+    "avg_loss": -0.0428304702474732
   },
   "outputs": {
     "trades": "/Users/DEV/Elliott-wave/brain-output/backtests/ewb_strategy_backtest_trades.parquet",

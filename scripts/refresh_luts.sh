@@ -16,7 +16,7 @@ LOG=brain-output/lut_refresh.log
   echo "==================== LUT refresh $(date) ===================="
   EWB_WAVE3=1 "$PY" python/scripts/backtest_wave3.py
   "$PY" python/scripts/backtest_core_setups.py
-  "$PY" python/scripts/backtest_ewb_strategy.py
+  "$PY" python/scripts/backtest_ewb_strategy.py --tp-mult 1.618 --sl-mult 1.0
 } >>"$LOG" 2>&1
 
 git add brain-output/backtests/ewb_strategy_backtest_grouped.parquet \

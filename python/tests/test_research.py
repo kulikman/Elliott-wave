@@ -580,15 +580,16 @@ def test_probability_helpers_map_action_confidence_and_side():
     assert fade_side("down") == "long"
     assert side_probabilities("long", 0.6) == pytest.approx((0.6, 0.4))
     assert side_probabilities("short", 0.6) == pytest.approx((0.4, 0.6))
+    # TP at 1.618x amplitude (OOS-optimized), SL at 1.0x.
     assert price_levels("long", 100.0, 5.0) == {
         "entry_px": 100.0,
         "stop_px": 95.0,
-        "target_px": 105.0,
+        "target_px": 100.0 + 5.0 * 1.618,
     }
     assert price_levels("short", 100.0, 5.0) == {
         "entry_px": 100.0,
         "stop_px": 105.0,
-        "target_px": 95.0,
+        "target_px": 100.0 - 5.0 * 1.618,
     }
 
 
@@ -673,8 +674,8 @@ def test_probability_signal_uses_lookup_priority_and_risk_box():
     assert signal["side"] == "long"
     assert signal["lookup_key"] == "flat|1h|long"
     assert signal["p_trade_win"] == pytest.approx(0.5)
-    assert signal["risk_box"]["stop_px"] == pytest.approx(96.0)
-    assert signal["risk_box"]["target_px"] == pytest.approx(104.0)
+    assert signal["risk_box"]["stop_px"] == pytest.approx(96.0)          # SL 1.0x
+    assert signal["risk_box"]["target_px"] == pytest.approx(100.0 + 4.0 * 1.618)  # TP 1.618x
 
     skip = build_probability_signal(
         payload,
