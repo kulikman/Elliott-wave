@@ -286,7 +286,13 @@ def probability_signal_from_figure(
     if entry_idx < 0 or entry_idx >= len(df):
         return None
 
-    entry_px = float(df["close"].iloc[entry_idx])
+    # next_open execution: the pattern confirms at the CLOSE of entry_idx; we
+    # enter at the OPEN of the next bar (realistic, executable, no look-ahead).
+    # If that bar hasn't formed yet, the signal isn't actionable — wait for it.
+    exec_idx = entry_idx + 1
+    if exec_idx >= len(df):
+        return None
+    entry_px = float(df["open"].iloc[exec_idx])
     signal = build_probability_signal(
         calibration,
         fig_type=figure.type,
@@ -312,8 +318,10 @@ def probability_signal_from_figure(
     )
     signal.update({
         "ticker": ticker,
-        "entry_idx": int(entry_idx),
-        "entry_ts": str(df.index[entry_idx]),
+        # entry_idx/entry_ts point to the EXEC bar (next_open fill); the pattern
+        # confirmed one bar earlier (entry_idx-1), which drives confirmation_lag.
+        "entry_idx": int(exec_idx),
+        "entry_ts": str(df.index[exec_idx]),
         "end_idx": int(figure.end_idx),
         "end_ts": str(df.index[figure.end_idx]) if figure.end_idx < len(df) else None,
         "confirmation_lag": confirmation_lag,

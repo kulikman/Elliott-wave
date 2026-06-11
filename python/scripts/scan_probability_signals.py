@@ -159,7 +159,9 @@ def _emit_core_setups(ticker, interval, df, figures, signals):
         e_idx = entry_index(fig)
         if e_idx < 0 or e_idx + 1 >= len(df):
             continue
-        entry_px = float(df["close"].iloc[e_idx])
+        # next_open execution: enter at the OPEN of the bar after confirmation
+        # (e_idx+1 is guaranteed to exist by the guard above).
+        entry_px = float(df["open"].iloc[e_idx + 1])
         for s in neely_core_setups(fig):
             if "target" in s and "stop" in s:
                 target, stop = float(s["target"]), float(s["stop"])
@@ -172,7 +174,7 @@ def _emit_core_setups(ticker, interval, df, figures, signals):
             if k not in freshest or e_idx > freshest[k]["_eidx"]:
                 freshest[k] = {"setup": s["setup"], "side": s["side"], "entry_px": entry_px,
                                "stop": stop, "target": target, "_eidx": e_idx,
-                               "ts": str(df.index[e_idx])}
+                               "ts": str(df.index[e_idx + 1])}
     for v in freshest.values():
         wr, n = core_wr.get((asset, interval, v["setup"], v["side"]), (0.0, 0))
         signals.append({

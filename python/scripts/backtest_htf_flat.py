@@ -40,7 +40,8 @@ def _load() -> pd.DataFrame:
 
 
 def _slice(g: pd.DataFrame, mtf: str) -> pd.DataFrame:
-    s = g[(g.fig_type == "flat") & (g.entry_variant == "confirm_close")
+    # next_open execution: stock grid labels it "next_open", crypto "next_bar_open".
+    s = g[(g.fig_type == "flat") & (g.entry_variant.isin(["next_open", "next_bar_open"]))
           & (g.tp_mult == 1.618) & (g.sl_mult == 1.0) & (g.late_limit == 999.0)
           & (g.mtf_policy == mtf)].copy()
     s["entry_ts"] = pd.to_datetime(s["entry_ts"], utc=True, errors="coerce")

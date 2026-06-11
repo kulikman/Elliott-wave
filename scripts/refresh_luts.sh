@@ -16,7 +16,8 @@ LOG=brain-output/lut_refresh.log
   echo "==================== LUT refresh $(date) ===================="
   EWB_WAVE3=1 "$PY" python/scripts/backtest_wave3.py
   "$PY" python/scripts/backtest_core_setups.py
-  "$PY" python/scripts/backtest_ewb_strategy.py --tp-mult 1.618 --sl-mult 1.0
+  "$PY" python/scripts/backtest_ewb_strategy.py --tp-mult 1.618 --sl-mult 1.0 \
+        --entry-variants next_open next_bar_open
   "$PY" python/scripts/backtest_htf_flat.py
 } >>"$LOG" 2>&1
 

@@ -160,10 +160,15 @@ def simulate_level_exit(
     stop: float,
     exit_bars: int,
     cost: float,
+    entry_px_override: float | None = None,
 ) -> dict | None:
     if entry_idx < 0 or entry_idx + 1 >= len(df):
         return None
-    entry_px = float(df["close"].iloc[entry_idx])
+    # next_open execution: pass entry_idx = confirmation bar and override the
+    # fill with the NEXT bar's open. Replay then starts at entry_idx+1 (the
+    # entry bar), so its range can trigger SL/TP right after the open fill.
+    entry_px = (float(entry_px_override) if entry_px_override is not None
+                else float(df["close"].iloc[entry_idx]))
     if entry_px <= 0 or not math.isfinite(target) or not math.isfinite(stop):
         return None
     sign = side_int(side)

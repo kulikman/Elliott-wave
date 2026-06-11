@@ -692,7 +692,7 @@ def test_probability_signal_uses_lookup_priority_and_risk_box():
     assert skip["risk_box"]["target_px"] is None
 
 
-def test_probability_signal_from_figure_uses_confirmation_entry():
+def test_probability_signal_from_figure_uses_next_open_entry():
     trades = pd.DataFrame({
         "fig_type": ["flat", "flat"],
         "interval": ["1h", "1h"],
@@ -702,14 +702,17 @@ def test_probability_signal_from_figure_uses_confirmation_entry():
         "exit_reason": ["tp", "sl"],
     })
     payload = build_probability_calibration(trades)
+    # 7 bars: confirmation on idx 5, so we enter at the OPEN of idx 6. The open
+    # of idx 6 (222) is deliberately distinct from its close (106) to prove the
+    # fill uses next bar's OPEN, not the confirmation bar's close.
     df = pd.DataFrame(
         {
-            "open": [100, 101, 102, 103, 104, 105],
-            "high": [101, 102, 103, 104, 105, 106],
-            "low": [99, 100, 101, 102, 103, 104],
-            "close": [100, 101, 102, 103, 104, 105],
+            "open": [100, 101, 102, 103, 104, 105, 222],
+            "high": [101, 102, 103, 104, 105, 106, 223],
+            "low": [99, 100, 101, 102, 103, 104, 221],
+            "close": [100, 101, 102, 103, 104, 105, 106],
         },
-        index=pd.date_range("2024-01-01", periods=6, freq="1h"),
+        index=pd.date_range("2024-01-01", periods=7, freq="1h"),
     )
     pivots = [
         Pivot(idx=0, price=100, direction=-1, confirmation_idx=0),
@@ -727,11 +730,33 @@ def test_probability_signal_from_figure_uses_confirmation_entry():
     signal = probability_signal_from_figure(payload, fig, df, "TEST", "1h")
     assert signal is not None
     assert signal["ticker"] == "TEST"
-    assert signal["entry_idx"] == 5
-    assert signal["risk_box"]["entry_px"] == 105
-    assert signal["confirmation_lag"] == 2
+    assert signal["entry_idx"] == 6                      # exec bar (next_open)
+    assert signal["risk_box"]["entry_px"] == 222         # OPEN of idx 6, not close 105
+    assert signal["confirmation_lag"] == 2               # 5 - end_idx 3
     assert signal["recommended_action"] == "buy"
     assert signal["lookup_key"] == "flat|1h|long"
+
+
+def test_probability_signal_from_figure_defers_when_no_next_bar():
+    """Confirmation on the LAST bar → next_open not available yet → no signal."""
+    trades = pd.DataFrame({
+        "fig_type": ["flat"], "interval": ["1h"], "side": ["long"],
+        "net_ret": [0.02], "win": [True], "exit_reason": ["tp"],
+    })
+    payload = build_probability_calibration(trades)
+    df = pd.DataFrame(
+        {"open": [100, 101, 102, 103], "high": [101, 102, 103, 104],
+         "low": [99, 100, 101, 102], "close": [100, 101, 102, 103]},
+        index=pd.date_range("2024-01-01", periods=4, freq="1h"),
+    )
+    pivots = [
+        Pivot(idx=0, price=100, direction=-1, confirmation_idx=0),
+        Pivot(idx=1, price=102, direction=1, confirmation_idx=2),
+        Pivot(idx=2, price=101, direction=-1, confirmation_idx=3),  # last bar
+    ]
+    fig = Figure(type="flat", direction="down", start_idx=0, end_idx=2,
+                 pivots=pivots, checks=[CheckResult(True, "O", "ok", "AKU-test")])
+    assert probability_signal_from_figure(payload, fig, df, "TEST", "1h") is None
 
 
 def test_probability_scan_payload_markdown_and_save(tmp_path):

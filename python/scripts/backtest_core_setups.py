@@ -62,7 +62,8 @@ def _core_trades(df: pd.DataFrame, ticker: str, interval: str) -> list[dict]:
         e_idx = entry_index(fig)
         if e_idx < 0 or e_idx + 1 >= len(df):
             continue
-        entry_px = float(df["close"].iloc[e_idx])
+        # next_open execution: enter at the OPEN of the bar after confirmation.
+        entry_px = float(df["open"].iloc[e_idx + 1])
         for s in neely_core_setups(fig):
             side = s["side"]
             if "target" in s and "stop" in s:
@@ -72,10 +73,11 @@ def _core_trades(df: pd.DataFrame, ticker: str, interval: str) -> list[dict]:
                 stop = entry_px + s["stop_offset"]
             else:
                 continue
-            r = simulate_level_exit(df, e_idx, side, target, stop, EXIT_BARS, cost)
+            r = simulate_level_exit(df, e_idx, side, target, stop, EXIT_BARS, cost,
+                                    entry_px_override=entry_px)
             if r is None:
                 continue
-            ts = df["ts"].iloc[e_idx] if "ts" in df.columns else pd.NaT
+            ts = df["ts"].iloc[e_idx + 1] if "ts" in df.columns else pd.NaT
             out.append({"fig_type": s["setup"], "side": side,
                         "win": r["win"], "net_ret": r["net_ret"], "entry_ts": ts})
     return out

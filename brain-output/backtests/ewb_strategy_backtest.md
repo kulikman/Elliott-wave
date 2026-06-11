@@ -10,62 +10,62 @@ This report tests the bot contract around the TradingView indicator. Pine remain
 - Patterns: `flat, double_corr`
 - Intervals: `1h, 4h, 1d, 1w`
 - Filters: min model P `55.0%`, min sample `20`, universe rank <= `100`
-- Canonical slice: entry `confirm_close`, MTF `none`, late `999.0`, TP `1.618`, SL `1.0`, exit `full`
+- Canonical slice: entry `next_open, next_bar_open`, MTF `none`, late `999.0`, TP `1.618`, SL `1.0`, exit `full`
 
 ## Portfolio Summary
 
 | Trades | Win | Exp | PF | DD | Total |
 |---|---|---|---|---|---|
-| 1518 | 56.8% | 1.77% | 1.96 | -97.5% | 3860653557.3% |
+| 1512 | 57.5% | 1.85% | 1.97 | -98.6% | 5907772448.5% |
 
 ## By Asset / TF / Pattern
 
 | Asset | TF | Pattern | Side | Trades | Win | Exp | PF | DD |
 |---|---|---|---|---|---|---|---|---|
-| crypto | 1w | flat | long | 7 | 57.1% | 51.98% | 7.54 | -42.2% |
-| stock | 1w | flat | long | 67 | 71.6% | 11.72% | 6.51 | -40.6% |
-| stock | 1d | flat | long | 82 | 65.9% | 3.99% | 3.78 | -30.1% |
-| stock | 4h | flat | long | 147 | 59.2% | 1.97% | 2.92 | -37.8% |
-| stock | 1h | flat | long | 444 | 59.0% | 1.02% | 2.65 | -24.6% |
-| crypto | 1d | flat | short | 27 | 70.4% | 5.12% | 2.16 | -69.0% |
-| crypto | 4h | flat | short | 132 | 65.9% | 1.31% | 1.80 | -42.6% |
-| crypto | 4h | flat | long | 111 | 54.1% | 1.62% | 1.78 | -59.2% |
-| crypto | 1d | flat | long | 26 | 53.8% | 6.26% | 1.71 | -74.6% |
-| crypto | 1h | flat | long | 226 | 51.3% | 0.24% | 1.25 | -24.9% |
-| stock | 4h | flat | short | 127 | 48.0% | 0.29% | 1.18 | -27.6% |
-| crypto | 1w | flat | short | 10 | 60.0% | 2.20% | 1.09 | -97.9% |
-| stock | 1d | flat | short | 76 | 43.4% | -0.13% | 0.95 | -72.9% |
-| stock | 1w | flat | short | 36 | 30.6% | -7.91% | 0.26 | -96.9% |
+| crypto | 1w | flat | long | 7 | 57.1% | 51.71% | 7.30 | -44.0% |
+| stock | 1w | flat | long | 67 | 73.1% | 12.55% | 6.78 | -40.2% |
+| stock | 1d | flat | long | 82 | 67.1% | 3.92% | 3.77 | -32.9% |
+| stock | 4h | flat | long | 146 | 58.9% | 2.08% | 3.03 | -37.0% |
+| stock | 1h | flat | long | 444 | 61.0% | 1.19% | 2.78 | -23.5% |
+| crypto | 1d | flat | short | 27 | 66.7% | 4.43% | 1.94 | -69.3% |
+| crypto | 4h | flat | short | 131 | 65.6% | 1.36% | 1.82 | -43.6% |
+| crypto | 1d | flat | long | 26 | 53.8% | 7.05% | 1.81 | -71.3% |
+| crypto | 4h | flat | long | 111 | 55.9% | 1.59% | 1.73 | -62.3% |
+| crypto | 1h | flat | long | 226 | 51.3% | 0.33% | 1.34 | -25.8% |
+| crypto | 1w | flat | short | 10 | 60.0% | 0.95% | 1.04 | -98.8% |
+| stock | 4h | flat | short | 127 | 46.5% | 0.04% | 1.02 | -50.1% |
+| stock | 1d | flat | short | 73 | 46.6% | -0.04% | 0.99 | -73.7% |
+| stock | 1w | flat | short | 35 | 28.6% | -8.48% | 0.23 | -97.3% |
 
 ## Best Setup Keys
 
 | Setup | Trades | Win | Exp | PF | DD |
 |---|---|---|---|---|---|
-| crypto|1w|flat|long|none|confirm_close | 7 | 57.1% | 51.98% | 7.54 | -42.2% |
-| stock|1w|flat|long|none|confirm_close | 67 | 71.6% | 11.72% | 6.51 | -40.6% |
-| stock|1d|flat|long|none|confirm_close | 82 | 65.9% | 3.99% | 3.78 | -30.1% |
-| stock|4h|flat|long|none|confirm_close | 147 | 59.2% | 1.97% | 2.92 | -37.8% |
-| stock|1h|flat|long|none|confirm_close | 444 | 59.0% | 1.02% | 2.65 | -24.6% |
-| crypto|1d|flat|short|none|confirm_close | 27 | 70.4% | 5.12% | 2.16 | -69.0% |
-| crypto|4h|flat|short|none|confirm_close | 132 | 65.9% | 1.31% | 1.80 | -42.6% |
-| crypto|4h|flat|long|none|confirm_close | 111 | 54.1% | 1.62% | 1.78 | -59.2% |
-| crypto|1d|flat|long|none|confirm_close | 26 | 53.8% | 6.26% | 1.71 | -74.6% |
-| crypto|1h|flat|long|none|confirm_close | 226 | 51.3% | 0.24% | 1.25 | -24.9% |
-| stock|4h|flat|short|none|confirm_close | 127 | 48.0% | 0.29% | 1.18 | -27.6% |
-| crypto|1w|flat|short|none|confirm_close | 10 | 60.0% | 2.20% | 1.09 | -97.9% |
-| stock|1d|flat|short|none|confirm_close | 76 | 43.4% | -0.13% | 0.95 | -72.9% |
-| stock|1w|flat|short|none|confirm_close | 36 | 30.6% | -7.91% | 0.26 | -96.9% |
+| crypto|1w|flat|long|none|next_bar_open | 7 | 57.1% | 51.71% | 7.30 | -44.0% |
+| stock|1w|flat|long|none|next_open | 67 | 73.1% | 12.55% | 6.78 | -40.2% |
+| stock|1d|flat|long|none|next_open | 82 | 67.1% | 3.92% | 3.77 | -32.9% |
+| stock|4h|flat|long|none|next_open | 146 | 58.9% | 2.08% | 3.03 | -37.0% |
+| stock|1h|flat|long|none|next_open | 444 | 61.0% | 1.19% | 2.78 | -23.5% |
+| crypto|1d|flat|short|none|next_bar_open | 27 | 66.7% | 4.43% | 1.94 | -69.3% |
+| crypto|4h|flat|short|none|next_bar_open | 131 | 65.6% | 1.36% | 1.82 | -43.6% |
+| crypto|1d|flat|long|none|next_bar_open | 26 | 53.8% | 7.05% | 1.81 | -71.3% |
+| crypto|4h|flat|long|none|next_bar_open | 111 | 55.9% | 1.59% | 1.73 | -62.3% |
+| crypto|1h|flat|long|none|next_bar_open | 226 | 51.3% | 0.33% | 1.34 | -25.8% |
+| crypto|1w|flat|short|none|next_bar_open | 10 | 60.0% | 0.95% | 1.04 | -98.8% |
+| stock|4h|flat|short|none|next_open | 127 | 46.5% | 0.04% | 1.02 | -50.1% |
+| stock|1d|flat|short|none|next_open | 73 | 46.6% | -0.04% | 0.99 | -73.7% |
+| stock|1w|flat|short|none|next_open | 35 | 28.6% | -8.48% | 0.23 | -97.3% |
 
 ## Walk Forward Folds
 
 | Fold | Start | End | Trades | Win | Exp | PF | DD |
 |---|---|---|---|---|---|---|---|
-| 1 | 2017-01-09T00:00:00+00:00 | 2023-10-13T16:00:00+00:00 | 253 | 60.1% | 3.79% | 2.12 | -97.5% |
-| 2 | 2023-10-15T00:00:00+00:00 | 2024-06-11T12:00:00+00:00 | 253 | 58.1% | 1.58% | 2.17 | -51.6% |
-| 3 | 2024-06-11T17:30:00+00:00 | 2024-12-23T03:00:00+00:00 | 253 | 60.5% | 1.75% | 2.61 | -30.0% |
-| 4 | 2024-12-23T14:30:00+00:00 | 2025-07-08T17:00:00+00:00 | 253 | 56.9% | 1.31% | 1.87 | -82.9% |
-| 5 | 2025-07-09T04:00:00+00:00 | 2026-01-15T00:00:00+00:00 | 253 | 53.0% | 1.24% | 1.69 | -53.2% |
-| 6 | 2026-01-15T14:30:00+00:00 | 2026-06-05T04:00:00+00:00 | 253 | 52.2% | 0.97% | 1.49 | -81.2% |
+| 1 | 2017-01-16T00:00:00+00:00 | 2023-10-15T04:00:00+00:00 | 252 | 60.7% | 3.75% | 2.07 | -98.6% |
+| 2 | 2023-10-16T00:00:00+00:00 | 2024-06-10T16:00:00+00:00 | 252 | 59.5% | 1.70% | 2.26 | -53.1% |
+| 3 | 2024-06-11T16:00:00+00:00 | 2024-12-16T20:00:00+00:00 | 252 | 59.9% | 1.97% | 2.77 | -32.1% |
+| 4 | 2024-12-16T20:30:00+00:00 | 2025-07-08T12:00:00+00:00 | 252 | 56.3% | 1.37% | 1.81 | -89.0% |
+| 5 | 2025-07-08T14:00:00+00:00 | 2026-01-13T16:00:00+00:00 | 252 | 54.0% | 1.20% | 1.67 | -54.9% |
+| 6 | 2026-01-13T16:00:00+00:00 | 2026-06-04T17:30:00+00:00 | 252 | 54.8% | 1.14% | 1.57 | -77.0% |
 
 ## How To Use
 
