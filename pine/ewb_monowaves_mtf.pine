@@ -807,6 +807,15 @@ coreSignalColor(string signalType, int dir) =>
 coreDirText(int dir) =>
     dir > 0 ? "LONG/UP" : dir < 0 ? "SHORT/DOWN" : "WAIT"
 
+// next_open execution — совпадает с Python-движком (EPIC K): паттерн
+// подтверждается на ЗАКРЫТИИ бара confBar, вход — на ОТКРЫТИИ следующего бара.
+// На исторических барах confBar+1 уже есть; на только что подтвердившемся
+// live-баре его ещё нет — тогда берём close как близкий прокси к будущему open.
+// math.max защищает от open[-1] (Pine падает на отрицательном индексе истории).
+nextOpenEntry(int confBar) =>
+    int off = bar_index - confBar - 1
+    off >= 0 ? open[math.max(off, 0)] : close
+
 drawTradeSignal(string figType, string figDir, int confBar, float entryPx,
                 int b0, int b1, float lo, float hi, float amp) =>
     bool figUp = figDir == "up"
@@ -823,7 +832,7 @@ drawTradeSignal(string figType, string figDir, int confBar, float entryPx,
          xloc = xloc.bar_index, yloc = yloc.price,
          style = isLong ? label.style_label_up : label.style_label_down,
          color = color.new(sigCol, 0), textcolor = color.white, size = size.normal,
-         tooltip = "Research Sprint 6: сигнал появляется на баре подтверждения pivot, не на экстремуме. TP/SL = amplitude фигуры.")
+         tooltip = "Сигнал на баре подтверждения pivot. Вход (entryPx) — по OPEN следующего бара (next_open), как в live-движке EPIC K. TP/SL = amplitude фигуры от этого входа.")
     line.new(confBar, tp, confBar + 50, tp, xloc = xloc.bar_index,
          color = color.new(color.lime, 25), width = 1, style = line.style_dotted)
     line.new(confBar, sl, confBar + 50, sl, xloc = xloc.bar_index,
@@ -1900,7 +1909,7 @@ if (showTrade or showCoreSignals or showNoise or showLiveHypothesis) and rc.conf
         if alt4
             string figDir4 = figDirection(array.get(hybPx, s4), array.get(hybPx, s4 + 1))
             int confBar4 = array.get(hybConf, hn - 1)
-            float entry4 = close
+            float entry4 = nextOpenEntry(confBar4)
             float amp4 = math.abs(array.get(hybPx, s4 + 3) - array.get(hybPx, s4))
             [b0h4, b1h4, loh4, hih4] = hybridBounds(hybBar, hybPx, s4, 4)
             if hybridFlatOK(hybPx, s4)
@@ -1989,7 +1998,7 @@ if (showTrade or showCoreSignals or showNoise or showLiveHypothesis) and rc.conf
             bool altCore6 = hybridAlternate(hybDir, c6, 5)
             if altCore6
                 int confBarCore6 = array.get(hybConf, hn - 1)
-                float entryCore6 = close
+                float entryCore6 = nextOpenEntry(confBarCore6)
                 float p0c6 = array.get(hybPx, c6)
                 float p1c6 = array.get(hybPx, c6 + 1)
                 float p2c6 = array.get(hybPx, c6 + 2)
@@ -2062,7 +2071,7 @@ if (showTrade or showCoreSignals or showNoise or showLiveHypothesis) and rc.conf
             bool altCore4 = hybridAlternate(hybDir, c4, 3)
             if altCore4
                 int confBarCore4 = array.get(hybConf, hn - 1)
-                float entryCore4 = close
+                float entryCore4 = nextOpenEntry(confBarCore4)
                 float p0c4 = array.get(hybPx, c4)
                 float p1c4 = array.get(hybPx, c4 + 1)
                 float p2c4 = array.get(hybPx, c4 + 2)
