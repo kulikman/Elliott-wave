@@ -29,11 +29,18 @@ sys.path.insert(0, str(ROOT / "python"))
 from ewb.monowaves import detect_monowaves          # noqa: E402
 from ewb.rules import classify_pivots               # noqa: E402
 from ewb.wave3 import detect_wave3_setups           # noqa: E402
+from ewb.htf import structural_trend_series         # noqa: E402
 from ewb.research.providers import download_binance_ohlc  # noqa: E402
 
 CACHE_DIR = ROOT / "python" / "data" / "ohlc_cache" / "tiingo"
 OUT = ROOT / "brain-output" / "backtests" / "ewb_wave3_backtest_grouped.parquet"
-TIMEOUT_BARS = 30
+# Mirror the LIVE wave3 policy so the LUT validates the SAME trade population the
+# auto-trader takes (this backtest is 1d-only). Live 1d: scan max_w1_frac=0.50,
+# TIMEOUT_BY_TF=12, HTF compass 1W. Keep these in lockstep with
+# scan_probability_signals._W3_MAX_W1_FRAC and auto_trader.TIMEOUT_BY_TF.
+TIMEOUT_BARS = 12
+MAX_W1_FRAC = 0.50
+COMPASS_RULE = "1W"
 CRYPTO = ["BTC-USD", "ETH-USD", "SOL-USD", "XRP-USD", "ADA-USD", "AVAX-USD",
           "LINK-USD", "DOT-USD", "NEAR-USD", "INJ-USD", "AAVE-USD", "ATOM-USD",
           "LTC-USD", "XLM-USD", "OP-USD", "HBAR-USD", "FIL-USD", "TRX-USD"]
@@ -72,17 +79,38 @@ def _sim_exit(df: pd.DataFrame, i: int, entry: float, stop: float,
     return cl[end - 1] if end - 1 > i else None
 
 
+def _compass_series(df: pd.DataFrame):
+    """HTF (1W) structural compass per bar — mirrors the live wave3 gate. The
+    backtest df has an integer index, so rebuild a ts-indexed view for resampling.
+    Returns a numpy array aligned to df rows, or None on failure (no gating)."""
+    try:
+        dt = pd.to_datetime(df["ts"], utc=True, errors="coerce")
+        df_dt = df.set_index(dt)
+        return structural_trend_series(df_dt, COMPASS_RULE).values
+    except Exception as exc:  # pragma: no cover - defensive
+        print(f"  WARN: compass failed ({exc}) — gate disabled for this series")
+        return None
+
+
 def _w3_trades(df: pd.DataFrame) -> list[dict]:
     piv = detect_monowaves(df, atr_mult=2.5)
     classify_pivots(piv)
+    compass = _compass_series(df)
     seen: set = set()
     out: list[dict] = []
     for i in range(60, len(df)):
+        bias = int(compass[i]) if compass is not None and i < len(compass) else 0
         known = [p for p in piv if 0 <= p.confirmation_idx <= i]
         if len(known) < 3:
             continue
-        for s in detect_wave3_setups(known, float(df["close"].iloc[i]), i):
+        for s in detect_wave3_setups(known, float(df["close"].iloc[i]), i,
+                                     max_w1_frac=MAX_W1_FRAC):
             if not (s.triggered and s.struct_ok and s.rr1 >= 1.0):
+                continue
+            # HTF compass gate (with-trend only) — mirror live scan.
+            if bias > 0 and s.side == "short":
+                continue
+            if bias < 0 and s.side == "long":
                 continue
             key = (round(s.entry_px, 4), round(s.stop_px, 4))
             if key in seen:
