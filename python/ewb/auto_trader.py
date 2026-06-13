@@ -289,7 +289,7 @@ def historical_exit(
     df = download_ohlc(ticker, interval, f"{days}d", min_rows=0)
     if df is None or df.empty:
         return None
-    if not {"high", "low", "close"}.issubset(df.columns):
+    if not {"open", "high", "low", "close"}.issubset(df.columns):
         return None
 
     idx = pd.to_datetime(df.index, utc=True)
@@ -302,7 +302,7 @@ def historical_exit(
     is_long = str(side).lower() in ("long", "buy")
 
     for ts, bar in walk.iterrows():
-        hi, lo = float(bar["high"]), float(bar["low"])
+        hi, lo, op = float(bar["high"]), float(bar["low"]), float(bar["open"])
         if is_long:
             hit_sl = stop_px > 0 and lo <= stop_px
             hit_tp = target_px > 0 and hi >= target_px
@@ -310,8 +310,11 @@ def historical_exit(
             hit_sl = stop_px > 0 and hi >= stop_px
             hit_tp = target_px > 0 and lo <= target_px
         # If both levels fall inside one bar, assume the stop filled first.
+        # Gap-realistic: if price opened beyond the stop, fill at the open
+        # (live order would have filled at the gap open, not the stop level).
         if hit_sl:
-            return ts, float(stop_px), "sl"
+            fill = min(stop_px, op) if is_long else max(stop_px, op)
+            return ts, fill, "sl"
         if hit_tp:
             return ts, float(target_px), "tp"
 
@@ -754,11 +757,14 @@ def repair_outcomes() -> int:
 
     for sid in auto_ids:
         s = signals[sid]
+        tf = str(s.get("interval", "1d"))
+        timeout = TIMEOUT_BY_TF.get(tf, TIMEOUT_BARS)
         result = historical_exit(
-            s["ticker"], str(s.get("interval", "1d")),
+            s["ticker"], tf,
             pd.Timestamp(s["entry_ts"]), float(s["entry_px"]),
             float(s.get("stop_px") or 0), float(s.get("target_px") or 0),
             s.get("side", "long"),
+            timeout_bars=timeout,
         )
         if result is None:
             log.warning("repair: no history for %s %s — left open", s["ticker"], sid)
