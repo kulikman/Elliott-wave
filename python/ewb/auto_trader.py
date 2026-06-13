@@ -84,7 +84,14 @@ TIMEOUT_BARS   = 30             # default close-after-N-bars (fallback)
 # bars or the count was wrong. Scaled so a daily trade no longer hangs 6 weeks
 # (30 daily bars) — the higher degree is the COMPASS, not the holding horizon.
 TIMEOUT_BY_TF  = {"1h": 24, "4h": 18, "1d": 12, "1w": 6}
-RETRAIN_EVERY  = 20             # retrain ML after every N closed trades
+RETRAIN_EVERY  = 100            # retrain ML after every N closed trades (was 20:
+                                # too small — overfit to noise; raised to 100)
+# Auto-retrain is FROZEN by default. The quant block showed the ML would retrain
+# on a tiny, mostly NON-robust closed-trade sample (crypto/1h/wave3 etc.), making
+# it worse, not better — and robust setups are gated by the LUT, not the ML, so
+# retraining adds no trading value now. Unfreeze with EWB_FREEZE_RETRAIN=0 once
+# the forward sample is large AND filtered to robust setups.
+RETRAIN_FROZEN = os.environ.get("EWB_FREEZE_RETRAIN", "1") == "1"
 
 # ─── High-winrate setup gate (validated against the 1518-trade backtest) ──────
 # The probability calibration was built on a small sample and over-rates some
@@ -928,13 +935,18 @@ def one_pass() -> None:
     events = read_jsonl(FORWARD_LOG)
     closed = try_close_trades(events, all_tradeable_set)
 
-    # Retrain if enough new closed trades
+    # Retrain if enough new closed trades — but only when explicitly unfrozen.
     state["closed_since_retrain"] = state.get("closed_since_retrain", 0) + closed
     if state["closed_since_retrain"] >= RETRAIN_EVERY:
-        ok = retrain_model()
-        if ok:
-            state["closed_since_retrain"] = 0
-            state["last_retrain"] = utc_now_iso()
+        if RETRAIN_FROZEN:
+            log.info("Ретрейн заморожен (EWB_FREEZE_RETRAIN=1) — накоплено %d/%d, "
+                     "пропускаю, чтобы не учить модель на шумовой выборке",
+                     state["closed_since_retrain"], RETRAIN_EVERY)
+        else:
+            ok = retrain_model()
+            if ok:
+                state["closed_since_retrain"] = 0
+                state["last_retrain"] = utc_now_iso()
 
     write_state(state)
     log.info(
