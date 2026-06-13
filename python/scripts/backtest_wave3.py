@@ -1,12 +1,16 @@
 """Backtest the EPIC-3 Wave-3 entry engine and emit a winrate LUT for the gate.
 
-The Wave-3 entry (Neely Ch.5) is the strongest structural trade: enter on the
-break of the W1 end after a healthy 38-62% W2 pullback, stop at W2 end, target
-the Neely channel projection (or fib 1.618 x W1). This script replays that
-setup over history and writes per-(asset_class, interval, fig_type, side)
-winrates to `ewb_wave3_backtest_grouped.parquet`, which the auto-trader's
-high-winrate gate merges with the main flat LUT so validated W3 setups can
-trade. Unlike double_corr, W3 has large samples and real positive expectancy.
+The Wave-3 entry (Neely Ch.5): enter on the break of the W1 end after a healthy
+38-62% W2 pullback, stop at W2 end, target fib 1.618 x W1. This script replays
+the setup over history and writes per-(asset_class, interval, fig_type, side)
+NET expectancy to `ewb_wave3_backtest_grouped.parquet`, which the auto-trader's
+gate uses.
+
+HONEST accounting (EPIC-0/EPIC-1): fills at the live next_open (open[trigger+1]),
+NOT the structural break level (which is in the past and inflated EV ~+3.6%);
+stop fills are gap-realistic; and every trade is NET of round-trip cost (COST_RT).
+Under honest accounting the cost-negative LTF-long groups correctly drop out —
+only genuinely positive-net setups survive the train+test stability filter.
 
 Data: cached stock OHLC under python/data/ohlc_cache/tiingo (avoids Tiingo
 rate limits) + Binance for crypto. Output is grouped winrates; the live gate
@@ -44,6 +48,11 @@ COMPASS_RULE_BY_TF = {"1h": "1D", "4h": "1D", "1d": "1W"}
 # bias-flip exit, mirroring auto_trader: close when the HTF compass turns against
 # the position. "strong" = |bias|=2 against, "sign" = any opposing sign, "off".
 BIASFLIP_MODE = os.environ.get("EWB_BIASFLIP_MODE", "strong").lower()
+# Round-trip trading cost as a fraction of notional (fee*2 sides + spread), so
+# the LUT carries NET expectancy. Crypto spot taker ~0.10%/side + ~5bp spread;
+# liquid stock ~0.01%/side + ~2bp. Without this the LUT trades cost-negative
+# setups (audit EPIC-0: crypto 1h/4h long are net-negative after costs).
+COST_RT = {"crypto": 2 * 0.0010 + 0.0005, "stock": 2 * 0.0001 + 0.0002}
 # Stocks: 1d only (no long-history intraday cache — Tiingo rate limits). Crypto:
 # multi-TF via keyless Binance. Periods balance sample size against compute.
 CRYPTO_INTERVALS = [("1h", "365d"), ("4h", "730d"), ("1d", "1500d")]
@@ -74,30 +83,37 @@ def _flipped(bias: int, up: bool) -> bool:
     return (bias <= -2) if up else (bias >= 2)   # "strong"
 
 
-def _sim_exit(df: pd.DataFrame, i: int, entry: float, stop: float,
+def _sim_exit(df: pd.DataFrame, entry_bar: int, entry: float, stop: float,
               target: float, up: bool, timeout: int,
               compass=None) -> float | None:
-    """Replay bars after entry; exit at the EARLIEST of SL, TP, bias-flip, or
-    timeout-close — mirrors the live try_close_trades (level hit beats a same-bar
-    flip; flip exits at that bar's close)."""
+    """Signed GROSS fractional return. Entry is already filled at entry_bar's open
+    (next_open execution); exit at the EARLIEST of SL, TP, bias-flip, or timeout.
+    Stop fill is gap-realistic (worse-of stop vs the gap open); TP fills at the
+    level; bias-flip / timeout at the bar close. Mirrors live try_close_trades."""
     hi = df["high"].values
     lo = df["low"].values
+    op = df["open"].values
     cl = df["close"].values
-    end = min(len(df), i + 1 + timeout)
-    for j in range(i + 1, end):
+    end = min(len(df), entry_bar + 1 + timeout)
+    for j in range(entry_bar + 1, end):
         if up:
             if lo[j] <= stop:
-                return stop
+                fill = min(stop, op[j])           # gap through stop -> worse fill
+                return (fill - entry) / entry
             if hi[j] >= target:
-                return target
+                return (target - entry) / entry
         else:
             if hi[j] >= stop:
-                return stop
+                fill = max(stop, op[j])
+                return (entry - fill) / entry
             if lo[j] <= target:
-                return target
+                return (entry - target) / entry
         if compass is not None and j < len(compass) and _flipped(int(compass[j]), up):
-            return cl[j]
-    return cl[end - 1] if end - 1 > i else None
+            return (cl[j] - entry) / entry if up else (entry - cl[j]) / entry
+    if end - 1 <= entry_bar:
+        return None
+    ex = cl[end - 1]
+    return (ex - entry) / entry if up else (entry - ex) / entry
 
 
 def _compass_series(df: pd.DataFrame, rule: str):
@@ -113,10 +129,12 @@ def _compass_series(df: pd.DataFrame, rule: str):
         return None
 
 
-def _w3_trades(df: pd.DataFrame, interval: str) -> list[dict]:
+def _w3_trades(df: pd.DataFrame, interval: str, asset_class: str) -> list[dict]:
     timeout = TIMEOUT_BY_TF.get(interval, 12)
     frac = MAX_W1_FRAC_BY_TF.get(interval, 0.50)
     rule = COMPASS_RULE_BY_TF.get(interval, "1W")
+    cost = COST_RT.get(asset_class, 0.0)
+    opens = df["open"].values
     piv = detect_monowaves(df, atr_mult=2.5)
     classify_pivots(piv)
     compass = _compass_series(df, rule)
@@ -149,12 +167,26 @@ def _w3_trades(df: pd.DataFrame, interval: str) -> list[dict]:
                 continue
             seen.add(key)
             up = s.side == "long"
-            px = _sim_exit(df, i, s.entry_px, s.stop_px, s.primary_tp, up,
-                           timeout, compass)
-            if px is None:
+            # next_open fill: enter at the open of the bar AFTER detection (live
+            # parity). Structural stop/target levels are unchanged.
+            entry_bar = i + 1
+            if entry_bar >= len(df):
                 continue
-            ret = (px - s.entry_px) / s.entry_px * (1.0 if up else -1.0)
-            ts = df["ts"].iloc[i] if "ts" in df.columns else pd.NaT
+            entry_px = float(opens[entry_bar])
+            if entry_px <= 0:
+                continue
+            # Re-validate R:R from the ACTUAL fill (live does this); skip if the
+            # next_open overshot the structural level and R:R fell below 1.
+            risk = abs(entry_px - s.stop_px)
+            reward = abs(s.primary_tp - entry_px)
+            if risk <= 0 or reward / risk < 1.0:
+                continue
+            gross = _sim_exit(df, entry_bar, entry_px, s.stop_px, s.primary_tp, up,
+                              timeout, compass)
+            if gross is None:
+                continue
+            ret = gross - cost                         # NET of round-trip cost
+            ts = df["ts"].iloc[entry_bar] if "ts" in df.columns else pd.NaT
             out.append({"side": s.side, "win": ret > 0, "ret": ret, "entry_ts": ts})
     return out
 
@@ -169,7 +201,7 @@ def main() -> None:
         df = _load_cached(f)
         if df is None:
             continue
-        for t in _w3_trades(df, "1d"):
+        for t in _w3_trades(df, "1d", "stock"):
             t.update(asset_class="stock", interval="1d", fig_type="wave3")
             rows.append(t)
 
@@ -181,7 +213,7 @@ def main() -> None:
                 continue
             df["ts"] = pd.to_datetime(df.index, utc=True, errors="coerce")
             df = df.reset_index(drop=True)
-            for t in _w3_trades(df, interval):
+            for t in _w3_trades(df, interval, "crypto"):
                 t.update(asset_class="crypto", interval=interval, fig_type="wave3")
                 rows.append(t)
 
