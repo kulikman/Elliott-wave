@@ -7,6 +7,26 @@ import yfinance as yf
 
 log = logging.getLogger(__name__)
 
+# Shared yfinance session: without it yfinance builds a fresh connection pool per
+# download, so a full-watchlist scan that falls through to yfinance (e.g. during
+# a Binance/Tiingo outage — every ticker retries here) opens hundreds of sockets
+# and can hit "Too many open files" (Errno 24). One reused session caps that.
+_YF_SESSION = None
+_YF_SESSION_TRIED = False
+
+
+def _yf_session():
+    global _YF_SESSION, _YF_SESSION_TRIED
+    if not _YF_SESSION_TRIED:
+        _YF_SESSION_TRIED = True
+        try:
+            from curl_cffi import requests as _cffi
+            _YF_SESSION = _cffi.Session(impersonate="chrome")
+        except Exception as exc:  # pragma: no cover - optional dep
+            log.warning("shared yfinance session unavailable (%s); per-call sessions", exc)
+            _YF_SESSION = None
+    return _YF_SESSION
+
 
 def normalize_ohlc(df: pd.DataFrame, include_volume: bool = False,
                    min_rows: int = 50) -> pd.DataFrame | None:
@@ -50,16 +70,18 @@ def _download_yfinance(ticker: str, interval: str, period: str,
                        include_volume: bool, min_rows: int) -> pd.DataFrame | None:
     """Fallback path: yfinance with 4h/2h resampling and 1w->1wk aliasing."""
     iv = str(interval).lower()
+    sess = _yf_session()
+    yf_kwargs = {"progress": False, "auto_adjust": True, "threads": False}
+    if sess is not None:
+        yf_kwargs["session"] = sess
     try:
         if iv in _RESAMPLE_FROM:
             base_iv, rule = _RESAMPLE_FROM[iv]
-            raw = yf.download(ticker, period=period, interval=base_iv,
-                              progress=False, auto_adjust=True, threads=False)
+            raw = yf.download(ticker, period=period, interval=base_iv, **yf_kwargs)
             resampled = _resample_ohlc(raw, rule, include_volume)
             return resampled if (resampled is not None and len(resampled) > min_rows) else None
         yf_iv = _INTERVAL_ALIASES.get(iv, iv)
-        df = yf.download(ticker, period=period, interval=yf_iv,
-                         progress=False, auto_adjust=True, threads=False)
+        df = yf.download(ticker, period=period, interval=yf_iv, **yf_kwargs)
     except Exception as exc:
         log.warning("yfinance download failed for %s/%s/%s: %s", ticker, interval, period, exc)
         return None

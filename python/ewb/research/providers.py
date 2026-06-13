@@ -208,6 +208,13 @@ def download_binance_ohlc(ticker: str, interval: str, period: str | None = None,
             ) as resp:
                 chunk = json.load(resp)
         except Exception as exc:
+            # If urlopen raised an HTTPError it holds an open socket — release it
+            # so repeated failures across the watchlist don't leak descriptors.
+            if isinstance(exc, urllib.error.HTTPError):
+                try:
+                    exc.close()
+                except Exception:
+                    pass
             log.warning("binance %s %s failed: %s", symbol, interval, exc)
             break
         if not isinstance(chunk, list) or not chunk:
@@ -238,7 +245,12 @@ def binance_last_price(ticker: str) -> float | None:
             data = json.load(resp)
         px = float(data["price"])
         return px if px > 0 else None
-    except Exception:
+    except Exception as exc:
+        if isinstance(exc, urllib.error.HTTPError):
+            try:
+                exc.close()
+            except Exception:
+                pass
         return None
 
 
@@ -262,6 +274,14 @@ def _tiingo_get(url: str, params: dict, token: str, retries: int = 3) -> list | 
                 payload = json.loads(resp.read().decode("utf-8"))
             return payload if isinstance(payload, list) else None
         except urllib.error.HTTPError as exc:
+            # HTTPError is itself a response object holding an OPEN socket — it is
+            # NOT closed by the `with` (urlopen raised before binding `resp`).
+            # Leaving it dangling leaks an FD until GC; under a 429 storm across
+            # the watchlist this exhausts the descriptor table (Errno 24). Close it.
+            try:
+                exc.close()
+            except Exception:
+                pass
             if exc.code in {401, 403, 404}:
                 log.warning("tiingo HTTP %s for %s", exc.code, url)
                 return None
