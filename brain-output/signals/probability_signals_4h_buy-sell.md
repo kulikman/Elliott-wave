@@ -1,62 +1,92 @@
 # Probability Signals
 
-Generated: `2026-06-11T09:43:29+00:00`
+Generated: `2026-06-13T14:29:16+00:00`
 Model: `probability-calibration-v0`
-Tickers: `NVDA, AVGO, AMD, TSM, ASML, ARM, MU, MSFT, ORCL, CRM, NOW, PLTR, CRWD, PANW, SNOW, AMZN, GOOGL, META, NFLX, UBER, SHOP, BKNG, LLY, NVO, ISRG, VRTX, TSLA, V, MA, CAT, BTC-USD, ETH-USD, BNB-USD, SOL-USD, XRP-USD, DOGE-USD, ADA-USD, AVAX-USD, TRX-USD, LINK-USD, DOT-USD, LTC-USD, ATOM-USD, XLM-USD, OP-USD, NEAR-USD, HBAR-USD, FIL-USD, INJ-USD, AAVE-USD`
+Tickers: `NVDA, AMD, TSM, MSFT, PLTR, CRWD, GOOGL, META, AMZN, LLY, VRTX, ISRG, V, MA, COIN, TSLA, ENPH, NEE, LMT, RTX, RKLB, BKNG, UBER, SHOP, CAT, HON, GE, XOM, FCX, NEM, BTC-USD, ETH-USD, BNB-USD, SOL-USD, XRP-USD, DOGE-USD, ADA-USD, AVAX-USD, TRX-USD, DOT-USD, NEAR-USD, ATOM-USD, ALGO-USD, FTM-USD, ETC-USD, BCH-USD, LTC-USD, XLM-USD, HBAR-USD, FIL-USD, SUI-USD, APT-USD, SEI-USD, EGLD-USD, ICP-USD, OP-USD, ARB-USD, IMX-USD, STX-USD, STRK-USD, MINA-USD, INJ-USD, TIA-USD, LINK-USD, AAVE-USD, UNI-USD, MKR-USD, CRV-USD, LDO-USD, DYDX-USD, GMX-USD, SNX-USD, COMP-USD, SUSHI-USD, BAL-USD, FET-USD, RNDR-USD, TAO-USD, GRT-USD, OCEAN-USD, GLM-USD, ANKR-USD, BAND-USD, SAND-USD, MANA-USD, AXS-USD, GALA-USD, FLOW-USD, CHZ-USD, APE-USD, THETA-USD, SHIB-USD, PEPE-USD, WIF-USD, BONK-USD, FLOKI-USD, XMR-USD, ZEC-USD, KSM-USD, CELO-USD, ROSE-USD, XTZ-USD, ONE-USD, WLD-USD, JUP-USD, PYTH-USD, DYM-USD, BLUR-USD, ENS-USD, MAGIC-USD`
 Interval: `4h`
 Actions: `buy, sell`
 Freshness: `all`
-Signals: `50`
+Signals: `80`
 
 | ticker | action | pattern | entry_ts | P(win) | EV | conf | entry | stop | target |
 |---|---|---|---|---:|---:|---|---:|---:|---:|
-| BTC-USD | buy | wave3 | 2026-06-11 08:00:00+00:00 | 0.0% | n/a | None | 62487.81 | 60063.00 | 69098.65 |
-| BTC-USD | sell | wave3 | 2026-06-11 08:00:00+00:00 | 0.0% | n/a | None | 68830.00 | 71632.95 | 61079.59 |
-| ETH-USD | sell | wave3 | 2026-06-11 08:00:00+00:00 | 0.0% | n/a | None | 3240.00 | 3394.36 | 2615.52 |
-| BNB-USD | buy | wave3 | 2026-06-11 08:00:00+00:00 | 0.0% | n/a | None | 585.30 | 565.60 | 640.47 |
-| BNB-USD | sell | wave3 | 2026-06-11 08:00:00+00:00 | 0.0% | n/a | None | 668.66 | 705.57 | 557.49 |
-| SOL-USD | sell | wave3 | 2026-06-11 08:00:00+00:00 | 0.0% | n/a | None | 132.21 | 142.75 | 95.34 |
-| XRP-USD | buy | wave3 | 2026-06-11 08:00:00+00:00 | 0.0% | n/a | None | 0.51 | 0.48 | 0.58 |
-| XRP-USD | sell | wave3 | 2026-06-11 08:00:00+00:00 | 0.0% | n/a | None | 2.17 | 2.43 | 1.28 |
-| DOGE-USD | sell | wave3 | 2026-06-11 08:00:00+00:00 | 0.0% | n/a | None | 0.11 | 0.13 | 0.06 |
-| ADA-USD | sell | wave3 | 2026-06-11 08:00:00+00:00 | 0.0% | n/a | None | 0.32 | 0.36 | 0.16 |
-| AVAX-USD | sell | wave3 | 2026-06-11 08:00:00+00:00 | 0.0% | n/a | None | 27.29 | 29.44 | 19.33 |
-| TRX-USD | buy | wave3 | 2026-06-11 08:00:00+00:00 | 0.0% | n/a | None | 0.12 | 0.12 | 0.13 |
-| TRX-USD | sell | wave3 | 2026-06-11 08:00:00+00:00 | 0.0% | n/a | None | 0.35 | 0.36 | 0.31 |
-| LINK-USD | sell | wave3 | 2026-06-11 08:00:00+00:00 | 0.0% | n/a | None | 11.10 | 12.55 | 5.19 |
-| DOT-USD | sell | wave3 | 2026-06-11 08:00:00+00:00 | 0.0% | n/a | None | 5.54 | 5.83 | 4.65 |
-| LTC-USD | sell | wave3 | 2026-06-11 08:00:00+00:00 | 0.0% | n/a | None | 68.54 | 71.90 | 57.99 |
-| ATOM-USD | sell | wave3 | 2026-06-11 08:00:00+00:00 | 0.0% | n/a | None | 6.95 | 7.25 | 6.04 |
-| ATOM-USD | buy | wave3 | 2026-06-11 08:00:00+00:00 | 0.0% | n/a | None | 1.73 | 1.67 | 1.92 |
-| XLM-USD | buy | wave3 | 2026-06-11 08:00:00+00:00 | 0.0% | n/a | None | 0.09 | 0.09 | 0.11 |
-| XLM-USD | sell | wave3 | 2026-06-11 08:00:00+00:00 | 0.0% | n/a | None | 0.41 | 0.45 | 0.30 |
-| OP-USD | sell | wave3 | 2026-06-11 08:00:00+00:00 | 0.0% | n/a | None | 1.66 | 1.95 | 0.91 |
-| NEAR-USD | sell | wave3 | 2026-06-11 08:00:00+00:00 | 0.0% | n/a | None | 4.44 | 5.19 | 1.74 |
-| NEAR-USD | buy | wave3 | 2026-06-11 08:00:00+00:00 | 0.0% | n/a | None | 1.84 | 1.66 | 2.44 |
-| HBAR-USD | buy | wave3 | 2026-06-11 08:00:00+00:00 | 0.0% | n/a | None | 0.07 | 0.07 | 0.09 |
-| HBAR-USD | sell | wave3 | 2026-06-11 08:00:00+00:00 | 0.0% | n/a | None | 0.27 | 0.30 | 0.16 |
-| FIL-USD | sell | wave3 | 2026-06-11 08:00:00+00:00 | 0.0% | n/a | None | 4.16 | 4.62 | 2.89 |
-| INJ-USD | sell | wave3 | 2026-06-11 08:00:00+00:00 | 0.0% | n/a | None | 18.60 | 23.25 | 0.85 |
-| INJ-USD | buy | wave3 | 2026-06-11 08:00:00+00:00 | 0.0% | n/a | None | 3.92 | 3.46 | 5.16 |
-| AAVE-USD | sell | wave3 | 2026-06-11 08:00:00+00:00 | 0.0% | n/a | None | 71.06 | 83.61 | 24.28 |
-| LTC-USD | sell | flat | 2026-06-10 20:00:00+00:00 | 55.9% | +0.70% | high | 41.74 | 41.82 | 41.61 |
-| LTC-USD | sell | core_moving_correction_follow | 2026-06-10 20:00:00+00:00 | 36.8% | n/a | None | 41.74 | 43.11 | 35.95 |
-| ATOM-USD | sell | core_triangle_thrust | 2026-06-10 20:00:00+00:00 | 50.3% | n/a | None | 1.76 | 2.06 | 1.35 |
-| FIL-USD | sell | flat | 2026-06-10 20:00:00+00:00 | 55.9% | +0.70% | high | 0.73 | 0.77 | 0.67 |
-| FIL-USD | sell | core_moving_correction_follow | 2026-06-10 20:00:00+00:00 | 36.8% | n/a | None | 0.73 | 0.79 | 0.48 |
-| NVDA | buy | wave3 | 2026-06-10 12:00:00-04:00 | 0.0% | n/a | None | 49.65 | 44.89 | 62.58 |
-| AVGO | buy | wave3 | 2026-06-10 12:00:00-04:00 | 0.0% | n/a | None | 99.99 | 90.31 | 129.36 |
-| AMD | buy | wave3 | 2026-06-10 12:00:00-04:00 | 0.0% | n/a | None | 143.47 | 135.37 | 168.10 |
-| TSM | buy | wave3 | 2026-06-10 12:00:00-04:00 | 0.0% | n/a | None | 93.44 | 88.52 | 107.00 |
-| ASML | buy | wave3 | 2026-06-10 12:00:00-04:00 | 0.0% | n/a | None | 1007.68 | 958.69 | 1193.83 |
-| MU | buy | wave3 | 2026-06-10 12:00:00-04:00 | 0.0% | n/a | None | 82.99 | 78.63 | 99.27 |
-| MSFT | buy | wave3 | 2026-06-10 12:00:00-04:00 | 0.0% | n/a | None | 336.63 | 324.39 | 380.61 |
-| MSFT | sell | wave3 | 2026-06-10 12:00:00-04:00 | 0.0% | n/a | None | 432.00 | 448.39 | 373.19 |
-| ORCL | buy | wave3 | 2026-06-10 12:00:00-04:00 | 0.0% | n/a | None | 113.37 | 109.79 | 124.47 |
-| ORCL | sell | wave3 | 2026-06-10 12:00:00-04:00 | 0.0% | n/a | None | 228.25 | 241.95 | 179.34 |
-| CRM | sell | wave3 | 2026-06-10 12:00:00-04:00 | 0.0% | n/a | None | 253.77 | 260.56 | 230.16 |
-| NOW | sell | wave3 | 2026-06-10 12:00:00-04:00 | 0.0% | n/a | None | 141.71 | 151.45 | 113.58 |
-| PLTR | buy | wave3 | 2026-06-10 12:00:00-04:00 | 0.0% | n/a | None | 17.83 | 16.22 | 22.70 |
-| PLTR | sell | wave3 | 2026-06-10 12:00:00-04:00 | 0.0% | n/a | None | 142.34 | 163.20 | 66.10 |
-| CRWD | buy | wave3 | 2026-06-10 12:00:00-04:00 | 0.0% | n/a | None | 172.64 | 160.03 | 222.26 |
-| PANW | buy | wave3 | 2026-06-10 12:00:00-04:00 | 0.0% | n/a | None | 123.15 | 113.17 | 159.66 |
+| BNB-USD | buy | wave3 | 2026-06-13 12:00:00+00:00 | 0.0% | n/a | None | 606.67 | 592.53 | 649.46 |
+| DOGE-USD | buy | wave3 | 2026-06-13 12:00:00+00:00 | 0.0% | n/a | None | 0.09 | 0.08 | 0.10 |
+| INJ-USD | sell | wave3 | 2026-06-13 12:00:00+00:00 | 0.0% | n/a | None | 5.26 | 5.80 | 3.99 |
+| CRV-USD | buy | wave3 | 2026-06-13 12:00:00+00:00 | 0.0% | n/a | None | 0.24 | 0.21 | 0.35 |
+| TAO-USD | buy | flat | 2026-06-13 12:00:00+00:00 | 56.4% | +0.57% | high | 246.10 | 239.30 | 257.10 |
+| TAO-USD | buy | wave3 | 2026-06-13 12:00:00+00:00 | 0.0% | n/a | None | 246.10 | 242.40 | 325.59 |
+| TAO-USD | buy | core_moving_correction_follow | 2026-06-13 12:00:00+00:00 | 0.0% | n/a | None | 246.10 | 237.47 | 282.67 |
+| XMR-USD | buy | wave3 | 2026-06-13 12:00:00+00:00 | 0.0% | n/a | None | 335.69 | 318.63 | 403.06 |
+| XTZ-USD | buy | core_impulse_post_w4 | 2026-06-13 12:00:00+00:00 | 0.0% | n/a | None | 0.24 | 0.18 | 0.25 |
+| DYM-USD | buy | wave3 | 2026-06-13 12:00:00+00:00 | 0.0% | n/a | None | 0.02 | 0.02 | 0.02 |
+| AVAX-USD | buy | core_impulse_post_w4 | 2026-06-13 08:00:00+00:00 | 0.0% | n/a | None | 6.67 | 5.08 | 6.96 |
+| FIL-USD | buy | core_impulse_post_w4 | 2026-06-13 08:00:00+00:00 | 0.0% | n/a | None | 0.78 | 0.58 | 0.80 |
+| TIA-USD | buy | wave3 | 2026-06-13 08:00:00+00:00 | 0.0% | n/a | None | 0.34 | 0.30 | 0.43 |
+| GALA-USD | sell | flat | 2026-06-13 08:00:00+00:00 | 55.9% | +0.70% | high | 0.00 | 0.00 | 0.00 |
+| GALA-USD | sell | flat_htf | 2026-06-13 08:00:00+00:00 | 80.0% | +0.70% | high | 0.00 | 0.00 | 0.00 |
+| ICP-USD | sell | core_zigzag_follow_to_c_eq_a | 2026-06-13 04:00:00+00:00 | 0.0% | n/a | None | 2.35 | 2.49 | 1.38 |
+| CRV-USD | sell | core_triangle_thrust | 2026-06-12 20:00:00+00:00 | 51.9% | n/a | None | 0.24 | 0.29 | 0.20 |
+| AMD | buy | flat | 2026-06-12 16:00:00+00:00 | 56.4% | +0.57% | high | 505.30 | 473.56 | 556.63 |
+| AMD | buy | core_moving_correction_follow | 2026-06-12 16:00:00+00:00 | 0.0% | n/a | None | 505.30 | 476.39 | 627.73 |
+| PLTR | sell | wave3 | 2026-06-12 16:00:00+00:00 | 0.0% | n/a | None | 126.95 | 145.91 | 76.89 |
+| COIN | sell | wave3 | 2026-06-12 16:00:00+00:00 | 0.0% | n/a | None | 159.31 | 176.14 | 107.59 |
+| HON | sell | wave3 | 2026-06-12 16:00:00+00:00 | 0.0% | n/a | None | 222.72 | 226.58 | 206.22 |
+| DOGE-USD | sell | double_corr | 2026-06-12 16:00:00+00:00 | 87.5% | +2.15% | low | 0.09 | 0.10 | 0.06 |
+| BAND-USD | buy | core_impulse_post_w4 | 2026-06-12 16:00:00+00:00 | 0.0% | n/a | None | 0.17 | 0.14 | 0.18 |
+| RTX | buy | wave3 | 2026-06-12 12:00:00+00:00 | 0.0% | n/a | None | 182.64 | 176.55 | 200.19 |
+| APT-USD | buy | core_impulse_post_w4 | 2026-06-12 12:00:00+00:00 | 0.0% | n/a | None | 0.66 | 0.45 | 0.69 |
+| GMX-USD | buy | core_triangle_thrust | 2026-06-12 12:00:00+00:00 | 0.0% | n/a | None | 5.58 | 4.79 | 6.70 |
+| XRP-USD | buy | core_impulse_post_w4 | 2026-06-12 04:00:00+00:00 | 0.0% | n/a | None | 1.14 | 0.98 | 1.19 |
+| XLM-USD | buy | core_impulse_post_w4 | 2026-06-12 04:00:00+00:00 | 0.0% | n/a | None | 0.20 | 0.14 | 0.22 |
+| BCH-USD | buy | core_impulse_post_w4 | 2026-06-12 00:00:00+00:00 | 0.0% | n/a | None | 205.30 | 140.05 | 234.60 |
+| SOL-USD | buy | core_impulse_post_w4 | 2026-06-11 20:00:00+00:00 | 0.0% | n/a | None | 66.93 | 52.73 | 68.17 |
+| BNB-USD | buy | core_impulse_post_w4 | 2026-06-11 20:00:00+00:00 | 0.0% | n/a | None | 604.44 | 517.63 | 610.54 |
+| TRX-USD | buy | core_impulse_post_w4 | 2026-06-11 20:00:00+00:00 | 0.0% | n/a | None | 0.31 | 0.29 | 0.33 |
+| SEI-USD | buy | core_impulse_post_w4 | 2026-06-11 20:00:00+00:00 | 0.0% | n/a | None | 0.05 | 0.04 | 0.05 |
+| STX-USD | buy | core_impulse_post_w4 | 2026-06-11 20:00:00+00:00 | 0.0% | n/a | None | 0.19 | 0.14 | 0.19 |
+| LINK-USD | buy | core_impulse_post_w4 | 2026-06-11 20:00:00+00:00 | 0.0% | n/a | None | 7.94 | 6.60 | 8.13 |
+| GLM-USD | buy | core_impulse_post_w4 | 2026-06-11 20:00:00+00:00 | 0.0% | n/a | None | 0.11 | 0.09 | 0.12 |
+| WIF-USD | buy | core_triangle_thrust | 2026-06-11 20:00:00+00:00 | 0.0% | n/a | None | 0.16 | 0.12 | 0.20 |
+| JUP-USD | sell | core_zigzag_follow_to_c_eq_a | 2026-06-11 20:00:00+00:00 | 0.0% | n/a | None | 0.16 | 0.17 | 0.09 |
+| PYTH-USD | buy | core_triangle_thrust | 2026-06-11 20:00:00+00:00 | 0.0% | n/a | None | 0.04 | 0.03 | 0.05 |
+| TSM | buy | wave3 | 2026-06-11 16:00:00+00:00 | 0.0% | n/a | None | 412.80 | 384.67 | 488.55 |
+| LMT | buy | wave3 | 2026-06-11 16:00:00+00:00 | 0.0% | n/a | None | 543.31 | 505.50 | 634.50 |
+| SAND-USD | buy | core_impulse_post_w4 | 2026-06-11 16:00:00+00:00 | 0.0% | n/a | None | 0.05 | 0.04 | 0.05 |
+| MANA-USD | buy | core_impulse_post_w4 | 2026-06-11 16:00:00+00:00 | 0.0% | n/a | None | 0.07 | 0.05 | 0.08 |
+| VRTX | sell | core_triangle_thrust | 2026-06-11 12:00:00+00:00 | 0.0% | n/a | None | 436.72 | 468.11 | 413.98 |
+| ISRG | sell | flat | 2026-06-11 12:00:00+00:00 | 55.9% | +0.70% | high | 410.94 | 423.79 | 390.16 |
+| ISRG | sell | core_moving_correction_follow | 2026-06-11 12:00:00+00:00 | 0.0% | n/a | None | 410.94 | 423.13 | 359.31 |
+| APE-USD | sell | core_zigzag_follow_to_c_eq_a | 2026-06-11 12:00:00+00:00 | 0.0% | n/a | None | 0.13 | 0.13 | 0.09 |
+| CELO-USD | buy | core_impulse_post_w4 | 2026-06-11 12:00:00+00:00 | 0.0% | n/a | None | 0.06 | 0.05 | 0.06 |
+| DYM-USD | buy | core_impulse_post_w4 | 2026-06-11 12:00:00+00:00 | 0.0% | n/a | None | 0.02 | 0.01 | 0.02 |
+| SUSHI-USD | buy | core_triangle_thrust | 2026-06-11 08:00:00+00:00 | 0.0% | n/a | None | 0.18 | 0.13 | 0.25 |
+| ANKR-USD | buy | core_impulse_post_w4 | 2026-06-11 08:00:00+00:00 | 0.0% | n/a | None | 0.00 | 0.00 | 0.00 |
+| THETA-USD | buy | core_impulse_post_w4 | 2026-06-11 08:00:00+00:00 | 0.0% | n/a | None | 0.16 | 0.12 | 0.16 |
+| ATOM-USD | sell | core_triangle_thrust | 2026-06-11 00:00:00+00:00 | 51.9% | n/a | None | 1.76 | 2.06 | 1.35 |
+| ETC-USD | sell | flat | 2026-06-11 00:00:00+00:00 | 55.9% | +0.70% | high | 6.96 | 7.18 | 6.60 |
+| ETC-USD | sell | flat_htf | 2026-06-11 00:00:00+00:00 | 80.0% | +0.70% | high | 6.96 | 7.18 | 6.60 |
+| ETC-USD | sell | core_moving_correction_follow | 2026-06-11 00:00:00+00:00 | 50.0% | n/a | None | 6.96 | 7.15 | 6.15 |
+| LTC-USD | sell | flat | 2026-06-11 00:00:00+00:00 | 55.9% | +0.70% | high | 41.73 | 41.81 | 41.60 |
+| LTC-USD | sell | flat_htf | 2026-06-11 00:00:00+00:00 | 80.0% | +0.70% | high | 41.73 | 41.81 | 41.60 |
+| LTC-USD | sell | core_moving_correction_follow | 2026-06-11 00:00:00+00:00 | 50.0% | n/a | None | 41.73 | 43.10 | 35.94 |
+| TIA-USD | sell | flat | 2026-06-11 00:00:00+00:00 | 55.9% | +0.70% | high | 0.31 | 0.38 | 0.20 |
+| TIA-USD | sell | core_moving_correction_follow | 2026-06-11 00:00:00+00:00 | 50.0% | n/a | None | 0.31 | 0.34 | 0.16 |
+| EGLD-USD | sell | flat | 2026-06-10 12:00:00+00:00 | 55.9% | +0.70% | high | 2.83 | 2.86 | 2.78 |
+| EGLD-USD | sell | flat_htf | 2026-06-10 12:00:00+00:00 | 80.0% | +0.70% | high | 2.83 | 2.86 | 2.78 |
+| EGLD-USD | sell | core_moving_correction_follow | 2026-06-10 12:00:00+00:00 | 50.0% | n/a | None | 2.83 | 2.95 | 2.33 |
+| BONK-USD | sell | flat | 2026-06-10 12:00:00+00:00 | 55.9% | +0.70% | high | 0.00 | 0.00 | 0.00 |
+| BONK-USD | sell | flat_htf | 2026-06-10 12:00:00+00:00 | 80.0% | +0.70% | high | 0.00 | 0.00 | 0.00 |
+| BONK-USD | sell | core_moving_correction_follow | 2026-06-10 12:00:00+00:00 | 50.0% | n/a | None | 0.00 | 0.00 | 0.00 |
+| INJ-USD | sell | core_triangle_thrust | 2026-06-10 08:00:00+00:00 | 51.9% | n/a | None | 5.26 | 6.91 | 3.36 |
+| ETH-USD | sell | flat | 2026-06-09 20:00:00+00:00 | 55.9% | +0.70% | high | 1657.33 | 1825.40 | 1385.39 |
+| ETH-USD | sell | flat_htf | 2026-06-09 20:00:00+00:00 | 80.0% | +0.70% | high | 1657.33 | 1825.40 | 1385.39 |
+| ETH-USD | sell | core_moving_correction_follow | 2026-06-09 20:00:00+00:00 | 50.0% | n/a | None | 1657.33 | 1692.76 | 1507.26 |
+| ARB-USD | sell | core_triangle_thrust | 2026-06-09 20:00:00+00:00 | 51.9% | n/a | None | 0.08 | 0.10 | 0.05 |
+| FLOW-USD | sell | core_triangle_thrust | 2026-06-09 20:00:00+00:00 | 51.9% | n/a | None | 0.03 | 0.03 | 0.02 |
+| ONE-USD | sell | core_triangle_thrust | 2026-06-09 20:00:00+00:00 | 51.9% | n/a | None | 0.00 | 0.00 | 0.00 |
+| BTC-USD | sell | core_triangle_thrust | 2026-06-09 16:00:00+00:00 | 51.9% | n/a | None | 61131.85 | 67353.55 | 56070.11 |
+| KSM-USD | sell | flat | 2026-06-09 16:00:00+00:00 | 55.9% | +0.70% | high | 3.55 | 3.64 | 3.40 |
+| KSM-USD | sell | flat_htf | 2026-06-09 16:00:00+00:00 | 80.0% | +0.70% | high | 3.55 | 3.64 | 3.40 |
+| KSM-USD | sell | core_moving_correction_follow | 2026-06-09 16:00:00+00:00 | 50.0% | n/a | None | 3.55 | 3.71 | 2.85 |
+| ROSE-USD | sell | flat | 2026-06-09 16:00:00+00:00 | 55.9% | +0.70% | high | 0.01 | 0.01 | 0.01 |
