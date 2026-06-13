@@ -166,6 +166,27 @@ def main():
     print("\nNote: allocation ∝ half-Kelly leverage (EV/variance). Correlation-")
     print("adjusted Kelly (Σ⁻¹μ) would tilt further toward the low-corr pairs above.")
 
+    # ── persist a sizing LUT for the live trader ──
+    # Restrict to LIVE-SCANNED intervals (1h/4h/1d/1w) — 30m/15m are not traded.
+    # kelly_mult = clip( (EV/var) / median(EV/var), 0.25, 3.0 ): a growth-optimal
+    # position multiplier centred at 1.0 (typical setup), capped for fat-tail
+    # safety. Variance penalises high-vol setups (the flagship gets sized DOWN).
+    tradeable = [(key, ev, var, ev / var) for key, ev, var, f in kel
+                 if key.split("/")[1] in SCAN_INTERVALS and var > 0]
+    if tradeable:
+        ref = float(np.median([s for *_, s in tradeable])) or 1.0
+        rows = []
+        for key, ev, var, score in tradeable:
+            ac, iv, fig, side = key.split("/")
+            mult = float(np.clip(score / ref, 0.25, 3.0))
+            rows.append({"asset_class": ac, "interval": iv, "fig_type": fig,
+                         "side": side, "ev": float(ev), "variance": float(var),
+                         "kelly_mult": round(mult, 3)})
+        out = ROOT / "brain-output" / "backtests" / "ewb_kelly_sizing.parquet"
+        pd.DataFrame(rows).to_parquet(out, index=False)
+        print(f"\nWrote {out.name}: {len(rows)} tradeable-setup Kelly multipliers "
+              f"(ref EV/var={ref:.2f}, mult∈[0.25,3.0])")
+
 
 if __name__ == "__main__":
     main()

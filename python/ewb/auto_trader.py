@@ -69,6 +69,10 @@ HTFFLAT_WR_FILE = ROOT / "brain-output" / "backtests" / "ewb_htf_flat_backtest_g
 # t-stat>2, PF>1.5). Surfaces the strongest stock flat longs (1w/1d) the other
 # pipelines miss. Merged LAST so it takes precedence on key overlap.
 FLATALL_WR_FILE = ROOT / "brain-output" / "backtests" / "ewb_flat_alltf_grouped.parquet"
+# Kelly position-sizing LUT (audit_quant_block): per-setup growth-optimal size
+# multiplier ∝ EV/variance, capped [0.25, 3.0]. High-variance setups (the crypto
+# wave3 flagship) are sized DOWN; steady low-variance stock flats up.
+KELLY_FILE     = ROOT / "brain-output" / "backtests" / "ewb_kelly_sizing.parquet"
 
 SCAN_INTERVAL  = 60 * 60        # re-scan every 60 min
 MIN_P_WIN      = 0.50           # sanity floor only; real quality = EV gate (reward-first)
@@ -463,7 +467,10 @@ def load_setup_winrates() -> dict[tuple[str, str, str, str], tuple[float, int]]:
     lut: dict[tuple[str, str, str, str], tuple[float, int, float]] = {}
     # Main flat LUT + the W3 LUT (EPIC C) are merged so validated setups pass
     # the gate alongside flats. Value = (winrate, trades, expectancy).
-    for wr_file in (SETUP_WR_FILE, WAVE3_WR_FILE, CORE_WR_FILE, HTFFLAT_WR_FILE,
+    # CORE_WR_FILE intentionally dropped: the quant block (audit_quant_block.py)
+    # showed every core_* setup fails significance (t<2 under multiple-testing) —
+    # trading them is paying to harvest noise.
+    for wr_file in (SETUP_WR_FILE, WAVE3_WR_FILE, HTFFLAT_WR_FILE,
                     FLATALL_WR_FILE):
         if not wr_file.exists():
             continue
@@ -478,6 +485,27 @@ def load_setup_winrates() -> dict[tuple[str, str, str, str], tuple[float, int]]:
             log.warning("could not load setup winrates from %s: %s", wr_file.name, exc)
     _SETUP_WR_CACHE = lut
     return lut
+
+
+_KELLY_CACHE: dict[tuple[str, str, str, str], float] | None = None
+
+
+def kelly_mult_for(asset_class: str, interval: str, fig: str, side: str) -> float:
+    """Growth-optimal position multiplier for a setup (audit_quant_block Kelly
+    LUT). Returns 1.0 (base size) for unknown setups so sizing is safe-by-default
+    and never larger than the capped LUT value."""
+    global _KELLY_CACHE
+    if _KELLY_CACHE is None:
+        _KELLY_CACHE = {}
+        if KELLY_FILE.exists():
+            try:
+                k = pd.read_parquet(KELLY_FILE)
+                for _, r in k.iterrows():
+                    _KELLY_CACHE[(str(r["asset_class"]), str(r["interval"]),
+                                  str(r["fig_type"]), str(r["side"]))] = float(r["kelly_mult"])
+            except Exception as exc:  # pragma: no cover - defensive
+                log.warning("could not load Kelly sizing: %s", exc)
+    return _KELLY_CACHE.get((asset_class, interval, fig, side), 1.0)
 
 
 def signal_is_fresh(sig: dict) -> tuple[bool, str]:
@@ -622,7 +650,15 @@ def try_open_trades(signals: list[dict], events: list[dict]) -> int:
             htf_context = f"auto_trader | p={p_win:.2f} | lag={sig.get('confirmation_lag',0)}d",
             source      = "auto_trader",
         )
-        row["trade_usd"] = TRADE_USD          # fixed $100 per trade
+        # Kelly-scaled size: base $100 × growth-optimal multiplier (EV/variance).
+        # High-variance setups sized down, steady low-variance flats up. Unknown
+        # setup → 1.0 (base size), so the change is safe-by-default.
+        kmult = kelly_mult_for(
+            asset_class_of(sig["ticker"]), str(sig.get("interval", "1d")),
+            str(sig.get("pattern", "unknown")),
+            "long" if action == "buy" else "short")
+        row["trade_usd"] = round(TRADE_USD * kmult, 2)
+        row["kelly_mult"] = kmult
         append_jsonl(FORWARD_LOG, row)
         existing_keys.add(key)
         opened += 1
