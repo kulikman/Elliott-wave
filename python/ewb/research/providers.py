@@ -23,6 +23,28 @@ from pathlib import Path
 
 import pandas as pd
 
+# ─── Tiingo daily request counter ───────────────────────────────────────────
+# Tiingo Free: 500 req/day. Track calls so we can warn before hitting the cap.
+# Keyed by UTC date string; not persisted across process restarts (good enough
+# for a daily cron — one process per scan run).
+_TIINGO_DAILY_COUNT: dict[str, int] = {}
+_TIINGO_DAILY_WARN = 400    # warn at this count (20% headroom)
+_TIINGO_DAILY_CAP  = 490    # hard-stop before the 429 cascade (10 headroom)
+
+
+def _tiingo_request_ok() -> bool:
+    """Return True and increment the daily counter; return False when at cap."""
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    _TIINGO_DAILY_COUNT[today] = _TIINGO_DAILY_COUNT.get(today, 0) + 1
+    n = _TIINGO_DAILY_COUNT[today]
+    if n == _TIINGO_DAILY_WARN:
+        log.warning("Tiingo: %d requests today — approaching 500/day limit", n)
+    if n > _TIINGO_DAILY_CAP:
+        log.error("Tiingo: daily cap reached (%d) — skipping request to avoid 429", n)
+        return False
+    return True
+
+
 # ─── Tiingo scan-path OHLC cache ─────────────────────────────────────────────
 # Avoids re-fetching Tiingo on every hourly cron pass. Cache TTLs match bar
 # duration so data is never staler than 1 bar. Saves ~90% of Tiingo requests.
@@ -227,6 +249,8 @@ def tiingo_token() -> str | None:
 
 
 def _tiingo_get(url: str, params: dict, token: str, retries: int = 3) -> list | None:
+    if not _tiingo_request_ok():
+        return None
     query = urllib.parse.urlencode({**params, "token": token})
     req = urllib.request.Request(
         f"{url}?{query}",
@@ -238,9 +262,17 @@ def _tiingo_get(url: str, params: dict, token: str, retries: int = 3) -> list | 
                 payload = json.loads(resp.read().decode("utf-8"))
             return payload if isinstance(payload, list) else None
         except urllib.error.HTTPError as exc:
-            if exc.code in {401, 403, 404, 429}:
+            if exc.code in {401, 403, 404}:
                 log.warning("tiingo HTTP %s for %s", exc.code, url)
                 return None
+            if exc.code == 429:
+                wait = 30 * (2 ** attempt)   # 30s, 60s, 120s
+                log.warning("tiingo HTTP 429 (rate limit) — sleeping %ds before retry %d/%d",
+                            wait, attempt + 1, retries)
+                time.sleep(wait)
+                if not _tiingo_request_ok():   # count the retry too
+                    return None
+                continue
             if attempt + 1 >= retries:
                 return None
             time.sleep(2 ** attempt)

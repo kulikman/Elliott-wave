@@ -780,8 +780,8 @@ def dashboard() -> HTMLResponse:
     portfolio = backtest.get("portfolio", {})
     metrics = [
         ("Решение", decision_pill(decision)),
-        ("Открытых сделок", counts.get("open", len(data["open"]))),
-        ("Закрыто (forward)", counts.get("closed", len(data["closed"]))),
+        ("Открытых сделок", len(data["open"])),      # always live, not stale daily counts
+        ("Закрыто (forward)", len(data["closed"])),  # always live
         ("Винрейт (бэктест)", pct(portfolio.get("winrate"))),
         ("Ожидание (бэктест)", pct(portfolio.get("expectancy"))),
         ("Винрейт (forward)", pct(data["forward_summary"].get("winrate"))),

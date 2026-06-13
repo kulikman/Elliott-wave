@@ -92,12 +92,24 @@ def detect_monowaves(
         h, l = high[i], low[i]
 
         if np.isnan(s.ext_price):
-            # Init on first valid bar
+            # Init: emit the first bar's low as the start pivot of the first
+            # up-monowave. Without this, pivot[0] is the first HIGH, and the
+            # initial (W1 start, W1 end, W2 end) triple is never accessible to
+            # detect_wave3_setups — the true W1 start is lost (audit F1).
+            start = Pivot(
+                idx=i, price=l, direction=-1,
+                confirmation_idx=i,
+                price_len=0.0, time_len=0,
+            )
+            pivots.append(start)
             s.ext_price = h
             s.ext_bar   = i
             s.pivot_price = l
             s.pivot_bar   = i
             s.dir = 1
+            s.count = 1
+            # has_prev stays False so the next real pivot's similarity check
+            # is not distorted by the zero-length synthetic start monowave.
             continue
 
         confirmed = False
