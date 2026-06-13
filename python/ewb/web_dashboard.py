@@ -20,6 +20,7 @@ from ewb.strategy_system import (
     DEFAULT_BACKTEST_DIR,
     DEFAULT_FORWARD_LOG,
     append_jsonl,
+    asset_class_of,
     forward_trades,
     is_crypto_ticker,
     note_event,
@@ -503,7 +504,7 @@ def accept_signal_form(signal: dict[str, Any]) -> str:
 
 
 def asset_class(ticker: Any) -> str:
-    return "crypto" if is_crypto_ticker(ticker) else "stock"
+    return asset_class_of(ticker)
 
 
 def passes_action_filters(

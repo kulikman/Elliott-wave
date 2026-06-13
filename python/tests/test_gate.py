@@ -14,6 +14,7 @@ import pandas as pd
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))  # python/
 
 import ewb.auto_trader as at  # noqa: E402
+from ewb.strategy_system import asset_class_of  # noqa: E402
 
 
 def test_signal_is_fresh_window_by_interval():
@@ -88,5 +89,18 @@ def test_setup_quality_ok_ltf_only(monkeypatch):
 
 
 def test_asset_class_of():
-    assert at.asset_class_of("BTC-USD") == "crypto"
-    assert at.asset_class_of("NVDA") == "stock"
+    # canonical function lives in strategy_system; auto_trader re-exports it
+    assert asset_class_of("BTC-USD") == "crypto"
+    assert asset_class_of("NVDA") == "stock"
+    assert asset_class_of("ETH-USD") == "crypto"
+    assert asset_class_of("INJ-USD") == "crypto"   # was mislabeled by old allowlist
+    assert asset_class_of("FET-USD") == "crypto"   # was mislabeled by old allowlist
+    # no -USD ticker should ever be "stock"
+    sample_crypto = [
+        "BTC-USD", "ETH-USD", "SOL-USD", "XRP-USD", "ADA-USD", "AVAX-USD",
+        "LINK-USD", "DOT-USD", "NEAR-USD", "INJ-USD", "AAVE-USD", "ATOM-USD",
+        "LTC-USD", "XLM-USD", "OP-USD", "HBAR-USD", "FIL-USD", "TRX-USD",
+        "FET-USD", "SNX-USD", "UNI-USD", "DOGE-USD", "SHIB-USD", "ARB-USD",
+    ]
+    for tk in sample_crypto:
+        assert asset_class_of(tk) == "crypto", f"{tk} should be crypto"

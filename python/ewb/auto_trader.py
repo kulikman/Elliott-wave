@@ -44,6 +44,7 @@ sys.path.insert(0, str(ROOT / "python"))
 from ewb.strategy_system import (
     DEFAULT_FORWARD_LOG,
     append_jsonl,
+    asset_class_of,
     forward_trades,
     note_event,
     outcome_event,
@@ -439,10 +440,6 @@ def dedup_key(sig: dict) -> str:
 # ─── high-winrate setup gate ─────────────────────────────────────────────────
 _SETUP_WR_CACHE: dict[tuple[str, str, str, str], tuple[float, int]] | None = None
 
-
-def asset_class_of(ticker: str) -> str:
-    """Crypto pairs are quoted as <SYM>-USD; everything else is treated as stock."""
-    return "crypto" if str(ticker).upper().endswith("-USD") else "stock"
 
 
 def load_setup_winrates() -> dict[tuple[str, str, str, str], tuple[float, int]]:

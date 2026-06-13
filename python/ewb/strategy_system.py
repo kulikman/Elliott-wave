@@ -105,6 +105,23 @@ def is_crypto_ticker(ticker: Any) -> bool:
     return compact in CRYPTO_BASES
 
 
+def asset_class_of(ticker: Any) -> str:
+    """Canonical asset-class classifier for trading decisions.
+
+    Fast path: '-USD' suffix (all watchlist crypto pairs are <BASE>-USD).
+    Fallback: is_crypto_ticker() for TradingView alert formats (BINANCE:BTCUSDT,
+    CRYPTO:ETHUSD, raw USDT pairs, etc.).
+
+    This is the single source of truth — all LUT lookups and setup_key
+    construction must call this function; is_crypto_ticker() is for display
+    only (TV chart URL building).
+    """
+    raw = str(ticker or "").strip().upper()
+    if raw.endswith("-USD"):
+        return "crypto"
+    return "crypto" if is_crypto_ticker(raw) else "stock"
+
+
 def setup_key(row: pd.Series | dict[str, Any]) -> str:
     get = row.get if isinstance(row, dict) else row.get
     return "|".join([
@@ -327,7 +344,7 @@ def signal_event(
         "htf_context": htf_context,
     }
     row["setup_key"] = setup_key({
-        "asset_class": "crypto" if is_crypto_ticker(row["ticker"]) else "stock",
+        "asset_class": asset_class_of(row["ticker"]),
         "interval": interval,
         "fig_type": fig_type,
         "side": side,

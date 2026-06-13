@@ -35,6 +35,7 @@ from ewb.rules import classify_pivots               # noqa: E402
 from ewb.wave3 import detect_wave3_setups           # noqa: E402
 from ewb.htf import structural_trend_series         # noqa: E402
 from ewb.research.providers import download_binance_ohlc  # noqa: E402
+from ewb.strategy_system import asset_class_of      # noqa: E402
 
 CACHE_DIR = ROOT / "python" / "data" / "ohlc_cache" / "tiingo"
 OUT = ROOT / "brain-output" / "backtests" / "ewb_wave3_backtest_grouped.parquet"
@@ -194,6 +195,10 @@ def _w3_trades(df: pd.DataFrame, interval: str, asset_class: str) -> list[dict]:
 def main() -> None:
     if os.environ.get("EWB_WAVE3") != "1":
         os.environ["EWB_WAVE3"] = "1"
+    # Sanity: every crypto ticker in CRYPTO must be classified as "crypto".
+    # This catches any future regression where asset_class_of() is changed.
+    bad = [t for t in CRYPTO if asset_class_of(t) != "crypto"]
+    assert not bad, f"EPIC-2 regression: {bad} classified as stock by asset_class_of()"
     rows: list[dict] = []
 
     # Stocks: 1d only (long-history cache).
