@@ -198,7 +198,7 @@ _HTFFLAT_WR_CACHE: dict | None = None
 # are approximate until the grid is regenerated with structural_trend_series.
 # The live filter is now stricter (only genuine structural uptrend passes), so
 # using the old approximate WR is conservative rather than optimistic.
-_HTF_RULE = {"1h": "1D", "4h": "1D"}
+_HTF_RULE = {"1h": "1D", "4h": "1D", "1d": "1W"}
 
 # Wave-3 degree constraint: max |W1| as a fraction of price, per timeframe. A
 # 1h-degree W1 is a small swing; a 1d/1w one is larger. Anything above this is a
@@ -216,11 +216,20 @@ def _htf_flat_winrates() -> dict:
         return _HTFFLAT_WR_CACHE
     import pandas as pd
     from pathlib import Path
-    f = Path(__file__).resolve().parents[2] / "brain-output" / "backtests" / "ewb_htf_flat_backtest_grouped.parquet"
+    bt = Path(__file__).resolve().parents[2] / "brain-output" / "backtests"
     lut: dict = {}
-    if f.exists():
+    # Old 1h/4h htf_flat LUT first; the comprehensive significance-gated all-TF
+    # LUT (flat_htf rows, incl. 1d) last so it takes precedence and unlocks the
+    # daily flat_htf emission the old LUT could not.
+    for fname in ("ewb_htf_flat_backtest_grouped.parquet",
+                  "ewb_flat_alltf_grouped.parquet"):
+        f = bt / fname
+        if not f.exists():
+            continue
         try:
             g = pd.read_parquet(f)
+            if "fig_type" in g.columns:
+                g = g[g["fig_type"] == "flat_htf"]
             for _, r in g.iterrows():
                 lut[(str(r["asset_class"]), str(r["interval"]), str(r["side"]))] = (
                     float(r["winrate"]), int(r["trades"]))

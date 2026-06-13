@@ -65,6 +65,10 @@ SETUP_WR_FILE  = ROOT / "brain-output" / "backtests" / "ewb_strategy_backtest_gr
 WAVE3_WR_FILE  = ROOT / "brain-output" / "backtests" / "ewb_wave3_backtest_grouped.parquet"
 CORE_WR_FILE   = ROOT / "brain-output" / "backtests" / "ewb_core_backtest_grouped.parquet"
 HTFFLAT_WR_FILE = ROOT / "brain-output" / "backtests" / "ewb_htf_flat_backtest_grouped.parquet"
+# Honest all-timeframe flat/flat_htf LUT (significance-gated: EV>0 both splits,
+# t-stat>2, PF>1.5). Surfaces the strongest stock flat longs (1w/1d) the other
+# pipelines miss. Merged LAST so it takes precedence on key overlap.
+FLATALL_WR_FILE = ROOT / "brain-output" / "backtests" / "ewb_flat_alltf_grouped.parquet"
 
 SCAN_INTERVAL  = 60 * 60        # re-scan every 60 min
 MIN_P_WIN      = 0.50           # sanity floor only; real quality = EV gate (reward-first)
@@ -459,7 +463,8 @@ def load_setup_winrates() -> dict[tuple[str, str, str, str], tuple[float, int]]:
     lut: dict[tuple[str, str, str, str], tuple[float, int, float]] = {}
     # Main flat LUT + the W3 LUT (EPIC C) are merged so validated setups pass
     # the gate alongside flats. Value = (winrate, trades, expectancy).
-    for wr_file in (SETUP_WR_FILE, WAVE3_WR_FILE, CORE_WR_FILE, HTFFLAT_WR_FILE):
+    for wr_file in (SETUP_WR_FILE, WAVE3_WR_FILE, CORE_WR_FILE, HTFFLAT_WR_FILE,
+                    FLATALL_WR_FILE):
         if not wr_file.exists():
             continue
         try:
