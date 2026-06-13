@@ -189,7 +189,16 @@ def _emit_core_setups(ticker, interval, df, figures, signals):
 
 
 _HTFFLAT_WR_CACHE: dict | None = None
-_HTF_RULE = {"1h": "4h", "4h": "1D"}
+# HTF compass rule for flat entries — mirrors _W3_HTF_RULE so both patterns
+# use the SAME structural trend series (1D compass for intraday, 1W for daily).
+# Previously "1h" used "4h" which is too close: the 4h structural trend barely
+# differs from the 1h signal bar. Using 1D gives a genuinely independent degree.
+# NOTE: the ewb_htf_flat_backtest_grouped.parquet LUT was built from a historical
+# grid that used the old degenerate htf_bias_series compass. The LUT WR numbers
+# are approximate until the grid is regenerated with structural_trend_series.
+# The live filter is now stricter (only genuine structural uptrend passes), so
+# using the old approximate WR is conservative rather than optimistic.
+_HTF_RULE = {"1h": "1D", "4h": "1D"}
 
 # Wave-3 degree constraint: max |W1| as a fraction of price, per timeframe. A
 # 1h-degree W1 is a small swing; a 1d/1w one is larger. Anything above this is a
@@ -224,12 +233,15 @@ def _htf_flat_winrates() -> dict:
 def _emit_htf_flat(ticker, interval, df, signals):
     """EPIC G: for LTF flat signals aligned with the higher-TF trend, emit a
     'flat_htf' variant carrying the HTF-aligned backtest winrate. EV-priority +
-    sizing then favour it over the plain flat when the bigger wave agrees."""
+    sizing then favour it over the plain flat when the bigger wave agrees.
+
+    EPIC-5: uses structural_trend_series (HHHL-ladder) instead of the degenerate
+    htf_bias_series which barely produced non-zero values on the weekly."""
     if interval not in _HTF_RULE:
         return
     try:
-        from ewb.htf import htf_bias_series
-        bias = htf_bias_series(df, _HTF_RULE[interval])
+        from ewb.htf import structural_trend_series
+        bias = structural_trend_series(df, _HTF_RULE[interval])
     except Exception:
         return
     wr_lut = _htf_flat_winrates()
