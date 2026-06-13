@@ -36,10 +36,10 @@ def test_signal_is_fresh_window_by_interval():
 def test_setup_quality_ok_reward_first(monkeypatch):
     # (winrate, trades, expectancy)
     lut = {
-        ("stock", "4h", "flat_htf", "long"): (0.79, 28, 0.0436),   # passes
+        ("stock", "4h", "flat_htf", "long"): (0.79, 35, 0.0436),   # passes (flat_htf min_n=30)
         ("stock", "1d", "flat", "short"): (0.47, 76, 0.0014),      # EV below floor
         ("crypto", "1d", "wave3", "long"): (0.34, 200, -0.028),    # negative EV
-        ("stock", "1d", "flat", "long"): (0.71, 15, 0.030),        # thin sample
+        ("stock", "1d", "flat", "long"): (0.71, 15, 0.030),        # thin sample (flat min_n=20)
         ("crypto", "1d", "flat", "long"): (0.42, 50, 0.020),       # WR below sanity
     }
     monkeypatch.setattr(at, "_SETUP_WR_CACHE", lut)
@@ -68,8 +68,8 @@ def test_setup_quality_ok_ltf_only(monkeypatch):
     """EWB_LTF_ONLY blocks 1d/1w entries (trade only 1h/4h) while keeping the
     LTF setups; default off keeps 1d/1w."""
     lut = {
-        ("stock", "4h", "flat_htf", "long"): (0.76, 42, 0.0405),   # LTF — keep
-        ("stock", "1d", "wave3", "long"): (0.50, 40, 0.0402),      # HTF — strong, but off under LTF-only
+        ("stock", "4h", "flat_htf", "long"): (0.76, 42, 0.0405),   # LTF — keep (flat_htf min_n=30)
+        ("stock", "1d", "wave3", "long"): (0.50, 55, 0.0402),      # HTF — strong, but off under LTF-only (wave3 min_n=50)
     }
     monkeypatch.setattr(at, "_SETUP_WR_CACHE", lut)
 

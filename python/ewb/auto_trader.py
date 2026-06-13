@@ -90,7 +90,12 @@ RETRAIN_EVERY  = 20             # retrain ML after every N closed trades
 # expectancy floor; SETUP_WR_FLOOR is only a sanity floor. Both env-overridable.
 SETUP_EV_FLOOR = float(os.environ.get("EWB_SETUP_EV_FLOOR", "0.005"))  # +0.5%/trade
 SETUP_WR_FLOOR = float(os.environ.get("EWB_SETUP_WR_FLOOR", "0.45"))   # sanity only (reward-first: EV leads)
-SETUP_MIN_N    = 20             # min validated backtest trades for a setup to count
+SETUP_MIN_N    = 20             # default min validated backtest trades for a setup to count
+# Wave3 requires a higher sample floor — the few backtest groups that survive the
+# EPIC-1 honest-fill filter are narrow; n<40 OOS makes WR estimates unreliable.
+# Using 40 (not 50): crypto/1d/long gives n=45 OOS from ~1500d history — further
+# raising the bar would block the only validated crypto setup without new data.
+SETUP_MIN_N_BY_FIG: dict[str, int] = {"wave3": 40, "flat_htf": 30}
 MIN_SAMPLE     = 10             # min calibration sample_size (kills n=1 garbage)
 # Optional style: trade ONLY lower-TF entries (1h/4h) and skip 1d/1w. Off by
 # default — 1d/1w keep their own validated edge. Flip with EWB_LTF_ONLY=1.
@@ -530,8 +535,9 @@ def setup_quality_ok(sig: dict) -> tuple[bool, str]:
     if key not in lut:
         return False, f"unvalidated setup {key[0]}/{fig}/{side} (no backtest edge)"
     wr, n, ev = lut[key]
-    if n < SETUP_MIN_N:
-        return False, f"thin backtest n={n}<{SETUP_MIN_N}"
+    min_n = SETUP_MIN_N_BY_FIG.get(fig, SETUP_MIN_N)
+    if n < min_n:
+        return False, f"thin backtest n={n}<{min_n}"
     if ev < SETUP_EV_FLOOR:                       # PRIMARY — reward first
         return False, f"low EV {ev:+.2%}<{SETUP_EV_FLOOR:+.2%}"
     if wr < SETUP_WR_FLOOR:                        # sanity floor
