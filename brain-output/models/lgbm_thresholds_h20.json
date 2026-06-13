@@ -1,58 +1,51 @@
 [
   {
     "threshold": 0.5,
-    "n_trades": 218,
-    "win_rate": 0.615,
-    "mean_ret": 0.0079,
-    "sharpe_ann": 2.22
+    "n_trades": 297,
+    "win_rate": 0.616,
+    "mean_ret": 0.0022,
+    "sharpe_ann": 0.56
   },
   {
     "threshold": 0.52,
-    "n_trades": 206,
-    "win_rate": 0.631,
-    "mean_ret": 0.0087,
-    "sharpe_ann": 2.42
+    "n_trades": 222,
+    "win_rate": 0.64,
+    "mean_ret": 0.0033,
+    "sharpe_ann": 0.83
   },
   {
     "threshold": 0.54,
-    "n_trades": 180,
-    "win_rate": 0.656,
-    "mean_ret": 0.0089,
-    "sharpe_ann": 2.56
+    "n_trades": 191,
+    "win_rate": 0.686,
+    "mean_ret": 0.0094,
+    "sharpe_ann": 2.67
   },
   {
     "threshold": 0.56,
-    "n_trades": 151,
-    "win_rate": 0.656,
-    "mean_ret": 0.0067,
-    "sharpe_ann": 1.84
+    "n_trades": 179,
+    "win_rate": 0.67,
+    "mean_ret": 0.0085,
+    "sharpe_ann": 2.34
   },
   {
     "threshold": 0.58,
-    "n_trades": 143,
-    "win_rate": 0.678,
-    "mean_ret": 0.0082,
-    "sharpe_ann": 2.24
+    "n_trades": 85,
+    "win_rate": 0.706,
+    "mean_ret": 0.0132,
+    "sharpe_ann": 4.55
   },
   {
     "threshold": 0.6,
-    "n_trades": 128,
-    "win_rate": 0.68,
-    "mean_ret": 0.009,
-    "sharpe_ann": 2.72
+    "n_trades": 65,
+    "win_rate": 0.662,
+    "mean_ret": 0.0126,
+    "sharpe_ann": 4.11
   },
   {
     "threshold": 0.62,
-    "n_trades": 92,
-    "win_rate": 0.707,
-    "mean_ret": 0.0098,
-    "sharpe_ann": 2.9
-  },
-  {
-    "threshold": 0.65,
-    "n_trades": 46,
-    "win_rate": 0.717,
-    "mean_ret": 0.0071,
-    "sharpe_ann": 1.72
+    "n_trades": 60,
+    "win_rate": 0.65,
+    "mean_ret": 0.0115,
+    "sharpe_ann": 3.86
   }
 ]

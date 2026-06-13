@@ -1,12 +1,12 @@
 # Probability Signals
 
-Generated: `2026-06-13T14:27:54+00:00`
+Generated: `2026-06-13T22:01:24+00:00`
 Model: `probability-calibration-v0`
 Tickers: `NVDA, AMD, TSM, MSFT, PLTR, CRWD, GOOGL, META, AMZN, LLY, VRTX, ISRG, V, MA, COIN, TSLA, ENPH, NEE, LMT, RTX, RKLB, BKNG, UBER, SHOP, CAT, HON, GE, XOM, FCX, NEM, BTC-USD, ETH-USD, BNB-USD, SOL-USD, XRP-USD, DOGE-USD, ADA-USD, AVAX-USD, TRX-USD, DOT-USD, NEAR-USD, ATOM-USD, ALGO-USD, FTM-USD, ETC-USD, BCH-USD, LTC-USD, XLM-USD, HBAR-USD, FIL-USD, SUI-USD, APT-USD, SEI-USD, EGLD-USD, ICP-USD, OP-USD, ARB-USD, IMX-USD, STX-USD, STRK-USD, MINA-USD, INJ-USD, TIA-USD, LINK-USD, AAVE-USD, UNI-USD, MKR-USD, CRV-USD, LDO-USD, DYDX-USD, GMX-USD, SNX-USD, COMP-USD, SUSHI-USD, BAL-USD, FET-USD, RNDR-USD, TAO-USD, GRT-USD, OCEAN-USD, GLM-USD, ANKR-USD, BAND-USD, SAND-USD, MANA-USD, AXS-USD, GALA-USD, FLOW-USD, CHZ-USD, APE-USD, THETA-USD, SHIB-USD, PEPE-USD, WIF-USD, BONK-USD, FLOKI-USD, XMR-USD, ZEC-USD, KSM-USD, CELO-USD, ROSE-USD, XTZ-USD, ONE-USD, WLD-USD, JUP-USD, PYTH-USD, DYM-USD, BLUR-USD, ENS-USD, MAGIC-USD`
 Interval: `1w`
 Actions: `buy, sell`
 Freshness: `all`
-Signals: `80`
+Signals: `50`
 
 | ticker | action | pattern | entry_ts | P(win) | EV | conf | entry | stop | target |
 |---|---|---|---|---:|---:|---|---:|---:|---:|
@@ -16,8 +16,8 @@ Signals: `80`
 | FCX | buy | flat | 2026-06-12 00:00:00+00:00 | 56.4% | +0.57% | high | 64.61 | 50.81 | 86.94 |
 | FCX | buy | core_moving_correction_follow | 2026-06-12 00:00:00+00:00 | 0.0% | n/a | None | 64.61 | 57.50 | 94.72 |
 | BTC-USD | buy | wave3 | 2026-06-08 00:00:00+00:00 | 0.0% | n/a | None | 63332.01 | 50901.44 | 105170.01 |
-| NEAR-USD | sell | flat | 2026-06-08 00:00:00+00:00 | 55.9% | +0.70% | high | 2.06 | 4.31 | -1.58 |
 | TRX-USD | sell | flat | 2026-06-08 00:00:00+00:00 | 55.9% | +0.70% | high | 0.33 | 0.43 | 0.15 |
+| NEAR-USD | sell | flat | 2026-06-08 00:00:00+00:00 | 55.9% | +0.70% | high | 2.06 | 4.31 | -1.58 |
 | ZEC-USD | sell | flat | 2026-06-08 00:00:00+00:00 | 55.9% | +0.70% | high | 440.50 | 706.35 | 10.35 |
 | ZEC-USD | sell | core_moving_correction_follow | 2026-06-08 00:00:00+00:00 | 0.0% | n/a | None | 440.50 | 556.82 | -52.20 |
 | GE | buy | flat | 2026-06-05 00:00:00+00:00 | 56.4% | +0.57% | high | 321.48 | 265.65 | 411.81 |
@@ -32,8 +32,8 @@ Signals: `80`
 | BKNG | sell | core_moving_correction_follow | 2026-05-22 00:00:00+00:00 | 0.0% | n/a | None | 155.25 | 169.81 | 93.58 |
 | INJ-USD | sell | core_zigzag_follow_to_c_eq_a | 2026-05-18 00:00:00+00:00 | 0.0% | n/a | None | 4.56 | 16.55 | -12.37 |
 | NEAR-USD | buy | core_triangle_thrust | 2026-05-11 00:00:00+00:00 | 0.0% | n/a | None | 1.56 | -1.62 | 7.29 |
-| STX-USD | buy | core_impulse_post_w4 | 2026-05-11 00:00:00+00:00 | 0.0% | n/a | None | 0.27 | -1.19 | 0.92 |
 | ICP-USD | buy | core_triangle_thrust | 2026-05-11 00:00:00+00:00 | 0.0% | n/a | None | 3.37 | -3.51 | 16.42 |
+| STX-USD | buy | core_impulse_post_w4 | 2026-05-11 00:00:00+00:00 | 0.0% | n/a | None | 0.27 | -1.19 | 0.92 |
 | V | buy | core_triangle_thrust | 2026-05-08 00:00:00+00:00 | 0.0% | n/a | None | 327.33 | 264.10 | 369.69 |
 | GMX-USD | buy | flat | 2026-05-04 00:00:00+00:00 | 56.4% | +0.57% | high | 7.11 | -36.23 | 77.23 |
 | CHZ-USD | buy | flat | 2026-04-27 00:00:00+00:00 | 56.4% | +0.57% | high | 0.05 | 0.03 | 0.08 |
@@ -60,33 +60,3 @@ Signals: `80`
 | AXS-USD | buy | core_impulse_post_w4 | 2026-01-19 00:00:00+00:00 | 0.0% | n/a | None | 1.89 | -4.06 | 2.36 |
 | MA | buy | flat | 2026-01-02 00:00:00+00:00 | 56.4% | +0.57% | high | 577.73 | 553.37 | 617.14 |
 | MA | buy | core_moving_correction_follow | 2026-01-02 00:00:00+00:00 | 0.0% | n/a | None | 577.73 | 545.18 | 715.59 |
-| CRWD | sell | core_triangle_thrust | 2025-12-26 00:00:00+00:00 | 0.0% | n/a | None | 479.78 | 664.23 | 312.12 |
-| AVAX-USD | sell | flat | 2025-12-22 00:00:00+00:00 | 55.9% | +0.70% | high | 12.15 | 21.56 | -3.08 |
-| AVAX-USD | sell | core_moving_correction_follow | 2025-12-22 00:00:00+00:00 | 0.0% | n/a | None | 12.15 | 20.36 | -22.64 |
-| WIF-USD | sell | core_triangle_thrust | 2025-12-22 00:00:00+00:00 | 0.0% | n/a | None | 0.34 | 2.58 | -3.67 |
-| BKNG | buy | core_triangle_thrust | 2025-12-19 00:00:00+00:00 | 0.0% | n/a | None | 213.28 | 155.11 | 251.05 |
-| JUP-USD | sell | core_triangle_thrust | 2025-12-15 00:00:00+00:00 | 0.0% | n/a | None | 0.19 | 1.01 | -0.91 |
-| ADA-USD | sell | flat | 2025-12-08 00:00:00+00:00 | 55.9% | +0.70% | high | 0.42 | 0.64 | 0.05 |
-| ADA-USD | sell | core_moving_correction_follow | 2025-12-08 00:00:00+00:00 | 0.0% | n/a | None | 0.42 | 0.61 | -0.41 |
-| SUI-USD | sell | flat | 2025-12-08 00:00:00+00:00 | 55.9% | +0.70% | high | 1.58 | 2.30 | 0.42 |
-| SUI-USD | sell | core_moving_correction_follow | 2025-12-08 00:00:00+00:00 | 0.0% | n/a | None | 1.58 | 2.41 | -1.89 |
-| SUSHI-USD | sell | flat | 2025-12-08 00:00:00+00:00 | 55.9% | +0.70% | high | 0.32 | 0.61 | -0.15 |
-| SUSHI-USD | sell | core_moving_correction_follow | 2025-12-08 00:00:00+00:00 | 0.0% | n/a | None | 0.32 | 0.57 | -0.73 |
-| WLD-USD | sell | flat | 2025-12-08 00:00:00+00:00 | 55.9% | +0.70% | high | 0.57 | 1.33 | -0.66 |
-| WLD-USD | sell | core_moving_correction_follow | 2025-12-08 00:00:00+00:00 | 0.0% | n/a | None | 0.57 | 1.19 | -2.08 |
-| STRK-USD | sell | flat | 2025-12-01 00:00:00+00:00 | 55.9% | +0.70% | high | 0.12 | 0.86 | -1.07 |
-| STRK-USD | sell | core_moving_correction_follow | 2025-12-01 00:00:00+00:00 | 0.0% | n/a | None | 0.12 | 0.27 | -0.49 |
-| UBER | sell | flat | 2025-11-28 00:00:00+00:00 | 55.9% | +0.70% | high | 84.15 | 126.81 | 15.13 |
-| TAO-USD | sell | core_triangle_thrust | 2025-11-24 00:00:00+00:00 | 0.0% | n/a | None | 297.70 | 761.15 | -41.10 |
-| FLOKI-USD | sell | core_triangle_thrust | 2025-11-24 00:00:00+00:00 | 0.0% | n/a | None | 0.00 | 0.00 | -0.00 |
-| ZEC-USD | buy | core_triangle_thrust | 2025-11-24 00:00:00+00:00 | 0.0% | n/a | None | 572.80 | 251.50 | 876.12 |
-| ENS-USD | sell | core_triangle_thrust | 2025-11-24 00:00:00+00:00 | 0.0% | n/a | None | 11.09 | 39.06 | -14.35 |
-| SHOP | sell | double_corr | 2025-11-21 00:00:00+00:00 | 87.5% | +2.15% | low | 143.65 | 256.00 | -38.13 |
-| RKLB | sell | core_impulse_post_w4 | 2025-11-14 00:00:00+00:00 | 0.0% | n/a | None | 53.74 | 96.87 | 38.26 |
-| DYDX-USD | sell | core_triangle_thrust | 2025-11-10 00:00:00+00:00 | 0.0% | n/a | None | 0.33 | 1.64 | -1.98 |
-| CHZ-USD | sell | core_triangle_thrust | 2025-11-10 00:00:00+00:00 | 0.0% | n/a | None | 0.03 | 0.10 | -0.08 |
-| RTX | buy | flat | 2025-11-07 00:00:00+00:00 | 56.4% | +0.57% | high | 176.46 | 152.17 | 215.76 |
-| RTX | buy | core_moving_correction_follow | 2025-11-07 00:00:00+00:00 | 0.0% | n/a | None | 176.46 | 167.52 | 214.33 |
-| BNB-USD | sell | core_impulse_post_w4 | 2025-11-03 00:00:00+00:00 | 0.0% | n/a | None | 1083.25 | 1709.40 | 860.11 |
-| ISRG | buy | flat | 2025-10-31 00:00:00+00:00 | 56.4% | +0.57% | high | 544.75 | 356.59 | 849.20 |
-| SNX-USD | sell | flat | 2025-10-27 00:00:00+00:00 | 55.9% | +0.70% | high | 1.20 | 3.30 | -2.20 |

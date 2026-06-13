@@ -1,12 +1,12 @@
 # Probability Signals
 
-Generated: `2026-06-13T14:27:42+00:00`
+Generated: `2026-06-13T22:01:51+00:00`
 Model: `probability-calibration-v0`
 Tickers: `NVDA, AMD, TSM, MSFT, PLTR, CRWD, GOOGL, META, AMZN, LLY, VRTX, ISRG, V, MA, COIN, TSLA, ENPH, NEE, LMT, RTX, RKLB, BKNG, UBER, SHOP, CAT, HON, GE, XOM, FCX, NEM, BTC-USD, ETH-USD, BNB-USD, SOL-USD, XRP-USD, DOGE-USD, ADA-USD, AVAX-USD, TRX-USD, DOT-USD, NEAR-USD, ATOM-USD, ALGO-USD, FTM-USD, ETC-USD, BCH-USD, LTC-USD, XLM-USD, HBAR-USD, FIL-USD, SUI-USD, APT-USD, SEI-USD, EGLD-USD, ICP-USD, OP-USD, ARB-USD, IMX-USD, STX-USD, STRK-USD, MINA-USD, INJ-USD, TIA-USD, LINK-USD, AAVE-USD, UNI-USD, MKR-USD, CRV-USD, LDO-USD, DYDX-USD, GMX-USD, SNX-USD, COMP-USD, SUSHI-USD, BAL-USD, FET-USD, RNDR-USD, TAO-USD, GRT-USD, OCEAN-USD, GLM-USD, ANKR-USD, BAND-USD, SAND-USD, MANA-USD, AXS-USD, GALA-USD, FLOW-USD, CHZ-USD, APE-USD, THETA-USD, SHIB-USD, PEPE-USD, WIF-USD, BONK-USD, FLOKI-USD, XMR-USD, ZEC-USD, KSM-USD, CELO-USD, ROSE-USD, XTZ-USD, ONE-USD, WLD-USD, JUP-USD, PYTH-USD, DYM-USD, BLUR-USD, ENS-USD, MAGIC-USD`
 Interval: `1d`
 Actions: `buy, sell`
 Freshness: `all`
-Signals: `80`
+Signals: `50`
 
 | ticker | action | pattern | entry_ts | P(win) | EV | conf | entry | stop | target |
 |---|---|---|---|---:|---:|---|---:|---:|---:|
@@ -32,13 +32,13 @@ Signals: `80`
 | MSFT | sell | core_triangle_thrust | 2026-06-04 00:00:00+00:00 | 0.0% | n/a | None | 435.81 | 495.83 | 389.07 |
 | NEAR-USD | buy | core_triangle_thrust | 2026-06-04 00:00:00+00:00 | 0.0% | n/a | None | 2.82 | 1.87 | 3.12 |
 | SEI-USD | sell | flat | 2026-06-04 00:00:00+00:00 | 69.6% | +4.51% | low | 0.06 | 0.08 | 0.03 |
-| LLY | sell | flat | 2026-06-03 00:00:00+00:00 | 69.6% | +4.51% | low | 1059.50 | 1333.00 | 616.98 |
 | AMZN | buy | core_zigzag_follow_to_c_eq_a | 2026-06-03 00:00:00+00:00 | 0.0% | n/a | None | 254.70 | 255.19 | 334.61 |
+| LLY | sell | flat | 2026-06-03 00:00:00+00:00 | 69.6% | +4.51% | low | 1059.50 | 1333.00 | 616.98 |
 | V | sell | core_triangle_thrust | 2026-06-02 00:00:00+00:00 | 0.0% | n/a | None | 322.51 | 353.50 | 287.18 |
 | RKLB | sell | double_corr | 2026-06-02 00:00:00+00:00 | 100.0% | +6.83% | low | 125.34 | 220.21 | -28.16 |
 | BNB-USD | sell | core_triangle_thrust | 2026-06-02 00:00:00+00:00 | 0.0% | n/a | None | 693.10 | 790.63 | 628.22 |
-| BCH-USD | sell | core_triangle_thrust | 2026-06-02 00:00:00+00:00 | 0.0% | n/a | None | 293.90 | 390.06 | 195.20 |
 | ALGO-USD | sell | flat | 2026-06-02 00:00:00+00:00 | 69.6% | +4.51% | low | 0.12 | 0.16 | 0.06 |
+| BCH-USD | sell | core_triangle_thrust | 2026-06-02 00:00:00+00:00 | 0.0% | n/a | None | 293.90 | 390.06 | 195.20 |
 | XTZ-USD | buy | flat | 2026-06-01 00:00:00+00:00 | 66.7% | +2.19% | low | 0.33 | 0.22 | 0.50 |
 | HBAR-USD | buy | flat | 2026-05-31 00:00:00+00:00 | 66.7% | +2.19% | low | 0.10 | 0.08 | 0.11 |
 | HBAR-USD | buy | core_moving_correction_follow | 2026-05-31 00:00:00+00:00 | 0.0% | n/a | None | 0.10 | 0.09 | 0.12 |
@@ -60,33 +60,3 @@ Signals: `80`
 | COIN | sell | flat | 2026-05-19 00:00:00+00:00 | 69.6% | +4.51% | low | 188.38 | 252.27 | 85.00 |
 | GE | sell | core_triangle_thrust | 2026-05-18 00:00:00+00:00 | 0.0% | n/a | None | 283.39 | 339.48 | 232.82 |
 | XOM | buy | core_triangle_thrust | 2026-05-18 00:00:00+00:00 | 51.4% | n/a | None | 157.31 | 129.92 | 177.20 |
-| BTC-USD | sell | core_triangle_thrust | 2026-05-18 00:00:00+00:00 | 0.0% | n/a | None | 77457.67 | 89668.70 | 65000.00 |
-| DOGE-USD | sell | core_triangle_thrust | 2026-05-18 00:00:00+00:00 | 0.0% | n/a | None | 0.11 | 0.13 | 0.09 |
-| XRP-USD | sell | core_triangle_thrust | 2026-05-17 00:00:00+00:00 | 0.0% | n/a | None | 1.41 | 1.68 | 1.21 |
-| LTC-USD | sell | double_corr | 2026-05-17 00:00:00+00:00 | 100.0% | +6.83% | low | 56.14 | 71.68 | 31.00 |
-| HBAR-USD | sell | core_triangle_thrust | 2026-05-17 00:00:00+00:00 | 0.0% | n/a | None | 0.09 | 0.11 | 0.06 |
-| LINK-USD | sell | core_triangle_thrust | 2026-05-17 00:00:00+00:00 | 0.0% | n/a | None | 9.71 | 11.99 | 7.94 |
-| AAVE-USD | sell | core_triangle_thrust | 2026-05-17 00:00:00+00:00 | 0.0% | n/a | None | 90.03 | 118.77 | 63.56 |
-| GLM-USD | sell | flat | 2026-05-17 00:00:00+00:00 | 69.6% | +4.51% | low | 0.14 | 0.17 | 0.08 |
-| SOL-USD | sell | core_triangle_thrust | 2026-05-16 00:00:00+00:00 | 0.0% | n/a | None | 89.23 | 106.83 | 76.36 |
-| ADA-USD | sell | core_triangle_thrust | 2026-05-16 00:00:00+00:00 | 0.0% | n/a | None | 0.26 | 0.31 | 0.22 |
-| AVAX-USD | sell | core_triangle_thrust | 2026-05-16 00:00:00+00:00 | 0.0% | n/a | None | 9.53 | 11.40 | 8.12 |
-| SUI-USD | sell | core_impulse_post_w4 | 2026-05-16 00:00:00+00:00 | 0.0% | n/a | None | 1.10 | 1.55 | 1.06 |
-| SAND-USD | sell | flat | 2026-05-16 00:00:00+00:00 | 69.6% | +4.51% | low | 0.07 | 0.09 | 0.05 |
-| WLD-USD | sell | core_triangle_thrust | 2026-05-16 00:00:00+00:00 | 0.0% | n/a | None | 0.24 | 0.37 | 0.09 |
-| EGLD-USD | sell | flat | 2026-05-15 00:00:00+00:00 | 69.6% | +4.51% | low | 4.44 | 5.78 | 2.27 |
-| ARB-USD | sell | core_triangle_thrust | 2026-05-15 00:00:00+00:00 | 0.0% | n/a | None | 0.13 | 0.17 | 0.10 |
-| IMX-USD | sell | core_triangle_thrust | 2026-05-15 00:00:00+00:00 | 0.0% | n/a | None | 0.20 | 0.24 | 0.14 |
-| MINA-USD | sell | flat | 2026-05-15 00:00:00+00:00 | 69.6% | +4.51% | low | 0.07 | 0.08 | 0.04 |
-| GMX-USD | sell | core_triangle_thrust | 2026-05-15 00:00:00+00:00 | 0.0% | n/a | None | 7.12 | 8.53 | 6.06 |
-| CELO-USD | sell | core_triangle_thrust | 2026-05-15 00:00:00+00:00 | 0.0% | n/a | None | 0.09 | 0.11 | 0.08 |
-| OP-USD | sell | core_impulse_post_w4 | 2026-05-14 00:00:00+00:00 | 0.0% | n/a | None | 0.15 | 0.20 | 0.15 |
-| STX-USD | buy | flat | 2026-05-14 00:00:00+00:00 | 66.7% | +2.19% | low | 0.27 | 0.25 | 0.30 |
-| STX-USD | buy | core_moving_correction_follow | 2026-05-14 00:00:00+00:00 | 0.0% | n/a | None | 0.27 | 0.25 | 0.34 |
-| FET-USD | sell | core_triangle_thrust | 2026-05-14 00:00:00+00:00 | 0.0% | n/a | None | 0.21 | 0.29 | 0.13 |
-| ONE-USD | sell | flat | 2026-05-14 00:00:00+00:00 | 69.6% | +4.51% | low | 0.00 | 0.00 | 0.00 |
-| JUP-USD | sell | core_impulse_post_w4 | 2026-05-13 00:00:00+00:00 | 0.0% | n/a | None | 0.23 | 0.33 | 0.20 |
-| ATOM-USD | buy | core_triangle_thrust | 2026-05-11 00:00:00+00:00 | 0.0% | n/a | None | 2.01 | 1.53 | 2.64 |
-| STRK-USD | sell | core_triangle_thrust | 2026-05-11 00:00:00+00:00 | 0.0% | n/a | None | 0.05 | 0.07 | 0.04 |
-| UNI-USD | sell | core_triangle_thrust | 2026-05-11 00:00:00+00:00 | 0.0% | n/a | None | 3.99 | 4.66 | 2.88 |
-| DYDX-USD | sell | core_impulse_post_w4 | 2026-05-11 00:00:00+00:00 | 0.0% | n/a | None | 0.17 | 0.26 | 0.14 |
