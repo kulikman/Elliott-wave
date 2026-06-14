@@ -674,6 +674,13 @@ def try_open_trades(signals: list[dict], events: list[dict]) -> int:
             row["ticker"], row["side"], row["interval"],
             entry_px, stop_px, target_px, p_win * 100,
         )
+        # Notify Anton (no-op without TELEGRAM_* env; never blocks trading).
+        try:
+            from ewb import telegram_notify
+            if telegram_notify.send_signal(row):
+                log.info("→ Telegram: сигнал отправлен %s %s", row["ticker"], row["interval"])
+        except Exception as exc:  # pragma: no cover - defensive
+            log.warning("telegram notify error: %s", exc)
 
     if opened:
         log.info("Открыто новых бумажных сделок: %d", opened)
