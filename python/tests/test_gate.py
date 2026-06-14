@@ -37,7 +37,7 @@ def test_signal_is_fresh_stock_trading_time(monkeypatch):
     """Stocks age in NYSE trading time: a Friday-close signal is still fresh at
     Monday's open (weekend gap adds ~0 trading time), but a genuinely old signal
     is stale."""
-    mon = pd.Timestamp("2026-06-15 14:00", tz="UTC")   # Monday, pre-open ET
+    mon = pd.Timestamp("2026-06-15 14:00", tz="UTC")   # Monday 10:00 ET (just after open)
     monkeypatch.setattr(at, "utc_now", lambda: mon)
     S = lambda iv, ts: at.signal_is_fresh({"ticker": "GE", "interval": iv, "entry_ts": ts})
     fri_close = pd.Timestamp("2026-06-12 20:00", tz="UTC")   # Fri 16:00 ET
