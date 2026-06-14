@@ -672,6 +672,16 @@ def try_open_trades(signals: list[dict], events: list[dict]) -> int:
                      sig.get("ticker", "?"), sig.get("side", "?"),
                      sig.get("interval", "?"), freason)
             continue
+        # Session gate: a STOCK trade can't be entered while NYSE is closed
+        # (crypto trades 24/7). Off-session stock signals are NOT dropped — they
+        # stay fresh via trading-time aging and open on the next in-session pass.
+        sess_ok, sess_reason = should_trade_ticker(
+            str(sig.get("ticker", "")), str(sig.get("interval", "1d")))
+        if not sess_ok:
+            log.info("ОТЛОЖЕН %-6s %-5s %s  — %s (откроется когда биржа откроется)",
+                     sig.get("ticker", "?"), sig.get("side", "?"),
+                     sig.get("interval", "?"), sess_reason)
+            continue
         # Time-budget gate (AKU-0036/0038/0060): confirmation must arrive within
         # the final wave's duration, else the pattern is structurally suspect.
         if sig.get("time_budget_ok") is False:

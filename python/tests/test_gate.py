@@ -102,6 +102,24 @@ def test_setup_quality_ok_ltf_only(monkeypatch):
     assert q("NVDA", "1d", "wave3", "long")[0] is True
 
 
+def test_session_gate_defers_offhours_stocks(monkeypatch):
+    """Stocks can only enter while NYSE is open; crypto is 24/7. Off-session
+    stock signals are deferred (not opened this pass), not dropped."""
+    # market closed
+    monkeypatch.setattr(at, "market_status", lambda interval="1d": "closed")
+    assert at.should_trade_ticker("BTC-USD", "1h")[0] is True      # crypto anytime
+    assert at.should_trade_ticker("AMD", "1d")[0] is False         # stock deferred
+    assert at.should_trade_ticker("AMD", "1h")[0] is False
+    # market open
+    monkeypatch.setattr(at, "market_status", lambda interval="1d": "open")
+    assert at.should_trade_ticker("AMD", "1d")[0] is True
+    assert at.should_trade_ticker("AMD", "1h")[0] is True
+    # daily can also enter post-close (bar finalised), intraday cannot
+    monkeypatch.setattr(at, "market_status", lambda interval="1d": "post_close")
+    assert at.should_trade_ticker("AMD", "1d")[0] is True
+    assert at.should_trade_ticker("AMD", "1h")[0] is False
+
+
 def test_asset_class_of():
     # canonical function lives in strategy_system; auto_trader re-exports it
     assert asset_class_of("BTC-USD") == "crypto"
