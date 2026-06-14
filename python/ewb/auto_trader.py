@@ -132,6 +132,51 @@ SIGNAL_MAX_AGE = {
     "1w":  timedelta(days=9),
 }
 SIGNAL_MAX_AGE_DEFAULT = timedelta(days=2)
+# Stock windows are measured in NYSE TRADING time, so each ≈ "the just-formed
+# bar + buffer" (one session for 1d, one trading week for 1w). A weekend/overnight
+# gap adds ~0 trading time, so a Friday-close signal is still fresh Monday open.
+SIGNAL_MAX_AGE_STOCK = {
+    "15m": timedelta(minutes=45),
+    "30m": timedelta(hours=1, minutes=30),
+    "1h":  timedelta(hours=2),
+    "4h":  timedelta(hours=5),
+    "1d":  timedelta(hours=7),      # ~one trading session
+    "1w":  timedelta(hours=33),     # ~one trading week (5 sessions)
+}
+
+# For STOCK freshness we measure age in NYSE TRADING time, not wall-clock: an
+# off-session/weekend gap must not "age" a signal, else stock signals confirmed
+# near a close (esp. Friday) are dropped before the next session — a selection
+# bias against off-hours signals in the calibration sample. Crypto stays
+# wall-clock (24/7, no gaps).
+_NYSE_CAL = None
+
+
+def _nyse_cal():
+    global _NYSE_CAL
+    if _NYSE_CAL is None:
+        import pandas_market_calendars as mcal
+        _NYSE_CAL = mcal.get_calendar(EXCHANGE)
+    return _NYSE_CAL
+
+
+def _trading_age(entry_ts, now) -> timedelta:
+    """Elapsed NYSE trading time in [entry_ts, now] (0 across weekends/nights).
+    Falls back to wall-clock on any calendar error."""
+    try:
+        import pandas as pd
+        sched = _nyse_cal().schedule(start_date=entry_ts.date(), end_date=now.date())
+        if sched.empty:
+            return timedelta(0)
+        total = 0.0
+        for _, r in sched.iterrows():
+            o = max(r["market_open"].tz_convert("UTC"), entry_ts)
+            c = min(r["market_close"].tz_convert("UTC"), now)
+            if c > o:
+                total += (c - o).total_seconds()
+        return timedelta(seconds=total)
+    except Exception:
+        return now - entry_ts
 
 # Exchange configuration — US markets
 EXCHANGE       = "NYSE"          # used for holiday calendar
@@ -533,16 +578,21 @@ def signal_is_fresh(sig: dict) -> tuple[bool, str]:
         return False, f"bad entry_ts {ets!r}"
 
     interval = str(sig.get("interval", "1d"))
+    ticker = str(sig.get("ticker", ""))
+    crypto = is_crypto(ticker)
+    windows = SIGNAL_MAX_AGE if crypto else SIGNAL_MAX_AGE_STOCK
     env_days = os.environ.get("EWB_MAX_SIGNAL_AGE_DAYS")
     if env_days:
         try:
             max_age = timedelta(days=float(env_days))
         except ValueError:
-            max_age = SIGNAL_MAX_AGE.get(interval, SIGNAL_MAX_AGE_DEFAULT)
+            max_age = windows.get(interval, SIGNAL_MAX_AGE_DEFAULT)
     else:
-        max_age = SIGNAL_MAX_AGE.get(interval, SIGNAL_MAX_AGE_DEFAULT)
+        max_age = windows.get(interval, SIGNAL_MAX_AGE_DEFAULT)
 
-    age = utc_now() - ts
+    # Stocks: age in TRADING time (weekend/overnight gaps don't count) so the
+    # calibration sample isn't biased against off-session signals. Crypto: wall-clock.
+    age = (utc_now() - ts) if crypto else _trading_age(ts, utc_now())
     if age > max_age:
         def _fmt(td: timedelta) -> str:
             h = td.total_seconds() / 3600.0
@@ -901,17 +951,14 @@ def one_pass() -> None:
     stock_count  = len(tickers) - crypto_count
 
     all_tradeable_signals: list[dict] = []
-    all_tradeable_set: set[str] = set()
 
-    # Pre-compute session info per interval (fast, no I/O)
-    interval_meta: dict[str, tuple[set[str], set[str]]] = {}
+    # Session info is now informational only — we log every gate-passing signal
+    # regardless of session (paper trades for the unbiased calibration sample),
+    # so there is no tradeable/scan-only split to thread through anymore.
     for interval in intervals:
         tradeable, scan_only = split_by_session(tickers, interval)
-        tradeable_set = set(t.upper() for t in tradeable)
-        all_tradeable_set |= tradeable_set
-        interval_meta[interval] = (tradeable_set, scan_only)
         log.info(
-            "[%s] Сессия: крипто=%d(24/7) акции=%d(%s) — торгуемых=%d только_скан=%d",
+            "[%s] Сессия: крипто=%d(24/7) акции=%d(%s) — в сессии=%d вне=%d (логируем все)",
             interval, crypto_count, stock_count,
             market_status(interval), len(tradeable), len(scan_only),
         )
@@ -925,22 +972,24 @@ def one_pass() -> None:
         futures = {pool.submit(_scan_interval, iv): iv for iv in intervals}
         for future in as_completed(futures):
             interval, signals = future.result()
-            tradeable_set = interval_meta[interval][0]
             log.info("[%s] Скан вернул сигналов: %d", interval, len(signals))
-            tradeable_signals = [s for s in signals if s.get("ticker", "").upper() in tradeable_set]
-            if len(tradeable_signals) < len(signals):
-                log.info("[%s] Отфильтровано торгуемых: %d", interval, len(tradeable_signals))
-            all_tradeable_signals.extend(tradeable_signals)
+            # Log EVERY gate-passing signal regardless of session — these are
+            # paper trades for the calibration/forward sample, entered at the
+            # signal's next_open (= next market open for stocks). The session
+            # filter is removed here so off-hours stock signals aren't excluded
+            # (selection bias). Freshness is now trading-time-aware (stocks).
+            all_tradeable_signals.extend(signals)
 
     state["last_scan"] = utc_now_iso()
 
-    # Open new trades across all intervals
+    # Open new paper trades across all intervals (session-independent log).
     events = read_jsonl(FORWARD_LOG)
     opened = try_open_trades(all_tradeable_signals, events)
 
-    # Close trades
+    # Close trades — replay-based (historical_exit), so session-independent:
+    # close every open trade, not just currently-tradeable ones.
     events = read_jsonl(FORWARD_LOG)
-    closed = try_close_trades(events, all_tradeable_set)
+    closed = try_close_trades(events, None)
 
     # Retrain if enough new closed trades — but only when explicitly unfrozen.
     state["closed_since_retrain"] = state.get("closed_since_retrain", 0) + closed

@@ -18,19 +18,33 @@ from ewb.strategy_system import asset_class_of  # noqa: E402
 
 
 def test_signal_is_fresh_window_by_interval():
+    # Crypto = wall-clock (24/7). Use a crypto ticker for deterministic checks.
     now = at.utc_now()
+    C = lambda iv, ts: at.signal_is_fresh({"ticker": "BTC-USD", "interval": iv, "entry_ts": ts})
     # confirmed now -> fresh on every interval
-    assert at.signal_is_fresh({"interval": "1d", "entry_ts": now.isoformat()})[0] is True
-    assert at.signal_is_fresh({"interval": "1h", "entry_ts": now.isoformat()})[0] is True
+    assert C("1d", now.isoformat())[0] is True
+    assert C("1h", now.isoformat())[0] is True
     # old backfill -> stale
-    old = (now - pd.Timedelta(days=10)).isoformat()
-    assert at.signal_is_fresh({"interval": "1d", "entry_ts": old})[0] is False
+    assert C("1d", (now - pd.Timedelta(days=10)).isoformat())[0] is False
     # 1h window is ~2h; 6h ago is stale
-    assert at.signal_is_fresh({"interval": "1h",
-                               "entry_ts": (now - pd.Timedelta(hours=6)).isoformat()})[0] is False
+    assert C("1h", (now - pd.Timedelta(hours=6)).isoformat())[0] is False
     # missing / bad timestamp -> not fresh
-    assert at.signal_is_fresh({"interval": "1d", "entry_ts": ""})[0] is False
-    assert at.signal_is_fresh({"interval": "1d", "entry_ts": "not-a-date"})[0] is False
+    assert C("1d", "")[0] is False
+    assert C("1d", "not-a-date")[0] is False
+
+
+def test_signal_is_fresh_stock_trading_time(monkeypatch):
+    """Stocks age in NYSE trading time: a Friday-close signal is still fresh at
+    Monday's open (weekend gap adds ~0 trading time), but a genuinely old signal
+    is stale."""
+    mon = pd.Timestamp("2026-06-15 14:00", tz="UTC")   # Monday, pre-open ET
+    monkeypatch.setattr(at, "utc_now", lambda: mon)
+    S = lambda iv, ts: at.signal_is_fresh({"ticker": "GE", "interval": iv, "entry_ts": ts})
+    fri_close = pd.Timestamp("2026-06-12 20:00", tz="UTC")   # Fri 16:00 ET
+    # Friday daily signal, checked Monday morning -> ~0 trading time elapsed -> fresh
+    assert S("1d", fri_close.isoformat())[0] is True
+    # A 10-calendar-day-old stock signal is still stale (≈7 sessions of trading time)
+    assert S("1d", (mon - pd.Timedelta(days=10)).isoformat())[0] is False
 
 
 def test_setup_quality_ok_reward_first(monkeypatch):
